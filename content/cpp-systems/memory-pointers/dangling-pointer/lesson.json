@@ -1,0 +1,538 @@
+{
+  "id": "memory-dangling-pointer",
+  "title": "Висячие указатели",
+  "description": "Все источники висячих указателей: выход из блока, free, realloc, изменение контейнера и общий буфер. Указатели на живую, но чужую память, индексы и копии вместо ссылок, дескрипторы с поколением.",
+  "moduleId": "memory-pointers",
+  "order": 17,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["memory-memory-leak"],
+  "objectives": [
+    "Перечислять источники висячих указателей и находить их в коде",
+    "Объяснять, почему санитайзеры не замечают указатель на живую память с другим содержимым",
+    "Заменять долгоживущие указатели индексами и копиями",
+    "Реализовывать дескрипторы с поколением для ссылок на удаляемые объекты"
+  ],
+  "tags": ["C17", "Память", "Висячий указатель", "Время жизни", "Найди ошибку"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "memory-dangling-pointer-task-1",
+    "title": "Найди ошибку: общий буфер",
+    "description": "Программа читает `n` студентов (имя и оценку) и печатает список тех, чья оценка не ниже средней. Вместо разных имён печатается одно и то же.\n\nНайдите ошибку и исправьте программу так, чтобы каждая запись хранила своё имя.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n#include <string.h>\n\nstruct Student {\n    const char *name;\n    int grade;\n};\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    struct Student group[50];\n    char buffer[32];\n    int total = 0;\n    for (int i = 0; i < n; i++) {\n        scanf(\"%31s %d\", buffer, &group[i].grade);\n        group[i].name = buffer;\n        total += group[i].grade;\n    }\n    for (int i = 0; i < n; i++) {\n        if (group[i].grade * n >= total) {\n            printf(\"%s %d\\n\", group[i].name, group[i].grade);\n        }\n    }\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "3\nann 5\nbob 3\ncid 4\n",
+        "output": "ann 5\ncid 4\n"
+      },
+      {
+        "input": "1\nsolo 2\n",
+        "output": "solo 2\n"
+      }
+    ],
+    "constraints": ["1 ≤ n ≤ 50.", "Имена — до 31 латинской буквы.", "1 ≤ оценка ≤ 5."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Куда указывает поле name у каждой записи после цикла чтения?",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Храните строку внутри структуры: char name[32]; и копируйте strcpy(group[i].name, buffer); — либо делайте копию в куче и освобождайте её в конце.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "3\nann 5\nbob 3\ncid 4\n",
+        "expected": "ann 5\ncid 4\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1\nsolo 2\n",
+        "expected": "solo 2\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Равные оценки",
+        "stdin": "2\nx 3\ny 3\n",
+        "expected": "x 3\ny 3\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Возрастание",
+        "stdin": "4\na 1\nb 2\nc 3\nd 4\n",
+        "expected": "c 3\nd 4\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Убывание",
+        "stdin": "4\nd 4\nc 3\nb 2\na 1\n",
+        "expected": "d 4\nc 3\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Разная длина имён",
+        "stdin": "3\nverylongname 5\nshort 1\nmid 4\n",
+        "expected": "verylongname 5\nmid 4\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Почти все выше среднего",
+        "stdin": "5\na 5\nb 5\nc 5\nd 5\ne 1\n",
+        "expected": "a 5\nb 5\nc 5\nd 5\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Максимальная длина",
+        "stdin": "2\nabcdefghijklmnopqrstuvwxyzabcde 5\nz 1\n",
+        "expected": "abcdefghijklmnopqrstuvwxyzabcde 5\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Одинаковые имена",
+        "stdin": "3\nsame 4\nsame 2\nsame 4\n",
+        "expected": "same 4\nsame 4\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Чередование",
+        "stdin": "6\np 2\nq 3\nr 2\ns 3\nt 2\nu 3\n",
+        "expected": "q 3\ns 3\nu 3\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstruct Student {\n    char name[32];\n    int grade;\n};\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    struct Student group[50];\n    char buffer[32];\n    int total = 0;\n    for (int i = 0; i < n; i++) {\n        scanf(\"%31s %d\", buffer, &group[i].grade);\n        strcpy(group[i].name, buffer);\n        total += group[i].grade;\n    }\n    for (int i = 0; i < n; i++) {\n        if (group[i].grade * n >= total) {\n            printf(\"%s %d\\n\", group[i].name, group[i].grade);\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Поле `const char *name` хранит **адрес**, и все записи получили один и тот же адрес — массива `buffer`. Буфер переписывается при каждом чтении, поэтому после цикла все имена «равны» последнему. Санитайзеры молчат: `buffer` жив, границы не нарушены.\n\nМассив `char name[32]` внутри структуры делает каждую запись владельцем своей копии строки. Сравнение с средним выполнено в целых числах: `grade * n >= total` — то же, что `grade >= total / n`, но без деления и погрешностей.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "memory-dangling-pointer-task-2",
+      "title": "Найди ошибку: выбранный элемент после удаления",
+      "description": "В массиве `n` товаров (название и цена). Программа выбирает **самый дорогой** товар (первый из самых дорогих), запоминает указатель на него, затем выполняет `d` удалений по индексам (удаление со сдвигом хвоста) и печатает выбранный товар и итоговое количество. Гарантируется, что выбранный товар не удаляется.\n\nИногда печатается не тот товар. Исправьте программу.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <string.h>\n\nstruct Product {\n    char name[24];\n    int price;\n};\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    struct Product items[50];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%23s %d\", items[i].name, &items[i].price);\n    }\n    struct Product *chosen = &items[0];\n    for (int i = 1; i < n; i++) {\n        if (items[i].price > chosen->price) {\n            chosen = &items[i];\n        }\n    }\n    int d;\n    scanf(\"%d\", &d);\n    for (int k = 0; k < d; k++) {\n        int index;\n        scanf(\"%d\", &index);\n        memmove(&items[index], &items[index + 1], (size_t)(n - index - 1) * sizeof items[0]);\n        n--;\n    }\n    printf(\"%s %d %d\\n\", chosen->name, chosen->price, n);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\ntea 100\ncake 300\njam 50\n1\n0\n",
+          "output": "cake 300 2\n"
+        },
+        {
+          "input": "2\nx 5\ny 1\n1\n1\n",
+          "output": "x 5 1\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 50.",
+        "0 ≤ d < n.",
+        "Индексы удалений относятся к текущему (уже сдвинутому) массиву."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что происходит с элементом, на который указывает chosen, если удаляется товар левее него?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Храните индекс выбранного товара; при удалении индекса меньше него уменьшайте его на 1.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\ntea 100\ncake 300\njam 50\n1\n0\n",
+          "expected": "cake 300 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\nx 5\ny 1\n1\n1\n",
+          "expected": "x 5 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Без удалений",
+          "stdin": "1\nonly 7\n0\n",
+          "expected": "only 7 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Выбранный последний, удаления слева",
+          "stdin": "4\na 1\nb 2\nc 3\nd 9\n3\n0\n0\n0\n",
+          "expected": "d 9 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Выбранный первый",
+          "stdin": "4\nd 9\nc 3\nb 2\na 1\n2\n1\n1\n",
+          "expected": "d 9 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Два одинаково дорогих",
+          "stdin": "5\na 1\nb 8\nc 8\nd 2\ne 3\n2\n0\n2\n",
+          "expected": "b 8 3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Удаления с обеих сторон",
+          "stdin": "5\na 4\nb 4\nc 9\nd 4\ne 4\n4\n4\n0\n0\n1\n",
+          "expected": "c 9 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Удаление соседа слева",
+          "stdin": "3\nx 1\ny 2\nz 3\n1\n1\n",
+          "expected": "z 3 2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Остался один",
+          "stdin": "6\nk 5\nl 6\nm 7\nn 8\no 9\np 10\n5\n0\n0\n0\n0\n0\n",
+          "expected": "p 10 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Удаления справа",
+          "stdin": "3\nlong_product_name 1000\ns 1\nt 2\n2\n2\n1\n",
+          "expected": "long_product_name 1000 1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstruct Product {\n    char name[24];\n    int price;\n};\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    struct Product items[50];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%23s %d\", items[i].name, &items[i].price);\n    }\n    int chosen = 0;\n    for (int i = 1; i < n; i++) {\n        if (items[i].price > items[chosen].price) {\n            chosen = i;\n        }\n    }\n    int d;\n    scanf(\"%d\", &d);\n    for (int k = 0; k < d; k++) {\n        int index;\n        scanf(\"%d\", &index);\n        memmove(&items[index], &items[index + 1], (size_t)(n - index - 1) * sizeof items[0]);\n        n--;\n        if (index < chosen) {\n            chosen--;\n        }\n    }\n    printf(\"%s %d %d\\n\", items[chosen].name, items[chosen].price, n);\n    return 0;\n}\n",
+      "solutionExplanation": "Указатель привязан к **ячейке** массива, а не к товару. Когда удаляется элемент левее выбранного, товар переезжает на одну ячейку влево, а указатель остаётся на месте и теперь показывает соседа (или устаревшую копию за концом массива). Память при этом законная, поэтому AddressSanitizer ошибки не видит — её выдают только неправильные ответы.\n\nИндекс легко поддерживать: удаление левее уменьшает его на единицу, удаление правее его не меняет. Так поступают все контейнеры, которые перемещают элементы.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-dangling-pointer-task-3",
+      "title": "Найди ошибку: адрес из функции",
+      "description": "Функция `format_price` превращает цену в копейках в строку вида `12.05 руб.`. Программа печатает `q` цен, но выводит мусор или аварийно завершается.\n\nИсправьте ошибку. Сигнатура функции может измениться: например, функция может принимать буфер вызывающего кода.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nconst char *format_price(int cents) {\n    char text[32];\n    snprintf(text, sizeof text, \"%d.%02d руб.\", cents / 100, cents % 100);\n    return text;\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        int cents;\n        scanf(\"%d\", &cents);\n        const char *text = format_price(cents);\n        printf(\"%s\\n\", text);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\n1205\n7\n",
+          "output": "12.05 руб.\n0.07 руб.\n"
+        },
+        {
+          "input": "1\n100\n",
+          "output": "1.00 руб.\n"
+        }
+      ],
+      "constraints": ["1 ≤ q ≤ 20.", "0 ≤ cents ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сколько живёт массив text и когда main читает его содержимое?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Надёжный вариант: void format_price(int cents, char *out, size_t size) и буфер char text[32] в main.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\n1205\n7\n",
+          "expected": "12.05 руб.\n0.07 руб.\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n100\n",
+          "expected": "1.00 руб.\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ноль",
+          "stdin": "1\n0\n",
+          "expected": "0.00 руб.\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Меньше рубля",
+          "stdin": "1\n99\n",
+          "expected": "0.99 руб.\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Максимум",
+          "stdin": "1\n1000000000\n",
+          "expected": "10000000.00 руб.\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Разные копейки",
+          "stdin": "3\n1\n10\n101\n",
+          "expected": "0.01 руб.\n0.10 руб.\n1.01 руб.\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Большая и маленькая",
+          "stdin": "2\n123456789\n50\n",
+          "expected": "1234567.89 руб.\n0.50 руб.\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Почти максимум",
+          "stdin": "1\n999999999\n",
+          "expected": "9999999.99 руб.\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Круглые суммы",
+          "stdin": "4\n100\n200\n300\n400\n",
+          "expected": "1.00 руб.\n2.00 руб.\n3.00 руб.\n4.00 руб.\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Обычная цена",
+          "stdin": "1\n4321\n",
+          "expected": "43.21 руб.\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nvoid format_price(int cents, char *out, size_t size) {\n    snprintf(out, size, \"%d.%02d руб.\", cents / 100, cents % 100);\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        int cents;\n        scanf(\"%d\", &cents);\n        char text[32];\n        format_price(cents, text, sizeof text);\n        printf(\"%s\\n\", text);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Массив `text` живёт в кадре `format_price` и исчезает при возврате; `main` получает адрес мёртвого объекта. GCC даже предупреждает об этом и подменяет возвращаемое значение на `NULL` — программа падает сразу. С другими компиляторами кадр функции перезаписывает следующий вызов `printf`, и печатается мусор.\n\nИсправленная версия получает буфер от вызывающего кода: память принадлежит `main` и живёт столько, сколько нужно. Размер передаётся параметром, а `snprintf` гарантирует, что запись не выйдет за границу.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-dangling-pointer-task-4",
+      "title": "Дескрипторы с поколением",
+      "description": "Реализуйте хранилище до 100 чисел, к которым обращаются через дескрипторы «индекс:поколение». У каждой ячейки есть поколение, вначале 0.\n\nКоманды до конца ввода:\n- `add x` — положить число в **свободную ячейку с наименьшим индексом** и напечатать дескриптор `i:g`, где `g` — текущее поколение ячейки; если свободных нет — `full`;\n- `get i g` — напечатать число, если ячейка `i` занята и её поколение равно `g`, иначе `invalid`;\n- `del i g` — если дескриптор действителен, освободить ячейку, **увеличить её поколение** и напечатать `ok`, иначе `invalid`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "add 10\nadd 20\ndel 0 0\nadd 30\nget 0 0\nget 0 1\n",
+          "output": "0:0\n1:0\nok\n0:1\ninvalid\n30\n"
+        },
+        {
+          "input": "get 5 0\ndel 0 0\n",
+          "output": "invalid\ninvalid\n"
+        }
+      ],
+      "constraints": ["Команд — до 300.", "0 ≤ i < 100 в командах get/del, g ≥ 0.", "|x| ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "struct Slot { int value; unsigned generation; int used; }; static struct Slot slots[100]; — все поля нулевые.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Проверка дескриптора: i в пределах [0, 100), slots[i].used и slots[i].generation == g.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "При удалении: used = 0; generation++. Тогда старый дескриптор перестанет совпадать, даже если ячейку займёт новое число.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add 10\nadd 20\ndel 0 0\nadd 30\nget 0 0\nget 0 1\n",
+          "expected": "0:0\n1:0\nok\n0:1\ninvalid\n30\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "get 5 0\ndel 0 0\n",
+          "expected": "invalid\ninvalid\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Добавить и прочитать",
+          "stdin": "add 1\nget 0 0\n",
+          "expected": "0:0\n1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Повторное удаление",
+          "stdin": "add 1\ndel 0 0\ndel 0 0\n",
+          "expected": "0:0\nok\ninvalid\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Три поколения",
+          "stdin": "add 1\ndel 0 0\nadd 2\ndel 0 1\nadd 3\nget 0 2\nget 0 1\n",
+          "expected": "0:0\nok\n0:1\nok\n0:2\n3\ninvalid\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Чужие дескрипторы",
+          "stdin": "add 5\nget 0 7\nget 99 0\nget 1 0\n",
+          "expected": "0:0\ninvalid\ninvalid\ninvalid\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Переполнение хранилища",
+          "stdin": "add 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\nadd 1\n",
+          "expected": "0:0\n1:0\n2:0\n3:0\n4:0\n5:0\n6:0\n7:0\n8:0\n9:0\n10:0\n11:0\n12:0\n13:0\n14:0\n15:0\n16:0\n17:0\n18:0\n19:0\n20:0\n21:0\n22:0\n23:0\n24:0\n25:0\n26:0\n27:0\n28:0\n29:0\n30:0\n31:0\n32:0\n33:0\n34:0\n35:0\n36:0\n37:0\n38:0\n39:0\n40:0\n41:0\n42:0\n43:0\n44:0\n45:0\n46:0\n47:0\n48:0\n49:0\n50:0\n51:0\n52:0\n53:0\n54:0\n55:0\n56:0\n57:0\n58:0\n59:0\n60:0\n61:0\n62:0\n63:0\n64:0\n65:0\n66:0\n67:0\n68:0\n69:0\n70:0\n71:0\n72:0\n73:0\n74:0\n75:0\n76:0\n77:0\n78:0\n79:0\n80:0\n81:0\n82:0\n83:0\n84:0\n85:0\n86:0\n87:0\n88:0\n89:0\n90:0\n91:0\n92:0\n93:0\n94:0\n95:0\n96:0\n97:0\n98:0\n99:0\nfull\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Заполнение дыры",
+          "stdin": "add 1\nadd 2\nadd 3\ndel 1 0\nadd 4\nget 1 1\nget 2 0\n",
+          "expected": "0:0\n1:0\n2:0\nok\n1:1\n4\n3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Крайние значения",
+          "stdin": "add -1000000000\nadd 1000000000\nget 0 0\nget 1 0\n",
+          "expected": "0:0\n1:0\n-1000000000\n1000000000\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Команды до добавления",
+          "stdin": "del 99 0\nget 0 0\nadd 7\nget 0 0\n",
+          "expected": "invalid\ninvalid\n0:0\n7\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define CAPACITY 100\n\nstruct Slot {\n    int value;\n    unsigned generation;\n    int used;\n};\n\nstatic struct Slot slots[CAPACITY];\n\nint valid(int i, unsigned g) {\n    return i >= 0 && i < CAPACITY && slots[i].used && slots[i].generation == g;\n}\n\nint main(void) {\n    char cmd[8];\n    while (scanf(\"%7s\", cmd) == 1) {\n        if (strcmp(cmd, \"add\") == 0) {\n            int x;\n            scanf(\"%d\", &x);\n            int i = 0;\n            while (i < CAPACITY && slots[i].used) {\n                i++;\n            }\n            if (i == CAPACITY) {\n                printf(\"full\\n\");\n            } else {\n                slots[i].value = x;\n                slots[i].used = 1;\n                printf(\"%d:%u\\n\", i, slots[i].generation);\n            }\n        } else {\n            int i;\n            unsigned g;\n            scanf(\"%d %u\", &i, &g);\n            if (!valid(i, g)) {\n                printf(\"invalid\\n\");\n            } else if (strcmp(cmd, \"get\") == 0) {\n                printf(\"%d\\n\", slots[i].value);\n            } else {\n                slots[i].used = 0;\n                slots[i].generation++;\n                printf(\"ok\\n\");\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Дескриптор — пара «где лежит» и «какой это по счёту жилец ячейки». Указатель на ячейку знал бы только первое и после повторного использования ячейки молча показывал бы чужое число. Поколение растёт при каждом удалении, поэтому старый дескриптор отличается от нового, даже если индексы совпали.\n\nПроверка индекса `0 ≤ i < 100` в `valid` обязательна: дескриптор приходит извне, и без неё `slots[i]` вышел бы за границы массива.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "memory-dangling-pointer-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "В каких случаях p становится висячим? Выберите все.",
+        "explanation": "Запись в a[2] не уничтожает элемент. Static-объект живёт всю программу. Остальные случаи завершают жизнь объекта или переносят его.",
+        "type": "multiple",
+        "options": [
+          "int *p = malloc(4); free(p);",
+          "int *p; { int x = 1; p = &x; } — после закрывающей скобки",
+          "int a[4]; int *p = &a[2]; a[2] = 7;",
+          "int *p = &v.data[0]; vec_push(&v, 1); — push вызвал realloc",
+          "static int s; int *p = &s; — после выхода из функции"
+        ],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    const char *saved[3];\n    char buffer[8];\n    const char *words[] = {\"one\", \"two\", \"six\"};\n    for (int i = 0; i < 3; i++) {\n        snprintf(buffer, sizeof buffer, \"%s\", words[i]);\n        saved[i] = buffer;\n    }\n    printf(\"%s %s %s\\n\", saved[0], saved[1], saved[2]);\n    return 0;\n}",
+        "explanation": "Все элементы saved хранят адрес одного буфера, в котором осталось последнее слово.",
+        "type": "text",
+        "answers": ["six six six"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Почему AddressSanitizer не обнаружит ошибку в этом коде?",
+        "code": "int a[5] = {1, 2, 3, 4, 5};\nint *last = &a[4];\nmemmove(&a[0], &a[1], 4 * sizeof a[0]);   // удалили a[0], длина стала 4\nprintf(\"%d\\n\", *last);",
+        "codeLanguage": "c",
+        "explanation": "Санитайзер знает границы объектов, но не логическую длину контейнера. Указатель на «бывший» элемент — ошибка смысла, а не доступа к памяти.",
+        "options": [
+          "a[4] — законная живая память массива, хотя логически элемента там больше нет",
+          "memmove отключает проверки",
+          "Санитайзер проверяет только кучу",
+          "Ошибки здесь нет"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Чем дескриптор «индекс + поколение» лучше простого указателя на ячейку хранилища?",
+        "explanation": "При удалении поколение ячейки растёт, и сравнение поколений показывает, что ссылка устарела.",
+        "options": [
+          "Он позволяет обнаружить, что объект удалён, даже если ячейку занял новый объект",
+          "Он занимает меньше памяти",
+          "Он автоматически освобождает память",
+          "Он быстрее разыменовывается"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nstruct Slot {\n    int value;\n    unsigned gen;\n};\n\nint main(void) {\n    struct Slot s = {10, 0};\n    unsigned my_gen = s.gen;\n    s.gen++;\n    s.value = 20;\n    printf(\"%s %d\\n\", s.gen == my_gen ? \"valid\" : \"stale\", s.value);\n    return 0;\n}",
+        "explanation": "Поколение ячейки изменилось после удаления, поэтому сохранённая ссылка распознаётся как устаревшая.",
+        "type": "text",
+        "answers": ["stale 20"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Какой способ хранить «ссылку» на элемент растущего динамического массива надёжнее всего?",
+        "explanation": "Индекс остаётся верным после realloc: адрес всегда вычисляется от актуального data.",
+        "options": [
+          "Индекс элемента",
+          "Указатель на элемент",
+          "Указатель на указатель data",
+          "Копия поля capacity"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Функция возвращает адрес локального массива. Что из перечисленного верно? Выберите все.",
+        "code": "const char *greet(void) {\n    char text[] = \"hello\";\n    return text;\n}",
+        "codeLanguage": "c",
+        "explanation": "Массивы не копируются при возврате — возвращается адрес. Литерал живёт всю программу, поэтому его адрес возвращать можно.",
+        "type": "multiple",
+        "options": [
+          "Массив text перестаёт существовать при возврате из функции",
+          "GCC предупреждает: function returns address of local variable",
+          "Вызывающий код получит копию строки",
+          "Исправление — return \"hello\"; (литерал статический)"
+        ],
+        "correct": [0, 1, 3]
+      }
+    ]
+  }
+}

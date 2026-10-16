@@ -1,0 +1,2933 @@
+{
+  "verifiedAt": "2026-10-13T14:54:42.227Z",
+  "summary": {
+    "solutions": 220,
+    "negativeControls": 41,
+    "examples": 88,
+    "memoryExamples": 16,
+    "runs": 2716,
+    "failed": 1
+  },
+  "checks": [
+    {
+      "id": "memory-process-memory-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "c5d1361b103acce4bbe5699eb1b848d943ae1c91ee7e4c6cca53428ada39b3bb",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-process-memory-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "18e0f4da59325b59726a61e7abc2b2256a0e914478fbefab150b74defa6c99b4",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-process-memory-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "e025ccf73a3321dcc560efd159caa3c95806c427cfb94513f0ab6166335223a2",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-process-memory-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "48c41430c9bc6b4f23a4f2f957b5d161077f364dcf5c118d44356c1757add20c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-process-memory-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "33cf0f0e81eaee4a7c0acb8dfebec6f41b0ef7c764051f64f10bbfe384b11bfb",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-process-memory-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "6e3798851d85ae1554d56af5abd5633e50b2fd102ae02777737d50fe58805f1a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-process-memory#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "b1feeaa53ab56d92289033bbed90541fb0405699c875678f53211c20b357c596",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-process-memory#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "887e0c284ef740b18076fa0e95ca9fce589dbe4d1999d878d451e4ba199a5e5f",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-process-memory#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "79cfeb056c9506f07fc0e4bb642ee953486238a46863faa6491d63c4bae29425",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-process-memory#5",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "ad288e9791aafc2411719bf743b8eadc93b23b6cb828eb4d1abf8ca3d01a4a97",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-addresses-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "69990d6b3300260b985987f82f5de29bfb7ac3888a69a9a65890ca7d62e5d5af",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-addresses-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "ac6f7fd471cf7b5b822582e6e08fd6298ef8d6ca7f37a26a5fe225383ef51192",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-addresses-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "ec5a74d1c5e0460e7c7f303d596a37ee55cac1afcffe2c8a3d650bbdebd02e53",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-addresses-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "c2b9aadcc86c7c9c367c243e42fa32aeff540da9e57e30d33df02d89e3aeec49",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-addresses-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "f81c84de79cc29db954c7536121edb03223583df829bf73e391826372476877e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-addresses-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "f07f311e01c7dd9b0e17ae0e6b611a86c1ca689231469f484e982789445cb82e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-addresses-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "d64047b9f19e066ebf094d3f6a8fbd487e280d409ec58873efb94bfc8c5b3632",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-addresses-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "b69dd2b4ffbed6f69053914d1e1bfdf73d4d90f8ff8e3bd3e6cf3d8ca5a1c940",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-addresses#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "5833823dec22801a2cd65db56a1d8ed8815205e74642265ff2d422739417d87f",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-addresses#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "4eafd51d9105e7501a6dadbc0c53e882facefb65ced6f66ddbe7799dfd618b4a",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-addresses#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "204ca0fc047fd0efe4c85cc197b512d949a00278601e34e53232843074d82648",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-addresses#4",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "e447118c3a8aa9e745116cc23f3a5405f909dfff72dec5b0dfc7a7c38325a2f5",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-addresses#5",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "654d9f61dc589bffa31f9657dbedd076bd4f8f147e1e6d1a901ac6787f3cbfbf",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-addresses#6",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "32ffa89b1477b7c3caa1da8cf49c2958f4ad3b3c4ef967eebb64402e90727a95",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-addresses#7",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "119c0b63e8c68a7342ca0bd5504c538377b825db323ab891ed16163c078d1823",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-stack-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "e4980d42fb1d78536b85be91ac624cc5fd78da0ce96417fb216a30ce06bb473b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-stack-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "576fe092a0cdaf3b75a094111bdac2807d00a59abd93e9cf8c95cd77fb6cf5db",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-stack-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "7560450b2cffac25a74f92aa4d94e9c6fdc3be85afeb53c1a3bddb1a31a24239",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-stack-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "8fe3049b2bf68a07041b7111bf18803896e427636f04a551edb1100b54f86c07",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-stack-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "bba0216c5229be0859d728cdeb909c35c99640aaf7764c839a4c2a2b71716b1e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-stack-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "4cb55177de356485a41b2399f42af12b578130b044cdeebb9cc3d47bf5e1bdbe",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-stack-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "bca3017bb9e7e3b8ee436b165b9c8b28554d50b3b2469c52e52c622e7ecba589",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-stack-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "d2feedb256076e03c57c825b53a994aebf8c78032c86719d627fa7fc7d4cf1a2",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-stack-task-4",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "4da87a75a5ebd1d00998b514b6e6d9d37c192ba7a886b8da911545e51fbe90ed",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-stack#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "2400eeca5ab7f15734694d0263cdd912ba77fce8a1a6254f675b8b349aaf9028",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-stack#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "0a3878633b52117761f8e88e5349664c05b3ba6415e512f42be9c6bece2cd3eb",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-stack#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "4e80cbf5dd6d9c84988ae14d735e5f61df137a4bedbd4b7e39b566889ad34981",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-stack#5",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "6a6745a98121479aef6ee78cca66ab592487f31657e74a33e76753762a67de02",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-heap-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "c7968f580f21162f0c71b26d5329a23fdd218d87df58cfee21674be78042c387",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-heap-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "40d7f359a2aa9565e160f0d897d020cddadc0629083580716c6b11495972ccbb",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-heap-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "8b95d7d1219599aeac6aeb6aeec120043bd995f5e0769e77038c45324036846d",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-heap-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "103dbc427f599d29d2b59a9f5dd1d2846e230da812bffd4dbcc8f1b7bdca656f",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-heap-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "9caf593cdb1bf49a602d4fbffc2808efa860fffdf7672b66cc0b834a9db417a0",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-heap-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "46b53136f09dd513dbea8f831cdff536f8939110862c5bdbf1843f978eb48727",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-heap-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "7759f3c6b46928990d94438643cd5ab4784905d7f210f8751a38961329bddb01",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-heap-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "4386f66235d5cb72d5797627d9cb0ffb909fc456cf9a30d6d4dc623c65830790",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-heap#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "6ce4e4d4430cfaf9f014fd5eb2c1a5d4d2262c5fe12979aae60c283dafc6817f",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-heap#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "5544dab0356caab49cd23caafbe10e320a0c77e5b3cc5804c7c2d21c3e9d6756",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-heap#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "124b7712b5e9668f102cda87d3fbd82e2f7147469651c39ba425dfa0f4e5fbe0",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-lifetime-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "c0b204b720eee37cf687bb02898e8f7e149ffe25422d88a7de6c23a32537f6cb",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-lifetime-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "8f5a1a75b3bdd299b088bf0c577d215c0e702b24c459332b23bf831c5060ee74",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-lifetime-task-1",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "174abb3d643c9047b4bc3f84242e9360b5f03e844914c93793705a7b3245b2a4",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-lifetime-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "bfb469a7f3ae26d9aede2499a476f8ec52bd5a08e61b29e895ac0e734558665c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-lifetime-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "3778c7b6515023127572ae14c81e2443a85181ebd3c69e8d1de36c5a7b46df0e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-lifetime-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "872aff24e52afedf6e0df6753857da5ffb4e6b684278adcd8a99185cbcb79d7e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-lifetime-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "9e33559469bbb3fd9d42ddde611ef6734decdb50cced45fbf9ff43d606c14744",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-lifetime-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "7484a7558c071d61ef3fa802c828523068d3678ca82d313278200af2d80e8e59",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-lifetime-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "b4eaf824f785f3854c52abd956641f40b77775ed6dd6a475a92779ab0f3c7a99",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-lifetime-task-4",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "6ad32c3e0b09b5e6fb2b9ffb522896e909bcff18c8c06eaff3283103acc934f0",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-lifetime#1",
+      "kind": "memory-example",
+      "mode": "sanitizers",
+      "fingerprint": "54ced8265526697f385978f54e4703bb408a54d12d41173474f36e5c64f2f099",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-lifetime#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "7ca829cabf4745fded09db954dd74fc15151a62f37dec20bd9b48eddf167f47e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-lifetime#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "2e8855eed9a3e54c0a732188cb275bb365948c1b945013b1eac8e4479460b902",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-lifetime#4",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "15b78d9f1723f5cd571365cbcfabb5766cdb601c26bcfcd9c342f393d3fb4d85",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-values-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "e386da1b55e5389ed23b9942e6b5aa75374e689f726f9a323af104a8796ca443",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-values-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "1fcd558640a615268610df0c18ae364d9d883f37c3500d3cbb446115715075a9",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-values-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "d84623546fffc5a7f690f69c0a6656e6acbcc9eb538c56a98d58686d928fbbdb",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-values-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "de8e362121789b4f4196408fb5652df7788dafc2ff0c1faba0ed38f9f05b963c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-values-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "649dccb8a792e6d6dc366a19b1f5f95f7a38a8a1df3af5bdb0ff17617d25548a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-values-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "ec1edd213a9a611ef9932f57e25f5780f6591a160cf785f23f375e31ace93d9e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-values#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "63eb16c8f13f1b85445299d0f69696ec6d94cf28cd3157d7122b7abecb22d086",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-values#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "9094132e9f21617f7cc20ccfa442438b63135a86b94a01bfe1e632e48ba5026f",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-values#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "8b11ba1b19515b0a49635abb6e627caef55ca481c321581463f4093a61222008",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-values#4",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "4fe112750bd257d557bfcbdceb99a4605b0d590ef43ccda68c287a2ae3e3acbb",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-values#5",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "bd6c2dbea64e899e68d49cb17704e0d0d8525ddfca3aed527a8e79ff195f798d",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-values#6",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "778bf3d3d80cbe3d648d5f49564505f87cb0e0f61618de3fe06901eb9c59223b",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-arithmetic-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "f2ac5a5ddbe8110ab15353f60011ccadc0d965683dbc45c3b966d950a8a4dc76",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-arithmetic-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "d2c3fd2bcbd04da5e3ce4a18b842697653756ec92aca43e8be1bc11a27533fb9",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-arithmetic-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "ec85da536b2458a7ee78440e9aa852c89431d05540d48dc6b4862f5ab85db3dd",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-arithmetic-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "86146a272b41f26c8eef3b5fa8befc54578b518a12d61e3e2c3c498619d84fcb",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-arithmetic-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "e4368e56d04bed16f803adebf6fb4705f6bc96d2537a2d1c99e6dcf24e4d8395",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-arithmetic-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "981968cad2a7e20d33573f8d81779c8e1117106baf6445ad6f87f5fba30e934c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-arithmetic-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "c4e37305d823eafb2da41009755683e294391e7a2d73857d3b748632ff92e364",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-arithmetic-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "f21924fd45c6b0afc06a5425e3f8753554f58beaf99238d134e7bd9a5e04e78b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-arithmetic#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "66aa65762c06dde2dc60ed0fa69ef9082f9e188c652438e34671afd60f684e00",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-arithmetic#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "f73c83827161ef00f77f3b216c16ea561651ecad397b2e074cc6508caef490ce",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-arithmetic#3",
+      "kind": "memory-example",
+      "mode": "sanitizers",
+      "fingerprint": "6fd4a9cdf1022abb695d71fa9b82173e551b23b34b4e9660746c6ad82b15ac86",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-arithmetic#4",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "cd185a9130d9e44a234187ffe7e1833c1be365187d22601928eca4679db32cf7",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-arithmetic#5",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "e42c12deaf5d12b5e2789447f4407c5c8dee2c0f29ef5a223a00dc7fa62f5ff5",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-arithmetic#6",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "f89649d3a517f0b3c13c541c4b68dd29c19a6771c6758b66467ed75a5d0b5f0c",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-to-pointer-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "a903acf3fc9fd910971337d9c7de4d3ead4c163ccf6451dff1989b1accf9b1b8",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-to-pointer-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "445c21f4093c96fb6031b7792126be39d9d4fafa82b92f0b4b50211a9a107aad",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-to-pointer-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "e73cc2827f7903bf12e1e4966932ab026581c969bc2e2edbbb3e35460e861cce",
+      "ok": true,
+      "tests": 11
+    },
+    {
+      "id": "memory-pointer-to-pointer-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "587329e6ed3acfe3c5ff81268970c9d4326631434eef0c7b2de08dfd0f970a06",
+      "ok": true,
+      "tests": 11
+    },
+    {
+      "id": "memory-pointer-to-pointer-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "3e8ed1e3908d8c6b0117f8fbc7a6a9e471d3f17a39cbc58f9b5da11a45879cde",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-to-pointer-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "17b360df5bbf77d5f96af4fe7d13d747525b6b9be17342ac3991170600e0fb2a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-to-pointer-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "452d8b222a035d54f66b3b5e27fb58fe57392d8164cc3dca15bade26975c0712",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-to-pointer-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "1f679fbd4bb00e4fbdb1f5e72bb15bde326a7eb6265891984f490f4fb7cba011",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-pointer-to-pointer#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "07e68e3268491cbc16fd5862c6e638fad7bdd4dc99813d882f5f302ff7b1c3d7",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-to-pointer#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "e03b2d6bd69722ff83c8b4a998cc6d29f6c81de69ce408521eada9ad42cca972",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-to-pointer#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "59bba5e29ea7363d95b1f8b7b066636336337fcd2934cd8f1bb1623cc4164c3d",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-to-pointer#4",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "95b0257f19c36edac858db10c97af92e24f6684dbd39ea5a7a72eb265da9f728",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-pointer-to-pointer#5",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "f02b06a0a13cf7ada77dc9d39e2cab691d50e7508c909c5667c1a55a0310762f",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-const-pointers-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "64b5c86301248bab013d7af11850aca7da7aa30debb39699264127d20b9d4e83",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-const-pointers-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "a89efa600b9f0ab267e7ecbaa237e86b94220ad70efa70a0aa76de88d4119b3f",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-const-pointers-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "ae4d484a600981e0c6d1c101fe56e98b834d5ab8de5455473d61ef122f54db4e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-const-pointers-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "5cb5542d05f56ffca0d76d12ed5fdbff013780d05db10a1a5845015329859b06",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-const-pointers-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "8ac65d24611bfa2c964ef862a028728202f274f0aea18e83a0b64245ce3cbf46",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-const-pointers-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "9252853ac3d7ca1d542348a310cc5bf3d2d3315687e4c22a19e0ab1cc3362f19",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-const-pointers-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "6ac6cd0f7e2aa42f89ae9659af986c368053937b7bd578f5850d74c57ab6bf5c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-const-pointers-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "3fef954eed8e7fda36a7bd31c25a50ef0b6157dd350b6abd64cd737ccaaa70c1",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-const-pointers-task-4",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "2b3bae095308dcbfa584e517f3c5edef72a2eba98a0a83d19318008242e47164",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-const-pointers#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "0c03105924c3efb275549a06de23c48125673ce6332035926f4fb0147eb912fc",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-const-pointers#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "560797a99003c136399381040647a87339b7cfe1455e52e374b0e8d4365dfa56",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-const-pointers#4",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "cf809dc90341df56d316457ce9fa94bc3774c9cb715e12a6d0eb9e00d59f7727",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-void-pointer-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "32fb5d3924958b56010f1f267dc5e16f10890c1b78aa00c447cdff81d1817a66",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-void-pointer-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "b4232be321e2cc98536561b09585ba2d5082378a6ca1a8216e29f84c71194237",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-void-pointer-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "233516155c9971ba1ecb65589afb5953e5d2fcf5df56b57ed4c48486e2e8863b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-void-pointer-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "d6f8cd123d31af7d82cf8c6b380ed6db8f3f1521f971e4d357bbee3ce0ebae51",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-void-pointer-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "7314ac90ad77b55dc1e8afae735a7778e686f4ff497278e0981dd1acb4582d77",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-void-pointer-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "bb560bded3bab2057ed8ee6f81b581dcf98571cdc49f5b20e2219033639e3ae0",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-void-pointer-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "ee5afa89c6ed8ef76004bfd7699aeb8532bcc00a4fedb038fe83c9091860911f",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-void-pointer-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "0759b636fdc47456e0e09be1f5c62b1cbce4bb7c8d83d25cebfd17ba505da319",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-void-pointer#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "feba456a44a930fafc70cbbce043fe3e3a1f7cbfd428b85e156df9fb663b8b6a",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-void-pointer#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "47449cac56d73978b10b7f88b21d5c144cd780a6d54839e8c7970d67c8267f47",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-void-pointer#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "f64e8190290e7cbfe83407fbb10e15439863ded64f4f5f902338bd5bc56c19c5",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-void-pointer#4",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "b30b3cd78193d8399245e85119ed0a049f8e309cc6b943b0f93117436cfccbd3",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-void-pointer#5",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "6ead569985857edb88d1404e028cfe62d5cb22cb817a77745a645a6a4a94d338",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-void-pointer#6",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "acffcf7d7c14c006f235e022fdb914843cf45bb65bf4071ac0e0a9867d4bf25e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-malloc-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "d8b813abd5ba2bed0e240824d6350310ea99246e1500c398b02928cd6e92d1fe",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-malloc-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "eb1eb1a8e9b5e45b692a60557c10a15fc003d97f9b3fa97cc7ff28f46795e0d2",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-malloc-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "a110d0e2741bbff7106b935ee96ef2b9807f1ab5515fab2bc51661d4f9c9de20",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-malloc-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "5413353af61e664da4eb2a6c35faba4e5ae627d3b3aa6853d19897e61a8d0154",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-malloc-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "8cc5613b069388ed42f11ad9d7106ce99302b2174f683fc91f07a9c233c92c11",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-malloc-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "39d2390cdcc69ec7cb67df57858ae6122f869568422b90fa22baaa7ab5d4bac9",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-malloc-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "02c5c3469eed2baae0e86d60f4a1f56bb0d4bf1220120d680c908d2fa0401498",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-malloc-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "5b09c26e1484e6061fd344f611591bbbdbc3467e9c176cee20aae1d6a6532b20",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-malloc#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "351cb981c11febbc4b82d3422f629f8b7389c5b36632ae09002850a8f5ab4f5e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-malloc#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "c244e7efa75753788ecf220a6c264015513cef05c4427655f6e7a603a626e453",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-malloc#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "61383b286b2bd5564500ca07a5bbf00731d487da51519446ad72233622bba18a",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-malloc#4",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "99850e44e07ec8790f664c2b3f51a87adf95f92ef746aa737d6ae1fc911d13d0",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-malloc#5",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "f58db495cd7833436e2154908f25cdd48e24a6f7edf715dd625361b4ac3aff83",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-malloc#6",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "2b4b508a3e9f6671efef4b705712444a0fcd710207fc22d48f98a3c12fdd2d25",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-calloc-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "9b70ce19bd2c97618520a43a21faa7e0052ec9a41a6545da0805337202df98f3",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-calloc-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "be91e9379ae0239a88ca357b2c0f002ad93cb1ac1382813abe01a2dab24061c3",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-calloc-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "93d10ef0761ad1374e6785bffa2ae4f8e61e1a482b8f920b4bcdc541fed3aa17",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-calloc-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "ba8ed18c938e204dbe78a3d2f0cb96858f0683a9eee6925a8481d0c808cbaae9",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-calloc-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "5b49c4d308daaa3b35783d6dfb4fcfb1c31858c70218ba24eb4e63cec62e76d1",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-calloc-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "b63e36a8fcb45fc6e6c8a61430e304d876392947be6c28936e23571614045107",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-calloc-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "44f24e900bdbb62c36d4d31fa359e05d9933773510afa853d1957a9316e017ae",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-calloc-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "16c3f05927a21c46ddf82c682c26066e85583f7d3a8a5036419548deb4c3cb07",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-calloc#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "0604e5fe20e806d32c3715b0687b1829a69b5644c08ef47e551061cf27a39f24",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-calloc#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "f7a0e842c859f48b7e2af8a53123ac7f66975efa7dc2ae83736719738c7cc5a3",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-calloc#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "3a1acc1140bdfbf5d72f803063ed5641ce3a6c3f19560cffab141cb0e4b7b94e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-calloc#4",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "e07fe3b160c947958ffee96c43a9e6226802e4c13b400a7fa32bbb2d62688714",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-realloc-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "99e9926e6fa3f5e1b5e558bb55c406b65f60eb74a7628f43106b932bdc70656f",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-realloc-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "bece950c3321af8a7a4f76e91f3e0450a544c62cbf20edf6ee158a06539e1d7e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-realloc-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "37590c1d397e364a6c0d2d50010a6dd007f30a26a60d368af9cfa4f9c7d2fe23",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-realloc-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "bfdbcacd456e578c174594395c67b78a6aed19f4c5f99d2cbb8db48b635bcc85",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-realloc-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "65516b8d6e0b4a4e567ff71b22159ca5b12c0cb72a18c2a1b06d2d6dc9e932c3",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-realloc-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "07580a19412e4f1ad0accb8aa3c571a69786e69fc5b72bf6f32db8aaf2abd6e1",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-realloc-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "d2c09a0ce47c18b616dbe469b236b99a69e5929888927c401b7da6b79b02112c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-realloc-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "1499c1a11ecef3d28f0267afd69b621060e7df2b7d57c520a9c3f06ecb6ccb55",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-realloc-task-4",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "81989388cb0b831137c323123696ed3962ef67ae71e5f388667a125f13a46e60",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-realloc#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "e0afc8391083e0627c898d8fcf436252238473f813015c46efa66738e6d57c52",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-realloc#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "20aa6b00451fd30a122470a3b8df801c52a6a2c2b2308cc61d9b578d5fac4b1f",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-realloc#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "01e7148bed73ac3f2eb5cd52d241c51979bdba5229c72744183e9ba65c8bd53f",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-realloc#4",
+      "kind": "memory-example",
+      "mode": "sanitizers",
+      "fingerprint": "229be97d0f982d0e26f4dfbdf7e5e9a79bd0e51f202663212f11e9524f580195",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-free-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "43e3536435747bf08a046598f82a5da32cda9997189c45c841c79a5fa6c49107",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-free-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "8680ed96fee6faeae5ad444e896ccdd98216c8b2fe18985c1a4f16b6473ec52e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-free-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "9e5204a2ac6538353d6d9ad7348d703c3bb134d05ae0974885a93c842352ce85",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-free-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "4b9e8d729a7c6a1f5965e37b64cedaddd75e8d468eaa2248e92b37a89577283d",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-free-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "e5e7e25cc5dd8f7c5239908d89acd41dc65abcd333fa87a61d0dddc76fbd2461",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-free-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "4df20cef1081a14baecba247984d319f74b54d3bac7f81851dd5c38fd3c6ece8",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-free-task-3",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "2acc37d716bb59931c84b4545f6c2ea6691938c61a1fd1ede3b00a2966dd5c26",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-free-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "56a86ac325d107c6bac3a6f5452f26f9ef9a8e629e9eecf4344d5fa7d16e5dbc",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-free-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "c465bb3f99dba768c9edaa7ca7a10b75715963adc499633b0b2f5f671548f2b3",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-free#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "cfc4e1c2ca46f52583b299f6eb0eda631a9a824feabdce52fb2e3b93135cff5e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-free#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "13d160f7e0fd513392ac6dd00f64d866e822cc1dd11a5e5330669837a0ce2de0",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-free#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "1c7ca673fb89aa9a997718f21f3dc595870dda52263f345f18dc031b02a59939",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-dynamic-arrays-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "e545aad5095d5cf058333c1c8eff351a5e11bf471a375b5a9ea84d21697b711c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dynamic-arrays-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "7cf74842edddbf2a0addd4b93736f413b777785be7a2e6aa08abd223f13e902b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dynamic-arrays-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "74e119c9790a29eef61adca83a43f74e7a99b8988871bf8e8eed8de1b9cfda32",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dynamic-arrays-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "e17829efba91c6ba5d344b5c2d4cfb7befaaf84e90087c6433cc375dfe50743e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dynamic-arrays-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "71f2f4de44f57d56b28aa1142ec5046d26aea695764e38f9bc6d094068451169",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dynamic-arrays-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "0490dbe522f5d2d274914e0c1f427c21279b7bc7dd3eb61cf652c2089161a606",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dynamic-arrays-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "31d52aabff1a6d838c26acefcb4f6338e8889d3c456499ddaca1f05c492aeec6",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dynamic-arrays-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "cb74e1ae4bbee59c886db61dfe72c5c6a488994601fdaa0236dbe64c0cbf5a8f",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dynamic-arrays-task-4",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "34fc55b6fb53371e0aa7550a16e1f7ee4cc1ff70e7056f64be333bb842e268a6",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dynamic-arrays#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "5453f39ac0cfabdf42129946bf0e5777d75ddd1a7340e52d2b20d0b99393ddee",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-dynamic-arrays#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "dbd17024b5824d5454ef3eb38713f46107de57d4fd687a655cf3aea7dac4467c",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-dynamic-arrays#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "fff72584d8eb000b4e6c2084dc58ad9afc6118fca15eff451d8815279afcac24",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-memory-leak-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "aa31d747bcc6c10b398686faa53b30aacaa965e4f810f39e3b641b7dd5fee5ec",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-memory-leak-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "25d5e88a664a10a00fbfc55265322e990fda4caf30ed7f783562b5055262c94f",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-memory-leak-task-1",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "658d1a49254c0edb2d57a66293254c34abd039b0c79091af02ea0ae988dafe41",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-memory-leak-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "9b9586b8de353a66bdf5d702bafce9e327960598868dfcd6879bbcdb8a7beb25",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-memory-leak-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "aaf79e30fb15d0cbb0e5fa33623b7da0fa40d4992b8277a23b374a506f32f23a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-memory-leak-task-2",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "8e2c7d10bdcd4b2d24648fe77f96cf9a26a244e0b70b577e1dfb00d1ac731a16",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-memory-leak-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "1c5539f91d7bee33807a89f374caf611a6acf22c0e90001f79f977c1864823cc",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-memory-leak-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "dbd9837526bbeb89d9b59b4c603fd346ce99f12795925c7b99986049e24c039e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-memory-leak-task-3",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "593f94a20a0e31779ba554a45c20f4b0ae8c2bd6d2fca55c2b8e7f6ae31941e9",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-memory-leak-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "cba63395f2c8469c889dd59f48efef07a90b70ab203dcb41857a653be16a2d9a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-memory-leak-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "51878ee9e009610dea3e1697b4466685f28a12e29d9252b66df0a4de6a68b37c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-memory-leak#1",
+      "kind": "memory-example",
+      "mode": "sanitizers",
+      "fingerprint": "03114f9d7392d82a5779fa1ed43c0841b481ce7981b46aa9330220519af39f22",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-memory-leak#2",
+      "kind": "memory-example",
+      "mode": "sanitizers",
+      "fingerprint": "577a55bbeddf7d25d029e5073baf049779b9c8a2db1f24abc0f667fc59ac4c3e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-dangling-pointer-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "074a3d7e74ff5ff72cc1e7fe8ba2e71c686a9de808939e1137685c60ebfb366f",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dangling-pointer-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "0d38241bf252b45ac2151d50291a4d46eebf756ea9b94c3a9e247b17bb415678",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dangling-pointer-task-1",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "5912bfbdfcbeebebce4021ab0ce62f03f47f1ebdec1b8927e942a75067ff6b21",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dangling-pointer-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "2e5dec2c721f55dfc0ef7d96380c43864feb92053847d6a29a4732b1934bfa59",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dangling-pointer-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "63bc29cfcd40423a602b9bd7a1a9a4110b2a09bfecac58a84f26e822091af4f2",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dangling-pointer-task-2",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "b46884bb5e6914a3b8866597bc6d1202b5c72a4180bc1d44065361219b9801d0",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dangling-pointer-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "11167417f30dcab5198245b2cd683e3db174639b607d58486a91302f3f2c1c9c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dangling-pointer-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "a711996718ad1ecfa947b07a1e6eafc298fc07f9f4466e4af52fef52dad467c2",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dangling-pointer-task-3",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "c9ec8ccf291c06a89a4792a3aa92c647fabc8b71790b04713cf2a9b7dfb46afd",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dangling-pointer-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "0ed56523d030a88c391aa39d7b79d55a2a983c0de986ceddde8b874c0d05ecf1",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dangling-pointer-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "b670f0bfef22ac9d0178317b49a081823ac35344656618325f18322138b57512",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-dangling-pointer#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "71813f824011cbf1c01f5cc4d8ce0ec32834af4457f2e56458764d5657d60266",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-dangling-pointer#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "965817bd9dee30f43eae4e47bf78752d1fee6bc0a18c3f03e3006b2cbd71cb76",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-dangling-pointer#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "79636e2e1c339d855399614805d3a0afc2c6524213db472ae6da05fe0c5e036e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-use-after-free-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "3ba4fe143e8b5c03d588d717143a7c57cc9621b374a1b2c710ac0d414540064a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-use-after-free-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "fdb2999cb0ba2977809b0d8dad9d62a3f75e1325726fc1aded5062b27ba22820",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-use-after-free-task-1",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "662640494364877f3af4e03a13b40f8cd6456751bd3a1d969ae9e1f0ba76aed6",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-use-after-free-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "87ae3ba6b0ef1167845a025129224b5d66fc0936be10a0cb7e5f3d2425a3cffb",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-use-after-free-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "0ac54e9c9f6c7e2c5bc15d028053e030f8a57e54a2ba4ea78b071328f7ba3ab5",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-use-after-free-task-2",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "3ed965d7232d36c7d3c56fde0e3bd7f9959680e9991f83df0350f1360a5097b4",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-use-after-free-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "bb88c2a66e6875e2a9feedc56ca09afae9beb59d56705630a2bc2faa282a9d99",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-use-after-free-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "8356de65da2b53f2aa723baf8893c4d81769c2a11fe8940e8fc99de99d9b14e4",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-use-after-free-task-3",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "f7141be39b268d665717bb8135e39c2903f2e21d04a8385315a80a355d23e2ac",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-use-after-free-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "00f2915dacf8c07ac440af03a0d6ca0c715a3c93a35f807a6e57459db2d38c94",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-use-after-free-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "d3cbb03e32e484f1f022a3ce3e0f9657ca12f7d7f197641372f128d5261f7529",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-use-after-free#1",
+      "kind": "memory-example",
+      "mode": "sanitizers",
+      "fingerprint": "fa4b184a5092677b940a023c39a3521a546ce08b2c564d2421b8741a654293ae",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-double-free-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "a25352944fbe0ea5e931b65a264fb0e6cb682c9061dd5aef8f2cc590d7a414cb",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-double-free-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "e9afdab7fbd2a5262501064d5d4ae9938057ea89cfff22e3c2b5bd2108791c5b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-double-free-task-1",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "95538ab91a884b6dbe2827dd19a44ad2ab0e01f40659cccd024433bbf6d4ed90",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-double-free-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "ac29e1676152a3b602b2cb1baf8b62ff6bbc6c90d8a8bbad4e2a46fdbeeb16ef",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-double-free-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "0fa1986e8a1e8c6bedbc32319b1782b12713f223ed59f90c6e6d6f7e94eabc40",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-double-free-task-2",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "3d55695eb44a3c3e466dbf7f4bd1fae5aca174f2be51612050ae08274c5711ca",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-double-free-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "6d2d855aa994c56bc5aaf6e196ed6edca11aeb456f2028148abda0ed7e9ca518",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-double-free-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "b9cdf762773015334191847929ac8a7c4a2d7f843b8a253438e3bfa1b6783af1",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "memory-double-free-task-3",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "75e9e921eab054a4587a0e1c7c64271fb191999617aef7f0363e28ccac374a02",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-double-free-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "f837196b6d79d271600583dcbf978a9f823f8f8a93277db3ee62e3d318181e15",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-double-free-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "6318e85e94cef3fb23b63c114f74f075958eab2461d41be2aae6b7d7f2a9df82",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-double-free#1",
+      "kind": "memory-example",
+      "mode": "sanitizers",
+      "fingerprint": "08a8bfd53a19c85093c0d79486f19a835efbd90974908d0b5844f18be06755aa",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-double-free#2",
+      "kind": "memory-example",
+      "mode": "sanitizers",
+      "fingerprint": "b0160206e4d7544ae9c5fd3f3cff11289df0f42ce3dc05a6b5a7f8ce63a6867e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-double-free#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "62f1707e8df6e812f2e4662d8fcea2a7bdffbd8fb3d1c8413431f3a99b649a9d",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-double-free#4",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "1c28f97f16054211960ea7a1d1b81420a7bad480fb9ec7c9e415e2486f3c2e81",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-buffer-overflow-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "45dcaefd351c2fba0f5fbd1ba49e04b819ab3414098612a1b02e1ce64d461a75",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-buffer-overflow-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "40df1dfdb03f33b8822ac68a6306e9f55b86fb5c319d92b4c74e0d1d607349db",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-buffer-overflow-task-1",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "8e8385fd3caec4cbb71a734f465b86f83ccf526abfa07b6f277b3f032c63711c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-buffer-overflow-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "e2a3ae36c1efc336ac15cfa3240a22b12232aa7cc6b2208788f5cc9dec769e3b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-buffer-overflow-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "e08e4b2e4b6961787cb5844ee354ad46262aada467958b08845ae623eaf197de",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-buffer-overflow-task-2",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "edbfdb747b664258f6aac881fed7849dca409c8a8889ead7ecf18a3ae2c593ba",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-buffer-overflow-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "aed1d35a4e0267c853590d0e585ec3acfc175a3b17a0bb10a053ebc2984b86bf",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-buffer-overflow-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "9b6ced3a17588caff6cbfdaa0d5cf577b160c761e8858eeeaeee4434cd3fde1e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-buffer-overflow-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "aca322b0ce244adfb91a5f0f012def606b24a5d1f58b4b6abdda6febfcaf1898",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-buffer-overflow-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "2f651854f90ee6b8d89d16f4ca8455f3a3a1edab6262fb050ad1b180a005cbc3",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-buffer-overflow#1",
+      "kind": "memory-example",
+      "mode": "sanitizers",
+      "fingerprint": "2bb4be0ddc7f576b54cea8b3abf3baeed4a3a44e834b7cf1cce2ee3bf2aa14aa",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-buffer-overflow#2",
+      "kind": "memory-example",
+      "mode": "sanitizers",
+      "fingerprint": "372fd527409264cd2a1d3dac95c1f82b454d317d45891ca0191063b0fbdc0e07",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-buffer-overflow#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "1514e6399e3067addceff30c7edfd66ff8994dcf785dd85624d4526722d9b8ab",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-buffer-overflow#4",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "add03227b201968b9852a8edd7ec3dd91471d8bfcf057401341d62292e0c315e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-buffer-overflow#5",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "234b2ebf12d75424e5ba673f6619ef5421584870c9661c0e7fc6c6aa4eed970e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-out-of-bounds-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "4d875b7f8756af47e2bf2c5d0ba49f19500498162b1c34e4a70070f1041965bf",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-out-of-bounds-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "6d3eedbfaa6961e578268d96ca24f29815c00ef8e5b491640dcf92f8c3fc98d3",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-out-of-bounds-task-1",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "41dbfda595dbc7164fed613de7d7963ab8755d90dc3d326cca90ba854bbc32bd",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-out-of-bounds-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "5137e6cf30aee9545baab7cb11d5d6f01e7eebe303552c7c45aff657d4b2feaf",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-out-of-bounds-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "9efa9a141b41b0a5e6d30e10dc51f957f5131306a79a77a15aaa0fdad95ec084",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-out-of-bounds-task-2",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "01669f332e4dfee85f85568c975185dacb2093605d0a20d816aa11783c30eb6c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-out-of-bounds-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "328209c9eec22d3f0aed15ec549c697c08ba14f9135466922b7ecd47f0bde213",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-out-of-bounds-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "2fe970aae450e54d5c45c7afade79374012c81bb67504148695ce410acf774e3",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-out-of-bounds-task-3",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "5465907b87e01ce63544894bb5e85ac3d7eaabb9c78a1b4d9aacf5e519dc218a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-out-of-bounds-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "46ddcf00109db1122c7e84b06b61ab7989309f0ec26d6a3e3dbe51dd3c3e10de",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-out-of-bounds-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "406eaaac1ccdb4b4f97a766b82a44cb4ccca3f533ba64f966d1a9e7a801112bc",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-out-of-bounds#1",
+      "kind": "memory-example",
+      "mode": "sanitizers",
+      "fingerprint": "9262e2d45d3e302d2d44074bf412303c1aebd814ed66c0640294bed6904e753b",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-out-of-bounds#2",
+      "kind": "memory-example",
+      "mode": "sanitizers",
+      "fingerprint": "f3927e83dd5b647af68cbd8beb8ca7aafb59271a524fa156c65f90eeecb99c8d",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-out-of-bounds#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "d6717a52513352ff43e1db08f32a15bf61f41f7d292f1a71198fe3648cbfcf7f",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-undefined-behavior-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "9421d67866b1308924b3d1c783bd30f3936088b67d5313f8e4cfc0bca90ca793",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-undefined-behavior-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "146432510763ca654fe506d6bb5e89e43551fda81d30d2afc8b380e17dc928e7",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-undefined-behavior-task-1",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "1cd888a2c5624452217d3357d5d02bee143a2cae5f61d1a17f7d701bf1d5cf6a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-undefined-behavior-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "134eb659466d5790f5df043d8ec6e69acb330907ab0ec5eac8cabb032ca7fb53",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-undefined-behavior-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "4d5e73f748aa8768475f3b6be398d019bc326b36a63efd622d67114f88a1a195",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-undefined-behavior-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "06a7508cf4c4a9cadf19597c3b519f2a87ac3bebc5aab9decebf48967bd41540",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-undefined-behavior-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "d25a44d3830485b8d3c38f80de011e1a7c3c3e21c7565a7d986b982ca1694283",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-undefined-behavior-task-3",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "46939066e1c407a11ad5064c0aed971d0c84c0a130e36a6d48aecaaa18dbe2f0",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-undefined-behavior-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "93953269e00ddf952f14e52a716fdc00f203dd7f2bd9d18476c5edfc3176f4d4",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-undefined-behavior-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "6ac39293821904bcf73e4a9b89ac598e7f473a77b15e538b1258dfd3f8e9bba5",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-undefined-behavior-task-4",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "aff5736d9e62256bcff6e879a02dc1ee1d8c0023783725218c825030f9d4fd4b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-undefined-behavior#1",
+      "kind": "memory-example",
+      "mode": "sanitizers",
+      "fingerprint": "829a568c877d4b0e71cd7ee7865f117036bd0b9287b682dc39bc5c9040afed10",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-undefined-behavior#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "6dd1c1c78d10efb1aee6ddf40d0fc8a07a7b43d2e868b6ba504bb1310e6811d2",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-undefined-behavior#3",
+      "kind": "memory-example",
+      "mode": "sanitizers",
+      "fingerprint": "14a7b0d3436ef9d2e880a67ae57e1ece59e2aa0803422e6cd1913b1c3bd4d990",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-alignment-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "9174cbb57b6c41f2ec83ef1aa3a0c94260361cea2efd271d8265b763afac1995",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-alignment-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "83f670feb5aec8e26a2ce440016720404f1853e5367ae445e5897d0c52003765",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-alignment-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "eb573e8c28b747da1190c00ccdf4f20f547ea4b50a93c1dc2c17cb43ff9c133d",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-alignment-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "9f57cc6fcf1442fe64b28c7631d0feb03153a3c939cef47247f2129aa2975ad3",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-alignment-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "5774b5d0680316e9fc8ad8b488c54c623c1d8c0da9077f949361ef2c1bb8af3c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-alignment-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "100244a5358b8dc924bcaa3c324d6d100bf88e3ef4d5a68916cc9734c755171d",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-alignment-task-3",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "7ba520a81cdeb9e398545c9baa4c3ea40d52ebd592a5fb53e94f20bf2a460aa8",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-alignment-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "5ef035db63287879a47ef48b5006a64b7fd014259e5e4e163851e19088b6fa27",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-alignment-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "0c709e4ee9f29957605340170b58316cd5b6d7733c6fade7fcf753403c09afeb",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-alignment#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "7e11296017be79a02ebb97989d6e38eb52ff37eb2c02f0d510de0da84ece544f",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-alignment#2",
+      "kind": "memory-example",
+      "mode": "sanitizers",
+      "fingerprint": "c2f9bf51c2fe57871b870f2a20824868f5157d1553dd7f18e9d7fb378989b559",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-alignment#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "3942b6b84471306991f115d649b410a1445820acba47c9b07de642b35fb54d77",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-alignment#4",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "efa217531cd4fd45e2826075ec727371bdd4a0f74fbb19d141e4da885111fab1",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-alignment#5",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "0337384fab51138842c6a379296c9b57cc4a09e6c1bb3a0c989b8ec259c6da3d",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-padding-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "dae903f56dc0832a56147b481ddefd04d8d6087ba5c3ea19b4d0af2f52b7ee77",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-padding-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "f92caf32b8d2283d40444dc943ae389472bb2a14bd342a534ff08af4a87b48b7",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-padding-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "bc9d0819788b9113a214dcde040fbf263e72be87161599824bfa41ba4c85b45e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-padding-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "86c954d7980a1853b2c67f7c2a55a9bc3b1692c53592e5de98e1f3901997371f",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-padding-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "2d860fb4d6fd338843d249e8777c3c93532ff12df7bcc08057ec65b0d44ea369",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-padding-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "d5b3d0078047d5460b20b51c6dfd7508c57d4692118ce45d223b46a9b2b0c6a2",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-padding-task-3",
+      "kind": "negative-control",
+      "mode": "valgrind",
+      "fingerprint": "43ded11693ef843fa32b230062049bf1e2800c91a67eacb4d6ba95980707fad4",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-padding-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "b05ae30d8fb1de55334435f5b6ec329c874e8b431be0e82bff2b89d9d77e5330",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-padding-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "69e1dc92f70d65a2d00b9b2e6426bfb88cab510455a8d668913d466143f1e409",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-padding#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "2798dc1719ccf96b2f5a9ddad2483ec55758e1cc027a05e781ffb0feac2e2dff",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-padding#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "e1c11f45712e86515303241a643c3bd617f9196f4ac87ea5d54138adb4232468",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-padding#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "cd8df0d5947c31336c0f2e7eb6d6224d00c1c73f8ed1dbd450027d40bcec3e8c",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-padding#4",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "45ee768fce5829c69920246651032bc2e8e95962019a9a499a7f5f6ba3f6c4fd",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-endianness-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "197499aff6ff396950ffaa79943b3268fb88bea81490584d3783762c9e2c36a9",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-endianness-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "70409fb616fb1aec210eea2246872987ef621eede291836e7470efdaf92040b7",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-endianness-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "c5a47ad96aea8c25321b2bd5fa3c061f395f95be6bfbc3316624decdb5677013",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-endianness-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "a0dbc24b4df7de5383ab77dec8dd7099951140be2443df1cf6f160bb382c5fae",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-endianness-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "72dcd0136d493fbb5762b016a0c9447e57230d8d34123f17bff611d1c805aeeb",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-endianness-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "b52c60b13fa77db8f0dfd7b1150da132abde09fb0a0398b57b79f64fc59fc89c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-endianness-task-3",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "7e358e8dd58d3bb5a98280fd1d38b32e043dd75a95d36f05107985ef12d0313a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-endianness-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "a0c5f57b3350b2a3be579230af9893b9b4fa1d8e8dbed3b86b5bfca78710b6a3",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-endianness-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "e7e352ef4166bfb5f4e743fd160533841a1bca80e17dcc159993b71c6b3cbcff",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-endianness#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "abcc3609c25dd1f8e4101924ca67fac710b5ec6a584cd2fc8f6a6b96f4c3cd38",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-endianness#2",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "9a920e52af8f6882add761d2bb265ee66b31bf36b4f052f2022c7c6852369aba",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-endianness#3",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "d477e10b633a162732527afbe73e55004f707ac0ab928648ee710b127086ffb7",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-address-sanitizer-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "f04b6daf52886d81633b240f3583f35b3b401f906cd3a73c553748dda243c4a9",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-address-sanitizer-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "1302d477559fdcfbe39d6cb00b4975310fa52775011c545143926f15e3076273",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-address-sanitizer-task-1",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "07bc8491e5dad457b8d7513668a641b070ef32b62bee153f6a6758981eae778a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-address-sanitizer-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "dd7ba70708edef858b001bf9216ec119ded1355b38147a05949a4b38d4641e9b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-address-sanitizer-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "5e7e0cb534ebd304501bad89170154e7f6f2bd470ea033b192a175c7afe57cc2",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-address-sanitizer-task-2",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "d73fba7c7afbcffb74bd0074ac096c292f9c7737f7d49edb942beba55274be0e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-address-sanitizer-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "772420eb2888588d64ec47d4cb30cc3a511f8d3f0627a04e798ab7e7782c9ef4",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-address-sanitizer-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "369454682d4c085e8dc8b33e985f26a3a68ae5bc03e975f57783521d84081bdd",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-address-sanitizer-task-3",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "f6f86ee7e6c4e280f75aee5e8e244e3b3f5530ff64e88e2fa64a5786b6239aef",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-address-sanitizer-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "41d45b3de022e760316d1c7226fd13c1dec4926ceb24a466da10b46fa1f59a5f",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-address-sanitizer-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "eee86625ebec361578636a20a8aa459e9713b28f9f5f24e07df3c13f7f7da75a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-address-sanitizer-task-4",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "27d0f2d04775e93f548accb44403278b9c2e199b89947e98acf0a159fe52f47c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-address-sanitizer#1",
+      "kind": "memory-example",
+      "mode": "sanitizers",
+      "fingerprint": "b9254f00a7cf88b8b61b5b6562e9263e23b4cacc3fd09d948c7b3305467570ea",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-valgrind-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "4a65a1e95adeda81f9af1c3cbd41d5c1cc1fe3d653c520185b6b100cffe911a3",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-valgrind-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "d5704f813f88c0e060bcba333e973f3ae369ed0186f736d5875c9de12fdb5303",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-valgrind-task-1",
+      "kind": "negative-control",
+      "mode": "valgrind",
+      "fingerprint": "0b8881d464ba9b3f62f74fd3a5711f8144d8ab9108aebf423ba9609cd0fb212d",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-valgrind-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "57cce721c2707a850ccbc6ba3a31a2606b0b4f9934022f5859320ffc9a07a95d",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-valgrind-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "b34d48cc9300ff57619d361552daa8c931e2bf0a0c3c59871b641f1717c32092",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-valgrind-task-2",
+      "kind": "negative-control",
+      "mode": "valgrind",
+      "fingerprint": "deb66eb6764cdbd25a275161455087c906464ecb01cd933fd967adc7612f71a5",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-valgrind-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "787c6a1d2513354ba9d8216a05a1f2a3ec44b3d3d7adf49f44153fbc341b6b78",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-valgrind-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "b19e488ed025edc873321f85f3cb74175f63255eace2d930b63861e1d41cd64b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-valgrind-task-3",
+      "kind": "negative-control",
+      "mode": "valgrind",
+      "fingerprint": "d31c776649f524ed8818645de01ac2c0c561e890b7c3ec1541f05c6e582b6a28",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-valgrind-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "5bc11a33b3b1d861843325ae94d7219a53d1efa3f148b83f6336c87b1e43cc74",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-valgrind-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "166b8edfcb2b00152f1dfe21681b9987bdbace0e506dd96b7ca68a306b0530b5",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-valgrind-task-4",
+      "kind": "negative-control",
+      "mode": "valgrind",
+      "fingerprint": "65431bb4a9cce8c30f0abe57d2517d1dcfe4cfdf6f1473409ef18dad42e96bc8",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-valgrind#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "80cc77e08da357ddc37e0f5c97b77468576ebb5f6768d802ac7f633beb92f739",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "memory-debugging-memory-task-1",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "6405cf774181ccbbde4eaa9fbfe95f0bdc28f66d89f32cba8f658649c3ae69c9",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-debugging-memory-task-1",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "2edb11719aaa3398178457bb435850d4061994f97dd818edf54b50d3a7947868",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-debugging-memory-task-1",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "4bfdbbd3be410f9f82386a8981c2f8165e01214ebcb84143688dc5436ad193e7",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-debugging-memory-task-2",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "382468187fde15b9caef0579d97071518aeb63602ee31516720614e152ed5fa2",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-debugging-memory-task-2",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "da09323833f3540b4acaab15a29aee8e11b64e28b826587893c556df3137472e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-debugging-memory-task-2",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "dd1bd7ff5aca746c384f6e590b96b5ba9c895b642b4604085295471838820dae",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-debugging-memory-task-3",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "410d7d5490c12ed895dc56fe8949754babfab99cd5b9ed2028e90014ea0b0941",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-debugging-memory-task-3",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "05e2a6eb8b2aa12d88439bd888e45f35c9c9abaf5d33f6c400b90a0a60590e3f",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-debugging-memory-task-3",
+      "kind": "negative-control",
+      "mode": "sanitizers",
+      "fingerprint": "6a8ce0f9bfc5eeeb45abc2d95283b2d59cd475af29eef8194eda78c957a4e99e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-debugging-memory-task-4",
+      "kind": "solution",
+      "mode": "sanitizers",
+      "fingerprint": "f4ca49be7a53b9300eb220555ffe58d305abc6b3b8ff026a335a0e91e80d2ee3",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-debugging-memory-task-4",
+      "kind": "solution",
+      "mode": "valgrind",
+      "fingerprint": "5bd968c04af19b11c9a5c225901c3d1767c52f684425446455f76889ceacd72c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "memory-debugging-memory#1",
+      "kind": "example",
+      "mode": "sanitizers",
+      "fingerprint": "68ff6b1708fc4ed84dacbb2aba21a893e2ca8ada4b9ce3a659499ddf3b3805f3",
+      "ok": true,
+      "tests": 1
+    }
+  ]
+}

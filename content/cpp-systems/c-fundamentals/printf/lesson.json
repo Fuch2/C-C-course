@@ -1,0 +1,592 @@
+{
+  "id": "c17-printf",
+  "title": "Вывод на экран: printf",
+  "description": "Строка формата и спецификаторы %d, %c, %s, %%, ширина поля, выравнивание, ведущие нули и знак числа.",
+  "moduleId": "c-fundamentals",
+  "order": 2,
+  "difficulty": "beginner",
+  "estimatedMinutes": 40,
+  "prerequisites": ["c17-structure"],
+  "objectives": [
+    "Подставлять значения в текст с помощью спецификаторов",
+    "Печатать знак процента и несколько значений в одной строке",
+    "Выравнивать числа по ширине поля, дополнять нулями и печатать знак",
+    "Распознавать предупреждения о несоответствии спецификаторов и аргументов"
+  ],
+  "tags": ["C17", "printf", "Вывод", "Форматирование"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-printf-task-1",
+    "title": "Пример в одну строку",
+    "description": "Заготовка читает два целых числа `a` и `b`. Напечатайте пример сложения в виде:\n\n```text\na + b = s\n```\n\nгде вместо `a` и `b` стоят прочитанные числа, а вместо `s` — их сумма. Отрицательные числа печатаются как есть, например `5 + -3 = 2`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf(\"%d %d\", &a, &b);\n    // Напечатайте пример сложения.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "2 3",
+        "output": "2 + 3 = 5\n"
+      },
+      {
+        "input": "5 -3",
+        "output": "5 + -3 = 2\n"
+      }
+    ],
+    "constraints": ["−100 000 ≤ a, b ≤ 100 000.", "Вокруг + и = ровно по одному пробелу."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "В строке формата будет три спецификатора %d.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "printf(\"%d + %d = %d\\n\", a, b, a + b);",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "2 3",
+        "expected": "2 + 3 = 5\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "5 -3",
+        "expected": "5 + -3 = 2\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "0 0",
+        "expected": "0 + 0 = 0\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "-7 -8",
+        "expected": "-7 + -8 = -15\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "100000 100000",
+        "expected": "100000 + 100000 = 200000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "-100000 100000",
+        "expected": "-100000 + 100000 = 0\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "1 -1",
+        "expected": "1 + -1 = 0\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "12 345",
+        "expected": "12 + 345 = 357\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "-5 0",
+        "expected": "-5 + 0 = -5\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf(\"%d %d\", &a, &b);\n    printf(\"%d + %d = %d\\n\", a, b, a + b);\n    return 0;\n}\n",
+    "solutionExplanation": "Строка формата повторяет образец вывода, а на месте чисел стоят спецификаторы `%d`. Значения передаются в том же порядке: `a`, `b` и выражение `a + b`, которое printf получает уже вычисленным.\n\nОтдельно обрабатывать отрицательные `b` не нужно: `%d` сам печатает минус.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-printf-task-2",
+      "title": "Часы",
+      "description": "Заготовка читает число `t` — сколько минут прошло с полуночи. Напечатайте время в формате `ЧЧ:ММ`, где часы и минуты всегда записаны двумя цифрами.\n\n**Пример:** 425 минут — это 7 часов 5 минут, вывод `07:05`.\n\nЧасы — это `t / 60`, минуты — `t - часы * 60`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int t;\n    scanf(\"%d\", &t);\n    // Вычислите часы и минуты и напечатайте ЧЧ:ММ.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "425",
+          "output": "07:05\n"
+        },
+        {
+          "input": "0",
+          "output": "00:00\n",
+          "explanation": "Полночь: оба числа дополняются нулями."
+        }
+      ],
+      "constraints": ["0 ≤ t ≤ 1439.", "Формат строго ЧЧ:ММ с ведущими нулями."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сначала вычислите две переменные: hours и minutes.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Спецификатор %02d печатает число минимум двумя символами и дополняет его нулём слева.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "425",
+          "expected": "07:05\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0",
+          "expected": "00:00\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1439",
+          "expected": "23:59\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "60",
+          "expected": "01:00\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "59",
+          "expected": "00:59\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "600",
+          "expected": "10:00\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "725",
+          "expected": "12:05\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "61",
+          "expected": "01:01\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "1380",
+          "expected": "23:00\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int t;\n    scanf(\"%d\", &t);\n    int hours = t / 60;\n    int minutes = t - hours * 60;\n    printf(\"%02d:%02d\\n\", hours, minutes);\n    return 0;\n}\n",
+      "solutionExplanation": "Целочисленное деление `t / 60` даёт полные часы, а `t - hours * 60` — оставшиеся минуты. Ширина 2 с флагом `0` превращает `7` в `07` и `5` в `05`, а двузначные числа оставляет без изменений.\n\nПроверьте граничные случаи: полночь `0` → `00:00` и последняя минута суток `1439` → `23:59`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-printf-task-3",
+      "title": "Чек",
+      "description": "Заготовка читает цены трёх товаров: хлеба, молока и сыра (целые рубли). Напечатайте чек из четырёх строк. Цена занимает поле шириной 5 символов с выравниванием вправо, затем два пробела и название:\n\n```text\n   45  Хлеб\n   89  Молоко\n  520  Сыр\n  654  Итого\n```\n\nВ последней строке — сумма трёх цен.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int bread, milk, cheese;\n    scanf(\"%d %d %d\", &bread, &milk, &cheese);\n    // Напечатайте чек.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "45 89 520",
+          "output": "   45  Хлеб\n   89  Молоко\n  520  Сыр\n  654  Итого\n"
+        },
+        {
+          "input": "1 1 1",
+          "output": "    1  Хлеб\n    1  Молоко\n    1  Сыр\n    3  Итого\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ каждая цена ≤ 9999.",
+        "Формат каждой строки: число в поле ширины 5, два пробела, название."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Строка формата для первой строки: \"%5d  Хлеб\\n\".",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сумму удобно посчитать в отдельной переменной total.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "45 89 520",
+          "expected": "   45  Хлеб\n   89  Молоко\n  520  Сыр\n  654  Итого\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 1 1",
+          "expected": "    1  Хлеб\n    1  Молоко\n    1  Сыр\n    3  Итого\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "9999 9999 9999",
+          "expected": " 9999  Хлеб\n 9999  Молоко\n 9999  Сыр\n29997  Итого\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "100 2000 30",
+          "expected": "  100  Хлеб\n 2000  Молоко\n   30  Сыр\n 2130  Итого\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "9 99 999",
+          "expected": "    9  Хлеб\n   99  Молоко\n  999  Сыр\n 1107  Итого\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1234 1 4321",
+          "expected": " 1234  Хлеб\n    1  Молоко\n 4321  Сыр\n 5556  Итого\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "50 50 50",
+          "expected": "   50  Хлеб\n   50  Молоко\n   50  Сыр\n  150  Итого\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "9999 9998 1",
+          "expected": " 9999  Хлеб\n 9998  Молоко\n    1  Сыр\n19998  Итого\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "10 100 1000",
+          "expected": "   10  Хлеб\n  100  Молоко\n 1000  Сыр\n 1110  Итого\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int bread, milk, cheese;\n    scanf(\"%d %d %d\", &bread, &milk, &cheese);\n    int total = bread + milk + cheese;\n    printf(\"%5d  Хлеб\\n\", bread);\n    printf(\"%5d  Молоко\\n\", milk);\n    printf(\"%5d  Сыр\\n\", cheese);\n    printf(\"%5d  Итого\\n\", total);\n    return 0;\n}\n",
+      "solutionExplanation": "`%5d` выравнивает числа по правому краю поля из пяти символов, поэтому единицы, десятки и сотни оказываются друг под другом. Названия стоят после чисел: русские буквы занимают по два байта, и выравнивать их через `%-Ns` было бы неудобно.\n\nМаксимальная сумма 9999 · 3 = 29997 — пять цифр, поэтому поле ширины 5 подходит и для итога.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-printf-task-4",
+      "title": "Прогресс",
+      "description": "Заготовка читает два числа: `done` — сколько задач решено и `total` — сколько задач всего. Напечатайте строку прогресса:\n\n```text\nГотово: 3/4 (75%)\n```\n\nПроцент — целая часть от `done * 100 / total`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int done, total;\n    scanf(\"%d %d\", &done, &total);\n    // Напечатайте строку прогресса.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "3 4",
+          "output": "Готово: 3/4 (75%)\n"
+        },
+        {
+          "input": "1 3",
+          "output": "Готово: 1/3 (33%)\n",
+          "explanation": "100 / 3 = 33 — дробная часть отбрасывается."
+        }
+      ],
+      "constraints": [
+        "1 ≤ total ≤ 1000, 0 ≤ done ≤ total.",
+        "Знак процента печатается сразу после числа."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сначала умножьте на 100, потом делите: done * 100 / total. Если делить первым, получится 0.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Знак процента в строке формата записывается как %%.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 4",
+          "expected": "Готово: 3/4 (75%)\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 3",
+          "expected": "Готово: 1/3 (33%)\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0 5",
+          "expected": "Готово: 0/5 (0%)\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "5 5",
+          "expected": "Готово: 5/5 (100%)\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1000 1000",
+          "expected": "Готово: 1000/1000 (100%)\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1 1000",
+          "expected": "Готово: 1/1000 (0%)\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "999 1000",
+          "expected": "Готово: 999/1000 (99%)\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "2 3",
+          "expected": "Готово: 2/3 (66%)\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "7 9",
+          "expected": "Готово: 7/9 (77%)\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int done, total;\n    scanf(\"%d %d\", &done, &total);\n    int percent = done * 100 / total;\n    printf(\"Готово: %d/%d (%d%%)\\n\", done, total, percent);\n    return 0;\n}\n",
+      "solutionExplanation": "Порядок операций важен: `done / total` при `done < total` даёт 0 из-за целочисленного деления. Поэтому сначала умножаем на 100: `3 * 100 / 4 = 300 / 4 = 75`.\n\nВ строке формата `%d%%` — это число и сразу за ним знак процента. Одиночный `%` перед `)` компилятор принял бы за начало спецификатора.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-printf-task-5",
+      "title": "Изменение температуры",
+      "description": "Заготовка читает две температуры: вчерашнюю и сегодняшнюю. Напечатайте изменение со знаком:\n\n```text\nИзменение: +3\n```\n\nЕсли стало холоднее, знак минус: `Изменение: -4`. Если температура не изменилась — `Изменение: +0`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int yesterday, today;\n    scanf(\"%d %d\", &yesterday, &today);\n    // Напечатайте изменение со знаком.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "5 8",
+          "output": "Изменение: +3\n"
+        },
+        {
+          "input": "2 -2",
+          "output": "Изменение: -4\n"
+        }
+      ],
+      "constraints": ["−60 ≤ температуры ≤ 60."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Изменение — это сегодняшняя температура минус вчерашняя.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Флаг + в спецификаторе %+d печатает знак и у положительных чисел, и у нуля.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5 8",
+          "expected": "Изменение: +3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2 -2",
+          "expected": "Изменение: -4\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "7 7",
+          "expected": "Изменение: +0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "-60 60",
+          "expected": "Изменение: +120\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "60 -60",
+          "expected": "Изменение: -120\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "0 1",
+          "expected": "Изменение: +1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "-10 -15",
+          "expected": "Изменение: -5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "-3 0",
+          "expected": "Изменение: +3\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int yesterday, today;\n    scanf(\"%d %d\", &yesterday, &today);\n    printf(\"Изменение: %+d\\n\", today - yesterday);\n    return 0;\n}\n",
+      "solutionExplanation": "`%+d` печатает знак всегда: `+3`, `-4`, `+0`. Без флага положительное изменение выглядело бы как `3`, и было бы непонятно, потеплело или похолодало.\n\nПорядок вычитания определяет знак: `today - yesterday` положительно, когда сегодня теплее.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-printf-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%d-%d\\n\", 3, 4 * 2);\n    return 0;\n}",
+        "explanation": "Первый %d заменяется на 3, второй — на значение выражения 4 * 2 = 8. Дефис между ними — обычный текст строки формата.",
+        "type": "text",
+        "answers": ["3-8"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа? Пробелы важны.",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    printf(\"[%4d]\\n\", 42);\n    return 0;\n}",
+        "explanation": "Ширина поля 4, число занимает 2 символа, поэтому слева добавлены 2 пробела.",
+        "type": "text",
+        "answers": ["[  42]"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%03d\\n\", 7);\n    return 0;\n}",
+        "explanation": "Флаг 0 заполняет поле нулями: ширина 3, число 7 — получается 007.",
+        "type": "text",
+        "answers": ["007"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%d%%\\n\", 50);\n    return 0;\n}",
+        "explanation": "%d подставляет 50, а %% печатает один знак процента.",
+        "type": "text",
+        "answers": ["50%"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа? Пробелы важны.",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    printf(\"[%-4d|%4d]\\n\", 5, 5);\n    return 0;\n}",
+        "explanation": "%-4d выравнивает по левому краю (пробелы справа), %4d — по правому (пробелы слева).",
+        "type": "text",
+        "answers": ["[5   |   5]"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Что не так в вызове printf(\"%d %d\\n\", a); ?",
+        "explanation": "Число спецификаторов должно совпадать с числом значений. Компилятор предупредит, что %d ожидает подходящий аргумент типа int.",
+        "options": [
+          "Второму %d не хватает значения: напечатается непредсказуемое число",
+          "Ничего: второй %d просто не напечатается",
+          "Нужно писать %%d",
+          "printf не умеет печатать два числа"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Какие вызовы напечатают ровно 05? Выберите все.",
+        "explanation": "%02d дополняет нулём, \"0%d\" печатает ноль как текст. %2d дополняет пробелом. Запись 05 в коде — это просто число 5, и %d напечатает 5.",
+        "type": "multiple",
+        "options": [
+          "printf(\"%02d\", 5)",
+          "printf(\"0%d\", 5)",
+          "printf(\"%2d\", 5)",
+          "printf(\"%d\", 05)"
+        ],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q8",
+        "question": "Что напечатает printf(\"%5d\", 1234567)?",
+        "explanation": "Ширина поля — минимальная. Число, которое длиннее поля, печатается целиком.",
+        "options": ["1234567", "12345", "34567", "Ошибку"],
+        "correct": 0
+      }
+    ]
+  }
+}

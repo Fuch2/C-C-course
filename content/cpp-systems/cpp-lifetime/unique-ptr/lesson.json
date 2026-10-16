@@ -1,0 +1,238 @@
+{
+  "id": "lifetime-unique-ptr",
+  "title": "std::unique_ptr — исключительный владелец",
+  "description": "unique_ptr<T> хранит исключительное владение объектом и вызывает deleter при разрушении или reset.",
+  "moduleId": "cpp-lifetime",
+  "order": 18,
+  "difficulty": "advanced",
+  "estimatedMinutes": 75,
+  "prerequisites": ["lifetime-rule-of-zero"],
+  "objectives": [
+    "Различать get, reset и release по последствию для владения.",
+    "Проследить на MemoryDiagram момент, когда сохранённый адрес становится висячим.",
+    "Диагностировать use-after-free после reset и исправить порядок операций."
+  ],
+  "tags": [
+    "C++20",
+    "время жизни",
+    "управление ресурсами",
+    "std::unique_ptr — исключительный владелец",
+    "диагностика",
+    "исправление ошибок",
+    "Использование после освобождения (use-after-free)"
+  ],
+  "published": true,
+  "standard": "c++20",
+  "completion": "practice",
+  "exercise": {
+    "id": "lifetime-unique-ptr-diagnose",
+    "title": "1. Диагностика: Использование после освобождения (use-after-free)",
+    "description": "Сначала диагностируйте четыре независимых фрагмента по номерам 0–3; не исполняйте их. solve(a,b) принимает номер фрагмента a; b не используется. Верните код первичного дефекта: 0 — безопасно в показанных границах; 1 — double delete; 2 — use-after-free; 3 — dangling reference при возврате; 4 — нарушение заявленного договора заимствования; 5 — цикл сильного владения; 6 — move constructor оставил двух владельцев. Для 4 и 6 выбирайте причину, а не последующий double delete. В комментарии к решению укажите строку, событие окончания жизни и владельца. После проверки диагноза перейдите к заданию 2 и исправьте исходник.\n\nФрагмент 0:\nauto p = std::make_unique<int>(5); int* raw = p.get(); p.reset(); int v = *raw;\n\nФрагмент 1:\nauto p = std::make_unique<int>(5); int v = *p; p.reset();\n\nФрагмент 2:\nauto p = std::make_unique<int>(5); auto q = std::move(p); int v = *q;\n\nФрагмент 3:\nauto p = std::make_unique<int>(5); std::unique_ptr<int> q(p.get());",
+    "difficulty": "advanced",
+    "language": "cpp",
+    "standard": "c++20",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "solve(0, 0)",
+        "output": "2\n",
+        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+      },
+      {
+        "input": "solve(1, 0)",
+        "output": "0\n",
+        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+      }
+    ],
+    "constraints": [
+      "Аргумент a — номер фрагмента 0…3; b=0. Возвращайте код 0…6 согласно условию.",
+      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
+      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
+    ],
+    "hints": [
+      {
+        "id": "owners",
+        "order": 1,
+        "text": "Не исполняйте фрагменты. Для каждого найдите объект, чьё время жизни заканчивается раньше использования, и сопоставьте событие с кодами 0–6. Если дефектов два, выбирайте первопричину: нарушение договора или неверный move, а не их следствие в виде double delete."
+      },
+      {
+        "id": "boundary",
+        "order": 2,
+        "text": "В варианте 0 get выдал заимствованный адрес; после reset объект удалён, и чтение через raw — use-after-free. В варианте 1 значение скопировано до освобождения: копия int независима от владельца. В варианте 2 владение корректно перемещено, q жив при чтении. В варианте 3 из get() создан второй независимый unique_ptr: два блока управления удалят один объект дважды — double delete. Исправление сохраняет значение до reset и не использует сырой адрес после прекращения владения."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "fragment-0",
+        "name": "Фрагмент 0",
+        "arguments": [0, 0],
+        "expected": "2\n"
+      },
+      {
+        "id": "fragment-1",
+        "name": "Фрагмент 1",
+        "arguments": [1, 0],
+        "expected": "0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "fragment-2",
+        "name": "Фрагмент 2",
+        "arguments": [2, 0],
+        "expected": "0\n"
+      },
+      {
+        "id": "fragment-3",
+        "name": "Фрагмент 3",
+        "arguments": [3, 0],
+        "expected": "1\n"
+      }
+    ],
+    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint solve(int a,int b){(void)b; const int diagnosis[4]={2,0,0,1}; return diagnosis[a];}",
+    "solutionExplanation": "В варианте 0 get выдал заимствованный адрес; после reset объект удалён, и чтение через raw — use-after-free. В варианте 1 значение скопировано до освобождения: копия int независима от владельца. В варианте 2 владение корректно перемещено, q жив при чтении. В варианте 3 из get() создан второй независимый unique_ptr: два блока управления удалят один объект дважды — double delete. Исправление сохраняет значение до reset и не использует сырой адрес после прекращения владения.",
+    "checking": {
+      "type": "function",
+      "functionName": "solve",
+      "returnType": "int",
+      "parameters": [
+        { "name": "a", "type": "int" },
+        { "name": "b", "type": "int" }
+      ]
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "lifetime-unique-ptr-exercise",
+      "title": "2. Исправление: Использование после освобождения (use-after-free)",
+      "description": "Исправьте use-after-free: solve создаёт owner(a), сохраняет значение до reset, вызывает reset и возвращает сохранённое + b. Не разыменовывайте сырой адрес после reset и не удаляйте его вручную.",
+      "difficulty": "advanced",
+      "language": "cpp",
+      "standard": "c++20",
+      "compiler": "clang",
+      "diagnostics": "sanitizers",
+      "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint solve(int a,int b){auto owner=std::make_unique<int>(a);int* observer=owner.get();owner.reset();return *observer+b;}",
+      "examples": [
+        {
+          "input": "solve(3, 7)",
+          "output": "10\n",
+          "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        },
+        {
+          "input": "solve(0, 0)",
+          "output": "0\n",
+          "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        }
+      ],
+      "constraints": [
+        "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
+        "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
+        "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
+      ],
+      "hints": [
+        {
+          "id": "owners",
+          "order": 1,
+          "text": "Для каждой операции unique_ptr ответьте: объект удалён? владение прекращено? адрес выдан наружу? Комбинация ответов и отличает get от reset и release."
+        },
+        {
+          "id": "boundary",
+          "order": 2,
+          "text": "release отдаёт адрес и прекращает владение без удаления: если никто не примет ответственность, будет утечка. reset удаляет прежний объект и принимает новый адрес; никогда не вызывайте reset(p.get()) на самом владельце — сначала удалится тот самый объект. Для массивов существует unique_ptr<T[]> с парным delete[]; обычный unique_ptr<T> несовместим с new T[n]. Удаление наследника через unique_ptr<Base> требует виртуального деструктора в Base: стандартный deleter вызывает delete через статический тип указателя.\n\nget не создаёт второго владельца и не продлевает жизнь объекта. Сохранённый ранее сырой адрес переживает reset владельца и становится висячим.\n\nВ варианте 0 get выдал заимствованный адрес; после reset объект удалён, и чтение через raw — use-after-free. В варианте 1 значение скопировано до освобождения: копия int независима от владельца. В варианте 2 владение корректно перемещено, q жив при чтении. В варианте 3 из get() создан второй независимый unique_ptr: два блока управления удалят один объект дважды — double delete. Исправление сохраняет значение до reset и не использует сырой адрес после прекращения владения."
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "arguments": [3, 7],
+          "expected": "10\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "arguments": [0, 0],
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "case-3",
+          "name": "Граничный случай 1",
+          "arguments": [-8, 3],
+          "expected": "-5\n"
+        },
+        {
+          "id": "case-4",
+          "name": "Граничный случай 2",
+          "arguments": [5, -9],
+          "expected": "-4\n"
+        },
+        {
+          "id": "case-5",
+          "name": "Граничный случай 3",
+          "arguments": [-1000, 1000],
+          "expected": "0\n"
+        },
+        {
+          "id": "case-6",
+          "name": "Граничный случай 4",
+          "arguments": [1000, -1000],
+          "expected": "0\n"
+        },
+        {
+          "id": "case-7",
+          "name": "Граничный случай 5",
+          "arguments": [4, 4],
+          "expected": "8\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint solve(int a, int b) { auto owner = std::make_unique<int>(a); int saved = *owner; owner.reset(); return saved + b; }",
+      "solutionExplanation": "release отдаёт адрес и прекращает владение без удаления: если никто не примет ответственность, будет утечка. reset удаляет прежний объект и принимает новый адрес; никогда не вызывайте reset(p.get()) на самом владельце — сначала удалится тот самый объект. Для массивов существует unique_ptr<T[]> с парным delete[]; обычный unique_ptr<T> несовместим с new T[n]. Удаление наследника через unique_ptr<Base> требует виртуального деструктора в Base: стандартный deleter вызывает delete через статический тип указателя.\n\nget не создаёт второго владельца и не продлевает жизнь объекта. Сохранённый ранее сырой адрес переживает reset владельца и становится висячим.\n\nВ варианте 0 get выдал заимствованный адрес; после reset объект удалён, и чтение через raw — use-after-free. В варианте 1 значение скопировано до освобождения: копия int независима от владельца. В варианте 2 владение корректно перемещено, q жив при чтении. В варианте 3 из get() создан второй независимый unique_ptr: два блока управления удалят один объект дважды — double delete. Исправление сохраняет значение до reset и не использует сырой адрес после прекращения владения.",
+      "checking": {
+        "type": "function",
+        "functionName": "solve",
+        "returnType": "int",
+        "parameters": [
+          { "name": "a", "type": "int" },
+          { "name": "b", "type": "int" }
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "lifetime-unique-ptr-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "concept",
+        "question": "Передаёт ли get() право удаления объекта?",
+        "options": [
+          "Да: после get владелец становится пустым",
+          "Нет: он возвращает заимствованный адрес, владение остаётся у unique_ptr"
+        ],
+        "correct": 1,
+        "explanation": "release отдаёт адрес и прекращает владение без удаления: если никто не примет ответственность, будет утечка. reset удаляет прежний объект и принимает новый адрес; никогда не вызывайте reset(p.get()) на самом владельце — сначала удалится тот самый объект. Для массивов существует unique_ptr<T[]> с парным delete[]; обычный unique_ptr<T> несовместим с new T[n]. Удаление наследника через unique_ptr<Base> требует виртуального деструктора в Base: стандартный deleter вызывает delete через статический тип указателя."
+      },
+      {
+        "id": "trace",
+        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
+        "options": ["9 0", "Ошибка компиляции", "Неопределённое поведение"],
+        "correct": 0,
+        "explanation": "owner → A(9); observer = owner.get() - - заимствует -> A\nsaved = *owner: копия значения 9 независима\nowner.reset(): A удалён, owner пуст\nobserver хранит прежний адрес; разыменование observer — use-after-free"
+      },
+      {
+        "id": "review",
+        "question": "Какое утверждение соответствует контракту урока?",
+        "options": [
+          "Если stdout совпал, любые операции со сроком жизни корректны.",
+          "get не создаёт второго владельца и не продлевает жизнь объекта. Сохранённый ранее сырой адрес переживает reset владельца и становится висячим."
+        ],
+        "correct": 1,
+        "explanation": "Сравните reset и release по двум вопросам: кто удалил объект и кто обязан удалить его теперь. В практике значение нужно получить до reset и хранить независимо от адреса."
+      }
+    ]
+  }
+}

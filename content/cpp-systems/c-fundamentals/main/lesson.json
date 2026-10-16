@@ -1,0 +1,569 @@
+{
+  "id": "c17-main",
+  "title": "Функция main, код завершения и ввод до конца",
+  "description": "Роль main и код завершения, EXIT_SUCCESS и EXIT_FAILURE, exit, сообщения в stderr, аргументы командной строки и чтение данных до конца ввода.",
+  "moduleId": "c-fundamentals",
+  "order": 27,
+  "difficulty": "beginner",
+  "estimatedMinutes": 40,
+  "prerequisites": ["c17-scope"],
+  "objectives": [
+    "Сообщать об успехе и ошибке кодом завершения",
+    "Выводить сообщения об ошибках в stderr",
+    "Завершать программу из любой функции через exit",
+    "Понимать назначение argc и argv",
+    "Читать данные до конца ввода, проверяя результат scanf"
+  ],
+  "tags": ["C17", "main", "EOF", "Код завершения"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-main-task-1",
+    "title": "Сумма всего",
+    "description": "Во вводе — целые числа, сколько их, заранее неизвестно (может не быть ни одного). Напечатайте их сумму.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "1 2 3\n4",
+        "output": "10\n"
+      },
+      {
+        "input": "",
+        "output": "0\n",
+        "explanation": "Пустой ввод: чисел нет, сумма 0."
+      }
+    ],
+    "constraints": ["Не больше 100 000 чисел, каждое по модулю не больше 10⁹."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "while (scanf(\"%d\", &x) == 1) sum += x;",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Сумма до 10¹⁴ — long long.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "1 2 3\n4",
+        "expected": "10\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "",
+        "expected": "0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "-5",
+        "expected": "-5\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "1000000000 1000000000 1000000000 1000000000",
+        "expected": "4000000000\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "\n\n\n",
+        "expected": "0\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "1\n-1\n2\n-2\n3",
+        "expected": "3\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "7 7 7",
+        "expected": "21\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "0",
+        "expected": "0\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "-1000000000 -1000000000 -1000000000",
+        "expected": "-3000000000\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int x;\n    long long sum = 0;\n    while (scanf(\"%d\", &x) == 1) {\n        sum += x;\n    }\n    printf(\"%lld\\n\", sum);\n    return 0;\n}\n",
+    "solutionExplanation": "Цикл с условием `scanf(...) == 1` выполняется, пока удаётся прочитать очередное число. Пустой ввод — особый случай, который решается сам: цикл не выполнится ни разу, и сумма останется 0.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-main-task-2",
+      "title": "Среднее",
+      "description": "Во вводе — целые числа до конца ввода. Напечатайте их количество и среднее арифметическое с двумя знаками после точки через пробел. Если чисел нет, напечатайте `нет данных`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "1 2 3 4",
+          "output": "4 2.50\n"
+        },
+        {
+          "input": "",
+          "output": "нет данных\n"
+        }
+      ],
+      "constraints": ["Не больше 100 000 чисел, каждое по модулю не больше 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Считайте и количество, и сумму.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "После цикла — проверка count == 0 перед делением.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1 2 3 4",
+          "expected": "4 2.50\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "нет данных\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "5",
+          "expected": "1 5.00\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "-1 -2",
+          "expected": "2 -1.50\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1000000000 1000000000 999999999",
+          "expected": "3 999999999.67\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1 1 1 1 1 1 1 2",
+          "expected": "8 1.12\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "\n",
+          "expected": "нет данных\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "0",
+          "expected": "1 0.00\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "-1000000000 -999999999",
+          "expected": "2 -999999999.50\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int x;\n    long long sum = 0;\n    int count = 0;\n    while (scanf(\"%d\", &x) == 1) {\n        sum += x;\n        count++;\n    }\n    if (count == 0) {\n        printf(\"нет данных\\n\");\n    } else {\n        printf(\"%d %.2f\\n\", count, (double)sum / count);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Пустой ввод здесь — настоящий особый случай: деление на `count = 0` бессмысленно. Сторожевая проверка после цикла обрабатывает его отдельно.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-main-task-3",
+      "title": "Чётные и нечётные",
+      "description": "Во вводе — целые числа до конца ввода. Напечатайте через пробел количество чётных и количество нечётных чисел.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "1 2 3 4 5",
+          "output": "2 3\n"
+        },
+        {
+          "input": "-3 -2 0",
+          "output": "2 1\n"
+        }
+      ],
+      "constraints": ["Не больше 100 000 чисел, каждое по модулю не больше 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Два счётчика.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Для отрицательных нечётных остаток −1 — проверяйте x % 2 == 0 для чётности.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1 2 3 4 5",
+          "expected": "2 3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "-3 -2 0",
+          "expected": "2 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "",
+          "expected": "0 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "0",
+          "expected": "1 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "-1",
+          "expected": "0 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "2 4 6 8",
+          "expected": "4 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1000000000 -999999999",
+          "expected": "1 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "7\n7\n8",
+          "expected": "1 2\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int x;\n    int even = 0, odd = 0;\n    while (scanf(\"%d\", &x) == 1) {\n        if (x % 2 == 0) {\n            even++;\n        } else {\n            odd++;\n        }\n    }\n    printf(\"%d %d\\n\", even, odd);\n    return 0;\n}\n",
+      "solutionExplanation": "Проверка `x % 2 == 0` верна для любых знаков, а нечётность определяется веткой `else` — так отрицательные нечётные (с остатком −1) не теряются.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-main-task-4",
+      "title": "Наибольший перепад",
+      "description": "Во вводе — показания датчика (целые числа) до конца ввода. Найдите наибольший по модулю перепад между двумя **соседними** показаниями. Если показаний меньше двух, ответ 0.\n\n**Пример:** `10 13 7 8` — перепады 3, 6, 1, ответ 6.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "10 13 7 8",
+          "output": "6\n"
+        },
+        {
+          "input": "5",
+          "output": "0\n"
+        }
+      ],
+      "constraints": ["Не больше 100 000 чисел, каждое по модулю не больше 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Прочитайте первое значение отдельно: если его нет — ответ 0.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Храните предыдущее значение и обновляйте максимум модуля разности.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Разность до 2 · 10⁹ — используйте long long.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "10 13 7 8",
+          "expected": "6\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5",
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1000000000 -1000000000",
+          "expected": "2000000000\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1 2 3 4 5",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "5 5 5",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "-3 -10 -4 -20",
+          "expected": "16\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "0 1 0 1 100",
+          "expected": "99\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long prev, x;\n    long long best = 0;\n    if (scanf(\"%lld\", &prev) == 1) {\n        while (scanf(\"%lld\", &x) == 1) {\n            long long diff = x - prev;\n            if (diff < 0) {\n                diff = -diff;\n            }\n            if (diff > best) {\n                best = diff;\n            }\n            prev = x;\n        }\n    }\n    printf(\"%lld\\n\", best);\n    return 0;\n}\n",
+      "solutionExplanation": "Перепад определён только между соседями, поэтому первое значение читается отдельно — оно становится «предыдущим». Каждое следующее значение сравнивается с предыдущим и само становится предыдущим.\n\nРазность `10⁹ − (−10⁹)` = 2 · 10⁹ не помещается в `int`, поэтому значения читаются сразу в `long long`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-main-task-5",
+      "title": "Пары",
+      "description": "Во вводе — пары целых чисел `a b` до конца ввода. Для каждой пары напечатайте на отдельной строке `a + b`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "1 2\n3 4",
+          "output": "3\n7\n"
+        },
+        {
+          "input": "",
+          "output": ""
+        }
+      ],
+      "constraints": ["Не больше 10 000 пар, числа по модулю не больше 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "while (scanf(\"%d %d\", &a, &b) == 2)",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сумма до 2 · 10⁹ — long long.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1 2\n3 4",
+          "expected": "3\n7\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": ""
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1000000000 1000000000",
+          "expected": "2000000000\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "-1 1\n-2 2\n-3 3",
+          "expected": "0\n0\n0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "5 6 7",
+          "expected": "11\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "0 0",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1 2 3 4 5 6 7 8",
+          "expected": "3\n7\n11\n15\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "-1000000000 -1000000000",
+          "expected": "-2000000000\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "\n1\n2\n",
+          "expected": "3\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long a, b;\n    while (scanf(\"%lld %lld\", &a, &b) == 2) {\n        printf(\"%lld\\n\", a + b);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Сравнение результата с 2 гарантирует, что обработаны только полностью прочитанные пары. Если в конце ввода окажется одно «лишнее» число, `scanf` вернёт 1, и цикл корректно завершится, не используя непрочитанное `b`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-main-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа при вводе «4 8 15 16 23 42»?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int x;\n    int count = 0;\n    while (scanf(\"%d\", &x) == 1) {\n        if (x % 2 == 0) {\n            count++;\n        }\n    }\n    printf(\"%d\\n\", count);\n    return 0;\n}",
+        "explanation": "Цикл читает все шесть чисел до конца ввода; чётных среди них четыре: 4, 8, 16, 42.",
+        "type": "text",
+        "answers": ["4"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Чем опасен цикл while (scanf(\"%d\", &x) != EOF) при вводе «5 abc 7»?",
+        "explanation": "scanf не может разобрать «abc» как число и не продвигается дальше. 0 не равен EOF — цикл продолжается вечно.",
+        "options": [
+          "На «abc» scanf вернёт 0, буквы не будут прочитаны, и цикл станет бесконечным",
+          "Он прочитает только 5",
+          "Он корректно прочитает 5 и 7",
+          "Ошибка компиляции"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Чему равна константа EXIT_SUCCESS?",
+        "explanation": "EXIT_SUCCESS — ноль, код успешного завершения. EXIT_FAILURE — ненулевое значение (обычно 1).",
+        "type": "text",
+        "answers": ["0"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q4",
+        "question": "Программа запущена командой ./tool input.txt -v. Чему равен argc?",
+        "explanation": "argc включает имя программы: ./tool, input.txt и -v — три аргумента.",
+        "options": ["3", "2", "1", "0"],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Чем return в функции read_value отличается от exit(1) в ней же?",
+        "explanation": "return возвращает управление вызывающему коду. exit немедленно завершает процесс с указанным кодом.",
+        "options": [
+          "return завершает только функцию, exit — всю программу",
+          "Ничем",
+          "exit возвращает значение в вызывающую функцию",
+          "return завершает всю программу"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Куда правильно выводить сообщение «ошибка: файл не найден»? Выберите все подходящие варианты.",
+        "explanation": "Сообщения об ошибках пишут в stderr, чтобы они не смешивались с результатом в stdout.",
+        "type": "multiple",
+        "options": [
+          "fprintf(stderr, \"ошибка: файл не найден\\n\");",
+          "printf(\"ошибка: файл не найден\\n\");",
+          "В стандартный поток ошибок",
+          "В комментарий в коде"
+        ],
+        "correct": [0, 2]
+      }
+    ]
+  }
+}

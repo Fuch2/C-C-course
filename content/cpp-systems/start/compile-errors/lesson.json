@@ -1,0 +1,456 @@
+{
+  "id": "compile-errors",
+  "title": "Ошибки компиляции: как читать сообщения",
+  "description": "Как устроено сообщение компилятора, почему исправлять нужно первую ошибку и как распознать пять самых частых ошибок новичка.",
+  "moduleId": "start",
+  "order": 4,
+  "difficulty": "beginner",
+  "estimatedMinutes": 40,
+  "prerequisites": ["first-program"],
+  "objectives": [
+    "Находить в сообщении компилятора файл, строку, позицию и тип проблемы",
+    "Исправлять ошибки по порядку, начиная с первой",
+    "Распознавать пропущенные символы, опечатки в именах, забытый #include и потерянные скобки",
+    "Пользоваться подсказками did you mean и note"
+  ],
+  "tags": ["Старт", "Ошибки компиляции", "GCC", "Отладка"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "compile-errors-task-1",
+    "title": "Сломанное приветствие",
+    "description": "В заготовке две ошибки. Исправьте их, чтобы программа напечатала:\n\n```text\nКомпилятор нашёл ошибку\nЯ её исправил!\n```\n\nНачните с кнопки «Запустить» и прочитайте **первое** сообщение компилятора.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    printf(\"Компилятор нашёл ошибку\\n\")\n    printf(\"Я её исправил!\\n);\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "",
+        "output": "Компилятор нашёл ошибку\nЯ её исправил!\n"
+      }
+    ],
+    "constraints": ["Текст строк не меняйте — только исправьте ошибки."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Первое сообщение — expected ‘;’ before ‘printf’. Посмотрите на конец строки над указанной.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Во втором printf строка не закрыта: перед ) не хватает кавычки.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "",
+        "expected": "Компилятор нашёл ошибку\nЯ её исправил!\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Ввод не используется",
+        "stdin": "\n",
+        "expected": "Компилятор нашёл ошибку\nЯ её исправил!\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    printf(\"Компилятор нашёл ошибку\\n\");\n    printf(\"Я её исправил!\\n\");\n    return 0;\n}\n",
+    "solutionExplanation": "Ошибок две:\n\n1. После первого `printf(...)` нет точки с запятой. Компилятор обнаруживает это на следующей строке, видя второе слово `printf` там, где ожидал `;`.\n2. Во втором `printf` строка не закрыта кавычкой. Сообщение `missing terminating \" character` указывает на её начало.\n\nЕсли исправить только первую ошибку, компилятор сразу покажет вторую. Это нормальный рабочий цикл: исправить одну ошибку, скомпилировать, посмотреть, что осталось.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "compile-errors-task-2",
+      "title": "Опечатки",
+      "description": "Программа должна прочитать два целых числа и вывести на первой строке их сумму, на второй — произведение. Но в коде пять опечаток в именах. Найдите их по сообщениям компилятора.\n\n**Ввод:** два целых числа через пробел.\n\n**Вывод:** сумма и произведение, каждое на своей строке.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int first, second;\n    scanf(\"%d %d\", &first, &secnd);\n    int sum = first + second;\n    int product = frist * second;\n    prinft(\"%d\\n\", sum);\n    printf(\"%d\\n\", prodcut);\n    Return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "3 4",
+          "output": "7\n12\n"
+        },
+        {
+          "input": "-2 5",
+          "output": "3\n-10\n"
+        }
+      ],
+      "constraints": [
+        "−10 000 ≤ числа ≤ 10 000.",
+        "Исправляйте только опечатки, логика программы верна."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сообщения со словом undeclared подскажут имена переменных: компилятор предложит правильный вариант после did you mean.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Имя функции печати — printf. Ключевое слово return пишется строчными буквами.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Всего пять опечаток: secnd, frist, prinft, prodcut и Return.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 4",
+          "expected": "7\n12\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "-2 5",
+          "expected": "3\n-10\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0 0",
+          "expected": "0\n0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1 1",
+          "expected": "2\n1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "-3 -3",
+          "expected": "-6\n9\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "10000 10000",
+          "expected": "20000\n100000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "-10000 10000",
+          "expected": "0\n-100000000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "9 0",
+          "expected": "9\n0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "0 -7",
+          "expected": "-7\n0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int first, second;\n    scanf(\"%d %d\", &first, &second);\n    int sum = first + second;\n    int product = first * second;\n    printf(\"%d\\n\", sum);\n    printf(\"%d\\n\", product);\n    return 0;\n}\n",
+      "solutionExplanation": "Все пять ошибок — опечатки в именах:\n\n- `secnd`, `frist`, `prodcut` — переменные с такими именами не объявлены (`undeclared`), компилятор предлагает правильные варианты;\n- `prinft` — несуществующая функция: предупреждение `implicit declaration` и ошибка компоновщика `undefined reference`;\n- `Return` — C различает регистр, и ключевое слово пишется только как `return`.\n\nОпечатки в именах — самая частая ошибка начинающих. Подсказка `did you mean` почти всегда указывает правильное имя.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "compile-errors-task-3",
+      "title": "Скобки и заголовки",
+      "description": "Программа читает целое число `n` и печатает на двух строках `n + 1` и `n - 1`. В заготовке не хватает строки подключения заголовка и одной скобки. Восстановите их.\n\n**Ввод:** одно целое число.\n\n**Вывод:** `n + 1`, затем `n - 1`, каждое на своей строке.",
+      "difficulty": "beginner",
+      "starterCode": "int main(void)\n    int n;\n    scanf(\"%d\", &n);\n    printf(\"%d\\n\", n + 1);\n    printf(\"%d\\n\", n - 1);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "5",
+          "output": "6\n4\n"
+        },
+        {
+          "input": "0",
+          "output": "1\n-1\n"
+        }
+      ],
+      "constraints": ["−1 000 000 ≤ n ≤ 1 000 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "scanf и printf описаны в stdio.h — добавьте #include <stdio.h> первой строкой.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Тело функции main начинается с открывающей фигурной скобки сразу после int main(void).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5",
+          "expected": "6\n4\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0",
+          "expected": "1\n-1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "-1",
+          "expected": "0\n-2\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1",
+          "expected": "2\n0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1000000",
+          "expected": "1000001\n999999\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "-1000000",
+          "expected": "-999999\n-1000001\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "42",
+          "expected": "43\n41\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "-73",
+          "expected": "-72\n-74\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    printf(\"%d\\n\", n + 1);\n    printf(\"%d\\n\", n - 1);\n    return 0;\n}\n",
+      "solutionExplanation": "Без `{` после `int main(void)` компилятор не понимает, где начинается тело функции, и выдаёт ошибки уже на следующей строке. Закрывающая `}` в конце была, но без пары она тоже «лишняя».\n\nБез `#include <stdio.h>` компилятор предупреждает о неявном объявлении `scanf` и `printf`. Даже если программа соберётся, работать с неописанными функциями нельзя: компилятор может неправильно передать им данные.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "compile-errors-task-4",
+      "title": "Прямоугольник",
+      "description": "Программа читает ширину и высоту прямоугольника и печатает его периметр и площадь. В коде **четыре** ошибки разных видов. Исправьте их по одной, компилируя после каждого исправления.\n\n**Ввод:** два целых числа — ширина и высота.\n\n**Вывод:**\n\n```text\nПериметр: P\nПлощадь: S\n```\n\nгде `P = 2 * (ширина + высота)`, `S = ширина * высота`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int width, height;\n    scanf(\"%d %d\", &width, &height);\n    int perimeter = 2 * (width + height;\n    int area = width * height\n    printf(\"Периметр: %d\\n\", perimeter);\n    printf(\"Площадь: %d\\n, area);\n    return 0;\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "3 4",
+          "output": "Периметр: 14\nПлощадь: 12\n"
+        },
+        {
+          "input": "1 1",
+          "output": "Периметр: 4\nПлощадь: 1\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ ширина, высота ≤ 10 000.",
+        "Текст «Периметр: » и «Площадь: » должен совпадать в точности."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Посчитайте скобки в формуле периметра: каждой ( нужна своя ).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "После вычисления площади не хватает точки с запятой.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Во втором printf строка формата не закрыта кавычкой: она должна заканчиваться на \\n\".",
+          "order": 3
+        },
+        {
+          "id": "hint-4",
+          "text": "В конце файла не хватает закрывающей фигурной скобки функции main.",
+          "order": 4
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 4",
+          "expected": "Периметр: 14\nПлощадь: 12\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 1",
+          "expected": "Периметр: 4\nПлощадь: 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "10 2",
+          "expected": "Периметр: 24\nПлощадь: 20\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "7 7",
+          "expected": "Периметр: 28\nПлощадь: 49\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "10000 10000",
+          "expected": "Периметр: 40000\nПлощадь: 100000000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1 10000",
+          "expected": "Периметр: 20002\nПлощадь: 10000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "123 45",
+          "expected": "Периметр: 336\nПлощадь: 5535\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "2 3",
+          "expected": "Периметр: 10\nПлощадь: 6\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int width, height;\n    scanf(\"%d %d\", &width, &height);\n    int perimeter = 2 * (width + height);\n    int area = width * height;\n    printf(\"Периметр: %d\\n\", perimeter);\n    printf(\"Площадь: %d\\n\", area);\n    return 0;\n}\n",
+      "solutionExplanation": "Четыре ошибки и сообщения, которые на них указывают:\n\n1. `2 * (width + height;` — не закрыта круглая скобка: `expected ‘)’ before ‘;’ token`.\n2. `width * height` без `;` — `expected ‘,’ or ‘;’ before ‘printf’`, ошибка на строке выше указанной.\n3. `\"Площадь: %d\\n, area);` — строка не закрыта: `missing terminating \" character`.\n4. Нет `}` в конце — `expected declaration or statement at end of input`.\n\nКомпилятор не всегда показывает все четыре сообщения сразу: некоторые ошибки «прячут» следующие. Поэтому цикл «исправить одну — скомпилировать» надёжнее попытки найти всё глазами.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "compile-errors-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что означает слово undeclared в сообщении компилятора?",
+        "explanation": "undeclared — «не объявлено». Компилятор встретил имя, которого не знает. Чаще всего это опечатка или переменная, которую забыли создать.",
+        "options": [
+          "Имя нигде не объявлено — например, опечатка в имени переменной",
+          "Пропущена точка с запятой",
+          "Программа слишком длинная",
+          "Функция ничего не возвращает"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Компилятор сообщил: main.c:5:5: error: expected ‘;’ before ‘return’. В какой строке на самом деле нужно поставить точку с запятой?",
+        "code": "#include <stdio.h>                 // строка 1\n                                   // строка 2\nint main(void) {                   // строка 3\n    printf(\"Готово\\n\")             // строка 4\n    return 0;                      // строка 5\n}                                  // строка 6",
+        "explanation": "Компилятор понял, что точки с запятой не хватает, только увидев return на строке 5. Пропущена же она в конце строки 4, после вызова printf.",
+        "type": "text",
+        "answers": ["4"],
+        "placeholder": "Номер строки"
+      },
+      {
+        "id": "q3",
+        "question": "Какие сообщения чаще всего означают опечатку в имени? Выберите все подходящие.",
+        "explanation": "undeclared и undefined reference говорят о несуществующем имени. missing terminating — нет закрывающей кавычки, at end of input — не закрыта фигурная скобка.",
+        "type": "multiple",
+        "options": [
+          "‘summ’ undeclared (first use in this function)",
+          "undefined reference to `prinft`",
+          "missing terminating \" character",
+          "expected declaration or statement at end of input"
+        ],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q4",
+        "question": "После компиляции на экране 15 сообщений об ошибках. С чего начать?",
+        "explanation": "Одна пропущенная кавычка или скобка может вызвать каскад сообщений. После исправления первой ошибки многие остальные исчезают.",
+        "options": [
+          "Исправить первую ошибку и скомпилировать снова",
+          "Исправить последнюю ошибку — она самая важная",
+          "Переписать программу с нуля",
+          "Исправить все 15 мест сразу"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Компилятор пишет: expected declaration or statement at end of input. Что скорее всего не так?",
+        "explanation": "at end of input — «в конце файла». Компилятор дошёл до конца, а блок или функция так и не закрылись.",
+        "options": [
+          "Не хватает закрывающей фигурной скобки",
+          "Опечатка в слове printf",
+          "Лишний пробел в строке",
+          "Программа ничего не печатает"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Программа собралась, но компилятор предупредил: implicit declaration of function ‘printf’. Как правильно исправить?",
+        "explanation": "Предупреждение означает, что компилятор не видел описания printf. Его даёт заголовок stdio.h — об этом прямо говорит подсказка note.",
+        "options": [
+          "Добавить в начало #include <stdio.h>",
+          "Ничего: программа ведь работает",
+          "Заменить printf на Printf",
+          "Удалить return 0;"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Кто сообщает об ошибке undefined reference — компилятор или компоновщик?",
+        "explanation": "Компоновщик ld собирает программу из частей и не находит функцию с таким именем. В сообщении это видно по /usr/bin/ld и «ld returned 1 exit status».",
+        "options": ["Компилятор", "Компоновщик (линковщик)", "Операционная система", "Процессор"],
+        "correct": 1
+      }
+    ]
+  }
+}

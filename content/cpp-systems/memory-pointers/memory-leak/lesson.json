@@ -1,0 +1,532 @@
+{
+  "id": "memory-memory-leak",
+  "title": "Утечки памяти",
+  "description": "Что такое утечка и почему она опасна в долгоживущих программах, как читать отчёт LeakSanitizer, прямые и косвенные утечки, пять типичных причин и правила кода без утечек.",
+  "moduleId": "memory-pointers",
+  "order": 16,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["memory-dynamic-arrays"],
+  "objectives": [
+    "Объяснять, что такое утечка памяти и почему она опасна",
+    "Читать отчёт LeakSanitizer: размер, число блоков, место выделения, direct и indirect",
+    "Находить пять типичных причин утечек в коде",
+    "Исправлять утечки на ветках ошибок, при перезаписи указателя и в функциях destroy"
+  ],
+  "tags": ["C17", "Память", "Утечка памяти", "LeakSanitizer", "Найди ошибку"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "memory-memory-leak-task-1",
+    "title": "Найди ошибку: утечка в обработчике",
+    "description": "Программа обрабатывает `q` записей. Каждая запись — количество `n` и `n` чисел. Функция `sum_record` считывает запись в блок из кучи и возвращает сумму; если `n` некорректно (меньше 1 или больше 100) или среди чисел есть отрицательное, запись считается неверной.\n\nОтветы правильные, но LeakSanitizer находит утечку. Исправьте `sum_record`, не меняя формат вывода. Неверная запись прочитывается до конца, как и сейчас.",
+    "difficulty": "intermediate",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint sum_record(long long *out) {\n    int n;\n    scanf(\"%d\", &n);\n    if (n < 1 || n > 100) {\n        for (int i = 0; i < n; i++) {\n            int skip;\n            scanf(\"%d\", &skip);\n        }\n        return -1;\n    }\n    int *values = malloc((size_t)n * sizeof *values);\n    if (values == NULL) {\n        return -1;\n    }\n    int negative = 0;\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n        if (values[i] < 0) {\n            negative = 1;\n        }\n    }\n    if (negative) {\n        return -1;\n    }\n    long long sum = 0;\n    for (int i = 0; i < n; i++) {\n        sum += values[i];\n    }\n    free(values);\n    *out = sum;\n    return 0;\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        long long sum;\n        if (sum_record(&sum) == 0) {\n            printf(\"%lld\\n\", sum);\n        } else {\n            printf(\"invalid\\n\");\n        }\n    }\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "2\n3\n1 2 3\n2\n5 -1\n",
+        "output": "6\ninvalid\n"
+      },
+      {
+        "input": "1\n0\n",
+        "output": "invalid\n"
+      }
+    ],
+    "constraints": ["1 ≤ q ≤ 10.", "|n| ≤ 1000; в записи ровно max(n, 0) чисел.", "|x| ≤ 10⁶."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Найдите все return в sum_record. Какой из них выполняется после malloc без free?",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Перед return -1 в ветке с отрицательным числом нужен free(values) — но только после того, как вся запись прочитана.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "2\n3\n1 2 3\n2\n5 -1\n",
+        "expected": "6\ninvalid\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1\n0\n",
+        "expected": "invalid\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Одно отрицательное",
+        "stdin": "1\n1\n-5\n",
+        "expected": "invalid\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Слишком много",
+        "stdin": "1\n101\n1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1\n",
+        "expected": "invalid\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Неверная запись первой",
+        "stdin": "3\n2\n-1 -2\n2\n3 4\n1\n0\n",
+        "expected": "invalid\n7\n0\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Большие суммы",
+        "stdin": "2\n4\n1000000 1000000 1000000 1000000\n2\n1 2\n",
+        "expected": "4000000\n3\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Отрицательное в конце",
+        "stdin": "1\n5\n1 2 3 4 -5\n",
+        "expected": "invalid\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Отрицательное n",
+        "stdin": "1\n-3\n",
+        "expected": "invalid\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Чередование",
+        "stdin": "4\n1\n7\n1\n-7\n1\n8\n1\n-8\n",
+        "expected": "7\ninvalid\n8\ninvalid\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Нули",
+        "stdin": "1\n3\n0 0 0\n",
+        "expected": "0\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\nint sum_record(long long *out) {\n    int n;\n    scanf(\"%d\", &n);\n    if (n < 1 || n > 100) {\n        for (int i = 0; i < n; i++) {\n            int skip;\n            scanf(\"%d\", &skip);\n        }\n        return -1;\n    }\n    int *values = malloc((size_t)n * sizeof *values);\n    if (values == NULL) {\n        return -1;\n    }\n    int negative = 0;\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n        if (values[i] < 0) {\n            negative = 1;\n        }\n    }\n    if (negative) {\n        free(values);\n        return -1;\n    }\n    long long sum = 0;\n    for (int i = 0; i < n; i++) {\n        sum += values[i];\n    }\n    free(values);\n    *out = sum;\n    return 0;\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        long long sum;\n        if (sum_record(&sum) == 0) {\n            printf(\"%lld\\n\", sum);\n        } else {\n            printf(\"invalid\\n\");\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "В функции четыре выхода. Первые два происходят до выделения или при его неудаче — освобождать нечего. Последний освобождает блок. А выход для записи с отрицательным числом случается **после** успешного `malloc` и теряет блок. На корректных данных утечки нет, поэтому её легко пропустить, тестируя только «хорошие» записи.\n\nПравило проверки: для каждого `return` перечислите ресурсы, полученные выше по коду, и убедитесь, что каждый либо освобождён, либо передан вызывающему коду.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "memory-memory-leak-task-2",
+      "title": "Найди ошибку: перезаписанный указатель",
+      "description": "Программа читает слова до конца ввода и печатает самое длинное (первое из самых длинных) и количество слов. Каждое слово функция `read_word` возвращает в новом блоке — освобождать его должен вызывающий код.\n\nОтвет правильный, но память утекает. Исправьте `main` так, чтобы освобождался каждый блок, кроме того, который ещё нужен.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n// Читает слово в новый блок. Возвращает NULL в конце ввода.\nchar *read_word(void) {\n    char buffer[64];\n    if (scanf(\"%63s\", buffer) != 1) {\n        return NULL;\n    }\n    char *word = malloc(strlen(buffer) + 1);\n    if (word != NULL) {\n        strcpy(word, buffer);\n    }\n    return word;\n}\n\nint main(void) {\n    char *longest = NULL;\n    int count = 0;\n    char *word;\n    while ((word = read_word()) != NULL) {\n        count++;\n        if (longest == NULL || strlen(word) > strlen(longest)) {\n            longest = word;\n        }\n    }\n    if (longest != NULL) {\n        printf(\"%s %d\\n\", longest, count);\n    }\n    free(longest);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "a abc ab\n",
+          "output": "abc 3\n"
+        },
+        {
+          "input": "single\n",
+          "output": "single 1\n"
+        }
+      ],
+      "constraints": ["Слов — от 1 до 1000, каждое до 63 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сколько блоков возвращает read_word и сколько из них освобождается?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Если новое слово длиннее — освободите старое longest и сохраните новое; иначе освободите новое слово сразу.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "a abc ab\n",
+          "expected": "abc 3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "single\n",
+          "expected": "single 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Равная длина",
+          "stdin": "aa bb cc\n",
+          "expected": "aa 3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Каждое следующее длиннее",
+          "stdin": "a bb ccc dddd\n",
+          "expected": "dddd 4\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Каждое следующее короче",
+          "stdin": "dddd ccc bb a\n",
+          "expected": "dddd 4\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Однобуквенные",
+          "stdin": "x y z w v\n",
+          "expected": "x 5\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Тысяча слов",
+          "stdin": "w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww wwwwwww w ww www wwww wwwww wwwwww\n",
+          "expected": "wwwwwww 1000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Максимальная длина",
+          "stdin": "short LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL mid\n",
+          "expected": "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL 3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "По строкам",
+          "stdin": "one\ntwo\nthree\n",
+          "expected": "three 3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пик в середине",
+          "stdin": "ab abc abcd abc ab\n",
+          "expected": "abcd 5\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n// Читает слово в новый блок. Возвращает NULL в конце ввода.\nchar *read_word(void) {\n    char buffer[64];\n    if (scanf(\"%63s\", buffer) != 1) {\n        return NULL;\n    }\n    char *word = malloc(strlen(buffer) + 1);\n    if (word != NULL) {\n        strcpy(word, buffer);\n    }\n    return word;\n}\n\nint main(void) {\n    char *longest = NULL;\n    int count = 0;\n    char *word;\n    while ((word = read_word()) != NULL) {\n        count++;\n        if (longest == NULL || strlen(word) > strlen(longest)) {\n            free(longest);\n            longest = word;\n        } else {\n            free(word);\n        }\n    }\n    if (longest != NULL) {\n        printf(\"%s %d\\n\", longest, count);\n    }\n    free(longest);\n    return 0;\n}\n",
+      "solutionExplanation": "`read_word` передаёт владение каждым блоком в `main`. Исходная программа теряет два вида блоков: короткие слова, которые просто отбрасываются, и прежний `longest`, когда его заменяет новое слово — присваивание `longest = word` стирает последний указатель на старый блок.\n\nПосле исправления у каждого блока есть ровно один путь к `free`: либо сразу, либо при замене, либо в конце программы. Ни одного блока не освобождается дважды — `longest` и `word` никогда не указывают на один блок в момент `free`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-memory-leak-task-3",
+      "title": "Найди ошибку: косвенная утечка",
+      "description": "Программа читает `n` команд. Каждая команда — название, количество участников и их имена. Функция `team_read` создаёт структуру в куче вместе со всеми строками; `main` печатает команду и вызывает `team_destroy`.\n\nLeakSanitizer сообщает о косвенных утечках. Допишите `team_destroy` так, чтобы она освобождала всё, чем владеет команда.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Team {\n    char *name;\n    char **members;\n    int count;\n};\n\nchar *copy_text(const char *s) {\n    char *c = malloc(strlen(s) + 1);\n    if (c != NULL) {\n        strcpy(c, s);\n    }\n    return c;\n}\n\nstruct Team *team_read(void) {\n    char buffer[32];\n    int count;\n    if (scanf(\"%31s %d\", buffer, &count) != 2) {\n        return NULL;\n    }\n    struct Team *t = calloc(1, sizeof *t);\n    if (t == NULL) {\n        return NULL;\n    }\n    t->name = copy_text(buffer);\n    t->members = calloc((size_t)count, sizeof *t->members);\n    for (int i = 0; i < count; i++) {\n        scanf(\"%31s\", buffer);\n        t->members[i] = copy_text(buffer);\n        t->count++;\n    }\n    return t;\n}\n\nvoid team_destroy(struct Team *t) {\n    free(t);\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        struct Team *t = team_read();\n        if (t == NULL) {\n            return 1;\n        }\n        printf(\"%s:\", t->name);\n        for (int k = 0; k < t->count; k++) {\n            printf(\" %s\", t->members[k]);\n        }\n        printf(\"\\n\");\n        team_destroy(t);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "1\nred 2 ann bob\n",
+          "output": "red: ann bob\n"
+        },
+        {
+          "input": "2\na 1 x\nb 1 y\n",
+          "output": "a: x\nb: y\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 10.", "1 ≤ участников ≤ 20.", "Имена и названия — до 31 символа."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Чем владеет struct Team? Посмотрите, что выделяет team_read: структуру, name, массив members и каждую строку members[i].",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Освобождайте изнутри наружу: строки участников, массив members, name, структуру.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1\nred 2 ann bob\n",
+          "expected": "red: ann bob\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\na 1 x\nb 1 y\n",
+          "expected": "a: x\nb: y\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Один участник",
+          "stdin": "1\nsolo 1 me\n",
+          "expected": "solo: me\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Пять участников",
+          "stdin": "1\nbig 5 a b c d e\n",
+          "expected": "big: a b c d e\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Двадцать участников",
+          "stdin": "1\nmax 20 m0 m1 m2 m3 m4 m5 m6 m7 m8 m9 m10 m11 m12 m13 m14 m15 m16 m17 m18 m19\n",
+          "expected": "max: m0 m1 m2 m3 m4 m5 m6 m7 m8 m9 m10 m11 m12 m13 m14 m15 m16 m17 m18 m19\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Три команды",
+          "stdin": "3\nx 1 a\ny 2 b c\nz 3 d e f\n",
+          "expected": "x: a\ny: b c\nz: d e f\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Длинные имена",
+          "stdin": "1\nabcdefghijklmnopqrstuvwxyz01234 1 abcdefghijklmnopqrstuvwxyz56789\n",
+          "expected": "abcdefghijklmnopqrstuvwxyz01234: abcdefghijklmnopqrstuvwxyz56789\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Одинаковые",
+          "stdin": "2\nsame 2 x x\nsame 2 x x\n",
+          "expected": "same: x x\nsame: x x\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Десять команд",
+          "stdin": "10\nt0 2 p0 q0\nt1 2 p1 q1\nt2 2 p2 q2\nt3 2 p3 q3\nt4 2 p4 q4\nt5 2 p5 q5\nt6 2 p6 q6\nt7 2 p7 q7\nt8 2 p8 q8\nt9 2 p9 q9\n",
+          "expected": "t0: p0 q0\nt1: p1 q1\nt2: p2 q2\nt3: p3 q3\nt4: p4 q4\nt5: p5 q5\nt6: p6 q6\nt7: p7 q7\nt8: p8 q8\nt9: p9 q9\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Три участника",
+          "stdin": "1\nteam 3 ann bob cid\n",
+          "expected": "team: ann bob cid\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Team {\n    char *name;\n    char **members;\n    int count;\n};\n\nchar *copy_text(const char *s) {\n    char *c = malloc(strlen(s) + 1);\n    if (c != NULL) {\n        strcpy(c, s);\n    }\n    return c;\n}\n\nstruct Team *team_read(void) {\n    char buffer[32];\n    int count;\n    if (scanf(\"%31s %d\", buffer, &count) != 2) {\n        return NULL;\n    }\n    struct Team *t = calloc(1, sizeof *t);\n    if (t == NULL) {\n        return NULL;\n    }\n    t->name = copy_text(buffer);\n    t->members = calloc((size_t)count, sizeof *t->members);\n    for (int i = 0; i < count; i++) {\n        scanf(\"%31s\", buffer);\n        t->members[i] = copy_text(buffer);\n        t->count++;\n    }\n    return t;\n}\n\nvoid team_destroy(struct Team *t) {\n    if (t == NULL) {\n        return;\n    }\n    for (int i = 0; i < t->count; i++) {\n        free(t->members[i]);\n    }\n    free(t->members);\n    free(t->name);\n    free(t);\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        struct Team *t = team_read();\n        if (t == NULL) {\n            return 1;\n        }\n        printf(\"%s:\", t->name);\n        for (int k = 0; k < t->count; k++) {\n            printf(\" %s\", t->members[k]);\n        }\n        printf(\"\\n\");\n        team_destroy(t);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`free(t)` освобождает только блок самой структуры — 24 байта с тремя полями. Строка названия, массив указателей и строки участников остаются в куче, а единственные указатели на них лежали в только что освобождённой структуре. LeakSanitizer помечает их как **indirect leak**: их потеряли вместе с владельцем.\n\nФункция `destroy` должна быть зеркалом функции создания: всё, что `team_read` выделила, `team_destroy` освобождает — в обратном порядке.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-memory-leak-task-4",
+      "title": "Последние k записей",
+      "description": "Журнал хранит только **последние `k`** сообщений. Прочитайте `k`, затем сообщения (слова) до конца ввода. Каждое сообщение копируйте в новый блок; когда журнал полон, самое старое сообщение вытесняется — его блок нужно освободить.\n\nВ конце напечатайте количество вытесненных сообщений, затем оставшиеся — от старых к новым, каждое на своей строке.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\na b c d\n",
+          "output": "2\nc\nd\n"
+        },
+        {
+          "input": "5\nx y\n",
+          "output": "0\nx\ny\n"
+        }
+      ],
+      "constraints": ["1 ≤ k ≤ 50.", "Сообщений — до 1000, каждое до 31 символа."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Кольцевой буфер: char *log[50] = {NULL}; позиция записи pos = (pos + 1) % k.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Перед записью в log[pos] освободите старое сообщение: free(log[pos]) — для пустой ячейки это free(NULL).",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Самое старое сообщение после заполнения лежит в log[pos] (там, куда будет следующая запись). Печатайте k ячеек начиная с pos, пропуская NULL.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\na b c d\n",
+          "expected": "2\nc\nd\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5\nx y\n",
+          "expected": "0\nx\ny\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "k = 1, одно сообщение",
+          "stdin": "1\nonly\n",
+          "expected": "0\nonly\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "k = 1, вытеснение",
+          "stdin": "1\na b c\n",
+          "expected": "2\nc\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Ровно k",
+          "stdin": "3\na b c\n",
+          "expected": "0\na\nb\nc\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "k + 1",
+          "stdin": "3\na b c d\n",
+          "expected": "1\nb\nc\nd\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Нет сообщений",
+          "stdin": "3\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Тысяча сообщений",
+          "stdin": "50\nm0 m1 m2 m3 m4 m5 m6 m7 m8 m9 m10 m11 m12 m13 m14 m15 m16 m17 m18 m19 m20 m21 m22 m23 m24 m25 m26 m27 m28 m29 m30 m31 m32 m33 m34 m35 m36 m37 m38 m39 m40 m41 m42 m43 m44 m45 m46 m47 m48 m49 m50 m51 m52 m53 m54 m55 m56 m57 m58 m59 m60 m61 m62 m63 m64 m65 m66 m67 m68 m69 m70 m71 m72 m73 m74 m75 m76 m77 m78 m79 m80 m81 m82 m83 m84 m85 m86 m87 m88 m89 m90 m91 m92 m93 m94 m95 m96 m97 m98 m99 m100 m101 m102 m103 m104 m105 m106 m107 m108 m109 m110 m111 m112 m113 m114 m115 m116 m117 m118 m119 m120 m121 m122 m123 m124 m125 m126 m127 m128 m129 m130 m131 m132 m133 m134 m135 m136 m137 m138 m139 m140 m141 m142 m143 m144 m145 m146 m147 m148 m149 m150 m151 m152 m153 m154 m155 m156 m157 m158 m159 m160 m161 m162 m163 m164 m165 m166 m167 m168 m169 m170 m171 m172 m173 m174 m175 m176 m177 m178 m179 m180 m181 m182 m183 m184 m185 m186 m187 m188 m189 m190 m191 m192 m193 m194 m195 m196 m197 m198 m199 m200 m201 m202 m203 m204 m205 m206 m207 m208 m209 m210 m211 m212 m213 m214 m215 m216 m217 m218 m219 m220 m221 m222 m223 m224 m225 m226 m227 m228 m229 m230 m231 m232 m233 m234 m235 m236 m237 m238 m239 m240 m241 m242 m243 m244 m245 m246 m247 m248 m249 m250 m251 m252 m253 m254 m255 m256 m257 m258 m259 m260 m261 m262 m263 m264 m265 m266 m267 m268 m269 m270 m271 m272 m273 m274 m275 m276 m277 m278 m279 m280 m281 m282 m283 m284 m285 m286 m287 m288 m289 m290 m291 m292 m293 m294 m295 m296 m297 m298 m299 m300 m301 m302 m303 m304 m305 m306 m307 m308 m309 m310 m311 m312 m313 m314 m315 m316 m317 m318 m319 m320 m321 m322 m323 m324 m325 m326 m327 m328 m329 m330 m331 m332 m333 m334 m335 m336 m337 m338 m339 m340 m341 m342 m343 m344 m345 m346 m347 m348 m349 m350 m351 m352 m353 m354 m355 m356 m357 m358 m359 m360 m361 m362 m363 m364 m365 m366 m367 m368 m369 m370 m371 m372 m373 m374 m375 m376 m377 m378 m379 m380 m381 m382 m383 m384 m385 m386 m387 m388 m389 m390 m391 m392 m393 m394 m395 m396 m397 m398 m399 m400 m401 m402 m403 m404 m405 m406 m407 m408 m409 m410 m411 m412 m413 m414 m415 m416 m417 m418 m419 m420 m421 m422 m423 m424 m425 m426 m427 m428 m429 m430 m431 m432 m433 m434 m435 m436 m437 m438 m439 m440 m441 m442 m443 m444 m445 m446 m447 m448 m449 m450 m451 m452 m453 m454 m455 m456 m457 m458 m459 m460 m461 m462 m463 m464 m465 m466 m467 m468 m469 m470 m471 m472 m473 m474 m475 m476 m477 m478 m479 m480 m481 m482 m483 m484 m485 m486 m487 m488 m489 m490 m491 m492 m493 m494 m495 m496 m497 m498 m499 m500 m501 m502 m503 m504 m505 m506 m507 m508 m509 m510 m511 m512 m513 m514 m515 m516 m517 m518 m519 m520 m521 m522 m523 m524 m525 m526 m527 m528 m529 m530 m531 m532 m533 m534 m535 m536 m537 m538 m539 m540 m541 m542 m543 m544 m545 m546 m547 m548 m549 m550 m551 m552 m553 m554 m555 m556 m557 m558 m559 m560 m561 m562 m563 m564 m565 m566 m567 m568 m569 m570 m571 m572 m573 m574 m575 m576 m577 m578 m579 m580 m581 m582 m583 m584 m585 m586 m587 m588 m589 m590 m591 m592 m593 m594 m595 m596 m597 m598 m599 m600 m601 m602 m603 m604 m605 m606 m607 m608 m609 m610 m611 m612 m613 m614 m615 m616 m617 m618 m619 m620 m621 m622 m623 m624 m625 m626 m627 m628 m629 m630 m631 m632 m633 m634 m635 m636 m637 m638 m639 m640 m641 m642 m643 m644 m645 m646 m647 m648 m649 m650 m651 m652 m653 m654 m655 m656 m657 m658 m659 m660 m661 m662 m663 m664 m665 m666 m667 m668 m669 m670 m671 m672 m673 m674 m675 m676 m677 m678 m679 m680 m681 m682 m683 m684 m685 m686 m687 m688 m689 m690 m691 m692 m693 m694 m695 m696 m697 m698 m699 m700 m701 m702 m703 m704 m705 m706 m707 m708 m709 m710 m711 m712 m713 m714 m715 m716 m717 m718 m719 m720 m721 m722 m723 m724 m725 m726 m727 m728 m729 m730 m731 m732 m733 m734 m735 m736 m737 m738 m739 m740 m741 m742 m743 m744 m745 m746 m747 m748 m749 m750 m751 m752 m753 m754 m755 m756 m757 m758 m759 m760 m761 m762 m763 m764 m765 m766 m767 m768 m769 m770 m771 m772 m773 m774 m775 m776 m777 m778 m779 m780 m781 m782 m783 m784 m785 m786 m787 m788 m789 m790 m791 m792 m793 m794 m795 m796 m797 m798 m799 m800 m801 m802 m803 m804 m805 m806 m807 m808 m809 m810 m811 m812 m813 m814 m815 m816 m817 m818 m819 m820 m821 m822 m823 m824 m825 m826 m827 m828 m829 m830 m831 m832 m833 m834 m835 m836 m837 m838 m839 m840 m841 m842 m843 m844 m845 m846 m847 m848 m849 m850 m851 m852 m853 m854 m855 m856 m857 m858 m859 m860 m861 m862 m863 m864 m865 m866 m867 m868 m869 m870 m871 m872 m873 m874 m875 m876 m877 m878 m879 m880 m881 m882 m883 m884 m885 m886 m887 m888 m889 m890 m891 m892 m893 m894 m895 m896 m897 m898 m899 m900 m901 m902 m903 m904 m905 m906 m907 m908 m909 m910 m911 m912 m913 m914 m915 m916 m917 m918 m919 m920 m921 m922 m923 m924 m925 m926 m927 m928 m929 m930 m931 m932 m933 m934 m935 m936 m937 m938 m939 m940 m941 m942 m943 m944 m945 m946 m947 m948 m949 m950 m951 m952 m953 m954 m955 m956 m957 m958 m959 m960 m961 m962 m963 m964 m965 m966 m967 m968 m969 m970 m971 m972 m973 m974 m975 m976 m977 m978 m979 m980 m981 m982 m983 m984 m985 m986 m987 m988 m989 m990 m991 m992 m993 m994 m995 m996 m997 m998 m999\n",
+          "expected": "950\nm950\nm951\nm952\nm953\nm954\nm955\nm956\nm957\nm958\nm959\nm960\nm961\nm962\nm963\nm964\nm965\nm966\nm967\nm968\nm969\nm970\nm971\nm972\nm973\nm974\nm975\nm976\nm977\nm978\nm979\nm980\nm981\nm982\nm983\nm984\nm985\nm986\nm987\nm988\nm989\nm990\nm991\nm992\nm993\nm994\nm995\nm996\nm997\nm998\nm999\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Одинаковые сообщения",
+          "stdin": "4\nsame same same same same same\n",
+          "expected": "2\nsame\nsame\nsame\nsame\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Длинные сообщения",
+          "stdin": "2\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx y zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz\n",
+          "expected": "1\ny\nzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint main(void) {\n    int k;\n    scanf(\"%d\", &k);\n    char *log[50] = {NULL};\n    int pos = 0, evicted = 0;\n    char buffer[32];\n    while (scanf(\"%31s\", buffer) == 1) {\n        char *copy = malloc(strlen(buffer) + 1);\n        if (copy == NULL) {\n            break;\n        }\n        strcpy(copy, buffer);\n        if (log[pos] != NULL) {\n            evicted++;\n        }\n        free(log[pos]);\n        log[pos] = copy;\n        pos = (pos + 1) % k;\n    }\n    printf(\"%d\\n\", evicted);\n    for (int i = 0; i < k; i++) {\n        int index = (pos + i) % k;\n        if (log[index] != NULL) {\n            printf(\"%s\\n\", log[index]);\n        }\n    }\n    for (int i = 0; i < k; i++) {\n        free(log[i]);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Ячейка журнала владеет своим сообщением. Запись нового сообщения в занятую ячейку — это замена значения, и старый блок нужно освободить **до** того, как указатель на него будет перезаписан. `free(NULL)` позволяет не различать пустые и занятые ячейки.\n\nБлагодаря вытеснению программа держит в памяти не больше `k` сообщений, сколько бы их ни пришло, — так устроены журналы в долгоживущих сервисах. Без `free` при замене память росла бы с каждым сообщением, хотя журнал «хранит» только последние `k`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "memory-memory-leak-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Какие фрагменты содержат утечку? Выберите все.",
+        "explanation": "В первом фрагменте адрес первого блока перезаписан. В третьем ветка bad выходит, не освободив a. Освобождение NULL корректно.",
+        "type": "multiple",
+        "options": [
+          "char *p = malloc(10); p = malloc(20); free(p);",
+          "char *p = malloc(10); free(p); p = malloc(20); free(p);",
+          "int *a = malloc(40); if (bad) return -1; free(a);",
+          "int *a = NULL; free(a);"
+        ],
+        "correct": [0, 2]
+      },
+      {
+        "id": "q2",
+        "question": "Что означает строка отчёта Indirect leak of 40 byte(s)?",
+        "explanation": "Косвенные утечки исчезают, когда исправлена прямая: правильный destroy для потерянной структуры освободит и вложенные блоки.",
+        "options": [
+          "Блок недостижим, потому что указатель на него хранился в другом потерянном блоке",
+          "Блок освобождён дважды",
+          "Утечка произошла в стандартной библиотеке",
+          "Блок утёк в другом потоке"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Какое место в программе показывает стек вызовов в отчёте LeakSanitizer?",
+        "explanation": "Инструмент знает только место выделения. Место, где потерян последний указатель, находят, отслеживая владельца блока.",
+        "options": [
+          "Где блок был выделен",
+          "Где блок нужно было освободить",
+          "Где программа завершилась",
+          "Где указатель был перезаписан"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Сколько байтов утечёт, если функция ниже вызвана 1000 раз?",
+        "code": "void log_event(int code) {\n    char *msg = malloc(32);\n    if (msg == NULL) {\n        return;\n    }\n    snprintf(msg, 32, \"event %d\", code);\n    puts(msg);\n}",
+        "codeLanguage": "c",
+        "explanation": "Каждый вызов теряет 32 байта: 1000 · 32 = 32 000.",
+        "type": "text",
+        "answers": ["32000"],
+        "placeholder": "Байтов"
+      },
+      {
+        "id": "q5",
+        "question": "Почему опасна запись data = realloc(data, n); ?",
+        "explanation": "Результат нужно сохранять во временную переменную и присваивать только при успехе.",
+        "options": [
+          "При отказе realloc вернёт NULL, и адрес старого блока будет потерян — утечка",
+          "realloc освобождает блок дважды",
+          "Компилятор не разрешает присваивать результат той же переменной",
+          "Новый блок не будет выровнен"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Структура выделена malloc и владеет полем name (тоже из malloc). Какой порядок освобождения правильный?",
+        "explanation": "После free(s) читать s->name уже нельзя. Только free(s) оставит косвенную утечку name.",
+        "options": [
+          "free(s->name); free(s);",
+          "free(s); free(s->name);",
+          "Только free(s);",
+          "Только free(s->name);"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Программа с утечкой напечатала правильный ответ и завершилась с кодом 0. Почему проверка с LeakSanitizer всё равно считает тест непройденным?",
+        "explanation": "Отчёт об утечке превращает завершение в ошибку; при этом буферизованный вывод может не попасть в stdout.",
+        "options": [
+          "LeakSanitizer при завершении сообщает об утечке и завершает процесс с ошибкой",
+          "LeakSanitizer меняет вывод программы на случайный",
+          "Тест проверяет время работы",
+          "Код завершения не важен — тест засчитан"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

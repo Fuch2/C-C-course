@@ -1,0 +1,238 @@
+{
+  "id": "lifetime-move-constructor",
+  "title": "Перемещающий конструктор — Move constructor",
+  "description": "Перемещающий конструктор T(T&& other) создаёт нового владельца из источника, ресурсы которого разрешено забрать.",
+  "moduleId": "cpp-lifetime",
+  "order": 14,
+  "difficulty": "advanced",
+  "estimatedMinutes": 75,
+  "prerequisites": ["lifetime-std-move"],
+  "objectives": [
+    "Сформулировать инвариант «один блок — один владелец» для перемещающего конструктора.",
+    "Проследить на MemoryDiagram обнуление источника через std::exchange.",
+    "Диагностировать move-конструктор с двумя владельцами и исправить его обменом указателя."
+  ],
+  "tags": [
+    "C++20",
+    "время жизни",
+    "управление ресурсами",
+    "Перемещающий конструктор — Move constructor",
+    "диагностика",
+    "исправление ошибок",
+    "Неправильный move constructor"
+  ],
+  "published": true,
+  "standard": "c++20",
+  "completion": "practice",
+  "exercise": {
+    "id": "lifetime-move-constructor-diagnose",
+    "title": "1. Диагностика: Неправильный move constructor",
+    "description": "Сначала диагностируйте четыре независимых фрагмента по номерам 0–3; не исполняйте их. solve(a,b) принимает номер фрагмента a; b не используется. Верните код первичного дефекта: 0 — безопасно в показанных границах; 1 — double delete; 2 — use-after-free; 3 — dangling reference при возврате; 4 — нарушение заявленного договора заимствования; 5 — цикл сильного владения; 6 — move constructor оставил двух владельцев. Для 4 и 6 выбирайте причину, а не последующий double delete. В комментарии к решению укажите строку, событие окончания жизни и владельца. После проверки диагноза перейдите к заданию 2 и исправьте исходник.\n\nФрагмент 0:\n// ~Cell вызывает delete p.\nCell(Cell&& other) noexcept : p(other.p) {}\n\nФрагмент 1:\nCell(Cell&& other) noexcept : p(other.p) { other.p = nullptr; }\n\nФрагмент 2:\nCell(Cell&& other) : p(std::exchange(other.p, nullptr)) {}\n\nФрагмент 3:\nauto src = std::make_unique<int>(2); int* raw = src.get(); src.reset(); int v = *raw;",
+    "difficulty": "advanced",
+    "language": "cpp",
+    "standard": "c++20",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "solve(0, 0)",
+        "output": "6\n",
+        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+      },
+      {
+        "input": "solve(1, 0)",
+        "output": "0\n",
+        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+      }
+    ],
+    "constraints": [
+      "Аргумент a — номер фрагмента 0…3; b=0. Возвращайте код 0…6 согласно условию.",
+      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
+      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
+    ],
+    "hints": [
+      {
+        "id": "owners",
+        "order": 1,
+        "text": "Не исполняйте фрагменты. Для каждого найдите объект, чьё время жизни заканчивается раньше использования, и сопоставьте событие с кодами 0–6. Если дефектов два, выбирайте первопричину: нарушение договора или неверный move, а не их следствие в виде double delete."
+      },
+      {
+        "id": "boundary",
+        "order": 2,
+        "text": "В варианте 0 операция названа перемещением, но источник сохраняет указатель: два объекта считают себя единственными владельцами и оба вызовут delete. Выбирайте первопричину — неверный move constructor (код 6), а не его следствие double delete. В варианте 1 источник явно обнулён, инвариант «один блок — один владелец» сохранён. В варианте 2 std::exchange делает то же самое; отсутствие noexcept снижает эффективность в контейнерах, но дефектом памяти не является. В варианте 3 raw используется после reset владельца — use-after-free."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "fragment-0",
+        "name": "Фрагмент 0",
+        "arguments": [0, 0],
+        "expected": "6\n"
+      },
+      {
+        "id": "fragment-1",
+        "name": "Фрагмент 1",
+        "arguments": [1, 0],
+        "expected": "0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "fragment-2",
+        "name": "Фрагмент 2",
+        "arguments": [2, 0],
+        "expected": "0\n"
+      },
+      {
+        "id": "fragment-3",
+        "name": "Фрагмент 3",
+        "arguments": [3, 0],
+        "expected": "2\n"
+      }
+    ],
+    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint solve(int a,int b){(void)b; const int diagnosis[4]={6,0,0,2}; return diagnosis[a];}",
+    "solutionExplanation": "В варианте 0 операция названа перемещением, но источник сохраняет указатель: два объекта считают себя единственными владельцами и оба вызовут delete. Выбирайте первопричину — неверный move constructor (код 6), а не его следствие double delete. В варианте 1 источник явно обнулён, инвариант «один блок — один владелец» сохранён. В варианте 2 std::exchange делает то же самое; отсутствие noexcept снижает эффективность в контейнерах, но дефектом памяти не является. В варианте 3 raw используется после reset владельца — use-after-free.",
+    "checking": {
+      "type": "function",
+      "functionName": "solve",
+      "returnType": "int",
+      "parameters": [
+        { "name": "a", "type": "int" },
+        { "name": "b", "type": "int" }
+      ]
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "lifetime-move-constructor-exercise",
+      "title": "2. Исправление: Неправильный move constructor",
+      "description": "Исправьте move-конструктор Cell: передавайте указатель с обнулением источника, копирование запрещено. get пустого Cell возвращает 0. solve создаёт source(a), перемещает его во вложенный target, сохраняет target.get() + b; после блока проверяет source.get() == 0 и возвращает сохранённое, иначе -9999.",
+      "difficulty": "advanced",
+      "language": "cpp",
+      "standard": "c++20",
+      "compiler": "clang",
+      "diagnostics": "sanitizers",
+      "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct Cell {int* p;explicit Cell(int n):p(new int(n)){} ~Cell(){delete p;} Cell(const Cell&)=delete;Cell& operator=(const Cell&)=delete;Cell(Cell&& x) noexcept:p(x.p){} int get()const{return p?*p:0;}};\nint solve(int a,int b){Cell source{a};int saved;{Cell target(std::move(source));saved=target.get()+b;} return saved;}",
+      "examples": [
+        {
+          "input": "solve(3, 7)",
+          "output": "10\n",
+          "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        },
+        {
+          "input": "solve(0, 0)",
+          "output": "0\n",
+          "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        }
+      ],
+      "constraints": [
+        "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
+        "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
+        "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
+      ],
+      "hints": [
+        {
+          "id": "owners",
+          "order": 1,
+          "text": "После передачи проверьте два состояния: target владеет блоком, source пуст. Доведите оба объекта до разрушения — именно там проявляется ошибка."
+        },
+        {
+          "id": "boundary",
+          "order": 2,
+          "text": "Пустое состояние становится частью публичного договора: метод get не может безусловно разыменовывать p. В учебном Cell get возвращает 0 для пустого объекта; другая допустимая политика — предусловие has_value, но его нужно явно проверять. noexcept важен: vector при росте перемещает элементы только если перемещение noexcept или копия недоступна. Но noexcept обязан быть правдой — исключение из noexcept-функции завершает программу через terminate; передача указателя не бросает, поэтому здесь он обоснован.\n\nНеправильный move-конструктор часто компилируется и выдаёт верные значения до выхода из области: ошибка проявляется во втором delete при разрушении. Проверяйте разрушение обоих объектов, а не только напечатанные значения.\n\nВ варианте 0 операция названа перемещением, но источник сохраняет указатель: два объекта считают себя единственными владельцами и оба вызовут delete. Выбирайте первопричину — неверный move constructor (код 6), а не его следствие double delete. В варианте 1 источник явно обнулён, инвариант «один блок — один владелец» сохранён. В варианте 2 std::exchange делает то же самое; отсутствие noexcept снижает эффективность в контейнерах, но дефектом памяти не является. В варианте 3 raw используется после reset владельца — use-after-free."
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "arguments": [3, 7],
+          "expected": "10\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "arguments": [0, 0],
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "case-3",
+          "name": "Граничный случай 1",
+          "arguments": [-8, 3],
+          "expected": "-5\n"
+        },
+        {
+          "id": "case-4",
+          "name": "Граничный случай 2",
+          "arguments": [5, -9],
+          "expected": "-4\n"
+        },
+        {
+          "id": "case-5",
+          "name": "Граничный случай 3",
+          "arguments": [-1000, 1000],
+          "expected": "0\n"
+        },
+        {
+          "id": "case-6",
+          "name": "Граничный случай 4",
+          "arguments": [1000, -1000],
+          "expected": "0\n"
+        },
+        {
+          "id": "case-7",
+          "name": "Граничный случай 5",
+          "arguments": [4, 4],
+          "expected": "8\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct Cell { int* p; explicit Cell(int n): p(new int(n)) {} ~Cell() { delete p; } Cell(const Cell&) = delete; Cell& operator=(const Cell&) = delete; Cell(Cell&& x) noexcept : p(std::exchange(x.p, nullptr)) {} int get() const { return p ? *p : 0; } };\nint solve(int a, int b) { Cell source{a}; int saved; { Cell target(std::move(source)); saved = target.get() + b; } return source.get() == 0 ? saved : -9999; }",
+      "solutionExplanation": "Пустое состояние становится частью публичного договора: метод get не может безусловно разыменовывать p. В учебном Cell get возвращает 0 для пустого объекта; другая допустимая политика — предусловие has_value, но его нужно явно проверять. noexcept важен: vector при росте перемещает элементы только если перемещение noexcept или копия недоступна. Но noexcept обязан быть правдой — исключение из noexcept-функции завершает программу через terminate; передача указателя не бросает, поэтому здесь он обоснован.\n\nНеправильный move-конструктор часто компилируется и выдаёт верные значения до выхода из области: ошибка проявляется во втором delete при разрушении. Проверяйте разрушение обоих объектов, а не только напечатанные значения.\n\nВ варианте 0 операция названа перемещением, но источник сохраняет указатель: два объекта считают себя единственными владельцами и оба вызовут delete. Выбирайте первопричину — неверный move constructor (код 6), а не его следствие double delete. В варианте 1 источник явно обнулён, инвариант «один блок — один владелец» сохранён. В варианте 2 std::exchange делает то же самое; отсутствие noexcept снижает эффективность в контейнерах, но дефектом памяти не является. В варианте 3 raw используется после reset владельца — use-after-free.",
+      "checking": {
+        "type": "function",
+        "functionName": "solve",
+        "returnType": "int",
+        "parameters": [
+          { "name": "a", "type": "int" },
+          { "name": "b", "type": "int" }
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "lifetime-move-constructor-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "concept",
+        "question": "Зачем обнулять сырой указатель источника при перемещении?",
+        "options": [
+          "Чтобы изменить адрес самого выделенного объекта",
+          "Чтобы источник потерял право освободить переданный ресурс"
+        ],
+        "correct": 1,
+        "explanation": "Пустое состояние становится частью публичного договора: метод get не может безусловно разыменовывать p. В учебном Cell get возвращает 0 для пустого объекта; другая допустимая политика — предусловие has_value, но его нужно явно проверять. noexcept важен: vector при росте перемещает элементы только если перемещение noexcept или копия недоступна. Но noexcept обязан быть правдой — исключение из noexcept-функции завершает программу через terminate; передача указателя не бросает, поэтому здесь он обоснован."
+      },
+      {
+        "id": "trace",
+        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
+        "options": ["0 20", "Ошибка компиляции", "Неопределённое поведение"],
+        "correct": 0,
+        "explanation": "До: source.p → A; target не существует\nОшибочно: target.p = source.p → два владельца A → double delete\nПравильно: target.p = exchange(source.p, null)\nПосле: source.p = null; target.p → A; оба объекта живы"
+      },
+      {
+        "id": "review",
+        "question": "Какое утверждение соответствует контракту урока?",
+        "options": [
+          "Если stdout совпал, любые операции со сроком жизни корректны.",
+          "Неправильный move-конструктор часто компилируется и выдаёт верные значения до выхода из области: ошибка проявляется во втором delete при разрушении. Проверяйте разрушение обоих объектов, а не только напечатанные значения."
+        ],
+        "correct": 1,
+        "explanation": "Поместите перемещённый объект во внутренний блок и выйдите из него: источник должен остаться допустимым пустым объектом. Затем переместите уже пустой источник ещё раз и проверьте, что ничего не падает."
+      }
+    ]
+  }
+}

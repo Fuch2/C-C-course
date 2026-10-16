@@ -1,0 +1,240 @@
+{
+  "id": "oop-composition-vs-inheritance",
+  "title": "Композиция или наследование: выбираем по контракту",
+  "description": "Наследование подходит для подстановки разных реализаций общего поведения. Композиция подходит для сборки объекта из частей и независимой замены алгоритмов. В системе телеметрии TemperatureSensor является Sensor, а TelemetryProcessor содержит фильтр и владеет датчиками. Процессор не является датчиком, даже если у обоих есть метод обработки.",
+  "moduleId": "cpp-oop",
+  "order": 24,
+  "difficulty": "advanced",
+  "estimatedMinutes": 60,
+  "prerequisites": ["oop-solid"],
+  "objectives": [
+    "Применить Композиция или наследование: выбираем по контракту в работающем C++20 коде.",
+    "Проследить состояние и время жизни объектов в примере.",
+    "Реализовать контракт практики и проверить граничные случаи."
+  ],
+  "tags": [
+    "C++20",
+    "ООП",
+    "Композиция или наследование: выбираем по контракту",
+    "датчики",
+    "проект"
+  ],
+  "published": true,
+  "standard": "c++20",
+  "completion": "practice",
+  "exercise": {
+    "id": "oop-composition-vs-inheritance-exercise",
+    "title": "Практика: Композиция или наследование: выбираем по контракту",
+    "description": "Создайте Offset с int delta и apply(int) const = x+delta; Limit с int high и apply(int) const = min(x,high). Pipeline владеет обоими по значению, создаётся Pipeline(int delta,int high), run(int) const сначала применяет Offset, затем Limit. solve(a,b) возвращает Pipeline{b,100}.run(a). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
+    "difficulty": "advanced",
+    "language": "cpp",
+    "standard": "c++20",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "solve(20, 5)",
+        "output": "25\n",
+        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+      },
+      {
+        "input": "solve(99, 2)",
+        "output": "100\n",
+        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+      }
+    ],
+    "constraints": [
+      "Аргументы a, b — целые от −1000 до 1000 включительно.",
+      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
+      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "arguments": [20, 5],
+        "expected": "25\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "arguments": [99, 2],
+        "expected": "100\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "arguments": [-20, -5],
+        "expected": "-25\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "arguments": [1000, 1000],
+        "expected": "100\n"
+      }
+    ],
+    "referenceSolution": "struct Offset { int delta; int apply(int x) const { return x+delta; } };\nstruct Limit { int high; int apply(int x) const { return x>high ? high : x; } };\nclass Pipeline { Offset offset_; Limit limit_; public: Pipeline(int delta,int high) : offset_{delta}, limit_{high} {} int run(int x) const { return limit_.apply(offset_.apply(x)); } };\nint solve(int a,int b) { return Pipeline{b,100}.run(a); }",
+    "solutionExplanation": "Создайте Offset с int delta и apply(int) const = x+delta; Limit с int high и apply(int) const = min(x,high). Pipeline владеет обоими по значению, создаётся Pipeline(int delta,int high), run(int) const сначала применяет Offset, затем Limit. solve(a,b) возвращает Pipeline{b,100}.run(a). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не наследуйте TelemetryProcessor от Sensor ради повторного использования read. Не открывайте vector датчиков наружу: добавление должно сохранять запрет пустых владельцев. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "checking": {
+      "type": "function",
+      "functionName": "solve",
+      "returnType": "int",
+      "parameters": [
+        { "name": "a", "type": "int" },
+        { "name": "b", "type": "int" }
+      ]
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "oop-project-telemetry",
+      "title": "Система обработки датчиков",
+      "description": "Реализуйте систему обработки датчиков C++20 в одном файле. Интерфейс и готовый консольный адаптер находятся в стартовом коде; заполните тела методов, сохраняя сигнатуры. Measurement — значение с int sensorId и int value. Sensor — абстрактный интерфейс Measurement read(int raw) const с публичным виртуальным деструктором. TemperatureSensor(id, offset) возвращает {id, raw+offset}; PressureSensor(id, scale) — {id, raw*scale}. Оба конечных класса объявите final. Все поля реализации закрыты.\n\nFilter(low, high) принимает Measurement, когда low <= value <= high. При low>high конструктор бросает std::invalid_argument. TelemetryProcessor(Filter) владеет фильтром по значению и датчиками через vector<unique_ptr<Sensor>>. add(unique_ptr<Sensor>) передаёт владение и отклоняет nullptr через std::invalid_argument без изменения коллекции. Копирование процессора запрещено. process(const vector<int>& raw) const сначала проверяет соответствие числа входов числу датчиков, иначе бросает std::invalid_argument до любого read. Затем вызывает каждый read ровно один раз, применяет фильтр к преобразованному значению и возвращает vector<Measurement> в порядке добавления датчиков. Повторный process независим от предыдущего, источники не удаляются. Алгоритм работает с любым наследником Sensor, без switch, dynamic_cast и знания конкретных классов. Исключения read распространяются вызывающему коду; предыдущие вызовы не откатываются, частичный результат наружу не возвращается.\n\nПротокол адаптера: n low high, затем n строк type id calibration raw. type=T или P; n=0…100; id=1…1000 (повторы допустимы); calibration=−10…10; raw=−1000…1000; −10000 <= low <= high <= 10000. Вход корректен. Для каждого принятого измерения выведите id и преобразованное value через пробел на отдельной строке; в конце «Принято k». Порядок и повторные идентификаторы сохраняются. Пустой набор печатает только «Принято 0». Не суммируйте температуры с давлениями: здесь целые нормализованные коды тестового протокола, не физические величины в общих единицах. В реальном адаптере понадобятся отдельные единицы и диапазоны.\n\nСдайте заполненный стартовый файл. Публичные и скрытые тесты проверяют протокол. Отдельный test:oop-project проверяет архитектуру эталона, включая сторонний Sensor, время жизни, повторные вызовы и ошибки. Проверка произвольной архитектуры ученика по одному stdout невозможна: на ревью дополнительно проверьте private, override, final, владение и отсутствие срезки.",
+      "difficulty": "advanced",
+      "language": "cpp",
+      "standard": "c++20",
+      "compiler": "clang",
+      "diagnostics": "sanitizers",
+      "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <stdexcept>\n#include <utility>\nstruct Measurement { int sensorId; int value; };\nclass Sensor {\npublic:\n    virtual Measurement read(int raw) const = 0;\n    virtual ~Sensor() = default;\n};\nclass TemperatureSensor final : public Sensor {\n    int id_; int offset_;\npublic:\n    TemperatureSensor(int id, int offset) : id_(id), offset_(offset) {}\n    Measurement read(int raw) const override {\n        (void)raw; (void)id_; (void)offset_;\n        throw std::logic_error(\"Реализуйте преобразование температуры\");\n    }\n};\nclass PressureSensor final : public Sensor {\n    int id_; int scale_;\npublic:\n    PressureSensor(int id, int scale) : id_(id), scale_(scale) {}\n    Measurement read(int raw) const override {\n        (void)raw; (void)id_; (void)scale_;\n        throw std::logic_error(\"Реализуйте преобразование давления\");\n    }\n};\nclass Filter {\n    int low_; int high_;\npublic:\n    Filter(int low, int high) : low_(low), high_(high) {\n        // Добавьте проверку инварианта границ.\n    }\n    bool accepts(const Measurement& m) const {\n        (void)m; (void)low_; (void)high_;\n        throw std::logic_error(\"Реализуйте проверку диапазона\");\n    }\n};\nclass TelemetryProcessor {\n    Filter filter_;\n    std::vector<std::unique_ptr<Sensor>> sensors_;\npublic:\n    explicit TelemetryProcessor(Filter filter) : filter_(filter) {}\n    TelemetryProcessor(const TelemetryProcessor&) = delete;\n    TelemetryProcessor& operator=(const TelemetryProcessor&) = delete;\n    void add(std::unique_ptr<Sensor> sensor) {\n        (void)sensor;\n        throw std::logic_error(\"Реализуйте передачу владения\");\n    }\n    std::vector<Measurement> process(const std::vector<int>& raw) const {\n        (void)raw;\n        throw std::logic_error(\"Реализуйте обработку через Sensor\");\n    }\n};\nint main() {\n    int count{}, low{}, high{};\n    if (!(std::cin >> count >> low >> high)) return 1;\n    TelemetryProcessor processor{Filter{low, high}};\n    std::vector<int> raw;\n    for (int i = 0; i < count; ++i) {\n        char type{};\n        int id{}, calibration{}, value{};\n        if (!(std::cin >> type >> id >> calibration >> value)) return 1;\n        if (type == 'T') processor.add(std::make_unique<TemperatureSensor>(id, calibration));\n        else if (type == 'P') processor.add(std::make_unique<PressureSensor>(id, calibration));\n        else return 1;\n        raw.push_back(value);\n    }\n    const auto accepted = processor.process(raw);\n    for (const auto& m : accepted) std::cout << m.sensorId << ' ' << m.value << '\\n';\n    std::cout << \"Принято \" << accepted.size() << '\\n';\n}\n",
+      "examples": [
+        {
+          "input": "3 0 20\nT 1 2 8\nP 2 3 7\nP 3 2 5\n",
+          "output": "1 10\n3 10\nПринято 2\n",
+          "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        },
+        {
+          "input": "0 -1 1\n",
+          "output": "Принято 0\n",
+          "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        }
+      ],
+      "constraints": [
+        "C++20. Один файл с готовым консольным адаптером.",
+        "Границы, входной протокол и поведение API заданы в условии.",
+        "Память датчиков принадлежит процессору; не используйте ручные new/delete."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "order": 1,
+          "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        },
+        {
+          "id": "hint-2",
+          "order": 2,
+          "text": "Сначала проверяем число входов, поэтому ошибка размера не вызывает ни одного датчика. unique_ptr передаётся в коллекцию только после проверки nullptr. Один цикл вызывает read по виртуальному интерфейсу, затем фильтрует полученное Measurement. Не суммируем значения разных датчиков. Результаты сохраняют порядок и дубликаты id, повторный вызов создаёт новый vector. Время O(n), дополнительная память O(k) для k принятых измерений; владение датчиками O(n). Виртуальный деструктор обеспечивает разрушение конкретных источников. Стандартные контейнеры освобождают ресурсы при исключениях."
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 0 20\nT 1 2 8\nP 2 3 7\nP 3 2 5\n",
+          "expected": "1 10\n3 10\nПринято 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0 -1 1\n",
+          "expected": "Принято 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "case-3",
+          "name": "Граничный сценарий 1",
+          "stdin": "4 0 10\nT 7 -5 5\nP 7 2 5\nT 3 1 10\nP 4 -1 1\n",
+          "expected": "7 0\n7 10\nПринято 2\n"
+        },
+        {
+          "id": "case-4",
+          "name": "Граничный сценарий 2",
+          "stdin": "3 -20 -1\nT 8 -2 -3\nP 2 2 -10\nP 4 -1 2\n",
+          "expected": "8 -5\n2 -20\n4 -2\nПринято 3\n"
+        },
+        {
+          "id": "case-5",
+          "name": "Граничный сценарий 3",
+          "stdin": "2 0 0\nP 9 0 1000\nT 2 -5 5\n",
+          "expected": "9 0\n2 0\nПринято 2\n"
+        },
+        {
+          "id": "case-6",
+          "name": "Граничный сценарий 4",
+          "stdin": "2 1 2\nT 1 0 -10\nP 2 2 5\n",
+          "expected": "Принято 0\n"
+        },
+        {
+          "id": "case-7",
+          "name": "Граничный сценарий 5",
+          "stdin": "2 -10000 10000\nP 1 10 1000\nP 2 -10 1000\n",
+          "expected": "1 10000\n2 -10000\nПринято 2\n"
+        },
+        {
+          "id": "case-8",
+          "name": "Граничный сценарий 6",
+          "stdin": "1 5 5\nT 42 2 3\n",
+          "expected": "42 5\nПринято 1\n"
+        },
+        {
+          "id": "case-9",
+          "name": "Граничный сценарий 7",
+          "stdin": "100 -1 1\nT 1 0 0\nT 2 0 0\nT 3 0 0\nT 4 0 0\nT 5 0 0\nT 6 0 0\nT 7 0 0\nT 8 0 0\nT 9 0 0\nT 10 0 0\nT 11 0 0\nT 12 0 0\nT 13 0 0\nT 14 0 0\nT 15 0 0\nT 16 0 0\nT 17 0 0\nT 18 0 0\nT 19 0 0\nT 20 0 0\nT 21 0 0\nT 22 0 0\nT 23 0 0\nT 24 0 0\nT 25 0 0\nT 26 0 0\nT 27 0 0\nT 28 0 0\nT 29 0 0\nT 30 0 0\nT 31 0 0\nT 32 0 0\nT 33 0 0\nT 34 0 0\nT 35 0 0\nT 36 0 0\nT 37 0 0\nT 38 0 0\nT 39 0 0\nT 40 0 0\nT 41 0 0\nT 42 0 0\nT 43 0 0\nT 44 0 0\nT 45 0 0\nT 46 0 0\nT 47 0 0\nT 48 0 0\nT 49 0 0\nT 50 0 0\nT 51 0 0\nT 52 0 0\nT 53 0 0\nT 54 0 0\nT 55 0 0\nT 56 0 0\nT 57 0 0\nT 58 0 0\nT 59 0 0\nT 60 0 0\nT 61 0 0\nT 62 0 0\nT 63 0 0\nT 64 0 0\nT 65 0 0\nT 66 0 0\nT 67 0 0\nT 68 0 0\nT 69 0 0\nT 70 0 0\nT 71 0 0\nT 72 0 0\nT 73 0 0\nT 74 0 0\nT 75 0 0\nT 76 0 0\nT 77 0 0\nT 78 0 0\nT 79 0 0\nT 80 0 0\nT 81 0 0\nT 82 0 0\nT 83 0 0\nT 84 0 0\nT 85 0 0\nT 86 0 0\nT 87 0 0\nT 88 0 0\nT 89 0 0\nT 90 0 0\nT 91 0 0\nT 92 0 0\nT 93 0 0\nT 94 0 0\nT 95 0 0\nT 96 0 0\nT 97 0 0\nT 98 0 0\nT 99 0 0\nT 100 0 0\n",
+          "expected": "1 0\n2 0\n3 0\n4 0\n5 0\n6 0\n7 0\n8 0\n9 0\n10 0\n11 0\n12 0\n13 0\n14 0\n15 0\n16 0\n17 0\n18 0\n19 0\n20 0\n21 0\n22 0\n23 0\n24 0\n25 0\n26 0\n27 0\n28 0\n29 0\n30 0\n31 0\n32 0\n33 0\n34 0\n35 0\n36 0\n37 0\n38 0\n39 0\n40 0\n41 0\n42 0\n43 0\n44 0\n45 0\n46 0\n47 0\n48 0\n49 0\n50 0\n51 0\n52 0\n53 0\n54 0\n55 0\n56 0\n57 0\n58 0\n59 0\n60 0\n61 0\n62 0\n63 0\n64 0\n65 0\n66 0\n67 0\n68 0\n69 0\n70 0\n71 0\n72 0\n73 0\n74 0\n75 0\n76 0\n77 0\n78 0\n79 0\n80 0\n81 0\n82 0\n83 0\n84 0\n85 0\n86 0\n87 0\n88 0\n89 0\n90 0\n91 0\n92 0\n93 0\n94 0\n95 0\n96 0\n97 0\n98 0\n99 0\n100 0\nПринято 100\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <stdexcept>\n#include <utility>\nstruct Measurement { int sensorId; int value; };\nclass Sensor {\npublic:\n    virtual Measurement read(int raw) const = 0;\n    virtual ~Sensor() = default;\n};\nclass TemperatureSensor final : public Sensor {\n    int id_;\n    int offset_;\npublic:\n    TemperatureSensor(int id, int offset) : id_(id), offset_(offset) {}\n    Measurement read(int raw) const override { return {id_, raw + offset_}; }\n};\nclass PressureSensor final : public Sensor {\n    int id_;\n    int scale_;\npublic:\n    PressureSensor(int id, int scale) : id_(id), scale_(scale) {}\n    Measurement read(int raw) const override { return {id_, raw * scale_}; }\n};\nclass Filter {\n    int low_;\n    int high_;\npublic:\n    Filter(int low, int high) : low_(low), high_(high) {\n        if (low > high) throw std::invalid_argument(\"Некорректный диапазон\");\n    }\n    bool accepts(const Measurement& m) const {\n        return low_ <= m.value && m.value <= high_;\n    }\n};\nclass TelemetryProcessor {\n    Filter filter_;\n    std::vector<std::unique_ptr<Sensor>> sensors_;\npublic:\n    explicit TelemetryProcessor(Filter filter) : filter_(filter) {}\n    TelemetryProcessor(const TelemetryProcessor&) = delete;\n    TelemetryProcessor& operator=(const TelemetryProcessor&) = delete;\n    void add(std::unique_ptr<Sensor> sensor) {\n        if (!sensor) throw std::invalid_argument(\"Пустой датчик\");\n        sensors_.push_back(std::move(sensor));\n    }\n    std::vector<Measurement> process(const std::vector<int>& raw) const {\n        if (raw.size() != sensors_.size())\n            throw std::invalid_argument(\"Размеры не совпадают\");\n        std::vector<Measurement> result;\n        for (std::size_t i = 0; i < sensors_.size(); ++i) {\n            const Measurement measurement = sensors_[i]->read(raw[i]);\n            if (filter_.accepts(measurement)) result.push_back(measurement);\n        }\n        return result;\n    }\n};\nint main() {\n    int count{}, low{}, high{};\n    if (!(std::cin >> count >> low >> high)) return 1;\n    TelemetryProcessor processor{Filter{low, high}};\n    std::vector<int> raw;\n    for (int i = 0; i < count; ++i) {\n        char type{};\n        int id{}, calibration{}, value{};\n        if (!(std::cin >> type >> id >> calibration >> value)) return 1;\n        if (type == 'T') processor.add(std::make_unique<TemperatureSensor>(id, calibration));\n        else if (type == 'P') processor.add(std::make_unique<PressureSensor>(id, calibration));\n        else return 1;\n        raw.push_back(value);\n    }\n    const auto accepted = processor.process(raw);\n    for (const auto& m : accepted) std::cout << m.sensorId << ' ' << m.value << '\\n';\n    std::cout << \"Принято \" << accepted.size() << '\\n';\n}\n",
+      "solutionExplanation": "Сначала проверяем число входов, поэтому ошибка размера не вызывает ни одного датчика. unique_ptr передаётся в коллекцию только после проверки nullptr. Один цикл вызывает read по виртуальному интерфейсу, затем фильтрует полученное Measurement. Не суммируем значения разных датчиков. Результаты сохраняют порядок и дубликаты id, повторный вызов создаёт новый vector. Время O(n), дополнительная память O(k) для k принятых измерений; владение датчиками O(n). Виртуальный деструктор обеспечивает разрушение конкретных источников. Стандартные контейнеры освобождают ресурсы при исключениях.",
+      "checking": { "type": "stdout", "comparison": "exact" }
+    }
+  ],
+  "quiz": {
+    "id": "oop-composition-vs-inheritance-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "contract",
+        "question": "Как выразить связь процессора и фильтра?",
+        "options": [
+          "Процессор содержит фильтр и делегирует ему проверку",
+          "Процессор наследуется от фильтра ради доступа к полям"
+        ],
+        "correct": 0,
+        "explanation": "Если сочетать наследованием тип датчика, фильтр и формат отчёта, количество классов растёт по числу комбинаций. Отдельный фильтр позволяет менять допуск независимо от устройства. Стоимость композиции зависит от представления: поле по значению дёшево, динамический интерфейс добавляет косвенность. Итоговый проект использует полиморфизм там, где нужен новый вид датчика, и обычный объект там, где достаточно диапазона. Перед реализацией назовите владельца каждой части, затем проверьте его уничтожение и отсутствие срезки."
+      },
+      {
+        "id": "trace",
+        "question": "Какой вывод даёт запускаемый пример этого урока?",
+        "options": ["Ошибка компиляции", "6 10", "Программа ничего не выводит"],
+        "correct": 1,
+        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 6 10. Наследование подходит для подстановки разных реализаций общего поведения. Композиция подходит для сборки объекта из частей и независимой замены алгоритмов. В системе телеметрии TemperatureSensor является Sensor, а TelemetryProcessor содержит фильтр и владеет датчиками. Процессор не является датчиком, даже если у обоих есть метод обработки."
+      },
+      {
+        "id": "review",
+        "question": "Какое замечание нужно учесть при ревью решения?",
+        "options": [
+          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
+          "Не наследуйте TelemetryProcessor от Sensor ради повторного использования read. Не открывайте vector датчиков наружу: добавление должно сохранять запрет пустых владельцев."
+        ],
+        "correct": 1,
+        "explanation": "Добавьте второй порядок обработки: сначала ограничение, затем смещение. Результат может отличаться, поэтому порядок делегирования входит в контракт. В проекте фильтрация выполняется после read: сырое значение ещё не прошло калибровку. Проверка до преобразования даст иной набор измерений."
+      }
+    ]
+  }
+}

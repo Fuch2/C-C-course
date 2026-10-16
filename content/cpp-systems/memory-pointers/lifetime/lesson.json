@@ -1,0 +1,526 @@
+{
+  "id": "memory-lifetime",
+  "title": "Время жизни объектов",
+  "description": "Область видимости и время жизни, висячий указатель на переменную блока, почему нельзя вернуть адрес локальной переменной и четыре правильных способа вернуть данные из функции.",
+  "moduleId": "memory-pointers",
+  "order": 5,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["memory-heap"],
+  "objectives": [
+    "Различать область видимости и время жизни объекта",
+    "Находить указатели, которые переживают объект",
+    "Возвращать данные из функции значением, через буфер вызывающего, static-буфер или кучу",
+    "Объяснять ограничения функций, возвращающих общий статический буфер"
+  ],
+  "tags": ["C17", "Память", "Время жизни", "Висячий указатель", "Область видимости"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "memory-lifetime-task-1",
+    "title": "Найди ошибку: адрес из завершившегося блока",
+    "description": "Программа читает `n` чисел и должна напечатать наибольшее. Автор решил хранить не само значение, а указатель на лучшее число. Программа выдаёт неверные ответы, а AddressSanitizer сообщает `stack-use-after-scope`.\n\nНайдите, какой объект умирает раньше указателя, и исправьте программу.",
+    "difficulty": "intermediate",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int *best = NULL;\n    for (int i = 0; i < n; i++) {\n        int value;\n        scanf(\"%d\", &value);\n        if (best == NULL || value > *best) {\n            best = &value;\n        }\n    }\n    printf(\"%d\\n\", *best);\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "4\n3 9 2 5\n",
+        "output": "9\n"
+      },
+      {
+        "input": "1\n-7\n",
+        "output": "-7\n"
+      }
+    ],
+    "constraints": ["1 ≤ n ≤ 1000.", "|x| ≤ 10⁹."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Где объявлена value и сколько она живёт? На следующей итерации best указывает на ту же ячейку — уже с новым числом.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Храните значение, а не адрес: int best; и флаг «первое число» или инициализацию первым прочитанным числом.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "4\n3 9 2 5\n",
+        "expected": "9\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1\n-7\n",
+        "expected": "-7\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Максимум последний",
+        "stdin": "3\n1 2 3\n",
+        "expected": "3\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Максимум первый",
+        "stdin": "3\n3 2 1\n",
+        "expected": "3\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Все отрицательные",
+        "stdin": "4\n-5 -2 -9 -3\n",
+        "expected": "-2\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Крайние значения",
+        "stdin": "2\n1000000000 -1000000000\n",
+        "expected": "1000000000\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Все равны",
+        "stdin": "5\n4 4 4 4 4\n",
+        "expected": "4\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Повторяющийся максимум",
+        "stdin": "6\n1 8 3 8 2 7\n",
+        "expected": "8\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Два отрицательных",
+        "stdin": "2\n-1000000000 -999999999\n",
+        "expected": "-999999999\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Нули",
+        "stdin": "5\n0 -1 0 -1 0\n",
+        "expected": "0\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int best = 0;\n    for (int i = 0; i < n; i++) {\n        int value;\n        scanf(\"%d\", &value);\n        if (i == 0 || value > best) {\n            best = value;\n        }\n    }\n    printf(\"%d\\n\", best);\n    return 0;\n}\n",
+    "solutionExplanation": "`value` объявлена в теле цикла: её время жизни — одна итерация. Указатель `best` объявлен снаружи и живёт дольше. На каждой следующей итерации новая `value` занимает ту же ячейку, поэтому `*best` показывает не прошлый максимум, а только что прочитанное число, — сравнение `value > *best` всегда ложно. После цикла `value` не существует вовсе, и чтение `*best` — неопределённое поведение.\n\nИсправление — копировать **значение** в переменную, которая живёт столько, сколько нужно. Указатель полезен, когда нужно сослаться на долгоживущий объект (элемент массива), а не на временный.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "memory-lifetime-task-2",
+      "title": "Буфер вызывающего",
+      "description": "Реализуйте функцию\n\n```c\nvoid format_duration(int seconds, char out[16]);\n```\n\nОна записывает в буфер `out`, созданный вызывающим кодом, длительность в формате `ЧЧ:ММ:СС` — каждое поле двумя цифрами с ведущим нулём. Функция `main` дана: она читает `q` значений и печатает результат для каждого.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nvoid format_duration(int seconds, char out[16]) {\n    // Запишите строку в out.\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        int seconds;\n        scanf(\"%d\", &seconds);\n        char text[16];\n        format_duration(seconds, text);\n        printf(\"%s\\n\", text);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\n3725\n59\n",
+          "output": "01:02:05\n00:00:59\n"
+        },
+        {
+          "input": "1\n359999\n",
+          "output": "99:59:59\n"
+        }
+      ],
+      "constraints": ["1 ≤ q ≤ 20.", "0 ≤ seconds ≤ 359 999 (до 99:59:59)."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Часы — seconds / 3600, минуты — seconds / 60 % 60, секунды — seconds % 60.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "snprintf(out, 16, \"%02d:%02d:%02d\", h, m, s); — snprintf никогда не запишет больше 16 байтов.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\n3725\n59\n",
+          "expected": "01:02:05\n00:00:59\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n359999\n",
+          "expected": "99:59:59\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ноль",
+          "stdin": "1\n0\n",
+          "expected": "00:00:00\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Ровно минута",
+          "stdin": "1\n60\n",
+          "expected": "00:01:00\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Ровно час",
+          "stdin": "1\n3600\n",
+          "expected": "01:00:00\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Почти сутки",
+          "stdin": "1\n86399\n",
+          "expected": "23:59:59\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Сутки",
+          "stdin": "1\n86400\n",
+          "expected": "24:00:00\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Единицы в каждом поле",
+          "stdin": "3\n1 61 3661\n",
+          "expected": "00:00:01\n00:01:01\n01:01:01\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Переходы через час",
+          "stdin": "2\n3599 7200\n",
+          "expected": "00:59:59\n02:00:00\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "12:34:56",
+          "stdin": "1\n45296\n",
+          "expected": "12:34:56\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nvoid format_duration(int seconds, char out[16]) {\n    int h = seconds / 3600;\n    int m = seconds / 60 % 60;\n    int s = seconds % 60;\n    snprintf(out, 16, \"%02d:%02d:%02d\", h, m, s);\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        int seconds;\n        scanf(\"%d\", &seconds);\n        char text[16];\n        format_duration(seconds, text);\n        printf(\"%s\\n\", text);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Функция не владеет памятью для результата — она только заполняет буфер, который принадлежит `main`. Время жизни буфера полностью под контролем вызывающего кода: `text` живёт ровно одну итерацию цикла, и этого достаточно.\n\n`snprintf` получает размер буфера и никогда не выйдет за его границу; результат всегда завершается `'\\0'`. Это стандартный приём для функций, которые «возвращают строку».",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-lifetime-task-3",
+      "title": "Результат-структура",
+      "description": "Реализуйте функцию, которая возвращает сразу три величины — минимум, максимум и среднее — **одной структурой по значению**:\n\n```c\nstruct Stats {\n    int min;\n    int max;\n    double mean;\n};\n\nstruct Stats analyze(const int *values, int n);\n```\n\nВвод: `n` и `n` целых чисел. Выведите `min max mean`, среднее — с двумя знаками после запятой. Функция `main` дана.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nstruct Stats {\n    int min;\n    int max;\n    double mean;\n};\n\nstruct Stats analyze(const int *values, int n) {\n    struct Stats s = {0, 0, 0.0};\n    // Заполните s.\n    return s;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int values[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    struct Stats s = analyze(values, n);\n    printf(\"%d %d %.2f\\n\", s.min, s.max, s.mean);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5\n4 -2 9 0 3\n",
+          "output": "-2 9 2.80\n"
+        },
+        {
+          "input": "1\n7\n",
+          "output": "7 7 7.00\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000.", "|x| ≤ 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Начните с первого элемента: struct Stats s = {values[0], values[0], 0.0};",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сумму копите в long long, среднее — (double)sum / n.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Возвращайте s значением: return s; — это копия, поэтому локальная переменная может исчезнуть без последствий.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5\n4 -2 9 0 3\n",
+          "expected": "-2 9 2.80\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n7\n",
+          "expected": "7 7 7.00\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Положительные",
+          "stdin": "2\n5 7\n",
+          "expected": "5 7 6.00\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Отрицательные",
+          "stdin": "3\n-3 -1 -2\n",
+          "expected": "-3 -1 -2.00\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Большая сумма",
+          "stdin": "4\n1000000 1000000 1000000 1000000\n",
+          "expected": "1000000 1000000 1000000.00\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Симметрия",
+          "stdin": "3\n-1000000 0 1000000\n",
+          "expected": "-1000000 1000000 0.00\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Периодическое среднее",
+          "stdin": "3\n1 2 2\n",
+          "expected": "1 2 1.67\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Две группы",
+          "stdin": "6\n9 9 9 1 1 1\n",
+          "expected": "1 9 5.00\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Нули",
+          "stdin": "2\n0 0\n",
+          "expected": "0 0 0.00\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Смешанные",
+          "stdin": "5\n10 -10 20 -20 1\n",
+          "expected": "-20 20 0.20\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstruct Stats {\n    int min;\n    int max;\n    double mean;\n};\n\nstruct Stats analyze(const int *values, int n) {\n    struct Stats s = {values[0], values[0], 0.0};\n    long long sum = 0;\n    for (int i = 0; i < n; i++) {\n        if (values[i] < s.min) {\n            s.min = values[i];\n        }\n        if (values[i] > s.max) {\n            s.max = values[i];\n        }\n        sum += values[i];\n    }\n    s.mean = (double)sum / n;\n    return s;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int values[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    struct Stats s = analyze(values, n);\n    printf(\"%d %d %.2f\\n\", s.min, s.max, s.mean);\n    return 0;\n}\n",
+      "solutionExplanation": "Возврат структуры значением — самый безопасный способ вернуть несколько величин: вызывающий код получает **копию**, и нет никаких вопросов о времени жизни. Три выходных параметра (`int *min, int *max, double *mean`) тоже сработали бы, но структура делает интерфейс короче и не позволяет перепутать порядок аргументов.\n\nМинимум и максимум начинаются с первого элемента, а не с нуля: иначе для чисел `5 7` минимум оказался бы равен 0.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-lifetime-task-4",
+      "title": "Найди ошибку: общий статический буфер",
+      "description": "Функция `to_binary` написана верно: она возвращает двоичную запись числа во внутреннем `static`-буфере. Программа читает пары чисел `a b` и для каждой пары должна напечатать двоичные записи обоих чисел через пробел. Но печатается одно и то же число дважды.\n\nИсправьте `main`, не меняя `to_binary`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <string.h>\n\nconst char *to_binary(unsigned x) {\n    static char buffer[33];\n    int pos = 32;\n    buffer[pos] = '\\0';\n    do {\n        buffer[--pos] = (char)('0' + x % 2);\n        x /= 2;\n    } while (x > 0);\n    return buffer + pos;\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        unsigned a, b;\n        scanf(\"%u %u\", &a, &b);\n        const char *left = to_binary(a);\n        const char *right = to_binary(b);\n        printf(\"%s %s\\n\", left, right);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "1\n5 2\n",
+          "output": "101 10\n"
+        },
+        {
+          "input": "2\n0 1\n8 8\n",
+          "output": "0 1\n1000 1000\n"
+        }
+      ],
+      "constraints": ["1 ≤ q ≤ 10.", "0 ≤ a, b ≤ 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Куда указывают left и right после второго вызова to_binary?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Скопируйте первый результат в собственный массив до второго вызова: char left[32]; strcpy(left, to_binary(a)); — или напечатайте его сразу.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1\n5 2\n",
+          "expected": "101 10\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\n0 1\n8 8\n",
+          "expected": "0 1\n1000 1000\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Единица и ноль",
+          "stdin": "1\n1 0\n",
+          "expected": "1 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Разная длина",
+          "stdin": "1\n255 256\n",
+          "expected": "11111111 100000000\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Длинная и короткая",
+          "stdin": "1\n1000000 3\n",
+          "expected": "11110100001001000000 11\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Короткая и длинная",
+          "stdin": "1\n3 1000000\n",
+          "expected": "11 11110100001001000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Несколько пар",
+          "stdin": "3\n7 6\n5 4\n3 2\n",
+          "expected": "111 110\n101 100\n11 10\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Десять битов",
+          "stdin": "1\n1023 512\n",
+          "expected": "1111111111 1000000000\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Два нуля",
+          "stdin": "1\n0 0\n",
+          "expected": "0 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Одинаковая длина",
+          "stdin": "2\n12 10\n9 6\n",
+          "expected": "1100 1010\n1001 110\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nconst char *to_binary(unsigned x) {\n    static char buffer[33];\n    int pos = 32;\n    buffer[pos] = '\\0';\n    do {\n        buffer[--pos] = (char)('0' + x % 2);\n        x /= 2;\n    } while (x > 0);\n    return buffer + pos;\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        unsigned a, b;\n        scanf(\"%u %u\", &a, &b);\n        char left[33];\n        strcpy(left, to_binary(a));\n        const char *right = to_binary(b);\n        printf(\"%s %s\\n\", left, right);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`to_binary` пишет результат в один и тот же `static`-буфер и возвращает указатель внутрь него. После второго вызова буфер содержит запись `b`, а `left` указывает в тот же буфер — обе строки выглядят как `b` (или как хвост от неё, если записи разной длины).\n\nСанитайзеры здесь молчат: буфер жив, границы не нарушены. Это логическая ошибка времени жизни **результата**: он действителен только до следующего вызова функции. Решение — скопировать результат в свою память, пока он ещё верен.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "memory-lifetime-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Какие объекты существуют всё время работы программы, но видны по имени только внутри одной функции?",
+        "explanation": "Их область видимости — тело функции, а время жизни — вся программа. Глобальные видны во всём файле, параметры живут один вызов.",
+        "options": [
+          "static-переменные, объявленные внутри функции",
+          "Глобальные переменные",
+          "Параметры функции",
+          "Блоки из malloc"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nconst char *label(int code) {\n    static char buf[8];\n    snprintf(buf, sizeof buf, \"E%d\", code);\n    return buf;\n}\n\nint main(void) {\n    const char *first = label(1);\n    const char *second = label(42);\n    printf(\"%s %s\\n\", first, second);\n    return 0;\n}",
+        "explanation": "Оба указателя указывают на один и тот же static-буфер, который второй вызов перезаписал строкой E42.",
+        "type": "text",
+        "answers": ["E42 E42"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "В каких фрагментах указатель переживает объект, на который указывает? Выберите все.",
+        "explanation": "x и y — автоматические объекты, они исчезают раньше указателя. static z живёт всю программу, блок из malloc — до free.",
+        "type": "multiple",
+        "options": [
+          "int *f(void) { int x = 1; return &x; }",
+          "int *p; { int y = 2; p = &y; } *p = 3;",
+          "int *g(void) { static int z = 0; return &z; }",
+          "int *h(void) { int *q = malloc(sizeof *q); return q; }"
+        ],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nstruct Pair {\n    int a;\n    int b;\n};\n\nstruct Pair swap_pair(struct Pair p) {\n    struct Pair r = {p.b, p.a};\n    return r;\n}\n\nint main(void) {\n    struct Pair p = {1, 2};\n    struct Pair q = swap_pair(p);\n    printf(\"%d %d %d %d\\n\", p.a, p.b, q.a, q.b);\n    return 0;\n}",
+        "explanation": "Структура передаётся и возвращается копией. Исходная p не меняется, q получает копию локальной r.",
+        "type": "text",
+        "answers": ["1 2 2 1"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Почему программа с висячим указателем часто выводит «правильное» значение без санитайзеров?",
+        "explanation": "Память на стеке не очищается при выходе из блока. Как только там окажется кадр другого вызова, значение изменится.",
+        "options": [
+          "Байты умершего объекта ещё не перезаписаны, но обращение к ним всё равно неопределённое поведение",
+          "Компилятор продлевает жизнь переменной, если на неё есть указатель",
+          "Висячий указатель автоматически перенаправляется на копию",
+          "Это означает, что ошибки на самом деле нет"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Функция должна вернуть строку, длина которой становится известна только внутри неё. Какой способ подходит лучше всего?",
+        "explanation": "Размер знает только функция, значит, и выделять должна она. Локальный массив умрёт, static-буфер ограничен и общий для всех вызовов, массив нельзя вернуть значением.",
+        "options": [
+          "Выделить блок в куче и вернуть его; освобождает вызывающий код",
+          "Вернуть адрес локального массива char[1000]",
+          "Вернуть адрес static-буфера фиксированного размера",
+          "Вернуть строку значением, как структуру"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Сколько раз создаётся переменная value при выполнении цикла?",
+        "code": "for (int i = 0; i < 5; i++) {\n    int value = i * i;\n    total += value;\n}",
+        "codeLanguage": "c",
+        "explanation": "Время жизни value — одна итерация: объект создаётся при входе в тело цикла и исчезает в его конце.",
+        "type": "text",
+        "answers": ["5"],
+        "placeholder": "Число"
+      }
+    ]
+  }
+}

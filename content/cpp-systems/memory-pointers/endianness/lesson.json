@@ -1,0 +1,514 @@
+{
+  "id": "memory-endianness",
+  "title": "Порядок байтов",
+  "description": "Little-endian и big-endian, как узнать порядок байтов машины, почему он важен для файлов и сети, переносимая запись и чтение чисел сдвигами, приведение перед сдвигом и перестановка байтов.",
+  "moduleId": "memory-pointers",
+  "order": 25,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
+  "prerequisites": ["memory-padding"],
+  "objectives": [
+    "Объяснять различие little-endian и big-endian и определять порядок байтов машины",
+    "Понимать, где порядок байтов важен: файлы, сеть, двоичные форматы",
+    "Записывать и читать числа с явным порядком байтов через сдвиги",
+    "Избегать переполнения при сдвиге байтов и переставлять байты числа"
+  ],
+  "tags": ["C17", "Память", "Порядок байтов", "Endianness", "Сериализация"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "memory-endianness-task-1",
+    "title": "Байты в сетевом порядке",
+    "description": "Для каждого числа `x` типа `uint32_t` напечатайте его 4 байта в порядке **big-endian** (две шестнадцатеричные цифры, через пробел). Используйте сдвиги, а не `memcpy` — решение должно работать на машине с любым порядком байтов.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "2\n305419896\n1\n",
+        "output": "12 34 56 78\n00 00 00 01\n"
+      },
+      {
+        "input": "1\n4294967295\n",
+        "output": "ff ff ff ff\n"
+      }
+    ],
+    "constraints": ["1 ≤ q ≤ 20.", "0 ≤ x ≤ 4 294 967 295."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Байт с номером i (от старшего): (x >> (24 - 8 * i)) & 0xFF.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Читайте через scanf(\"%u\", &x) в unsigned int или через SCNu32 из <inttypes.h> в uint32_t.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "2\n305419896\n1\n",
+        "expected": "12 34 56 78\n00 00 00 01\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1\n4294967295\n",
+        "expected": "ff ff ff ff\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Ноль",
+        "stdin": "1\n0\n",
+        "expected": "00 00 00 00\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "256",
+        "stdin": "1\n256\n",
+        "expected": "00 00 01 00\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Порт 8080",
+        "stdin": "1\n8080\n",
+        "expected": "00 00 1f 90\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "IP 192.168.1.1",
+        "stdin": "1\n3232235777\n",
+        "expected": "c0 a8 01 01\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Старший бит",
+        "stdin": "1\n2147483648\n",
+        "expected": "80 00 00 00\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Отдельные байты",
+        "stdin": "2\n16777216\n65536\n",
+        "expected": "01 00 00 00\n00 01 00 00\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "0xDEADBEEF",
+        "stdin": "1\n3735928559\n",
+        "expected": "de ad be ef\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Растущие маски",
+        "stdin": "3\n255\n65535\n16777215\n",
+        "expected": "00 00 00 ff\n00 00 ff ff\n00 ff ff ff\n"
+      }
+    ],
+    "referenceSolution": "#include <stdint.h>\n#include <stdio.h>\n\nvoid put_u32_be(unsigned char *out, uint32_t x) {\n    out[0] = (unsigned char)(x >> 24);\n    out[1] = (unsigned char)(x >> 16);\n    out[2] = (unsigned char)(x >> 8);\n    out[3] = (unsigned char)x;\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        unsigned value;\n        scanf(\"%u\", &value);\n        unsigned char bytes[4];\n        put_u32_be(bytes, (uint32_t)value);\n        printf(\"%02x %02x %02x %02x\\n\", bytes[0], bytes[1], bytes[2], bytes[3]);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Сдвиг вправо на 24, 16, 8 и 0 битов выдвигает в младшую позицию каждый байт по очереди, начиная со старшего; приведение к `unsigned char` отбрасывает остальные биты. Это операции над значением, поэтому результат одинаков на x86 и на big-endian процессоре.\n\nСравните с уроком о байтах объекта: там через `unsigned char *` вы видели машинный порядок (`78 56 34 12`), здесь получаете зафиксированный формат (`12 34 56 78`).",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "memory-endianness-task-2",
+      "title": "Разбор little-endian",
+      "description": "Каждый запрос — тип (`u16`, `u32` или `u64`) и соответствующее число байтов (2, 4 или 8) в шестнадцатеричной записи. Байты заданы в порядке **little-endian**. Напечатайте значение беззнакового числа в десятичной записи.\n\nСобирайте число сдвигами, а не `memcpy`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\nu16 34 12\nu32 78 56 34 12\n",
+          "output": "4660\n305419896\n"
+        },
+        {
+          "input": "1\nu64 ff ff ff ff ff ff ff ff\n",
+          "output": "18446744073709551615\n"
+        }
+      ],
+      "constraints": ["1 ≤ q ≤ 20."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Для little-endian байт i вносит (uint64_t)b[i] << (8 * i).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Накопление: uint64_t v = 0; for (i = 0; i < size; i++) v |= (uint64_t)b[i] << (8 * i); печать — %llu с приведением к unsigned long long.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\nu16 34 12\nu32 78 56 34 12\n",
+          "expected": "4660\n305419896\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nu64 ff ff ff ff ff ff ff ff\n",
+          "expected": "18446744073709551615\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ноль",
+          "stdin": "1\nu16 00 00\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Максимум u16",
+          "stdin": "1\nu16 ff ff\n",
+          "expected": "65535\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Старший бит u32",
+          "stdin": "1\nu32 00 00 00 80\n",
+          "expected": "2147483648\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Единица",
+          "stdin": "1\nu32 01 00 00 00\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Старший бит u64",
+          "stdin": "1\nu64 00 00 00 00 00 00 00 80\n",
+          "expected": "9223372036854775808\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "0x0123456789ABCDEF",
+          "stdin": "1\nu64 ef cd ab 89 67 45 23 01\n",
+          "expected": "81985529216486895\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смешанные",
+          "stdin": "3\nu16 90 1f\nu32 36 00 00 00\nu64 01 02 00 00 00 00 00 00\n",
+          "expected": "8080\n54\n513\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Максимум u32",
+          "stdin": "1\nu32 ff ff ff ff\n",
+          "expected": "4294967295\n"
+        }
+      ],
+      "referenceSolution": "#include <stdint.h>\n#include <stdio.h>\n\nuint64_t get_le(const unsigned char *b, int size) {\n    uint64_t v = 0;\n    for (int i = 0; i < size; i++) {\n        v |= (uint64_t)b[i] << (8 * i);\n    }\n    return v;\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int k = 0; k < q; k++) {\n        char type[4];\n        scanf(\"%3s\", type);\n        int size = type[1] == '1' ? 2 : type[1] == '3' ? 4 : 8;\n        unsigned char b[8];\n        for (int i = 0; i < size; i++) {\n            unsigned value;\n            scanf(\"%x\", &value);\n            b[i] = (unsigned char)value;\n        }\n        printf(\"%llu\\n\", (unsigned long long)get_le(b, size));\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "В little-endian первый байт — младший, поэтому байт с номером `i` сдвигается на `8i` битов влево. Приведение к `uint64_t` до сдвига обязательно: сдвиг `int` на 32 и больше битов — неопределённое поведение, а 64-битное число нужно собирать в 64-битном типе.\n\nОдна функция обслуживает все три ширины — меняется только количество байтов. Так читают поля форматов ZIP, BMP, WAV и ELF.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-endianness-task-3",
+      "title": "Найди ошибку: сдвиг в знаковый бит",
+      "description": "Функция `read_u32_be` собирает 32-битное число из четырёх байтов в порядке big-endian. Программа читает `n` байтов и печатает все полные четвёрки как числа. Для байтов меньше `0x80` всё верно, но для больших UBSan сообщает о недопустимом сдвиге.\n\nИсправьте функцию.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdint.h>\n#include <stdio.h>\n\nuint32_t read_u32_be(const unsigned char *in) {\n    return in[0] << 24 | in[1] << 16 | in[2] << 8 | in[3];\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    unsigned char buf[16];\n    for (int i = 0; i < n; i++) {\n        unsigned value;\n        scanf(\"%x\", &value);\n        buf[i] = (unsigned char)value;\n    }\n    for (int i = 0; i + 4 <= n; i += 4) {\n        printf(\"%u\\n\", (unsigned)read_u32_be(buf + i));\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "4\n12 34 56 78\n",
+          "output": "305419896\n"
+        },
+        {
+          "input": "4\nff ff ff ff\n",
+          "output": "4294967295\n"
+        }
+      ],
+      "constraints": ["4 ≤ n ≤ 16."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какой тип имеет выражение in[0] << 24, если in[0] — unsigned char?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Приведите каждый байт до сдвига: (uint32_t)in[0] << 24.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\n12 34 56 78\n",
+          "expected": "305419896\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "4\nff ff ff ff\n",
+          "expected": "4294967295\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ровно старший бит",
+          "stdin": "4\n80 00 00 00\n",
+          "expected": "2147483648\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Максимум без старшего бита",
+          "stdin": "4\n7f ff ff ff\n",
+          "expected": "2147483647\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Два числа",
+          "stdin": "8\n00 00 00 01 de ad be ef\n",
+          "expected": "1\n3735928559\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Неполная четвёрка",
+          "stdin": "5\nc0 a8 01 01 99\n",
+          "expected": "3232235777\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Нули",
+          "stdin": "4\n00 00 00 00\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Три числа",
+          "stdin": "12\n01 02 03 04 a1 b2 c3 d4 ff 00 ff 00\n",
+          "expected": "16909060\n2712847316\n4278255360\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Четыре числа",
+          "stdin": "16\n80 80 80 80 7f 7f 7f 7f 00 ff 00 ff ff 00 ff 00\n",
+          "expected": "2155905152\n2139062143\n16711935\n4278255360\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Перевёрнутый порт",
+          "stdin": "4\n90 1f 00 00\n",
+          "expected": "2417950720\n"
+        }
+      ],
+      "referenceSolution": "#include <stdint.h>\n#include <stdio.h>\n\nuint32_t read_u32_be(const unsigned char *in) {\n    return (uint32_t)in[0] << 24 | (uint32_t)in[1] << 16 | (uint32_t)in[2] << 8 | (uint32_t)in[3];\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    unsigned char buf[16];\n    for (int i = 0; i < n; i++) {\n        unsigned value;\n        scanf(\"%x\", &value);\n        buf[i] = (unsigned char)value;\n    }\n    for (int i = 0; i + 4 <= n; i += 4) {\n        printf(\"%u\\n\", (unsigned)read_u32_be(buf + i));\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Перед сдвигом `unsigned char` превращается в `int` (целочисленное продвижение). Для `in[0] = 0x80` и больше результат `in[0] << 24` не помещается в `int` — это неопределённое поведение. На практике получается отрицательное число, которое при объединении с другими байтами и преобразовании в `uint32_t` может дать верный ответ, — но стандарт этого не обещает, и UBSan останавливает программу.\n\nС приведением `(uint32_t)` весь расчёт идёт в беззнаковом 32-битном типе, где сдвиг до 31 бита определён.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-endianness-task-4",
+      "title": "Размер картинки BMP",
+      "description": "Заголовок файла BMP хранит числа в порядке **little-endian**. Даны первые 26 байтов файла в шестнадцатеричной записи. Проверьте сигнатуру — первые два байта должны быть `42 4d` (буквы `BM`). Напечатайте:\n\n```\nsize=S offset=O width=W height=H\n```\n\nгде `S` — беззнаковое 32-битное число по смещению 2 (размер файла), `O` — по смещению 10 (начало пикселей), `W` и `H` — **знаковые** 32-битные числа по смещениям 18 и 22. Отрицательная высота в BMP означает, что строки хранятся сверху вниз. Если сигнатура неверна, напечатайте `not a bmp`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "42 4d 36 10 0e 00 00 00 00 00 36 00 00 00 28 00 00 00 80 02 00 00 e0 01 00 00\n",
+          "output": "size=921654 offset=54 width=640 height=480\n"
+        },
+        {
+          "input": "89 50 48 00 00 00 00 00 00 00 36 00 00 00 28 00 00 00 02 00 00 00 fd ff ff ff\n",
+          "output": "not a bmp\n"
+        }
+      ],
+      "constraints": ["Ровно 26 байтов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Напишите uint32_t get_u32_le(const unsigned char *b) со сдвигами (uint32_t)b[i] << (8 * i).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Знаковое значение: int32_t v = (int32_t)get_u32_le(...); — на всех распространённых платформах преобразование даёт дополнительный код. Печать — через приведение к long.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "42 4d 36 10 0e 00 00 00 00 00 36 00 00 00 28 00 00 00 80 02 00 00 e0 01 00 00\n",
+          "expected": "size=921654 offset=54 width=640 height=480\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "89 50 48 00 00 00 00 00 00 00 36 00 00 00 28 00 00 00 02 00 00 00 fd ff ff ff\n",
+          "expected": "not a bmp\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Один пиксель",
+          "stdin": "42 4d 39 00 00 00 00 00 00 00 36 00 00 00 28 00 00 00 01 00 00 00 01 00 00 00\n",
+          "expected": "size=57 offset=54 width=1 height=1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Full HD",
+          "stdin": "42 4d 36 ec 5e 00 00 00 00 00 36 00 00 00 28 00 00 00 80 07 00 00 38 04 00 00\n",
+          "expected": "size=6220854 offset=54 width=1920 height=1080\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Отрицательная высота",
+          "stdin": "42 4d 66 75 00 00 00 00 00 00 36 00 00 00 28 00 00 00 64 00 00 00 9c ff ff ff\n",
+          "expected": "size=30054 offset=54 width=100 height=-100\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Ширина больше 16 бит",
+          "stdin": "42 4d 36 00 06 00 00 00 00 00 36 00 00 00 28 00 00 00 00 00 01 00 02 00 00 00\n",
+          "expected": "size=393270 offset=54 width=65536 height=2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Маленькая картинка",
+          "stdin": "42 4d 63 00 00 00 00 00 00 00 36 00 00 00 28 00 00 00 03 00 00 00 05 00 00 00\n",
+          "expected": "size=99 offset=54 width=3 height=5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Большая перевёрнутая",
+          "stdin": "42 4d 36 51 25 02 00 00 00 00 36 00 00 00 28 00 00 00 a0 0f 00 00 48 f4 ff ff\n",
+          "expected": "size=36000054 offset=54 width=4000 height=-3000\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Почти правильная сигнатура",
+          "stdin": "42 4e 36 00 03 00 00 00 00 00 36 00 00 00 28 00 00 00 00 01 00 00 00 01 00 00\n",
+          "expected": "not a bmp\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Узкая и высокая",
+          "stdin": "42 4d d2 18 00 00 00 00 00 00 36 00 00 00 28 00 00 00 07 00 00 00 2c 01 00 00\n",
+          "expected": "size=6354 offset=54 width=7 height=300\n"
+        }
+      ],
+      "referenceSolution": "#include <stdint.h>\n#include <stdio.h>\n\nuint32_t get_u32_le(const unsigned char *b) {\n    return (uint32_t)b[0] | (uint32_t)b[1] << 8 | (uint32_t)b[2] << 16 | (uint32_t)b[3] << 24;\n}\n\nint main(void) {\n    unsigned char h[26];\n    for (int i = 0; i < 26; i++) {\n        unsigned value;\n        scanf(\"%x\", &value);\n        h[i] = (unsigned char)value;\n    }\n    if (h[0] != 0x42 || h[1] != 0x4d) {\n        printf(\"not a bmp\\n\");\n        return 0;\n    }\n    uint32_t size = get_u32_le(h + 2);\n    uint32_t offset = get_u32_le(h + 10);\n    int32_t width = (int32_t)get_u32_le(h + 18);\n    int32_t height = (int32_t)get_u32_le(h + 22);\n    printf(\"size=%lu offset=%lu width=%ld height=%ld\\n\", (unsigned long)size,\n           (unsigned long)offset, (long)width, (long)height);\n    return 0;\n}\n",
+      "solutionExplanation": "Поля заголовка BMP — 32-битные числа в little-endian по фиксированным смещениям. Функция `get_u32_le` собирает их сдвигами, поэтому программа одинаково прочитает файл на любом процессоре. Ширина и высота знаковые: беззнаковое значение `0xFFFFFF9C` превращается в `int32_t` −100.\n\nСмещения 18 и 22 не кратны 4, так что приведение `*(int32_t *)(h + 18)` было бы ещё и невыровненным доступом. Разбор сдвигами решает обе проблемы сразу — порядка байтов и выравнивания.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "memory-endianness-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "В каком порядке лежат байты числа 0x0A0B0C0D в памяти big-endian машины (от меньшего адреса к большему)?",
+        "explanation": "Big-endian кладёт старший байт первым — так же, как число записано.",
+        "options": ["0a 0b 0c 0d", "0d 0c 0b 0a", "0b 0a 0d 0c", "Зависит от компилятора"],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdint.h>\n#include <stdio.h>\n\nint main(void) {\n    unsigned char b[2] = {0x34, 0x12};\n    uint16_t le = (uint16_t)(b[0] | b[1] << 8);\n    uint16_t be = (uint16_t)(b[0] << 8 | b[1]);\n    printf(\"%04x %04x\\n\", (unsigned)le, (unsigned)be);\n    return 0;\n}",
+        "explanation": "Чтение как little-endian ставит b[1] старшим байтом, как big-endian — b[0].",
+        "type": "text",
+        "answers": ["1234 3412"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Какие операции зависят от порядка байтов машины? Выберите все.",
+        "explanation": "Сдвиги и сравнения работают со значениями. От порядка зависят только операции с представлением.",
+        "type": "multiple",
+        "options": [
+          "Чтение первого байта числа через (unsigned char *)&x",
+          "fwrite(&x, sizeof x, 1, file)",
+          "x >> 8",
+          "x == 0x1234",
+          "memcpy(buf, &x, 4) и отправка buf по сети"
+        ],
+        "correct": [0, 1, 4]
+      },
+      {
+        "id": "q4",
+        "question": "Почему в выражении (uint32_t)b[0] << 24 нужно приведение?",
+        "explanation": "Целочисленные продвижения превращают unsigned char в int. Сдвиг в знаковый бит int — UB.",
+        "options": [
+          "Без него b[0] превращается в int, и 0x80 << 24 переполняет int — неопределённое поведение",
+          "Без него сдвиг выполняется в char и теряет биты",
+          "Приведение меняет порядок байтов",
+          "Оно не нужно — это стиль"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какой порядок байтов называют сетевым?",
+        "explanation": "Заголовки TCP/IP используют big-endian. Функции htonl/ntohl переводят числа в него и обратно.",
+        "options": [
+          "Big-endian",
+          "Little-endian",
+          "Порядок байтов отправителя",
+          "Тот, что у получателя"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Чему равен результат swap32(0x00000001)?",
+        "explanation": "Единственный ненулевой байт переезжает из младшей позиции в старшую: 0x01000000 = 2²⁴.",
+        "type": "text",
+        "answers": ["16777216", "0x01000000"],
+        "placeholder": "Значение"
+      },
+      {
+        "id": "q7",
+        "question": "Программа на x86 записала uint16_t port = 8080 (0x1F90) в файл через fwrite. Какое значение прочитает программа, разбирающая файл как big-endian?",
+        "explanation": "В файле лежат байты 90 1F; как big-endian это 0x901F = 36895.",
+        "type": "text",
+        "answers": ["36895"],
+        "placeholder": "Значение"
+      }
+    ]
+  }
+}

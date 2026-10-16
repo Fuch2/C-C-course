@@ -1,0 +1,138 @@
+name: code-systems
+services:
+  sandbox-image:
+    image: code-systems-sandbox:local
+    build:
+      context: .
+      dockerfile: docker/sandbox/Dockerfile
+    entrypoint: ['/bin/true']
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    pids_limit: 8
+    mem_limit: 32m
+
+  init:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+      target: init
+    environment:
+      DATABASE_URL: file:/data/course.db
+    volumes:
+      - course-data:/data
+      - runner-secrets:/secrets
+    network_mode: none
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER]
+    security_opt: ['no-new-privileges:true']
+    pids_limit: 64
+    mem_limit: 256m
+
+  runner:
+    user: '0:10001'
+    stop_grace_period: 45s
+    build:
+      context: .
+      dockerfile: docker/runner.Dockerfile
+    environment:
+      RUNNER_TOKEN_FILE: /secrets/runner-token
+      SANDBOX_IMAGE: code-systems-sandbox:local
+      RUNNER_INSTANCE_ID: code-systems-compose
+    volumes:
+      - ${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock
+      - runner-secrets:/secrets:ro
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      sandbox-image:
+        condition: service_completed_successfully
+    # `docker compose watch`: пересобирает runner после изменений его исходников.
+    develop:
+      watch:
+        - { action: rebuild, path: ./apps/runner }
+        - { action: rebuild, path: ./packages/shared }
+        - { action: rebuild, path: ./docker/runner.Dockerfile }
+    networks: [backend]
+    read_only: true
+    tmpfs: ['/tmp:rw,noexec,nosuid,size=16m']
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    pids_limit: 128
+    mem_limit: 256m
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:4001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 10s
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+      target: web
+    ports:
+      - '127.0.0.1:${WEB_PORT:-3000}:3000'
+    environment:
+      DATABASE_URL: file:/data/course.db
+      RUNNER_URL: http://runner:4001
+      RUNNER_TOKEN_FILE: /secrets/runner-token
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
+    volumes:
+      - course-data:/data
+      - runner-secrets:/secrets:ro
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      runner:
+        condition: service_healthy
+    # `docker compose watch`: пересобирает сайт после изменений кода или уроков.
+    # Открытые вкладки замечают новую сборку через /api/version и перезагружаются.
+    develop:
+      watch:
+        - action: rebuild
+          path: ./apps/web
+          ignore: [next-env.d.ts, tsconfig.tsbuildinfo]
+        - { action: rebuild, path: ./packages }
+        - { action: rebuild, path: ./content }
+        - { action: rebuild, path: ./prisma }
+        - { action: rebuild, path: ./package.json }
+        - { action: rebuild, path: ./package-lock.json }
+        - { action: rebuild, path: ./docker/web.Dockerfile }
+    networks: [frontend, backend]
+    read_only: true
+    tmpfs: ['/tmp:rw,noexec,nosuid,size=32m']
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    pids_limit: 128
+    mem_limit: 768m
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 20s
+      timeout: 8s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  course-data:
+  runner-secrets:
+networks:
+  frontend:
+  backend:
+    internal: true

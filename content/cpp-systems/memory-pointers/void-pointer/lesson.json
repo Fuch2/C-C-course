@@ -1,0 +1,534 @@
+{
+  "id": "memory-void-pointer",
+  "title": "void * и обобщённые функции",
+  "description": "Указатель без типа: неявные преобразования и ограничения, обобщённые функции через размер элемента, qsort для чисел, структур и строк, безопасная функция сравнения и bsearch.",
+  "moduleId": "memory-pointers",
+  "order": 10,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 55,
+  "prerequisites": ["memory-const-pointers"],
+  "objectives": [
+    "Объяснять, что можно и чего нельзя делать с void *",
+    "Писать обобщённые функции, работающие с элементами любого размера",
+    "Сортировать массивы чисел, структур и строк функцией qsort",
+    "Писать функции сравнения без переполнения и искать элементы через bsearch"
+  ],
+  "tags": ["C17", "Память", "void *", "qsort", "bsearch", "Обобщённое программирование"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "memory-void-pointer-task-1",
+    "title": "Сортировка по убыванию",
+    "description": "Прочитайте `n` целых чисел и напечатайте их по убыванию через пробел, используя `qsort`.\n\nЧисла могут быть любыми значениями `int`, в том числе `−2147483648` и `2147483647`: функция сравнения не должна переполняться.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "5\n3 -1 4 1 5\n",
+        "output": "5 4 3 1 -1\n"
+      },
+      {
+        "input": "1\n0\n",
+        "output": "0\n"
+      }
+    ],
+    "constraints": ["1 ≤ n ≤ 1000.", "−2 147 483 648 ≤ x ≤ 2 147 483 647."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Прочитайте значения: int a = *(const int *)pa; int b = *(const int *)pb;",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "По убыванию без переполнения: return (b > a) - (b < a);",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Вызов: qsort(v, n, sizeof v[0], compare_desc);",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "5\n3 -1 4 1 5\n",
+        "expected": "5 4 3 1 -1\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1\n0\n",
+        "expected": "0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Пределы int",
+        "stdin": "2\n2147483647 -2147483648\n",
+        "expected": "2147483647 -2147483648\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Пределы и ноль",
+        "stdin": "3\n-2147483648 2147483647 0\n",
+        "expected": "2147483647 0 -2147483648\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Равные",
+        "stdin": "4\n7 7 7 7\n",
+        "expected": "7 7 7 7\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "По возрастанию",
+        "stdin": "5\n1 2 3 4 5\n",
+        "expected": "5 4 3 2 1\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Уже по убыванию",
+        "stdin": "5\n5 4 3 2 1\n",
+        "expected": "5 4 3 2 1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Смешанные",
+        "stdin": "6\n-1 -2147483648 2147483647 1 -1 0\n",
+        "expected": "2147483647 1 0 -1 -1 -2147483648\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Отрицательные",
+        "stdin": "3\n-5 -10 -1\n",
+        "expected": "-1 -5 -10\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Большие по модулю",
+        "stdin": "8\n1000000000 -1000000000 2000000000 -2000000000 3 2 1 0\n",
+        "expected": "2000000000 1000000000 3 2 1 0 -1000000000 -2000000000\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\nint compare_desc(const void *pa, const void *pb) {\n    int a = *(const int *)pa;\n    int b = *(const int *)pb;\n    return (b > a) - (b < a);\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int v[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &v[i]);\n    }\n    qsort(v, (size_t)n, sizeof v[0], compare_desc);\n    for (int i = 0; i < n; i++) {\n        printf(i + 1 < n ? \"%d \" : \"%d\\n\", v[i]);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Функция сравнения возвращает знак, а не разность: `(b > a) - (b < a)` даёт −1, 0 или 1 для любых значений. Вариант `b - a` для пары `2147483647` и `−1` переполнил бы `int` — неопределённое поведение, которое UndefinedBehaviorSanitizer в проверке сразу обнаружит.\n\nПорядок «по убыванию» задаётся только функцией сравнения: `qsort` всегда ставит раньше тот элемент, для которого сравнение отрицательно.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "memory-void-pointer-task-2",
+      "title": "Таблица результатов",
+      "description": "Прочитайте `n` записей «имя баллы» и напечатайте таблицу: по убыванию баллов, при равных баллах — по алфавиту. Каждая строка — место, имя и баллы через пробел. Участники с равными баллами получают **одинаковое** место, следующее место учитывает их количество (1, 2, 2, 4).\n\nСортируйте массив структур функцией `qsort`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "4\nbob 90\nann 95\ncid 90\ndan 80\n",
+          "output": "1 ann 95\n2 bob 90\n2 cid 90\n4 dan 80\n"
+        },
+        {
+          "input": "1\nsolo 0\n",
+          "output": "1 solo 0\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 100.", "Имя — до 20 латинских букв.", "0 ≤ баллы ≤ 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "struct Row { char name[21]; int score; }; функция сравнения начинается с const struct Row *a = pa, *b = pb;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сначала (b->score > a->score) - (b->score < a->score); если 0 — strcmp(a->name, b->name).",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Место: если score совпадает с предыдущим — место прежнее, иначе место = i + 1.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\nbob 90\nann 95\ncid 90\ndan 80\n",
+          "expected": "1 ann 95\n2 bob 90\n2 cid 90\n4 dan 80\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nsolo 0\n",
+          "expected": "1 solo 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Все равны",
+          "stdin": "3\nc 5\nb 5\na 5\n",
+          "expected": "1 a 5\n1 b 5\n1 c 5\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "По возрастанию",
+          "stdin": "3\nx 1\ny 2\nz 3\n",
+          "expected": "1 z 3\n2 y 2\n3 x 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Три одинаковых места",
+          "stdin": "5\na 10\nb 9\nc 9\nd 9\ne 1\n",
+          "expected": "1 a 10\n2 b 9\n2 c 9\n2 d 9\n5 e 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Крайние баллы",
+          "stdin": "2\nzz 1000000\naa 0\n",
+          "expected": "1 zz 1000000\n2 aa 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Две группы",
+          "stdin": "4\nm 7\nl 7\nk 8\nj 8\n",
+          "expected": "1 j 8\n1 k 8\n3 l 7\n3 m 7\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Обратный порядок",
+          "stdin": "6\nf 1\ne 2\nd 3\nc 4\nb 5\na 6\n",
+          "expected": "1 a 6\n2 b 5\n3 c 4\n4 d 3\n5 e 2\n6 f 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Длинные имена",
+          "stdin": "3\nabcdefghijklmnopqrst 5\nabc 5\nab 6\n",
+          "expected": "1 ab 6\n2 abc 5\n2 abcdefghijklmnopqrst 5\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пары",
+          "stdin": "5\nq 3\nw 3\ne 2\nr 2\nt 1\n",
+          "expected": "1 q 3\n1 w 3\n3 e 2\n3 r 2\n5 t 1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Row {\n    char name[21];\n    int score;\n};\n\nint by_score(const void *pa, const void *pb) {\n    const struct Row *a = pa;\n    const struct Row *b = pb;\n    if (a->score != b->score) {\n        return (b->score > a->score) - (b->score < a->score);\n    }\n    return strcmp(a->name, b->name);\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    struct Row rows[100];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%20s %d\", rows[i].name, &rows[i].score);\n    }\n    qsort(rows, (size_t)n, sizeof rows[0], by_score);\n    int place = 1;\n    for (int i = 0; i < n; i++) {\n        if (i > 0 && rows[i].score != rows[i - 1].score) {\n            place = i + 1;\n        }\n        printf(\"%d %s %d\\n\", place, rows[i].name, rows[i].score);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`qsort` переставляет структуры целиком, по `sizeof rows[0]` байтов. Функция сравнения превращает `const void *` в `const struct Row *` — указатель на тип элемента — и сравнивает по двум ключам. Второй ключ (имя) делает порядок однозначным: `qsort` неустойчива, и без него равные по баллам участники могли бы стоять в любом порядке.\n\nМесто вычисляется уже после сортировки: оно меняется только тогда, когда меняются баллы, и становится равным позиции в списке.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-void-pointer-task-3",
+      "title": "Обобщённый разворот",
+      "description": "Реализуйте функцию\n\n```c\nvoid reverse_any(void *base, size_t n, size_t size);\n```\n\nкоторая разворачивает массив из `n` элементов по `size` байтов, не зная их типа.\n\nФункция `main` дана: она читает массив `int`, массив `double` и слово, разворачивает все три одной и той же функцией и печатает результат.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <string.h>\n\nvoid reverse_any(void *base, size_t n, size_t size) {\n    // Разверните массив из n элементов по size байтов.\n}\n\nint main(void) {\n    int n, m;\n    int ints[50];\n    double reals[50];\n    char word[51];\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &ints[i]);\n    }\n    scanf(\"%d\", &m);\n    for (int i = 0; i < m; i++) {\n        scanf(\"%lf\", &reals[i]);\n    }\n    scanf(\"%50s\", word);\n    reverse_any(ints, (size_t)n, sizeof ints[0]);\n    reverse_any(reals, (size_t)m, sizeof reals[0]);\n    reverse_any(word, strlen(word), sizeof word[0]);\n    for (int i = 0; i < n; i++) {\n        printf(i + 1 < n ? \"%d \" : \"%d\\n\", ints[i]);\n    }\n    for (int i = 0; i < m; i++) {\n        printf(i + 1 < m ? \"%.2f \" : \"%.2f\\n\", reals[i]);\n    }\n    printf(\"%s\\n\", word);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\n1 2 3\n2\n1.5 -2.25\nhello\n",
+          "output": "3 2 1\n-2.25 1.50\nolleh\n"
+        },
+        {
+          "input": "1\n7\n1\n0.5\na\n",
+          "output": "7\n0.50\na\n"
+        }
+      ],
+      "constraints": ["1 ≤ количество чисел каждого вида ≤ 50.", "Слово — от 1 до 50 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Адрес i-го элемента: unsigned char *bytes = base; bytes + i * size.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Меняйте местами элементы i и n − 1 − i для i < n / 2 — побайтно, как в swap_any из урока.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\n1 2 3\n2\n1.5 -2.25\nhello\n",
+          "expected": "3 2 1\n-2.25 1.50\nolleh\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n7\n1\n0.5\na\n",
+          "expected": "7\n0.50\na\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Чётная и нечётная длина",
+          "stdin": "2\n1 2\n3\n1 2 3\nab\n",
+          "expected": "2 1\n3.00 2.00 1.00\nba\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Палиндром",
+          "stdin": "4\n-1 -2 -3 -4\n4\n0.1 0.2 0.3 0.4\nlevel\n",
+          "expected": "-4 -3 -2 -1\n0.40 0.30 0.20 0.10\nlevel\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Пределы int",
+          "stdin": "5\n2147483647 0 0 0 -2147483648\n1\n-1e10\nxy\n",
+          "expected": "-2147483648 0 0 0 2147483647\n-10000000000.00\nyx\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Шесть элементов",
+          "stdin": "6\n1 1 2 2 3 3\n2\n100 200\nabcdef\n",
+          "expected": "3 3 2 2 1 1\n200.00 100.00\nfedcba\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Алфавит",
+          "stdin": "1\n0\n5\n1 2 3 4 5\nabcdefghijklmnopqrstuvwxyz\n",
+          "expected": "0\n5.00 4.00 3.00 2.00 1.00\nzyxwvutsrqponmlkjihgfedcba\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Одинаковые",
+          "stdin": "3\n5 5 5\n3\n2.5 2.5 2.5\naaa\n",
+          "expected": "5 5 5\n2.50 2.50 2.50\naaa\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Длинные массивы",
+          "stdin": "7\n1 2 3 4 5 6 7\n6\n6 5 4 3 2 1\nprogramming\n",
+          "expected": "7 6 5 4 3 2 1\n1.00 2.00 3.00 4.00 5.00 6.00\ngnimmargorp\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Симметричные",
+          "stdin": "2\n-7 7\n2\n-0.01 0.01\nok\n",
+          "expected": "7 -7\n0.01 -0.01\nko\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nvoid reverse_any(void *base, size_t n, size_t size) {\n    unsigned char *bytes = base;\n    for (size_t i = 0; i < n / 2; i++) {\n        unsigned char *left = bytes + i * size;\n        unsigned char *right = bytes + (n - 1 - i) * size;\n        for (size_t k = 0; k < size; k++) {\n            unsigned char tmp = left[k];\n            left[k] = right[k];\n            right[k] = tmp;\n        }\n    }\n}\n\nint main(void) {\n    int n, m;\n    int ints[50];\n    double reals[50];\n    char word[51];\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &ints[i]);\n    }\n    scanf(\"%d\", &m);\n    for (int i = 0; i < m; i++) {\n        scanf(\"%lf\", &reals[i]);\n    }\n    scanf(\"%50s\", word);\n    reverse_any(ints, (size_t)n, sizeof ints[0]);\n    reverse_any(reals, (size_t)m, sizeof reals[0]);\n    reverse_any(word, strlen(word), sizeof word[0]);\n    for (int i = 0; i < n; i++) {\n        printf(i + 1 < n ? \"%d \" : \"%d\\n\", ints[i]);\n    }\n    for (int i = 0; i < m; i++) {\n        printf(i + 1 < m ? \"%.2f \" : \"%.2f\\n\", reals[i]);\n    }\n    printf(\"%s\\n\", word);\n    return 0;\n}\n",
+      "solutionExplanation": "Функция не знает типа элементов, но знает их размер — этого достаточно: `i`-й элемент начинается с байта `i * size`, а обмен двух элементов — обмен их `size` байтов. Одна и та же функция развернула массив `int` (по 4 байта), `double` (по 8) и символы строки (по 1).\n\nТерминатор `'\\0'` не участвует в развороте: передаётся `strlen(word)`, а не размер массива.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-void-pointer-task-4",
+      "title": "Словарь",
+      "description": "Прочитайте `n` слов словаря, затем `q` запросов. Для каждого запроса напечатайте `yes`, если слово есть в словаре, и `no` иначе.\n\nХраните слова в массиве `char dict[100][21]`, отсортируйте его `qsort` и ищите `bsearch` с одной и той же функцией сравнения. В конце напечатайте словарь по алфавиту в одну строку через пробел.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "4\npear apple fig kiwi\n3\nfig plum apple\n",
+          "output": "yes\nno\nyes\napple fig kiwi pear\n"
+        },
+        {
+          "input": "1\nword\n1\nwor\n",
+          "output": "no\nword\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 100.",
+        "1 ≤ q ≤ 20.",
+        "Слова — из строчных латинских букв, длиной до 20."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Элемент массива — char[21], и qsort передаёт адрес элемента — это адрес первого символа строки. Функция сравнения: return strcmp(pa, pb); — здесь лишнего уровня косвенности нет!",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Для bsearch ключ — тоже строка: char key[21]; bsearch(key, dict, n, sizeof dict[0], compare).",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Сравните с массивом const char *words[]: там элемент — указатель, и нужен лишний уровень *(const char *const *)pa.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\npear apple fig kiwi\n3\nfig plum apple\n",
+          "expected": "yes\nno\nyes\napple fig kiwi pear\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nword\n1\nwor\n",
+          "expected": "no\nword\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Все найдены",
+          "stdin": "3\nc b a\n3\na b c\n",
+          "expected": "yes\nyes\nyes\na b c\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Ничего не найдено",
+          "stdin": "3\nc b a\n2\nd aa\n",
+          "expected": "no\nno\na b c\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Общие префиксы",
+          "stdin": "5\nbanana band ban bandana bandit\n4\nban band bandi bandit\n",
+          "expected": "yes\nyes\nno\nyes\nban banana band bandana bandit\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Длинное слово",
+          "stdin": "2\nabcdefghijklmnopqrst abc\n2\nabcdefghijklmnopqrst abcd\n",
+          "expected": "yes\nno\nabc abcdefghijklmnopqrst\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Греческие буквы",
+          "stdin": "4\nzeta alpha mu omega\n2\nalpha omega\n",
+          "expected": "yes\nyes\nalpha mu omega zeta\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Дубликаты",
+          "stdin": "3\nsame same same\n1\nsame\n",
+          "expected": "yes\nsame same same\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Обратный порядок",
+          "stdin": "6\nf e d c b a\n6\na b c d e f\n",
+          "expected": "yes\nyes\nyes\nyes\nyes\nyes\na b c d e f\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Крайние запросы",
+          "stdin": "2\nx y\n3\nw x z\n",
+          "expected": "no\nyes\nno\nx y\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint compare_words(const void *pa, const void *pb) {\n    return strcmp(pa, pb);\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    char dict[100][21];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%20s\", dict[i]);\n    }\n    qsort(dict, (size_t)n, sizeof dict[0], compare_words);\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        char key[21];\n        scanf(\"%20s\", key);\n        printf(\"%s\\n\", bsearch(key, dict, (size_t)n, sizeof dict[0], compare_words) ? \"yes\" : \"no\");\n    }\n    for (int i = 0; i < n; i++) {\n        printf(i + 1 < n ? \"%s \" : \"%s\\n\", dict[i]);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Здесь элемент массива — сам массив символов `char[21]`, поэтому адрес элемента совпадает с адресом строки, и функция сравнения передаёт его прямо в `strcmp`. Для массива указателей `const char *[]` это было бы ошибкой — там адрес элемента указывает на указатель.\n\n`qsort` перемещает слова целиком, по 21 байту. Затем `bsearch` находит слово за `log₂ n` сравнений — для 100 слов это не больше 7 вызовов `strcmp` вместо 100.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "memory-void-pointer-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Какие операции допустимы для void *p в стандартном C? Выберите все.",
+        "explanation": "Преобразования void * в указатель на объект и обратно неявные. Разыменовывать и сдвигать сам void * нельзя — сначала приведите его к конкретному типу.",
+        "type": "multiple",
+        "options": [
+          "int *q = p;",
+          "p = &x; где x — double",
+          "*p = 0;",
+          "p + 1",
+          "(unsigned char *)p + 1"
+        ],
+        "correct": [0, 1, 4]
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n#include <stdlib.h>\n\nint cmp(const void *pa, const void *pb) {\n    int a = *(const int *)pa, b = *(const int *)pb;\n    return (b > a) - (b < a);\n}\n\nint main(void) {\n    int v[] = {3, 9, 1, 7};\n    qsort(v, 4, sizeof v[0], cmp);\n    printf(\"%d %d %d %d\\n\", v[0], v[1], v[2], v[3]);\n    return 0;\n}",
+        "explanation": "Аргументы сравниваются в обратном порядке (b с a) — сортировка по убыванию.",
+        "type": "text",
+        "answers": ["9 7 3 1"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Почему функция сравнения return a - b; опасна для произвольных int?",
+        "explanation": "qsort достаточно любого знака, но при a = 2·10⁹ и b = −2·10⁹ результат не помещается в int.",
+        "options": [
+          "Разность может переполнить int — неопределённое поведение и неверный знак",
+          "qsort требует ровно -1, 0 или 1",
+          "Вычитание медленнее сравнения",
+          "Она сортирует по убыванию"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Массив объявлен как const char *names[10]. К какому типу нужно привести параметр const void *p в функции сравнения для qsort?",
+        "explanation": "qsort передаёт адрес элемента. Элемент — const char *, значит, его адрес — указатель на const char *.",
+        "options": ["const char *const *", "const char *", "char", "const char (*)[10]"],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nvoid fill_any(void *base, size_t n, size_t size, const void *value) {\n    unsigned char *p = base;\n    const unsigned char *v = value;\n    for (size_t i = 0; i < n * size; i++) {\n        p[i] = v[i % size];\n    }\n}\n\nint main(void) {\n    short s[3];\n    short seven = 7;\n    fill_any(s, 3, sizeof s[0], &seven);\n    printf(\"%d %d %d\\n\", s[0], s[1], s[2]);\n    return 0;\n}",
+        "explanation": "В отличие от memset, функция повторяет образец из size байтов, поэтому каждый short получает значение 7.",
+        "type": "text",
+        "answers": ["7 7 7"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Что нужно, чтобы bsearch правильно нашла элемент?",
+        "explanation": "Двоичный поиск опирается на порядок. Порядок задаёт функция сравнения — она должна совпадать при сортировке и поиске.",
+        "options": [
+          "Массив отсортирован той же функцией сравнения, которая передаётся в bsearch",
+          "Массив отсортирован по убыванию",
+          "Искомый элемент стоит в середине массива",
+          "Размер элемента равен sizeof(int)"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Сколько байтов занимает шаг между соседними элементами, если qsort вызвана с size = sizeof(struct City), а sizeof(struct City) = 20? Сколько байтов скопирует qsort при перестановке одного элемента?",
+        "explanation": "qsort знает только размер элемента: адрес i-го элемента — base + i * 20, и при перестановке копируются ровно 20 байтов.",
+        "type": "text",
+        "answers": ["20"],
+        "placeholder": "Байтов"
+      }
+    ]
+  }
+}

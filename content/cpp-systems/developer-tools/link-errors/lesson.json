@@ -1,0 +1,471 @@
+{
+  "id": "link-errors",
+  "title": "Линковка и ошибки линковки",
+  "description": "Что делает линковщик: разрешение символов, перемещение и стартовый код; undefined reference и multiple definition, отсутствие проверки типов, статические и динамические библиотеки, -L и -l, порядок библиотек, ldd и ошибки загрузки.",
+  "moduleId": "developer-tools",
+  "order": 5,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 55,
+  "prerequisites": ["gcc-and-clang"],
+  "objectives": [
+    "Объяснять, как линковщик сопоставляет неопределённые символы с определениями",
+    "Находить причину undefined reference и multiple definition",
+    "Создавать и подключать статические и динамические библиотеки",
+    "Располагать библиотеки в команде сборки в правильном порядке"
+  ],
+  "tags": ["Линковка", "Библиотеки", "undefined reference", "multiple definition", "ld"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "link-errors-task-1",
+    "title": "Разрешение символов",
+    "description": "Смоделируйте проверку, которую выполняет линковщик. В первой строке — число `m` и `m` символов, которые предоставляет библиотека C. Во второй — число объектных файлов `n`. Далее `n` строк:\n\n```\nимя d опр₁ … опрₐ u исп₁ … исп_u\n```\n\n— имя файла, `d` определённых им символов и `u` символов, которые он использует (буква `U` в `nm`).\n\nНапечатайте ошибки в таком порядке:\n1. для каждого символа, определённого в двух и более объектных файлах (в порядке первого определения): `multiple definition of 'X': файл₁ файл₂ …`;\n2. для каждого объектного файла по порядку и каждого используемого им символа, который не определён ни в одном объектном файле и не предоставлен библиотекой: `undefined reference to 'Y' in файл`;\n3. если ни один объектный файл не определяет `main`: `undefined reference to 'main'`.\n\nЕсли ошибок нет, напечатайте `сборка успешна`.",
+    "difficulty": "intermediate",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "2 printf puts\n2\nmain.o 1 main 2 area printf\ngeometry.o 1 area 0\n",
+        "output": "сборка успешна\n"
+      },
+      {
+        "input": "1 printf\n2\nmain.o 2 main log_line 1 log_line_count\nutil.o 1 log_line 1 printf\n",
+        "output": "multiple definition of 'log_line': main.o util.o\nundefined reference to 'log_line_count' in main.o\n"
+      }
+    ],
+    "constraints": [
+      "0 ≤ m ≤ 30; 1 ≤ n ≤ 20; 0 ≤ d, u ≤ 10.",
+      "Имена не длиннее 30 символов; файл не использует символы, которые сам определяет."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Храните файлы в массивах: char defs[20][10][32], int def_count[20] и так же для используемых символов.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Напишите функцию defines(file, symbol). Повтор: для каждого определения проверьте, не определён ли символ в более раннем файле — так каждый символ рассматривается один раз.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Используемый символ разрешён, если его определяет любой файл (defines) или он есть в списке библиотеки.",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "2 printf puts\n2\nmain.o 1 main 2 area printf\ngeometry.o 1 area 0\n",
+        "expected": "сборка успешна\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1 printf\n2\nmain.o 2 main log_line 1 log_line_count\nutil.o 1 log_line 1 printf\n",
+        "expected": "multiple definition of 'log_line': main.o util.o\nundefined reference to 'log_line_count' in main.o\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Нет main",
+        "stdin": "0\n1\nutil.o 1 helper 0\n",
+        "expected": "undefined reference to 'main'\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Нет библиотеки",
+        "stdin": "1 printf\n1\nmain.o 1 main 1 sqrt\n",
+        "expected": "undefined reference to 'sqrt' in main.o\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Три определения",
+        "stdin": "0\n3\na.o 2 main x 0\nb.o 1 x 0\nc.o 1 x 0\n",
+        "expected": "multiple definition of 'x': a.o b.o c.o\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Опечатка в определении",
+        "stdin": "0\n2\nmain.o 1 main 2 area perimeter\nshapes.o 1 aera 0\n",
+        "expected": "undefined reference to 'area' in main.o\nundefined reference to 'perimeter' in main.o\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Своё определение важнее библиотеки",
+        "stdin": "1 log\n2\nmain.o 1 main 1 log\nmylog.o 1 log 0\n",
+        "expected": "сборка успешна\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Два main",
+        "stdin": "2 malloc free\n3\nmain.o 1 main 2 list_push list_free\nlist.o 2 list_push list_free 2 malloc free\ntest.o 1 main 1 list_push\n",
+        "expected": "multiple definition of 'main': main.o test.o\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Все ошибки сразу",
+        "stdin": "0\n2\na.o 2 f g 1 h\nb.o 2 g f 1 h\n",
+        "expected": "multiple definition of 'f': a.o b.o\nmultiple definition of 'g': a.o b.o\nundefined reference to 'h' in a.o\nundefined reference to 'h' in b.o\nundefined reference to 'main'\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Большой проект",
+        "stdin": "3 printf strlen fopen\n4\nmain.o 1 main 2 parse report\nparse.o 1 parse 2 strlen tokenize\nreport.o 1 report 2 printf fopen\nlexer.o 1 tokens 0\n",
+        "expected": "undefined reference to 'tokenize' in parse.o\n"
+      },
+      {
+        "id": "hidden-9",
+        "name": "Только main",
+        "stdin": "0\n1\nmain.o 1 main 0\n",
+        "expected": "сборка успешна\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define FILES 20\n#define SYMBOLS 10\n#define NAME 32\n\nstatic char library[30][NAME];\nstatic int library_count;\nstatic char names[FILES][NAME];\nstatic char defs[FILES][SYMBOLS][NAME];\nstatic char uses[FILES][SYMBOLS][NAME];\nstatic int def_count[FILES];\nstatic int use_count[FILES];\nstatic int file_count;\n\nstatic int defines(int file, const char *symbol) {\n    for (int i = 0; i < def_count[file]; i++) {\n        if (strcmp(defs[file][i], symbol) == 0) {\n            return 1;\n        }\n    }\n    return 0;\n}\n\nstatic int defined_anywhere(const char *symbol) {\n    for (int f = 0; f < file_count; f++) {\n        if (defines(f, symbol)) {\n            return 1;\n        }\n    }\n    return 0;\n}\n\nstatic int in_library(const char *symbol) {\n    for (int i = 0; i < library_count; i++) {\n        if (strcmp(library[i], symbol) == 0) {\n            return 1;\n        }\n    }\n    return 0;\n}\n\nstatic int read_list(char list[][NAME], int *count) {\n    if (scanf(\"%d\", count) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < *count; i++) {\n        if (scanf(\"%31s\", list[i]) != 1) {\n            return 0;\n        }\n    }\n    return 1;\n}\n\nint main(void) {\n    if (!read_list(library, &library_count) || scanf(\"%d\", &file_count) != 1) {\n        return 0;\n    }\n    for (int f = 0; f < file_count; f++) {\n        if (scanf(\"%31s\", names[f]) != 1 || !read_list(defs[f], &def_count[f]) ||\n            !read_list(uses[f], &use_count[f])) {\n            return 0;\n        }\n    }\n    int errors = 0;\n    for (int f = 0; f < file_count; f++) {\n        for (int i = 0; i < def_count[f]; i++) {\n            const char *symbol = defs[f][i];\n            int earlier = 0;\n            for (int g = 0; g < f && !earlier; g++) {\n                earlier = defines(g, symbol);\n            }\n            int count = 0;\n            for (int g = f; g < file_count; g++) {\n                count += defines(g, symbol);\n            }\n            if (earlier || count < 2) {\n                continue;\n            }\n            printf(\"multiple definition of '%s':\", symbol);\n            for (int g = f; g < file_count; g++) {\n                if (defines(g, symbol)) {\n                    printf(\" %s\", names[g]);\n                }\n            }\n            putchar('\\n');\n            errors++;\n        }\n    }\n    for (int f = 0; f < file_count; f++) {\n        for (int i = 0; i < use_count[f]; i++) {\n            if (!defined_anywhere(uses[f][i]) && !in_library(uses[f][i])) {\n                printf(\"undefined reference to '%s' in %s\\n\", uses[f][i], names[f]);\n                errors++;\n            }\n        }\n    }\n    if (!defined_anywhere(\"main\")) {\n        printf(\"undefined reference to 'main'\\n\");\n        errors++;\n    }\n    if (errors == 0) {\n        printf(\"сборка успешна\\n\");\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Линковщик собирает все определения в общую таблицу и проверяет два условия: каждое имя определено **не больше одного раза**, и каждое используемое имя определено **хотя бы один раз** — в объектных файлах или в библиотеках. `main` — тоже обычный используемый символ: его использует стартовый код.\n\nОпределение в объектном файле имеет приоритет над библиотекой: если ваш файл определяет `log`, конфликта с `log` из `libm` не будет — из библиотеки берётся только то, чего не хватает. Поэтому повтор считается только между объектными файлами.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "link-errors-task-2",
+      "title": "Порядок библиотек",
+      "description": "Смоделируйте, как линковщик GNU подключает статические библиотеки. Дано `n` элементов команды сборки в порядке слева направо. Элемент — объектный файл или библиотека:\n\n```\nobj имя d опр₁ … опрₐ u исп₁ … исп_u\nlib имя m\n```\n\nПосле строки `lib` идут `m` строк с объектными файлами внутри архива в формате `имя d … u …`.\n\nЛинковщик хранит множество определённых символов и список неопределённых (в порядке появления):\n- объектный файл из команды загружается всегда: его определения закрывают неопределённые символы, а используемые символы, которые ещё не определены, добавляются в список неопределённых;\n- в библиотеке загружаются только файлы, которые определяют **хотя бы один сейчас неопределённый** символ. Архив просматривается по порядку, и просмотр повторяется, пока загружаются новые файлы. Для каждого загруженного файла напечатайте `загружен ФАЙЛ из БИБЛИОТЕКИ`;\n- к уже прочитанной библиотеке линковщик не возвращается.\n\nВ конце напечатайте `undefined reference to 'X'` для каждого неопределённого символа в порядке появления или `сборка успешна`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "2\nobj main.o 1 main 2 area printf\nlib libgeometry.a 2\narea.o 1 area 1 square\nsquare.o 1 square 0\n",
+          "output": "загружен area.o из libgeometry.a\nзагружен square.o из libgeometry.a\nundefined reference to 'printf'\n"
+        },
+        {
+          "input": "2\nlib libgeometry.a 1\narea.o 1 area 0\nobj main.o 1 main 1 area\n",
+          "output": "undefined reference to 'area'\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 10; в библиотеке не больше 10 файлов; 0 ≤ d, u ≤ 10.",
+        "Имена не длиннее 30 символов."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Напишите функцию load(defs, d, uses, u), общую для объектных файлов команды и файлов из архива: она отмечает определения и дополняет список неопределённых.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Символ закрыт, если он есть в множестве определённых. Список неопределённых при выводе фильтруйте: печатайте только символы, которые так и не стали определёнными.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Для библиотеки: do { changed = 0; for (каждый незагруженный файл) if (определяет неопределённый) { загрузить; changed = 1; } } while (changed);",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\nobj main.o 1 main 2 area printf\nlib libgeometry.a 2\narea.o 1 area 1 square\nsquare.o 1 square 0\n",
+          "expected": "загружен area.o из libgeometry.a\nзагружен square.o из libgeometry.a\nundefined reference to 'printf'\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\nlib libgeometry.a 1\narea.o 1 area 0\nobj main.o 1 main 1 area\n",
+          "expected": "undefined reference to 'area'\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Правильный порядок",
+          "stdin": "3\nobj main.o 1 main 1 area\nlib libgeometry.a 1\narea.o 1 area 1 printf\nlib libc.a 1\nprintf.o 1 printf 0\n",
+          "expected": "загружен area.o из libgeometry.a\nзагружен printf.o из libc.a\nсборка успешна\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Зависимость назад",
+          "stdin": "3\nobj main.o 1 main 1 area\nlib libc.a 1\nprintf.o 1 printf 0\nlib libgeometry.a 1\narea.o 1 area 1 printf\n",
+          "expected": "загружен area.o из libgeometry.a\nundefined reference to 'printf'\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Лишние файлы не загружаются",
+          "stdin": "2\nobj main.o 1 main 1 square\nlib libgeometry.a 3\narea.o 1 area 1 square\nsquare.o 1 square 0\nunused.o 1 unused 0\n",
+          "expected": "загружен square.o из libgeometry.a\nсборка успешна\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Цепочка внутри архива",
+          "stdin": "2\nobj main.o 1 main 1 a\nlib libchain.a 3\nc.o 1 c 0\nb.o 1 b 1 c\na.o 1 a 1 b\n",
+          "expected": "загружен a.o из libchain.a\nзагружен b.o из libchain.a\nзагружен c.o из libchain.a\nсборка успешна\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Без библиотек",
+          "stdin": "1\nobj main.o 1 main 0\n",
+          "expected": "сборка успешна\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Две библиотеки",
+          "stdin": "3\nobj main.o 1 main 1 net_send\nlib libnet.a 1\nsend.o 1 net_send 1 encrypt\nlib libcrypto.a 2\naes.o 1 encrypt 0\nrsa.o 1 sign 0\n",
+          "expected": "загружен send.o из libnet.a\nзагружен aes.o из libcrypto.a\nсборка успешна\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Уже определено",
+          "stdin": "2\nobj main.o 2 main helper 1 helper\nlib libx.a 1\nhelper.o 1 helper 0\n",
+          "expected": "сборка успешна\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Объектный файл после библиотеки",
+          "stdin": "3\nobj main.o 1 main 1 f\nlib liba.a 1\nf.o 1 f 1 g\nobj extra.o 1 g 1 h\n",
+          "expected": "загружен f.o из liba.a\nundefined reference to 'h'\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Один файл — два символа",
+          "stdin": "2\nobj main.o 1 main 2 x y\nlib libxy.a 1\nxy.o 2 x y 1 z\n",
+          "expected": "загружен xy.o из libxy.a\nundefined reference to 'z'\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define NAME 32\n#define MAX_SYMBOLS 200\n\ntypedef struct {\n    char name[NAME];\n    char defs[10][NAME];\n    char uses[10][NAME];\n    int def_count;\n    int use_count;\n} Object;\n\nstatic char defined[MAX_SYMBOLS][NAME];\nstatic int defined_count;\nstatic char pending[MAX_SYMBOLS][NAME];\nstatic int pending_count;\n\nstatic int contains(char list[][NAME], int count, const char *symbol) {\n    for (int i = 0; i < count; i++) {\n        if (strcmp(list[i], symbol) == 0) {\n            return 1;\n        }\n    }\n    return 0;\n}\n\nstatic int is_undefined(const char *symbol) {\n    return contains(pending, pending_count, symbol) &&\n           !contains(defined, defined_count, symbol);\n}\n\nstatic void load(const Object *object) {\n    for (int i = 0; i < object->def_count; i++) {\n        if (!contains(defined, defined_count, object->defs[i]) && defined_count < MAX_SYMBOLS) {\n            strcpy(defined[defined_count++], object->defs[i]);\n        }\n    }\n    for (int i = 0; i < object->use_count; i++) {\n        const char *symbol = object->uses[i];\n        if (!contains(defined, defined_count, symbol) && !contains(pending, pending_count, symbol) &&\n            pending_count < MAX_SYMBOLS) {\n            strcpy(pending[pending_count++], symbol);\n        }\n    }\n}\n\nstatic int read_object(Object *object) {\n    if (scanf(\"%31s %d\", object->name, &object->def_count) != 2) {\n        return 0;\n    }\n    for (int i = 0; i < object->def_count; i++) {\n        if (scanf(\"%31s\", object->defs[i]) != 1) {\n            return 0;\n        }\n    }\n    if (scanf(\"%d\", &object->use_count) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < object->use_count; i++) {\n        if (scanf(\"%31s\", object->uses[i]) != 1) {\n            return 0;\n        }\n    }\n    return 1;\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1) {\n        return 0;\n    }\n    for (int item = 0; item < n; item++) {\n        char kind[8];\n        if (scanf(\"%7s\", kind) != 1) {\n            return 0;\n        }\n        if (strcmp(kind, \"obj\") == 0) {\n            Object object;\n            if (!read_object(&object)) {\n                return 0;\n            }\n            load(&object);\n            continue;\n        }\n        char library[NAME];\n        int member_count;\n        if (scanf(\"%31s %d\", library, &member_count) != 2) {\n            return 0;\n        }\n        Object members[10];\n        int loaded[10] = {0};\n        for (int i = 0; i < member_count; i++) {\n            if (!read_object(&members[i])) {\n                return 0;\n            }\n        }\n        int changed;\n        do {\n            changed = 0;\n            for (int i = 0; i < member_count; i++) {\n                if (loaded[i]) {\n                    continue;\n                }\n                int needed = 0;\n                for (int j = 0; j < members[i].def_count && !needed; j++) {\n                    needed = is_undefined(members[i].defs[j]);\n                }\n                if (needed) {\n                    loaded[i] = 1;\n                    changed = 1;\n                    printf(\"загружен %s из %s\\n\", members[i].name, library);\n                    load(&members[i]);\n                }\n            }\n        } while (changed);\n    }\n    int errors = 0;\n    for (int i = 0; i < pending_count; i++) {\n        if (!contains(defined, defined_count, pending[i])) {\n            printf(\"undefined reference to '%s'\\n\", pending[i]);\n            errors++;\n        }\n    }\n    if (errors == 0) {\n        printf(\"сборка успешна\\n\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Статическая библиотека — не «набор функций», а архив отдельных объектных файлов. Линковщик берёт из него файл целиком и только если тот нужен **прямо сейчас**. Отсюда оба правила порядка: библиотеку ставят после файлов, которым она нужна, а зависящую библиотеку — перед той, от которой она зависит.\n\nВнутри одного архива зависимости разрешаются: если `area.o` использует `square` из того же архива, повторный просмотр загрузит и `square.o`. А зависимость назад — от более ранней библиотеки — уже не разрешится. На практике её устраняют порядком или группой `-Wl,--start-group … -Wl,--end-group`, где архивы просматриваются по кругу.\n\nДинамические библиотеки устроены иначе: `.so` подключается целиком, поэтому для них порядок менее критичен — но правило «библиотеки в конце» безопасно в обоих случаях.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "link-errors-task-3",
+      "title": "Найди ошибку: имя определения",
+      "description": "Программа читает `n` целых чисел и печатает их среднее арифметическое с двумя знаками после запятой.\n\nПрограмма не собирается: линковщик сообщает `undefined reference to 'average'`. Найдите причину и исправьте её. Когда программа соберётся, проверьте результат на примерах — в функции есть ещё одна ошибка.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\ndouble average(const int *values, int count);\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int values[100];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    printf(\"%.2f\\n\", average(values, n));\n    return 0;\n}\n\ndouble avarage(const int *values, int count) {\n    long long sum = 0;\n    for (int i = 0; i < count; i++) {\n        sum += values[i];\n    }\n    return sum / count;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "2\n1 2\n",
+          "output": "1.50\n"
+        },
+        {
+          "input": "3\n4 4 4\n",
+          "output": "4.00\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 100; числа от −10⁶ до 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сравните имя в объявлении и вызове с именем в определении функции — буква за буквой.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Для 1 и 2 среднее — 1.50. Посмотрите на тип выражения sum / count: оба операнда целые.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\n1 2\n",
+          "expected": "1.50\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3\n4 4 4\n",
+          "expected": "4.00\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одно число",
+          "stdin": "1\n7\n",
+          "expected": "7.00\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Отрицательные",
+          "stdin": "2\n-1 -2\n",
+          "expected": "-1.50\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Треть",
+          "stdin": "3\n1 1 2\n",
+          "expected": "1.33\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Четверть",
+          "stdin": "4\n0 0 0 1\n",
+          "expected": "0.25\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Большие",
+          "stdin": "2\n1000000 999999\n",
+          "expected": "999999.50\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Смешанные",
+          "stdin": "5\n-3 0 3 1 0\n",
+          "expected": "0.20\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Большие отрицательные",
+          "stdin": "3\n-1000000 -1000000 -999999\n",
+          "expected": "-999999.67\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Шесть чисел",
+          "stdin": "6\n10 20 30 40 50 61\n",
+          "expected": "35.17\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Среднее около нуля",
+          "stdin": "2\n-5 4\n",
+          "expected": "-0.50\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\ndouble average(const int *values, int count);\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int values[100];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    printf(\"%.2f\\n\", average(values, n));\n    return 0;\n}\n\ndouble average(const int *values, int count) {\n    long long sum = 0;\n    for (int i = 0; i < count; i++) {\n        sum += values[i];\n    }\n    return (double)sum / count;\n}\n",
+      "solutionExplanation": "Объявление `average` позволило компилятору проверить вызов, а определение с опечаткой `avarage` создало **другой** символ. Каждая стадия по отдельности довольна, и только линковщик видит, что для `U average` нет определения. Команда `nm` показала бы это сразу: `T avarage` и `U average`.\n\nВторая ошибка проявляется после сборки: `sum / count` — деление целых, дробная часть отбрасывается до преобразования в `double`. Приведение `(double)sum` делает деление вещественным.\n\nОшибки линковки часто прячут логические: пока программа не собирается, тесты не запускаются. Поэтому, исправив сборку, всегда проверяйте результат.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "link-errors-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Сборка gcc main.c -o app завершилась ошибкой undefined reference to `parse_config`. Функция определена в config.c. Что вероятнее всего не так?",
+        "explanation": "Ошибка линковки означает, что определения нет среди переданных файлов. Проблемы с заголовком или аргументами обнаружил бы компилятор.",
+        "options": [
+          "Файл config.c не передан в команду сборки",
+          "В main.c не подключён заголовок config.h",
+          "В вызове parse_config неверное число аргументов",
+          "Не хватает флага -Wall"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "В log.h написано тело функции log_line. Заголовок подключают main.c и util.c, оба защищены include guard. Что произойдёт при линковке?",
+        "explanation": "Include guard действует внутри одной единицы трансляции. main.c и util.c компилируются отдельно, и определение попадает в оба объектных файла.",
+        "options": [
+          "multiple definition of `log_line`",
+          "Всё соберётся: include guard не даст определить функцию дважды",
+          "undefined reference to `log_line`",
+          "Ошибка компиляции в util.c"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Почему gcc -L. -lgeometry main.o -o app не находит функцию из библиотеки, а gcc main.o -L. -lgeometry -o app находит?",
+        "explanation": "Когда линковщик читает библиотеку первой, ни один символ ещё не нужен — библиотека пропускается, и к ней он не возвращается.",
+        "options": [
+          "Из статической библиотеки берутся только файлы для уже известных неопределённых символов, а аргументы читаются слева направо",
+          "-l работает только в конце команды по синтаксису gcc",
+          "Флаг -L действует только на следующий аргумент",
+          "В первой команде библиотека подключается как динамическая"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Какой файл ищет линковщик для флага -lcalc?",
+        "explanation": "К имени добавляются префикс lib и расширение. Если есть обе версии, по умолчанию выбирается динамическая.",
+        "options": ["libcalc.so или libcalc.a", "calc.o", "calc.h", "lcalc.a"],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Глобальная переменная int counter; записана в заголовке, который подключают два файла, и линковка падает с multiple definition. Как исправить, сохранив одну общую переменную? Выберите все верные шаги.",
+        "explanation": "extern — объявление без определения, а определение должно быть ровно одно. static дал бы каждому файлу свою отдельную переменную — сборка пройдёт, но общей переменной не будет.",
+        "type": "multiple",
+        "options": [
+          "В заголовке написать extern int counter;",
+          "В одном .c файле написать int counter;",
+          "В заголовке написать static int counter;",
+          "Добавить include guard в заголовок"
+        ],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q6",
+        "question": "Программа собралась, но при запуске пишет error while loading shared libraries: libgeometry.so: cannot open shared object file. Когда возникла ошибка?",
+        "explanation": "Динамическая библиотека загружается при каждом запуске. ldd покажет, какие библиотеки не найдены; для проверки помогает LD_LIBRARY_PATH.",
+        "options": [
+          "При запуске: загрузчик не нашёл динамическую библиотеку",
+          "При компиляции main.c",
+          "При линковке",
+          "Внутри функции main"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "nm main.o показывает строку U sqrt. Какой флаг нужно добавить в конец команды сборки на Linux?",
+        "explanation": "Математические функции живут в библиотеке libm. Флаг -lm ставят после файлов, которые её используют.",
+        "type": "text",
+        "answers": ["-lm"],
+        "placeholder": "Флаг"
+      },
+      {
+        "id": "q8",
+        "question": "В a.c определена функция double scale(double x), а в b.c перед вызовом объявлено int scale(int x). Что будет?",
+        "explanation": "Линковщик C сравнивает только имена. Защита — общий заголовок с объявлением, подключённый и в a.c, и в b.c: тогда противоречие увидит компилятор.",
+        "options": [
+          "Программа соберётся, но поведение не определено",
+          "Линковщик сообщит о несовпадении типов",
+          "Компилятор найдёт ошибку при сборке b.c",
+          "Линковщик выберет подходящую версию автоматически"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q9",
+        "question": "Команда gcc util.c -o util выдала undefined reference to `main`. В чём ошибка?",
+        "explanation": "Без -c gcc собирает исполняемый файл, а стартовому коду нужна функция main. Модуль компилируют в объектный файл: gcc -c util.c.",
+        "options": [
+          "util.c — модуль без main; его нужно компилировать с -c",
+          "Функция main объявлена static",
+          "Не подключён stdio.h",
+          "Нужно добавить -lmain"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

@@ -1,0 +1,470 @@
+{
+  "id": "advanced-lldb",
+  "title": "Отладчик LLDB",
+  "description": "LLDB на macOS и Linux, структура команд «объект действие», соответствие команд GDB и LLDB, условные точки останова, frame variable и expression, форматы вывода и точки наблюдения.",
+  "moduleId": "developer-tools",
+  "order": 10,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
+  "prerequisites": ["advanced-gdb"],
+  "objectives": [
+    "Запускать и отлаживать программу в LLDB",
+    "Переводить привычные команды GDB на язык LLDB",
+    "Различать frame variable и expression",
+    "Находить ошибку условной точкой останова"
+  ],
+  "tags": ["LLDB", "Отладка", "macOS", "Clang", "Точки останова"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "advanced-lldb-task-1",
+    "title": "Команды GDB → LLDB",
+    "description": "Переведите сеанс GDB в полные команды LLDB. На вход до конца ввода подаются команды GDB по одной в строке. Для каждой напечатайте перевод:\n\n| GDB | LLDB |\n| --- | --- |\n| `break ФУНКЦИЯ` | `breakpoint set --name ФУНКЦИЯ` |\n| `break ФАЙЛ:СТРОКА` | `breakpoint set --file ФАЙЛ --line СТРОКА` |\n| `break СТРОКА` (только цифры) | `breakpoint set --line СТРОКА` |\n| `run` | `process launch` |\n| `run < ФАЙЛ` | `process launch -i ФАЙЛ` |\n| `next`, `step`, `finish` | `thread step-over`, `thread step-in`, `thread step-out` |\n| `continue` | `process continue` |\n| `bt` | `thread backtrace` |\n| `frame N` | `frame select N` |\n| `info locals` | `frame variable` |\n| `info breakpoints` | `breakpoint list` |\n| `delete N` | `breakpoint delete N` |\n| `print ВЫРАЖЕНИЕ` | `expression -- ВЫРАЖЕНИЕ` (выражение — весь остаток строки) |\n| `watch ИМЯ` | `watchpoint set variable ИМЯ` |\n\nСокращения `b`, `r`, `n`, `s`, `c`, `p` означают `break`, `run`, `next`, `step`, `continue`, `print`. Для любой другой строки напечатайте `неизвестная команда: СТРОКА`. Пустые строки пропускайте.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "break main\nrun < in.txt\nnext\nprint total * 2\nbt\n",
+        "output": "breakpoint set --name main\nprocess launch -i in.txt\nthread step-over\nexpression -- total * 2\nthread backtrace\n"
+      },
+      {
+        "input": "b search.c:7\nr\ninfo locals\nc\n",
+        "output": "breakpoint set --file search.c --line 7\nprocess launch\nframe variable\nprocess continue\n"
+      }
+    ],
+    "constraints": [
+      "Не больше 50 строк, каждая — не длиннее 200 символов; слова разделены одним пробелом."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Отделите первое слово: всё до первого пробела — команда, остальное — аргумент (может быть пустым).",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Сначала превратите сокращение в полное имя, затем сравнивайте с таблицей.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Для break различайте три случая: в аргументе есть двоеточие (strchr), аргумент состоит только из цифр (strspn с \"0123456789\"), иначе — имя функции.",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "break main\nrun < in.txt\nnext\nprint total * 2\nbt\n",
+        "expected": "breakpoint set --name main\nprocess launch -i in.txt\nthread step-over\nexpression -- total * 2\nthread backtrace\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "b search.c:7\nr\ninfo locals\nc\n",
+        "expected": "breakpoint set --file search.c --line 7\nprocess launch\nframe variable\nprocess continue\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Номер строки",
+        "stdin": "break 42\n",
+        "expected": "breakpoint set --line 42\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Шаги",
+        "stdin": "s\nfinish\nn\n",
+        "expected": "thread step-in\nthread step-out\nthread step-over\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Кадры и точки",
+        "stdin": "frame 2\ndelete 1\ninfo breakpoints\n",
+        "expected": "frame select 2\nbreakpoint delete 1\nbreakpoint list\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Наблюдение и печать",
+        "stdin": "watch total\np arr[0]@4\n",
+        "expected": "watchpoint set variable total\nexpression -- arr[0]@4\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Неизвестные команды",
+        "stdin": "list\ninfo registers\nquit\n",
+        "expected": "неизвестная команда: list\nнеизвестная команда: info registers\nнеизвестная команда: quit\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Команды без аргумента",
+        "stdin": "break\nprint\n",
+        "expected": "неизвестная команда: break\nнеизвестная команда: print\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Пустые строки",
+        "stdin": "\nrun\n\ncontinue\n",
+        "expected": "process launch\nprocess continue\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Три формы break",
+        "stdin": "b parse_number\nb 0\nb lib/v2/io.c:120\n",
+        "expected": "breakpoint set --name parse_number\nbreakpoint set --line 0\nbreakpoint set --file lib/v2/io.c --line 120\n"
+      },
+      {
+        "id": "hidden-9",
+        "name": "Выражения",
+        "stdin": "p -x\np node->next->value\n",
+        "expected": "expression -- -x\nexpression -- node->next->value\n"
+      },
+      {
+        "id": "hidden-10",
+        "name": "Неподдерживаемые аргументы",
+        "stdin": "run in.txt\nnext 3\n",
+        "expected": "неизвестная команда: run in.txt\nнеизвестная команда: next 3\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstatic const char *expand_alias(const char *command) {\n    static const char *aliases[][2] = {\n        {\"b\", \"break\"}, {\"r\", \"run\"}, {\"n\", \"next\"}, {\"s\", \"step\"}, {\"c\", \"continue\"}, {\"p\", \"print\"},\n    };\n    for (size_t i = 0; i < sizeof aliases / sizeof aliases[0]; i++) {\n        if (strcmp(command, aliases[i][0]) == 0) {\n            return aliases[i][1];\n        }\n    }\n    return command;\n}\n\nint main(void) {\n    static const char *simple[][2] = {\n        {\"next\", \"thread step-over\"},        {\"step\", \"thread step-in\"},\n        {\"finish\", \"thread step-out\"},       {\"continue\", \"process continue\"},\n        {\"bt\", \"thread backtrace\"},          {\"info locals\", \"frame variable\"},\n        {\"info breakpoints\", \"breakpoint list\"}, {\"run\", \"process launch\"},\n    };\n    char line[256];\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        line[strcspn(line, \"\\r\\n\")] = '\\0';\n        if (line[0] == '\\0') {\n            continue;\n        }\n        char original[256];\n        strcpy(original, line);\n        char *space = strchr(line, ' ');\n        const char *arg = \"\";\n        if (space != NULL) {\n            *space = '\\0';\n            arg = space + 1;\n        }\n        const char *command = expand_alias(line);\n        char full[256];\n        snprintf(full, sizeof full, \"%s%s%s\", command, arg[0] != '\\0' ? \" \" : \"\", arg);\n        int done = 0;\n        for (size_t i = 0; i < sizeof simple / sizeof simple[0] && !done; i++) {\n            if (strcmp(full, simple[i][0]) == 0) {\n                puts(simple[i][1]);\n                done = 1;\n            }\n        }\n        if (done) {\n            continue;\n        }\n        if (strcmp(command, \"run\") == 0 && strncmp(arg, \"< \", 2) == 0) {\n            printf(\"process launch -i %s\\n\", arg + 2);\n        } else if (strcmp(command, \"break\") == 0 && arg[0] != '\\0') {\n            const char *colon = strchr(arg, ':');\n            if (colon != NULL) {\n                printf(\"breakpoint set --file %.*s --line %s\\n\", (int)(colon - arg), arg, colon + 1);\n            } else if (strspn(arg, \"0123456789\") == strlen(arg)) {\n                printf(\"breakpoint set --line %s\\n\", arg);\n            } else {\n                printf(\"breakpoint set --name %s\\n\", arg);\n            }\n        } else if (strcmp(command, \"frame\") == 0 && arg[0] != '\\0') {\n            printf(\"frame select %s\\n\", arg);\n        } else if (strcmp(command, \"delete\") == 0 && arg[0] != '\\0') {\n            printf(\"breakpoint delete %s\\n\", arg);\n        } else if (strcmp(command, \"print\") == 0 && arg[0] != '\\0') {\n            printf(\"expression -- %s\\n\", arg);\n        } else if (strcmp(command, \"watch\") == 0 && arg[0] != '\\0') {\n            printf(\"watchpoint set variable %s\\n\", arg);\n        } else {\n            printf(\"неизвестная команда: %s\\n\", original);\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Перевод держится на двух шагах: раскрыть сокращение и сопоставить полную команду с таблицей. Команды без аргументов сравниваются целиком, команды с аргументом — по первому слову, после чего аргумент переносится в нужное место LLDB-команды.\n\nУ `break` три формы, и LLDB различает их явно параметрами `--name`, `--file`, `--line`. В GDB одна команда угадывает смысл аргумента — это короче, но в LLDB сразу видно, что именно задано. На практике в LLDB тоже пишут `b main.c:12`: псевдоним `b` в LLDB умеет разбирать запись в стиле GDB.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "advanced-lldb-task-2",
+      "title": "Разбор frame variable",
+      "description": "На вход до конца ввода подаётся вывод команды `frame variable` — строки вида `(тип) имя = значение`. Строки другого вида пропускайте.\n\nДля каждой переменной напечатайте:\n- `имя: NULL`, если тип оканчивается на `*`, а значение состоит из `0x` и одних нулей;\n- `имя: массив из N`, если тип оканчивается на `[N]`;\n- иначе `имя: значение`.\n\nВ конце напечатайте `нулевых указателей: K`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "(const int *) a = 0x000000016fdff2a0\n(int) n = 6\n(char *) name = 0x0000000000000000\n(int [3]) data = ([0] = 3, [1] = 1, [2] = 4)\n",
+          "output": "a: 0x000000016fdff2a0\nn: 6\nname: NULL\ndata: массив из 3\nнулевых указателей: 1\n"
+        },
+        {
+          "input": "(double) ratio = 0.5\n",
+          "output": "ratio: 0.5\nнулевых указателей: 0\n"
+        }
+      ],
+      "constraints": [
+        "Не больше 50 строк, каждая — не длиннее 300 символов.",
+        "Тип не содержит скобок ( ) и знака =."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Тип — между ( и первой ). Имя — после \") \" до \" = \". Значение — остаток строки после \" = \".",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Последний непробельный символ типа подскажет вид: * — указатель, ] — массив. Число элементов — между последней [ и ].",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Нулевой указатель: значение начинается с \"0x\", а strspn(value + 2, \"0\") == strlen(value + 2).",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "(const int *) a = 0x000000016fdff2a0\n(int) n = 6\n(char *) name = 0x0000000000000000\n(int [3]) data = ([0] = 3, [1] = 1, [2] = 4)\n",
+          "expected": "a: 0x000000016fdff2a0\nn: 6\nname: NULL\ndata: массив из 3\nнулевых указателей: 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "(double) ratio = 0.5\n",
+          "expected": "ratio: 0.5\nнулевых указателей: 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустой вывод",
+          "stdin": "",
+          "expected": "нулевых указателей: 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Короткие нули",
+          "stdin": "(Node *) head = 0x0\n(Node *) tail = 0x00000000\n",
+          "expected": "head: NULL\ntail: NULL\nнулевых указателей: 2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Почти ноль",
+          "stdin": "(int *) p = 0x0000000000000010\n",
+          "expected": "p: 0x0000000000000010\nнулевых указателей: 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Беззнаковое и символ",
+          "stdin": "(unsigned int) n = 4294967295\n(char) c = 'A'\n",
+          "expected": "n: 4294967295\nc: 'A'\nнулевых указателей: 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Строки",
+          "stdin": "(char [6]) word = \"hello\"\n(char *) s = 0x0000000100003f9e \"hello\"\n",
+          "expected": "word: массив из 6\ns: 0x0000000100003f9e \"hello\"\nнулевых указателей: 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Посторонние строки",
+          "stdin": "Process 5120 stopped\n(lldb) v\n(int) x = -1\n",
+          "expected": "x: -1\nнулевых указателей: 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Указатель на указатель и массив указателей",
+          "stdin": "(int **) grid = 0x0000000000000000\n(int *[4]) rows = ([0] = 0x0, [1] = 0x0)\n",
+          "expected": "grid: NULL\nrows: массив из 4\nнулевых указателей: 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Структура",
+          "stdin": "(struct point) pt = (x = 1, y = 2)\n",
+          "expected": "pt: (x = 1, y = 2)\nнулевых указателей: 0\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Два нулевых",
+          "stdin": "(FILE *) file = 0x0000000000000000\n(const char *) path = 0x0000000000000000\n(size_t) size = 0\n",
+          "expected": "file: NULL\npath: NULL\nsize: 0\nнулевых указателей: 2\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char line[320];\n    int nulls = 0;\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        line[strcspn(line, \"\\r\\n\")] = '\\0';\n        char *close = strchr(line, ')');\n        char *equals = strstr(line, \" = \");\n        if (line[0] != '(' || close == NULL || equals == NULL || equals < close) {\n            continue;\n        }\n        *close = '\\0';\n        *equals = '\\0';\n        char *type = line + 1;\n        char *name = close + 1;\n        while (*name == ' ') {\n            name++;\n        }\n        const char *value = equals + 3;\n        size_t type_length = strlen(type);\n        while (type_length > 0 && type[type_length - 1] == ' ') {\n            type[--type_length] = '\\0';\n        }\n        char last = type_length > 0 ? type[type_length - 1] : '\\0';\n        if (last == '*' && strncmp(value, \"0x\", 2) == 0 && value[2] != '\\0' &&\n            strspn(value + 2, \"0\") == strlen(value + 2)) {\n            printf(\"%s: NULL\\n\", name);\n            nulls++;\n        } else if (last == ']') {\n            char *open = strrchr(type, '[');\n            type[type_length - 1] = '\\0';\n            printf(\"%s: массив из %s\\n\", name, open != NULL ? open + 1 : \"?\");\n        } else {\n            printf(\"%s: %s\\n\", name, value);\n        }\n    }\n    printf(\"нулевых указателей: %d\\n\", nulls);\n    return 0;\n}\n",
+      "solutionExplanation": "`frame variable` выводит каждую переменную с типом, и это не формальность: тип часто и есть подсказка. `(char *) name = 0x0000000000000000` — нулевой указатель, разыменование которого даст падение. `(unsigned int) n = 4294967295` — почти наверняка `-1`, превратившийся в беззнаковое.\n\nРазбор опирается на структуру строки, а не на позиции символов: тип — в первых скобках, значение — после ` = `. Значение массива LLDB печатает в скобках, поэтому знак `=` ищется **после** закрывающей скобки типа.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-lldb-task-3",
+      "title": "Найди ошибку: двоичный поиск",
+      "description": "Программа читает отсортированный по возрастанию массив из `n` различных чисел и `q` запросов. Для каждого запроса она печатает индекс числа в массиве или `-1`, если числа нет.\n\nИногда программа не находит числа, которые в массиве есть. Остановите отладчик условной точкой в цикле поиска для такого запроса, посмотрите на `low` и `high` и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nstatic int search(const int *a, int n, int key) {\n    int low = 0;\n    int high = n - 1;\n    while (low < high) {\n        int mid = low + (high - low) / 2;\n        if (a[mid] == key) {\n            return mid;\n        }\n        if (a[mid] < key) {\n            low = mid + 1;\n        } else {\n            high = mid - 1;\n        }\n    }\n    return -1;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int a[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        int key;\n        scanf(\"%d\", &key);\n        printf(\"%d\\n\", search(a, n, key));\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\n2 3 5\n3\n5 2 4\n",
+          "output": "2\n0\n-1\n"
+        },
+        {
+          "input": "1\n7\n1\n7\n",
+          "output": "0\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; 1 ≤ q ≤ 100; числа от −10⁹ до 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Поищите в массиве {2, 3, 5} число 5 вручную или в отладчике: какими будут low и high, когда цикл закончится?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Граница high включительная: high = n - 1, и кандидат с индексом low == high ещё не проверен. Какое условие цикла это учитывает?",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\n2 3 5\n3\n5 2 4\n",
+          "expected": "2\n0\n-1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n7\n1\n7\n",
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Все элементы",
+          "stdin": "6\n2 3 5 7 11 13\n6\n2 3 5 7 11 13\n",
+          "expected": "0\n1\n2\n3\n4\n5\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Отсутствующие",
+          "stdin": "6\n2 3 5 7 11 13\n4\n1 4 12 14\n",
+          "expected": "-1\n-1\n-1\n-1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Два элемента",
+          "stdin": "2\n-5 5\n3\n-5 5 0\n",
+          "expected": "0\n1\n-1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Один элемент, промахи",
+          "stdin": "1\n7\n2\n6 8\n",
+          "expected": "-1\n-1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Крайние значения",
+          "stdin": "5\n-1000000000 -1 0 1 1000000000\n5\n1000000000 -1000000000 0 2 -2\n",
+          "expected": "4\n0\n2\n-1\n-1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Десять подряд",
+          "stdin": "10\n1 2 3 4 5 6 7 8 9 10\n10\n1 2 3 4 5 6 7 8 9 10\n",
+          "expected": "0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Края и середина",
+          "stdin": "7\n10 20 30 40 50 60 70\n3\n70 10 40\n",
+          "expected": "6\n0\n3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Между элементами",
+          "stdin": "4\n1 3 5 7\n4\n0 2 6 8\n",
+          "expected": "-1\n-1\n-1\n-1\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Отрицательные",
+          "stdin": "3\n-3 -2 -1\n3\n-1 -3 -2\n",
+          "expected": "2\n0\n1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic int search(const int *a, int n, int key) {\n    int low = 0;\n    int high = n - 1;\n    while (low <= high) {\n        int mid = low + (high - low) / 2;\n        if (a[mid] == key) {\n            return mid;\n        }\n        if (a[mid] < key) {\n            low = mid + 1;\n        } else {\n            high = mid - 1;\n        }\n    }\n    return -1;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int a[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        int key;\n        scanf(\"%d\", &key);\n        printf(\"%d\\n\", search(a, n, key));\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Отрезок поиска `[low, high]` включает обе границы. Когда `low == high`, в нём остаётся ровно один кандидат, но условие `low < high` завершает цикл, не проверив его. Поэтому теряются элементы, к которым поиск приходит последним шагом: крайние значения и массив из одного элемента.\n\nВ отладчике это видно сразу: условная точка `br s -l 7 -c 'key == 5'`, затем `v low high` на каждой остановке. Последняя остановка показывает `low = high = 2`, а после неё функция возвращает `-1`. Условие `low <= high` соответствует включительной границе.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "advanced-lldb-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Какой отладчик вызывают Xcode и CLion на macOS по умолчанию?",
+        "explanation": "LLDB поставляется с Xcode Command Line Tools. GDB на macOS требует отдельной установки и подписи.",
+        "options": ["LLDB", "GDB", "Valgrind", "AddressSanitizer"],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Какой командой LLDB напечатать стек вызовов?",
+        "explanation": "Полная форма — thread backtrace, псевдоним bt совпадает с GDB.",
+        "type": "text",
+        "answers": ["bt", "thread backtrace"],
+        "placeholder": "Команда"
+      },
+      {
+        "id": "q3",
+        "question": "Чем frame variable отличается от expression?",
+        "explanation": "expression может вызвать функцию и изменить состояние программы. Для простого просмотра безопаснее frame variable (v).",
+        "options": [
+          "frame variable читает значения из памяти, expression выполняет код C внутри программы",
+          "frame variable работает только с глобальными переменными",
+          "expression показывает только типы",
+          "Ничем, это синонимы"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Как в LLDB поставить точку останова на строку 12 файла main.c? Напишите одну команду.",
+        "explanation": "Псевдоним b понимает запись файл:строка, как в GDB; полная форма — breakpoint set --file main.c --line 12.",
+        "type": "text",
+        "answers": [
+          "b main.c:12",
+          "breakpoint set --file main.c --line 12",
+          "br s -f main.c -l 12",
+          "breakpoint set -f main.c -l 12"
+        ],
+        "placeholder": "Команда"
+      },
+      {
+        "id": "q5",
+        "question": "Какая команда LLDB запускает программу с вводом из файла in.txt?",
+        "explanation": "Флаг -i (--stdin) подключает файл ко входу программы. Аргументы командной строки передаются после --.",
+        "options": [
+          "process launch -i in.txt",
+          "run in.txt",
+          "process launch in.txt",
+          "target create in.txt"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Как в LLDB остановиться в момент изменения переменной total?",
+        "explanation": "Сокращённо — w s v total. Это аналог watch total в GDB.",
+        "options": [
+          "watchpoint set variable total",
+          "breakpoint set --name total",
+          "frame variable total",
+          "expression -- total"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Как устроены полные команды LLDB?",
+        "explanation": "Единая схема делает команды предсказуемыми: breakpoint list, breakpoint delete, watchpoint list.",
+        "options": [
+          "Объект, затем действие и параметры: breakpoint set --name main",
+          "Действие, затем объект: set breakpoint main",
+          "Одно слово на команду, как в GDB",
+          "Только однобуквенные команды"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какие команды LLDB выполняют шаг без захода в вызываемую функцию, как next в GDB? Выберите все.",
+        "explanation": "n и next — псевдонимы thread step-over. step-in заходит внутрь функции, step-out выходит из неё.",
+        "type": "multiple",
+        "options": ["thread step-over", "n", "next", "thread step-in", "thread step-out"],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q9",
+        "question": "Что выведет LLDB на команду v count, если int count = 4?",
+        "explanation": "LLDB показывает тип в скобках, затем имя и значение. Формат $1 = 4 — у print в GDB.",
+        "options": ["(int) count = 4", "count = 4", "$1 = 4", "4"],
+        "correct": 0
+      }
+    ]
+  }
+}

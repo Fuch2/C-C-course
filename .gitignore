@@ -1,0 +1,17 @@
+node_modules/
+.next/
+.next-integration*/
+dist/
+coverage/
+.env
+.env.local
+*.db
+*.db-*
+.DS_Store
+*.tsbuildinfo
+test-results/
+playwright-report/
+apps/web/public/monaco/
+
+__pycache__/
+*.pyc

@@ -1,0 +1,24 @@
+{
+  "id": "oop-project-telemetry-brief",
+  "title": "Система обработки датчиков",
+  "description": "Соберите архитектуру Sensor, TemperatureSensor, PressureSensor, Measurement, Filter и TelemetryProcessor. Три самостоятельных этапа: преобразование измерений через интерфейс, фильтр с инвариантом границ, процессор с исключительным владением датчиками. Стартовые сигнатуры и консольный адаптер даны; тела методов реализует ученик. Проверки охватывают калибровку, границы, пустой набор, порядок результатов и владение.",
+  "moduleId": "cpp-oop",
+  "order": 1,
+  "difficulty": "advanced",
+  "estimatedMinutes": 240,
+  "prerequisites": ["oop-final"],
+  "objectives": [
+    "Реализовать конкретные датчики через абстрактный Sensor",
+    "Сохранить инвариант Filter и фильтровать преобразованные измерения",
+    "Собрать процессор без срезки и ветвлений по типам"
+  ],
+  "tags": ["C++20", "ООП", "проект", "датчики", "полиморфизм"],
+  "lessonIds": ["oop-pure-virtual", "oop-interfaces", "oop-composition-vs-inheritance"],
+  "deliverables": [
+    "Этап 1: Measurement, Sensor, TemperatureSensor, PressureSensor и чтение через базовые ссылки",
+    "Этап 2: Filter с проверкой границ и отказом некорректной конфигурации",
+    "Этап 3: TelemetryProcessor, vector<unique_ptr<Sensor>>, обработка и консольный протокол",
+    "Успешные публичные и скрытые тесты всех трёх этапов; объяснение владения, const и виртуального уничтожения"
+  ],
+  "published": true
+}

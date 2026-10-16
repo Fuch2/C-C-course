@@ -1,0 +1,135 @@
+{
+  "id": "algo-heap",
+  "title": "Куча и очередь с приоритетом — Heap / priority queue",
+  "description": "Бинарная min-heap — почти полное дерево, где родитель не больше детей.",
+  "moduleId": "algorithms-structures",
+  "order": 25,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 60,
+  "prerequisites": ["algo-bst"],
+  "objectives": [
+    "Объяснить инвариант: Наверху всегда лучший кандидат, но полный порядок остальных нам не нужен.",
+    "Обосновать время: Минимум O(1), вставка/извлечение O(log n).",
+    "Оценить память и компромиссы: Дешёвый лучший элемент, но поиск произвольного ключа O(n); порядок равных приоритетов не гарантирован."
+  ],
+  "tags": [
+    "алгоритмы",
+    "C17",
+    "Куча и очередь с приоритетом — Heap / priority queue",
+    "структуры данных",
+    "cache locality"
+  ],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "algo-heap-exercise",
+    "title": "События с минимальным приоритетом",
+    "description": "Ввод q (0…128), команды P x — добавить int −1000…1000, O — извлечь минимум. O выводит минимум или ПУСТО. Используйте бинарную min-heap в массиве вместимости 128. Одинаковые приоритеты сохраняются как отдельные элементы.",
+    "difficulty": "intermediate",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "7 P 5 P 2 P 7 O O O O",
+        "output": "2\n5\n7\nПУСТО\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      },
+      {
+        "input": "6 P 1 P 1 P -1 O O O",
+        "output": "-1\n1\n1\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Используйте C17 и диапазоны входа из условия.",
+      "Выводите только требуемый результат.",
+      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Наверху всегда лучший кандидат, но полный порядок остальных нам не нужен."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Бинарная heap как структура данных не означает heap-память allocator."
+      },
+      {
+        "id": "hint-3",
+        "order": 3,
+        "text": "После вставки 5,2,7 корень 2. Извлечение 2 ставит 7 наверх, затем опускает под 5: следующий минимум 5."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "7 P 5 P 2 P 7 O O O O",
+        "expected": "2\n5\n7\nПУСТО\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "6 P 1 P 1 P -1 O O O",
+        "expected": "-1\n1\n1\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "stdin": "5 P 4 O P 3 O O",
+        "expected": "4\n3\nПУСТО\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "stdin": "0",
+        "expected": ""
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\ntypedef struct { int data[128]; int size; } Heap;\nstatic int push(Heap *h,int value){\n    if(h->size==128)return 0;\n    int i=h->size++;\n    while(i>0){int parent=(i-1)/2;if(h->data[parent]<=value)break;h->data[i]=h->data[parent];i=parent;}\n    h->data[i]=value;return 1;\n}\nstatic int pop(Heap *h,int *out){\n    if(!h->size)return 0;*out=h->data[0];int last=h->data[--h->size];\n    if(!h->size)return 1;\n    int i=0;\n    while(2*i+1<h->size){\n        int child=2*i+1;\n        if(child+1<h->size && h->data[child+1]<h->data[child])++child;\n        if(last<=h->data[child])break;\n        h->data[i]=h->data[child];i=child;\n    }\n    h->data[i]=last;return 1;\n}\nint main(void) {\nHeap heap={0};int q;if(scanf(\"%d\",&q)!=1||q<0||q>128)return 1;for(int i=0;i<q;++i){char c;int x;if(scanf(\" %c\",&c)!=1)return 1;if(c=='P'){if(scanf(\"%d\",&x)!=1||!push(&heap,x))return 1;}else if(c=='O'){if(pop(&heap,&x))printf(\"%d\\n\",x);else puts(\"ПУСТО\");}else return 1;}\nreturn 0;\n}\n",
+    "solutionExplanation": "Инвариант: Наверху всегда лучший кандидат, но полный порядок остальных нам не нужен.\n\nПосле вставки 5,2,7 корень 2. Извлечение 2 ставит 7 наверх, затем опускает под 5: следующий минимум 5.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. Бинарная heap как структура данных не означает heap-память allocator.\n\nВремя: Минимум O(1), вставка/извлечение O(log n).\nПамять: O(n) плотного массива, O(1) дополнительной памяти итеративных операций.\nКомпромисс: Дешёвый лучший элемент, но поиск произвольного ключа O(n); порядок равных приоритетов не гарантирован.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
+    "checking": { "type": "stdout", "comparison": "exact" }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "algo-heap-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "invariant",
+        "question": "Отсортирован ли весь массив корректной кучи?",
+        "options": ["Нет, гарантирован только порядок родитель–дети", "Да, всегда по возрастанию"],
+        "correct": 0,
+        "explanation": "Наверху всегда лучший кандидат, но полный порядок остальных нам не нужен. После вставки 5,2,7 корень 2. Извлечение 2 ставит 7 наверх, затем опускает под 5: следующий минимум 5."
+      },
+      {
+        "id": "complexity",
+        "question": "Какая оценка соответствует рассмотренной реализации?",
+        "options": [
+          "Всегда O(1), потому что все тесты ограничены по размеру.",
+          "Минимум O(1), вставка/извлечение O(log n)."
+        ],
+        "correct": 1,
+        "explanation": "Дешёвый лучший элемент, но поиск произвольного ключа O(n); порядок равных приоритетов не гарантирован."
+      },
+      {
+        "id": "engineering",
+        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "options": [
+          "Бинарная heap как структура данных не означает heap-память allocator.",
+          "Совпадение Big O гарантирует одинаковое время на любой машине."
+        ],
+        "correct": 0,
+        "explanation": "Нет указателей и отдельных аллокаций, но путь к листу перескакивает между индексами. O(n) плотного массива, O(1) дополнительной памяти итеративных операций."
+      }
+    ]
+  }
+}

@@ -1,0 +1,631 @@
+{
+  "id": "c17-return-values",
+  "title": "Возвращаемые значения",
+  "description": "Несколько return и ранний выход, сторожевые проверки, функции-вопросы, преобразование результата, специальные значения «не найдено» и проверка результатов.",
+  "moduleId": "c-fundamentals",
+  "order": 25,
+  "difficulty": "beginner",
+  "estimatedMinutes": 40,
+  "prerequisites": ["c17-parameters"],
+  "objectives": [
+    "Использовать несколько return и ранний выход из функции",
+    "Писать сторожевые проверки для особых случаев",
+    "Возвращать логические значения напрямую из выражений",
+    "Сообщать об отсутствии результата специальным значением"
+  ],
+  "tags": ["C17", "Функции", "return", "bool"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-return-values-task-1",
+    "title": "Знак числа",
+    "description": "Напишите функцию `int sign(long long x)`: она возвращает 1 для положительного `x`, −1 для отрицательного и 0 для нуля.",
+    "difficulty": "beginner",
+    "starterCode": "int sign(long long x) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "42",
+        "output": "1\n"
+      },
+      {
+        "input": "-7",
+        "output": "-1\n"
+      }
+    ],
+    "constraints": ["|x| ≤ 10¹⁸."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Два if с ранним return и завершающий return 0.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Сравнивайте x с нулём, а не делите x на |x|: при x = 0 деление невозможно.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "arguments": [42],
+        "expected": "1\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "arguments": [-7],
+        "expected": "-1\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "arguments": [0],
+        "expected": "0\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "arguments": ["1000000000000000000"],
+        "expected": "1\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "arguments": ["-1000000000000000000"],
+        "expected": "-1\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "arguments": [1],
+        "expected": "1\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "arguments": [-1],
+        "expected": "-1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "arguments": ["999999999999"],
+        "expected": "1\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "arguments": [-2],
+        "expected": "-1\n"
+      }
+    ],
+    "referenceSolution": "int sign(long long x) {\n    if (x > 0) {\n        return 1;\n    }\n    if (x < 0) {\n        return -1;\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Три пути — три `return`. Завершающий `return 0;` покрывает оставшийся случай и не даёт функции «упасть» с конца.\n\nКомпактная альтернатива без ветвлений: `return (x > 0) - (x < 0);` — разность двух сравнений даёт 1, −1 или 0. Она красива, но для начинающих ветки понятнее.",
+    "checking": {
+      "type": "function",
+      "functionName": "sign",
+      "returnType": "int",
+      "parameters": [
+        {
+          "name": "x",
+          "type": "long_long"
+        }
+      ]
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-return-values-task-2",
+      "title": "Дней в месяце",
+      "description": "Напишите функцию `int days_in_month(int month, int year)`, возвращающую количество дней в месяце с учётом високосных лет. Для неверного номера месяца функция возвращает 0.\n\nРекомендуется написать вспомогательную функцию `int is_leap(int year)` и вызвать её из `days_in_month`.",
+      "difficulty": "beginner",
+      "starterCode": "int is_leap(int year) {\n    // Вспомогательная функция: 1 для високосного года, 0 для обычного.\n    return 0;\n}\n\nint days_in_month(int month, int year) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "2 2024",
+          "output": "29\n"
+        },
+        {
+          "input": "13 2024",
+          "output": "0\n"
+        }
+      ],
+      "constraints": ["−5 ≤ month ≤ 20, 1 ≤ year ≤ 1 000 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сторожевая проверка: if (month < 1 || month > 12) return 0;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Февраль: return is_leap(year) ? 29 : 28; четыре месяца по 30; остальные — 31.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "arguments": [2, 2024],
+          "expected": "29\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "arguments": [13, 2024],
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "arguments": [2, 2023],
+          "expected": "28\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "arguments": [2, 1900],
+          "expected": "28\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "arguments": [2, 2000],
+          "expected": "29\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "arguments": [1, 1],
+          "expected": "31\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "arguments": [4, 2026],
+          "expected": "30\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "arguments": [12, 1000000],
+          "expected": "31\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "arguments": [0, 2026],
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "arguments": [-5, 2026],
+          "expected": "0\n"
+        }
+      ],
+      "referenceSolution": "int is_leap(int year) {\n    return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;\n}\n\nint days_in_month(int month, int year) {\n    if (month < 1 || month > 12) {\n        return 0;\n    }\n    if (month == 2) {\n        return is_leap(year) ? 29 : 28;\n    }\n    if (month == 4 || month == 6 || month == 9 || month == 11) {\n        return 30;\n    }\n    return 31;\n}\n",
+      "solutionExplanation": "Порядок проверок: сначала неверные данные, затем самый особенный месяц — февраль, затем «короткие» месяцы, всё остальное — 31 день. Каждая ветка сразу возвращает ответ, вложенности нет.\n\nФункция `is_leap` — пример повторного использования: правило високосного года записано один раз, и `days_in_month` просто спрашивает его.",
+      "checking": {
+        "type": "function",
+        "functionName": "days_in_month",
+        "returnType": "int",
+        "parameters": [
+          {
+            "name": "month",
+            "type": "int"
+          },
+          {
+            "name": "year",
+            "type": "int"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c17-return-values-task-3",
+      "title": "Первая цифра",
+      "description": "Напишите функцию `int first_digit(long long n)`, возвращающую первую (старшую) цифру записи числа `n` без учёта знака. У нуля первая цифра — 0.",
+      "difficulty": "beginner",
+      "starterCode": "int first_digit(long long n) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "2026",
+          "output": "2\n"
+        },
+        {
+          "input": "-905",
+          "output": "9\n"
+        }
+      ],
+      "constraints": ["|n| ≤ 10¹⁸."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сначала уберите знак: if (n < 0) n = -n;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Делите на 10, пока число не станет однозначным: while (n >= 10) n /= 10;",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "arguments": [2026],
+          "expected": "2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "arguments": [-905],
+          "expected": "9\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "arguments": [0],
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "arguments": [7],
+          "expected": "7\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "arguments": [-1],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "arguments": ["1000000000000000000"],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "arguments": ["-999999999999999999"],
+          "expected": "9\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "arguments": [10],
+          "expected": "1\n"
+        }
+      ],
+      "referenceSolution": "int first_digit(long long n) {\n    if (n < 0) {\n        n = -n;\n    }\n    while (n >= 10) {\n        n /= 10;\n    }\n    return (int)n;\n}\n",
+      "solutionExplanation": "Отбрасывая последние цифры, пока число не станет однозначным, получаем старшую цифру. Изменять параметр безопасно — это копия.\n\nЗнак убирается заранее: для отрицательных чисел остаток и деление дали бы отрицательную цифру. Ограничение `|n| ≤ 10¹⁸` гарантирует, что `-n` не переполнится. Явное приведение `(int)n` показывает, что сужение `long long` до `int` задумано: значение от 0 до 9.",
+      "checking": {
+        "type": "function",
+        "functionName": "first_digit",
+        "returnType": "int",
+        "parameters": [
+          {
+            "name": "n",
+            "type": "long_long"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c17-return-values-task-4",
+      "title": "Где цифра",
+      "description": "Напишите функцию `int digit_position(long long n, int digit)`. Она возвращает позицию **первого справа** вхождения цифры `digit` в записи неотрицательного числа `n`; позиции считаются справа налево, начиная с 1. Если цифры в числе нет, функция возвращает −1.\n\n**Примеры:** `digit_position(90210, 2)` → 3; `digit_position(90210, 0)` → 1; `digit_position(90210, 7)` → −1.",
+      "difficulty": "beginner",
+      "starterCode": "int digit_position(long long n, int digit) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return -1;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "90210 2",
+          "output": "3\n"
+        },
+        {
+          "input": "90210 7",
+          "output": "-1\n"
+        }
+      ],
+      "constraints": ["0 ≤ n ≤ 10¹⁸, 0 ≤ digit ≤ 9."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Перебирайте цифры от младшей: n % 10, затем n /= 10, считая позицию.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Используйте do while, чтобы у числа 0 была одна цифра 0.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "При совпадении — сразу return позиция; после цикла — return -1.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "arguments": [90210, 2],
+          "expected": "3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "arguments": [90210, 7],
+          "expected": "-1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "arguments": [90210, 0],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "arguments": [0, 0],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "arguments": [0, 5],
+          "expected": "-1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "arguments": ["1000000000000000000", 1],
+          "expected": "19\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "arguments": [123456789, 9],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "arguments": [123456789, 1],
+          "expected": "9\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "arguments": [555, 5],
+          "expected": "1\n"
+        }
+      ],
+      "referenceSolution": "int digit_position(long long n, int digit) {\n    int position = 1;\n    do {\n        if (n % 10 == digit) {\n            return position;\n        }\n        n /= 10;\n        position++;\n    } while (n > 0);\n    return -1;\n}\n",
+      "solutionExplanation": "`return` внутри цикла завершает поиск на первом найденном совпадении — флаги и `break` не нужны. Если цикл закончился, значит, цифры нет, и функция возвращает специальное значение −1, которое не может быть настоящей позицией.\n\n`do while` обрабатывает `n = 0`: у нуля одна цифра, и `digit_position(0, 0)` возвращает 1.",
+      "checking": {
+        "type": "function",
+        "functionName": "digit_position",
+        "returnType": "int",
+        "parameters": [
+          {
+            "name": "n",
+            "type": "long_long"
+          },
+          {
+            "name": "digit",
+            "type": "int"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c17-return-values-task-5",
+      "title": "Код треугольника",
+      "description": "Напишите функцию `int triangle_code(long long a, long long b, long long c)`, которая по длинам сторон возвращает код:\n\n| Код | Значение                      |\n| --- | ----------------------------- |\n| 0   | треугольник не существует     |\n| 1   | равносторонний                |\n| 2   | равнобедренный (не равносторонний) |\n| 3   | разносторонний                |\n\nКоды вместо строк — обычный приём, когда функцию вызывает другой код, а не человек.",
+      "difficulty": "beginner",
+      "starterCode": "int triangle_code(long long a, long long b, long long c) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "3 4 5",
+          "output": "3\n"
+        },
+        {
+          "input": "1 2 3",
+          "output": "0\n"
+        }
+      ],
+      "constraints": ["1 ≤ a, b, c ≤ 10¹⁸."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Первой — сторожевая проверка существования: если любая сторона не меньше суммы двух других, return 0.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Суммы двух сторон до 2 · 10¹⁸ помещаются в long long (максимум ≈ 9,2 · 10¹⁸).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "arguments": [3, 4, 5],
+          "expected": "3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "arguments": [1, 2, 3],
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "arguments": [5, 5, 5],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "arguments": [5, 5, 8],
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "arguments": [8, 5, 5],
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "arguments": [5, 8, 5],
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "arguments": ["1000000000000000000", "1000000000000000000", "1000000000000000000"],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "arguments": [1, 1, 2],
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "arguments": [2, 3, 4],
+          "expected": "3\n"
+        }
+      ],
+      "referenceSolution": "int triangle_code(long long a, long long b, long long c) {\n    if (a >= b + c || b >= a + c || c >= a + b) {\n        return 0;\n    }\n    if (a == b && b == c) {\n        return 1;\n    }\n    if (a == b || b == c || a == c) {\n        return 2;\n    }\n    return 3;\n}\n",
+      "solutionExplanation": "Это задача «Тип треугольника» из практикума, переписанная как функция. Сравните: вместо цепочки `if-else` с печатью — последовательность сторожевых проверок с `return`. Каждая ветка короче и независима.\n\nФункция не печатает, а возвращает код. Поэтому её можно использовать в разных программах: одна напечатает слово по-русски, другая — по-английски, третья посчитает статистику по тысяче треугольников.",
+      "checking": {
+        "type": "function",
+        "functionName": "triangle_code",
+        "returnType": "int",
+        "parameters": [
+          {
+            "name": "a",
+            "type": "long_long"
+          },
+          {
+            "name": "b",
+            "type": "long_long"
+          },
+          {
+            "name": "c",
+            "type": "long_long"
+          }
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-return-values-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint f(int x) {\n    if (x > 10) {\n        return 1;\n    }\n    if (x > 5) {\n        return 2;\n    }\n    return 3;\n}\n\nint main(void) {\n    printf(\"%d %d %d\\n\", f(20), f(7), f(5));\n    return 0;\n}",
+        "explanation": "20 > 10 — сразу 1. 7 не больше 10, но больше 5 — 2. 5 не подходит ни под одно условие — 3.",
+        "type": "text",
+        "answers": ["1 2 3"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint g(void) {\n    printf(\"A\\n\");\n    return 5;\n    printf(\"B\\n\");\n}\n\nint main(void) {\n    printf(\"%d\\n\", g());\n    return 0;\n}",
+        "explanation": "return завершает функцию, строка с B недостижима. Затем main печатает возвращённое 5.",
+        "type": "text",
+        "answers": ["A\n5"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Функция объявлена как int half(int x) { return x / 2.0; }. Что вернёт half(7)?",
+        "explanation": "7 / 2.0 = 3.5, но тип результата int: значение преобразуется с отбрасыванием дробной части.",
+        "options": ["3", "3.5", "4", "Ошибка компиляции"],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Какая запись эквивалентна функции, которая возвращает 1 для чётного n и 0 для нечётного? Выберите все.",
+        "explanation": "n % 2 возвращает 1 (или −1) для нечётных — это противоположный ответ. !(n % 2) даёт 1, когда остаток 0.",
+        "type": "multiple",
+        "options": [
+          "return n % 2 == 0;",
+          "if (n % 2 == 0) return 1; else return 0;",
+          "return n % 2;",
+          "return !(n % 2);"
+        ],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q5",
+        "question": "Функция ищет индекс элемента и возвращает −1, если элемент не найден. Что обязательно делать вызывающему коду?",
+        "explanation": "Специальное значение — договорённость. Если её не проверить, −1 будет использовано как настоящий результат.",
+        "options": [
+          "Проверять результат на −1 перед использованием как индекса",
+          "Ничего, −1 — допустимый индекс",
+          "Всегда прибавлять 1 к результату",
+          "Вызывать функцию дважды"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что предупреждение control reaches end of non-void function говорит о функции?",
+        "explanation": "На таком пути результат не определён. Нужно добавить return для недостающего случая.",
+        "options": [
+          "Есть путь выполнения, на котором функция с результатом заканчивается без return",
+          "Функция слишком длинная",
+          "Функция void возвращает значение",
+          "Функция никогда не вызывается"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

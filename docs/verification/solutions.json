@@ -1,0 +1,24 @@
+{
+  "verifiedAt": "2026-09-15T11:27:07.882Z",
+  "sandboxImage": "code-systems-sandbox:local",
+  "checks": [
+    {
+      "lessonId": "cpp20-deque",
+      "exerciseId": "cpp20-deque-exercise",
+      "compiler": "gcc",
+      "standard": "c++20",
+      "fingerprint": "0e1297a056d439bf84467ba9ad2146195c65a4d04d870cf51333dbdc565325b9",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "lessonId": "cpp20-deque",
+      "exerciseId": "cpp20-deque-exercise",
+      "compiler": "clang",
+      "standard": "c++20",
+      "fingerprint": "0e1297a056d439bf84467ba9ad2146195c65a4d04d870cf51333dbdc565325b9",
+      "ok": true,
+      "tests": 3
+    }
+  ]
+}

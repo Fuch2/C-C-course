@@ -1,0 +1,504 @@
+{
+  "id": "c17-enum",
+  "title": "Перечисления enum",
+  "description": "Именованные целые константы вместо магических чисел: объявление enum, явные значения, switch с проверкой полноты, таблицы названий, константа-счётчик, проверка ввода и конечные автоматы.",
+  "moduleId": "c-fundamentals",
+  "order": 43,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["c17-struct"],
+  "objectives": [
+    "Заменять магические числа константами перечисления",
+    "Понимать, как нумеруются константы, и задавать значения явно",
+    "Писать switch по перечислению так, чтобы компилятор находил забытые случаи",
+    "Связывать перечисление с массивом названий через константу-счётчик и проверять входные значения",
+    "Описывать конечный автомат через перечисление состояний"
+  ],
+  "tags": ["C17", "Перечисления", "switch"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-enum-task-1",
+    "title": "Декодер состояния",
+    "description": "Станок сообщает коды состояний: `0` — `IDLE`, `1` — `RUNNING`, `2` — `FAULT`. Прочитайте коды до конца ввода и для каждого выведите название состояния. Для кодов вне диапазона выведите `INVALID`.\n\nОпишите перечисление `enum state` с константой-счётчиком и массив названий.",
+    "difficulty": "intermediate",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "0 1 2",
+        "output": "IDLE\nRUNNING\nFAULT\n"
+      },
+      {
+        "input": "3\n-1\n1",
+        "output": "INVALID\nINVALID\nRUNNING\n"
+      }
+    ],
+    "constraints": ["Кодов от 1 до 1000; каждый код — целое число от −10⁹ до 10⁹."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "enum state { IDLE, RUNNING, FAULT, STATE_COUNT }; и const char *state_names[STATE_COUNT] = {\"IDLE\", \"RUNNING\", \"FAULT\"};",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Цикл чтения: while (scanf(\"%d\", &code) == 1). Перед обращением к массиву проверьте 0 <= code && code < STATE_COUNT.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "0 1 2",
+        "expected": "IDLE\nRUNNING\nFAULT\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "3\n-1\n1",
+        "expected": "INVALID\nINVALID\nRUNNING\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "2",
+        "expected": "FAULT\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "1000000000 -1000000000",
+        "expected": "INVALID\nINVALID\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "2 2 2 3 3 0",
+        "expected": "FAULT\nFAULT\nFAULT\nINVALID\nINVALID\nIDLE\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "-1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3 -1 0 1 2 3",
+        "expected": "INVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\nINVALID\nIDLE\nRUNNING\nFAULT\nINVALID\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "1 1 1",
+        "expected": "RUNNING\nRUNNING\nRUNNING\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "-2 -3 4 0",
+        "expected": "INVALID\nINVALID\nINVALID\nIDLE\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nenum state { IDLE, RUNNING, FAULT, STATE_COUNT };\n\nconst char *state_names[STATE_COUNT] = {\"IDLE\", \"RUNNING\", \"FAULT\"};\n\nint main(void) {\n    int code;\n    while (scanf(\"%d\", &code) == 1) {\n        if (code < 0 || code >= STATE_COUNT) {\n            printf(\"INVALID\\n\");\n        } else {\n            printf(\"%s\\n\", state_names[code]);\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Константа `STATE_COUNT` равна количеству состояний и служит сразу размером массива названий и верхней границей проверки. Если добавить новое состояние перед ней, обе вещи изменятся автоматически — останется только дописать название.\n\nПроверка диапазона обязательна: компилятор не следит за значениями перечисления, и без неё код `7` или `-1` прочитал бы память за пределами массива.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-enum-task-2",
+      "title": "Автомат запуска",
+      "description": "Станок из предыдущей задачи начинает работу в состоянии `IDLE` и получает события:\n\n- `1` — запуск: из `IDLE` переходит в `RUNNING`;\n- `2` — остановка: из `RUNNING` переходит в `IDLE`;\n- `3` — авария: из любого состояния переходит в `FAULT`;\n- `4` — сброс: из `FAULT` переходит в `IDLE`.\n\nСобытие, которое в текущем состоянии ничего не делает (например, запуск в состоянии `FAULT`), и неизвестные коды состояние не меняют.\n\nНапишите функцию `enum state step(enum state s, int event)` со `switch` по состоянию. Выведите название состояния после каждого события.\n\n**Ввод:** `n`, затем `n` кодов событий.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nenum state { IDLE, RUNNING, FAULT, STATE_COUNT };\n\nconst char *state_names[STATE_COUNT] = {\"IDLE\", \"RUNNING\", \"FAULT\"};\n\nenum state step(enum state s, int event) {\n    // Верните новое состояние.\n    return s;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    enum state s = IDLE;\n    for (int i = 0; i < n; i++) {\n        int event;\n        scanf(\"%d\", &event);\n        s = step(s, event);\n        printf(\"%s\\n\", state_names[s]);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "3\n1 3 1",
+          "output": "RUNNING\nFAULT\nFAULT\n"
+        },
+        {
+          "input": "5\n2 1 2 4 1",
+          "output": "IDLE\nRUNNING\nIDLE\nIDLE\nRUNNING\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; коды событий от 0 до 9."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Авария действует из любого состояния — её удобно проверить до switch: if (event == 3) return FAULT;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Внутри switch для каждого состояния проверьте единственное событие, которое из него выводит, иначе верните s.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\n1 3 1",
+          "expected": "RUNNING\nFAULT\nFAULT\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5\n2 1 2 4 1",
+          "expected": "IDLE\nRUNNING\nIDLE\nIDLE\nRUNNING\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1\n0",
+          "expected": "IDLE\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1\n3",
+          "expected": "FAULT\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "6\n3 4 1 3 4 2",
+          "expected": "FAULT\nIDLE\nRUNNING\nFAULT\nIDLE\nIDLE\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "8\n9 1 1 4 2 2 3 3",
+          "expected": "IDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nFAULT\nFAULT\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "7\n1 5 6 7 8 2 4",
+          "expected": "RUNNING\nRUNNING\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "1000\n0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3 0 7 4 1 8 5 2 9 6 3",
+          "expected": "IDLE\nIDLE\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\nFAULT\nFAULT\nIDLE\nRUNNING\nRUNNING\nRUNNING\nIDLE\nIDLE\nIDLE\nFAULT\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nenum state { IDLE, RUNNING, FAULT, STATE_COUNT };\n\nconst char *state_names[STATE_COUNT] = {\"IDLE\", \"RUNNING\", \"FAULT\"};\n\nenum state step(enum state s, int event) {\n    if (event == 3) {\n        return FAULT;\n    }\n    switch (s) {\n        case IDLE:\n            return event == 1 ? RUNNING : IDLE;\n        case RUNNING:\n            return event == 2 ? IDLE : RUNNING;\n        case FAULT:\n            return event == 4 ? IDLE : FAULT;\n        case STATE_COUNT:\n            break;\n    }\n    return s;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    enum state s = IDLE;\n    for (int i = 0; i < n; i++) {\n        int event;\n        scanf(\"%d\", &event);\n        s = step(s, event);\n        printf(\"%s\\n\", state_names[s]);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Вся логика переходов собрана в `step`: по текущему состоянию и событию она возвращает следующее. `main` только читает события и печатает результат — его не нужно менять, если правила изменятся.\n\nСобытие «авария» действует одинаково из любого состояния, поэтому оно проверяется один раз до `switch`, а не повторяется в каждой ветке.\n\n`case STATE_COUNT` в решении нужен только для того, чтобы компилятор не предупреждал о необработанной константе: это служебное значение, а не состояние. Функция всегда возвращает корректное состояние, поэтому `state_names[s]` в `main` безопасен.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-enum-task-3",
+      "title": "День недели",
+      "description": "Дни недели обозначены тремя буквами: `Mon Tue Wed Thu Fri Sat Sun`. Для каждого запроса «день и сдвиг `k`» выведите, какой день будет через `k` дней. Отрицательный `k` означает «`|k|` дней назад».\n\nОпишите `enum weekday` с константой-счётчиком и массив названий. Название из ввода превратите в значение перечисления поиском по массиву.\n\n**Ввод:** запросы `день k` до конца ввода.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <string.h>\n\nenum weekday { MON, TUE, WED, THU, FRI, SAT, SUN, DAY_COUNT };\n\nconst char *day_names[DAY_COUNT] = {\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Sat\", \"Sun\"};\n\nint main(void) {\n    char name[4];\n    int k;\n    while (scanf(\"%3s %d\", name, &k) == 2) {\n        // Найдите день и выведите название дня через k дней.\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "Wed 10",
+          "output": "Sat\n"
+        },
+        {
+          "input": "Mon -1\nSun 1\nFri 0",
+          "output": "Sun\nMon\nFri\n"
+        }
+      ],
+      "constraints": ["Запросов от 1 до 1000; |k| ≤ 10⁹; названия дней всегда корректны."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Найдите индекс названия циклом по массиву со strcmp(name, day_names[d]) == 0.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "В C остаток от деления отрицательного числа отрицателен: −3 % 7 = −3. Приведите сдвиг к диапазону 0…6: ((k % 7) + 7) % 7.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "Wed 10",
+          "expected": "Sat\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "Mon -1\nSun 1\nFri 0",
+          "expected": "Sun\nMon\nFri\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "Sat -10",
+          "expected": "Wed\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "Thu 7\nThu -7\nThu 14",
+          "expected": "Thu\nThu\nThu\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "Tue 1000000000\nTue -1000000000",
+          "expected": "Mon\nWed\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "Sun -1\nSun -6\nSun -8",
+          "expected": "Sat\nMon\nSat\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "Mon -9\nTue -6\nWed -3\nThu 0\nFri 3\nSat 6\nSun 9",
+          "expected": "Sat\nWed\nSun\nThu\nMon\nFri\nTue\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "Mon -1000\nTue 916\nWed 831\nThu 746\nFri 661\nSat 576\nSun 491\nMon 406\nTue 321\nWed 236\nThu 151\nFri 66\nSat -19\nSun -104\nMon -189\nTue -274\nWed -359\nThu -444\nFri -529\nSat -614\nSun -699\nMon -784\nTue -869\nWed -954\nThu 962\nFri 877\nSat 792\nSun 707\nMon 622\nTue 537\nWed 452\nThu 367\nFri 282\nSat 197\nSun 112\nMon 27\nTue -58\nWed -143\nThu -228\nFri -313\nSat -398\nSun -483\nMon -568\nTue -653\nWed -738\nThu -823\nFri -908\nSat -993\nSun 923\nMon 838\nTue 753\nWed 668\nThu 583\nFri 498\nSat 413\nSun 328\nMon 243\nTue 158\nWed 73\nThu -12\nFri -97\nSat -182\nSun -267\nMon -352\nTue -437\nWed -522\nThu -607\nFri -692\nSat -777\nSun -862\nMon -947\nTue 969\nWed 884\nThu 799\nFri 714\nSat 629\nSun 544\nMon 459\nTue 374\nWed 289\nThu 204\nFri 119\nSat 34\nSun -51\nMon -136\nTue -221\nWed -306\nThu -391\nFri -476\nSat -561\nSun -646\nMon -731\nTue -816\nWed -901\nThu -986\nFri 930\nSat 845\nSun 760\nMon 675\nTue 590\nWed 505\nThu 420\nFri 335\nSat 250\nSun 165\nMon 80\nTue -5\nWed -90\nThu -175\nFri -260\nSat -345\nSun -430\nMon -515\nTue -600\nWed -685\nThu -770\nFri -855\nSat -940\nSun 976\nMon 891\nTue 806\nWed 721\nThu 636\nFri 551\nSat 466\nSun 381\nMon 296\nTue 211\nWed 126\nThu 41\nFri -44\nSat -129\nSun -214\nMon -299\nTue -384\nWed -469\nThu -554\nFri -639\nSat -724\nSun -809\nMon -894\nTue -979\nWed 937\nThu 852\nFri 767\nSat 682\nSun 597\nMon 512\nTue 427\nWed 342\nThu 257\nFri 172\nSat 87\nSun 2\nMon -83\nTue -168\nWed -253\nThu -338\nFri -423\nSat -508\nSun -593\nMon -678\nTue -763\nWed -848\nThu -933\nFri 983\nSat 898\nSun 813\nMon 728\nTue 643\nWed 558\nThu 473\nFri 388\nSat 303\nSun 218\nMon 133\nTue 48\nWed -37\nThu -122\nFri -207\nSat -292\nSun -377\nMon -462\nTue -547\nWed -632\nThu -717\nFri -802\nSat -887\nSun -972\nMon 944\nTue 859\nWed 774\nThu 689\nFri 604\nSat 519\nSun 434\nMon 349\nTue 264\nWed 179\nThu 94\nFri 9\nSat -76\nSun -161\nMon -246\nTue -331\nWed -416\nThu -501\nFri -586\nSat -671\nSun -756\nMon -841\nTue -926\nWed 990\nThu 905\nFri 820\nSat 735\nSun 650\nMon 565\nTue 480\nWed 395\nThu 310\nFri 225\nSat 140\nSun 55\nMon -30\nTue -115\nWed -200\nThu -285\nFri -370\nSat -455\nSun -540\nMon -625\nTue -710\nWed -795\nThu -880\nFri -965\nSat 951\nSun 866\nMon 781\nTue 696\nWed 611\nThu 526\nFri 441\nSat 356\nSun 271\nMon 186\nTue 101\nWed 16\nThu -69\nFri -154\nSat -239\nSun -324\nMon -409\nTue -494\nWed -579\nThu -664\nFri -749\nSat -834\nSun -919\nMon 997\nTue 912\nWed 827\nThu 742\nFri 657\nSat 572\nSun 487\nMon 402\nTue 317\nWed 232\nThu 147\nFri 62\nSat -23\nSun -108\nMon -193\nTue -278\nWed -363\nThu -448\nFri -533\nSat -618\nSun -703\nMon -788\nTue -873\nWed -958\nThu 958\nFri 873\nSat 788\nSun 703\nMon 618\nTue 533\nWed 448\nThu 363\nFri 278\nSat 193\nSun 108\nMon 23\nTue -62\nWed -147\nThu -232\nFri -317\nSat -402\nSun -487\nMon -572\nTue -657\nWed -742\nThu -827\nFri -912\nSat -997\nSun 919\nMon 834\nTue 749\nWed 664\nThu 579\nFri 494\nSat 409\nSun 324\nMon 239\nTue 154\nWed 69\nThu -16\nFri -101\nSat -186\nSun -271\nMon -356\nTue -441\nWed -526\nThu -611\nFri -696\nSat -781\nSun -866\nMon -951\nTue 965\nWed 880\nThu 795\nFri 710\nSat 625\nSun 540\nMon 455\nTue 370\nWed 285\nThu 200\nFri 115\nSat 30\nSun -55\nMon -140\nTue -225\nWed -310\nThu -395\nFri -480\nSat -565\nSun -650\nMon -735\nTue -820\nWed -905\nThu -990\nFri 926\nSat 841\nSun 756\nMon 671\nTue 586\nWed 501\nThu 416\nFri 331\nSat 246\nSun 161\nMon 76\nTue -9\nWed -94\nThu -179\nFri -264\nSat -349\nSun -434\nMon -519\nTue -604\nWed -689\nThu -774\nFri -859\nSat -944\nSun 972\nMon 887\nTue 802\nWed 717\nThu 632\nFri 547\nSat 462\nSun 377\nMon 292\nTue 207\nWed 122\nThu 37\nFri -48\nSat -133\nSun -218\nMon -303\nTue -388\nWed -473\nThu -558\nFri -643\nSat -728\nSun -813\nMon -898\nTue -983\nWed 933\nThu 848\nFri 763\nSat 678\nSun 593\nMon 508\nTue 423\nWed 338\nThu 253\nFri 168\nSat 83\nSun -2\nMon -87\nTue -172\nWed -257\nThu -342\nFri -427\nSat -512\nSun -597\nMon -682\nTue -767\nWed -852\nThu -937\nFri 979\nSat 894\nSun 809\nMon 724\nTue 639\nWed 554\nThu 469\nFri 384\nSat 299\nSun 214\nMon 129\nTue 44\nWed -41\nThu -126\nFri -211\nSat -296\nSun -381\nMon -466\nTue -551\nWed -636\nThu -721\nFri -806\nSat -891\nSun -976\nMon 940\nTue 855\nWed 770\nThu 685\nFri 600\nSat 515\nSun 430\nMon 345\nTue 260\nWed 175\nThu 90\nFri 5\nSat -80\nSun -165\nMon -250\nTue -335\nWed -420\nThu -505\nFri -590\nSat -675\nSun -760\nMon -845\nTue -930\nWed 986\nThu 901\nFri 816\nSat 731\nSun 646\nMon 561\nTue 476\nWed 391\nThu 306\nFri 221\nSat 136\nSun 51\nMon -34\nTue -119\nWed -204\nThu -289\nFri -374\nSat -459\nSun -544\nMon -629\nTue -714\nWed -799\nThu -884\nFri -969\nSat 947\nSun 862\nMon 777\nTue 692\nWed 607\nThu 522\nFri 437\nSat 352\nSun 267\nMon 182\nTue 97\nWed 12\nThu -73\nFri -158\nSat -243\nSun -328\nMon -413\nTue -498\nWed -583\nThu -668\nFri -753\nSat -838\nSun -923\nMon 993\nTue 908\nWed 823\nThu 738\nFri 653\nSat 568\nSun 483\nMon 398\nTue 313\nWed 228\nThu 143\nFri 58\nSat -27\nSun -112\nMon -197\nTue -282\nWed -367\nThu -452\nFri -537\nSat -622\nSun -707\nMon -792\nTue -877\nWed -962\nThu 954\nFri 869\nSat 784\nSun 699\nMon 614\nTue 529\nWed 444\nThu 359\nFri 274\nSat 189\nSun 104\nMon 19\nTue -66\nWed -151\nThu -236\nFri -321\nSat -406\nSun -491\nMon -576\nTue -661\nWed -746\nThu -831\nFri -916\nSat 1000\nSun 915\nMon 830\nTue 745\nWed 660\nThu 575\nFri 490\nSat 405\nSun 320\nMon 235\nTue 150\nWed 65\nThu -20\nFri -105\nSat -190\nSun -275\nMon -360\nTue -445\nWed -530\nThu -615\nFri -700\nSat -785\nSun -870\nMon -955\nTue 961\nWed 876\nThu 791\nFri 706\nSat 621\nSun 536\nMon 451\nTue 366\nWed 281\nThu 196\nFri 111\nSat 26\nSun -59\nMon -144\nTue -229\nWed -314\nThu -399\nFri -484\nSat -569\nSun -654\nMon -739\nTue -824\nWed -909\nThu -994\nFri 922\nSat 837\nSun 752\nMon 667\nTue 582\nWed 497\nThu 412\nFri 327\nSat 242\nSun 157\nMon 72\nTue -13\nWed -98\nThu -183\nFri -268\nSat -353\nSun -438\nMon -523\nTue -608\nWed -693\nThu -778\nFri -863\nSat -948\nSun 968\nMon 883\nTue 798\nWed 713\nThu 628\nFri 543\nSat 458\nSun 373\nMon 288\nTue 203\nWed 118\nThu 33\nFri -52\nSat -137\nSun -222\nMon -307\nTue -392\nWed -477\nThu -562\nFri -647\nSat -732\nSun -817\nMon -902\nTue -987\nWed 929\nThu 844\nFri 759\nSat 674\nSun 589\nMon 504\nTue 419\nWed 334\nThu 249\nFri 164\nSat 79\nSun -6\nMon -91\nTue -176\nWed -261\nThu -346\nFri -431\nSat -516\nSun -601\nMon -686\nTue -771\nWed -856\nThu -941\nFri 975\nSat 890\nSun 805\nMon 720\nTue 635\nWed 550\nThu 465\nFri 380\nSat 295\nSun 210\nMon 125\nTue 40\nWed -45\nThu -130\nFri -215\nSat -300\nSun -385\nMon -470\nTue -555\nWed -640\nThu -725\nFri -810\nSat -895\nSun -980\nMon 936\nTue 851\nWed 766\nThu 681\nFri 596\nSat 511\nSun 426\nMon 341\nTue 256\nWed 171\nThu 86\nFri 1\nSat -84\nSun -169\nMon -254\nTue -339\nWed -424\nThu -509\nFri -594\nSat -679\nSun -764\nMon -849\nTue -934\nWed 982\nThu 897\nFri 812\nSat 727\nSun 642\nMon 557\nTue 472\nWed 387\nThu 302\nFri 217\nSat 132\nSun 47\nMon -38\nTue -123\nWed -208\nThu -293\nFri -378\nSat -463\nSun -548\nMon -633\nTue -718\nWed -803\nThu -888\nFri -973\nSat 943\nSun 858\nMon 773\nTue 688\nWed 603\nThu 518\nFri 433\nSat 348\nSun 263\nMon 178\nTue 93\nWed 8\nThu -77\nFri -162\nSat -247\nSun -332\nMon -417\nTue -502\nWed -587\nThu -672\nFri -757\nSat -842\nSun -927\nMon 989\nTue 904\nWed 819\nThu 734\nFri 649\nSat 564\nSun 479\nMon 394\nTue 309\nWed 224\nThu 139\nFri 54\nSat -31\nSun -116\nMon -201\nTue -286\nWed -371\nThu -456\nFri -541\nSat -626\nSun -711\nMon -796\nTue -881\nWed -966\nThu 950\nFri 865\nSat 780\nSun 695\nMon 610\nTue 525\nWed 440\nThu 355\nFri 270\nSat 185\nSun 100\nMon 15\nTue -70\nWed -155\nThu -240\nFri -325\nSat -410\nSun -495\nMon -580\nTue -665\nWed -750\nThu -835\nFri -920\nSat 996\nSun 911\nMon 826\nTue 741\nWed 656\nThu 571\nFri 486\nSat 401\nSun 316\nMon 231\nTue 146\nWed 61\nThu -24\nFri -109\nSat -194\nSun -279\nMon -364\nTue -449\nWed -534\nThu -619\nFri -704\nSat -789\nSun -874\nMon -959\nTue 957\nWed 872\nThu 787\nFri 702\nSat 617\nSun 532\nMon 447\nTue 362\nWed 277\nThu 192\nFri 107\nSat 22\nSun -63\nMon -148\nTue -233\nWed -318\nThu -403\nFri -488\nSat -573\nSun -658\nMon -743\nTue -828\nWed -913\nThu -998\nFri 918\nSat 833\nSun 748\nMon 663\nTue 578\nWed 493\nThu 408\nFri 323\nSat 238\nSun 153\nMon 68\nTue -17\nWed -102\nThu -187\nFri -272\nSat -357\nSun -442\nMon -527\nTue -612\nWed -697\nThu -782\nFri -867\nSat -952\nSun 964\nMon 879\nTue 794\nWed 709\nThu 624\nFri 539\nSat 454\nSun 369\nMon 284\nTue 199\nWed 114\nThu 29\nFri -56\nSat -141\nSun -226\nMon -311\nTue -396\nWed -481\nThu -566\nFri -651\nSat -736\nSun -821\nMon -906\nTue -991\nWed 925\nThu 840\nFri 755\nSat 670\nSun 585\nMon 500\nTue 415\nWed 330\nThu 245\nFri 160\nSat 75\nSun -10\nMon -95\nTue -180\nWed -265\nThu -350\nFri -435\nSat -520\nSun -605\nMon -690\nTue -775\nWed -860\nThu -945\nFri 971\nSat 886\nSun 801\nMon 716\nTue 631\nWed 546\nThu 461\nFri 376\nSat 291\nSun 206\nMon 121\nTue 36\nWed -49\nThu -134\nFri -219\nSat -304\nSun -389\nMon -474\nTue -559\nWed -644\nThu -729\nFri -814\nSat -899\nSun -984\nMon 932\nTue 847\nWed 762\nThu 677\nFri 592\nSat 507\nSun 422\nMon 337\nTue 252\nWed 167\nThu 82\nFri -3\nSat -88\nSun -173\nMon -258\nTue -343\nWed -428\nThu -513\nFri -598\nSat -683\nSun -768\nMon -853\nTue -938\nWed 978\nThu 893\nFri 808\nSat 723\nSun 638\nMon 553\nTue 468\nWed 383\nThu 298\nFri 213\nSat 128",
+          "expected": "Tue\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSun\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nSat\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nFri\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nThu\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nWed\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nTue\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\nMon\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nenum weekday { MON, TUE, WED, THU, FRI, SAT, SUN, DAY_COUNT };\n\nconst char *day_names[DAY_COUNT] = {\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Sat\", \"Sun\"};\n\nenum weekday parse_day(const char *name) {\n    for (int d = MON; d < DAY_COUNT; d++) {\n        if (strcmp(name, day_names[d]) == 0) {\n            return d;\n        }\n    }\n    return DAY_COUNT;\n}\n\nenum weekday shift_day(enum weekday d, int k) {\n    int offset = ((k % DAY_COUNT) + DAY_COUNT) % DAY_COUNT;\n    return (d + offset) % DAY_COUNT;\n}\n\nint main(void) {\n    char name[4];\n    int k;\n    while (scanf(\"%3s %d\", name, &k) == 2) {\n        enum weekday d = parse_day(name);\n        if (d == DAY_COUNT) {\n            printf(\"?\\n\");\n            continue;\n        }\n        printf(\"%s\\n\", day_names[shift_day(d, k)]);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Перечисление и массив названий — две стороны одного соответствия: `day_names[d]` превращает значение в текст, а `parse_day` — текст в значение. `DAY_COUNT` удобно использовать как признак «не найдено», потому что это не настоящий день.\n\nГлавная тонкость — отрицательные сдвиги. В C знак остатка совпадает со знаком делимого: `-10 % 7 == -3`. Выражение `((k % 7) + 7) % 7` превращает любой сдвиг в число от 0 до 6: −10 дней назад — то же самое, что 4 дня вперёд.\n\nБрать остаток от `k` нужно **до** сложения с днём: `d + k` при `k` = 10⁹ ещё помещается в `int`, но привычка сокращать большие числа заранее защищает от переполнения.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-enum-task-4",
+      "title": "Робот",
+      "description": "Робот стоит в точке `(0, 0)` и смотрит на север. Он выполняет команды: `L` — повернуться налево на 90°, `R` — направо, `F` — шагнуть на одну клетку вперёд. Север — направление увеличения `y`, восток — увеличения `x`.\n\nОпишите `enum direction { NORTH, EAST, SOUTH, WEST }` и выведите итоговые координаты и направление: `x y NORTH` и т. п.\n\n**Ввод:** строка команд.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "FFRFF",
+          "output": "2 2 EAST\n"
+        },
+        {
+          "input": "LLLL",
+          "output": "0 0 NORTH\n",
+          "explanation": "Четыре поворота налево — полный круг."
+        }
+      ],
+      "constraints": ["Длина строки от 1 до 1000; только символы L, R, F."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Если константы идут по часовой стрелке, поворот направо — (dir + 1) % 4, налево — (dir + 3) % 4.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Смещения удобно хранить в массивах, индексированных направлением: dx[] = {0, 1, 0, -1}, dy[] = {1, 0, -1, 0}.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "FFRFF",
+          "expected": "2 2 EAST\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "LLLL",
+          "expected": "0 0 NORTH\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "F",
+          "expected": "0 1 NORTH\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "L",
+          "expected": "0 0 WEST\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "R",
+          "expected": "0 0 EAST\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "RRF",
+          "expected": "0 -1 SOUTH\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "LF",
+          "expected": "-1 0 WEST\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "FRFRFRF",
+          "expected": "0 0 WEST\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "FFLFFLFFLFF",
+          "expected": "0 0 EAST\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+          "expected": "0 1000 NORTH\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Скрытый тест 9",
+          "stdin": "RFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRFRF",
+          "expected": "0 0 NORTH\n"
+        },
+        {
+          "id": "hidden-10",
+          "name": "Скрытый тест 10",
+          "stdin": "FLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRRFLFRR",
+          "expected": "0 0 NORTH\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nenum direction { NORTH, EAST, SOUTH, WEST, DIRECTION_COUNT };\n\nconst char *direction_names[DIRECTION_COUNT] = {\"NORTH\", \"EAST\", \"SOUTH\", \"WEST\"};\nconst int dx[DIRECTION_COUNT] = {0, 1, 0, -1};\nconst int dy[DIRECTION_COUNT] = {1, 0, -1, 0};\n\nint main(void) {\n    char commands[1001];\n    scanf(\"%1000s\", commands);\n    enum direction dir = NORTH;\n    int x = 0, y = 0;\n    for (int i = 0; commands[i] != '\\0'; i++) {\n        if (commands[i] == 'L') {\n            dir = (dir + DIRECTION_COUNT - 1) % DIRECTION_COUNT;\n        } else if (commands[i] == 'R') {\n            dir = (dir + 1) % DIRECTION_COUNT;\n        } else if (commands[i] == 'F') {\n            x += dx[dir];\n            y += dy[dir];\n        }\n    }\n    printf(\"%d %d %s\\n\", x, y, direction_names[dir]);\n    return 0;\n}\n",
+      "solutionExplanation": "Порядок констант выбран не случайно: `NORTH, EAST, SOUTH, WEST` идут по часовой стрелке. Поэтому поворот направо — переход к следующей константе, налево — к предыдущей, с переходом по кругу через остаток. Поворот налево записан как прибавление `DIRECTION_COUNT - 1` (то есть 3), а не вычитание 1, чтобы не получить отрицательный остаток для `NORTH`.\n\nМассивы `dx` и `dy`, индексированные направлением, заменяют `switch` из четырёх веток: шаг вперёд — одна строка для всех направлений. Такой табличный приём часто встречается в задачах на сетки и в играх.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-enum-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nenum code { A, B = 5, C, D = 2, E };\n\nint main(void) {\n    printf(\"%d %d %d %d %d\\n\", A, B, C, D, E);\n    return 0;\n}",
+        "explanation": "A — первая константа без значения, 0. C продолжает счёт от B, E — от D. Значения не обязаны возрастать.",
+        "type": "text",
+        "answers": ["0 5 6 2 3"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nenum weekday { MON, TUE, WED, THU, FRI, SAT, SUN, DAY_COUNT };\n\nint main(void) {\n    enum weekday d = SAT;\n    d = (d + 10) % DAY_COUNT;\n    printf(\"%d %d\\n\", d, d == TUE);\n    return 0;\n}",
+        "explanation": "SAT = 5, (5 + 10) % 7 = 1 — это TUE.",
+        "type": "text",
+        "answers": ["1 1"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Почему в switch по перечислению, где перечислены все константы, часто не пишут default?",
+        "explanation": "С default компилятор считает, что все остальные значения обработаны, и не выдаёт предупреждение -Wswitch.",
+        "options": [
+          "Без default компилятор предупредит, если в перечисление добавят константу и забудут её обработать",
+          "default запрещён в switch по перечислению",
+          "Без default switch работает быстрее",
+          "С default программа не скомпилируется"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Какие утверждения о перечислениях в C верны? Выберите все.",
+        "explanation": "Переменная enum в C — обычное целое число, и присвоить ей можно любое значение. Именно поэтому входные данные нужно проверять.",
+        "type": "multiple",
+        "options": [
+          "Константы перечисления имеют тип int",
+          "Компилятор запрещает присвоить переменной enum число, которого нет в перечислении",
+          "Одно имя константы нельзя использовать в двух перечислениях одного файла",
+          "Константу перечисления можно использовать как размер массива"
+        ],
+        "correct": [0, 2, 3]
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nenum door { CLOSED, OPEN, LOCKED_DOOR };\n\nenum door apply(enum door d, char cmd) {\n    switch (d) {\n        case CLOSED:\n            if (cmd == 'o') return OPEN;\n            if (cmd == 'l') return LOCKED_DOOR;\n            return CLOSED;\n        case OPEN:\n            return cmd == 'c' ? CLOSED : OPEN;\n        case LOCKED_DOOR:\n            return cmd == 'u' ? CLOSED : LOCKED_DOOR;\n    }\n    return d;\n}\n\nint main(void) {\n    const char *cmds = \"olcloucuo\";\n    enum door d = CLOSED;\n    for (int i = 0; cmds[i] != '\\0'; i++) {\n        d = apply(d, cmds[i]);\n        printf(\"%d\", d);\n    }\n    printf(\"\\n\");\n    return 0;\n}",
+        "explanation": "o: CLOSED→OPEN(1); l: открытую дверь не запереть (1); c: →CLOSED(0); l: →LOCKED(2); o: заперта (2); u: →CLOSED(0); c: уже закрыта (0); u: не заперта (0); o: →OPEN(1).",
+        "type": "text",
+        "answers": ["110220001"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Найдите ошибку.",
+        "code": "enum color { RED, GREEN, BLUE };\nenum color c = GREEN;\nprintf(\"Цвет: %s\\n\", c);",
+        "explanation": "Имена констант существуют только в исходном коде. В программе c равно 1, и для печати названия нужен массив строк или функция со switch.",
+        "options": [
+          "c — число, %s ожидает строку; названия нужно хранить отдельно",
+          "Переменную enum нельзя инициализировать константой",
+          "Нужно писать enum color.GREEN",
+          "Ошибки нет, выведется GREEN"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что выведет программа? Обратите внимание на отсутствие break.",
+        "code": "#include <stdio.h>\n\nenum level { LOW, MID, HIGH };\n\nint score(enum level l) {\n    int s = 0;\n    switch (l) {\n        case HIGH:\n            s += 100;\n            /* fall through */\n        case MID:\n            s += 10;\n            /* fall through */\n        case LOW:\n            s += 1;\n    }\n    return s;\n}\n\nint main(void) {\n    printf(\"%d %d %d\\n\", score(LOW), score(MID), score(HIGH));\n    return 0;\n}",
+        "explanation": "Выполнение начинается с подходящего case и проваливается во все следующие.",
+        "type": "text",
+        "answers": ["1 11 111"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q8",
+        "question": "Код уровня code прочитан через scanf. Как безопасно получить его название из массива level_names[LEVEL_COUNT]?",
+        "explanation": "Компилятор не ограничивает значения enum. Остаток от деления для отрицательных чисел отрицателен, а code == LEVEL_COUNT уже за массивом.",
+        "options": [
+          "Проверить 0 <= code && code < LEVEL_COUNT, затем взять level_names[code]",
+          "Сразу взять level_names[code]: code приводится к enum level",
+          "Взять level_names[code % LEVEL_COUNT]",
+          "Проверить code <= LEVEL_COUNT, затем взять level_names[code]"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

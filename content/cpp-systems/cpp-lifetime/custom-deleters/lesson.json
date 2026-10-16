@@ -1,0 +1,155 @@
+{
+  "id": "lifetime-custom-deleters",
+  "title": "Пользовательские функции освобождения — Custom deleters",
+  "description": "Ресурс должен освобождаться парной операцией своего API: new/delete, new[]/delete[], malloc/free, fopen/fclose, библиотечные create/destroy.",
+  "moduleId": "cpp-lifetime",
+  "order": 24,
+  "difficulty": "advanced",
+  "estimatedMinutes": 55,
+  "prerequisites": ["lifetime-cyclic-references"],
+  "objectives": [
+    "Объяснить, почему ресурс освобождается парной операцией своего API.",
+    "Проследить на MemoryDiagram вызов deleter ровно один раз при перемещении и reset.",
+    "Реализовать deleter с заимствованным счётчиком и проверить порядок объявления жизней."
+  ],
+  "tags": [
+    "C++20",
+    "время жизни",
+    "управление ресурсами",
+    "Пользовательские функции освобождения — Custom deleters"
+  ],
+  "published": true,
+  "standard": "c++20",
+  "completion": "practice",
+  "exercise": {
+    "id": "lifetime-custom-deleters-exercise",
+    "title": "Практика: Пользовательские функции освобождения — Custom deleters",
+    "description": "Создайте CountingDelete, увеличивающий внешний счётчик и удаляющий int. solve создаёт unique_ptr<int, CountingDelete> со значением a, перемещает его во второго владельца, сохраняет значение + b, вызывает reset дважды и возвращает сохранённое при count == 1; иначе -9999. Счётчик объявите раньше владельцев.",
+    "difficulty": "advanced",
+    "language": "cpp",
+    "standard": "c++20",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "solve(3, 7)",
+        "output": "10\n",
+        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+      },
+      {
+        "input": "solve(0, 0)",
+        "output": "0\n",
+        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+      }
+    ],
+    "constraints": [
+      "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
+      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
+      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
+    ],
+    "hints": [
+      {
+        "id": "owners",
+        "order": 1,
+        "text": "Проверьте deleter на трёх путях освобождения: reset, присваивание нового адреса, разрушение владельца. На каждом парная операция должна выполниться ровно один раз."
+      },
+      {
+        "id": "boundary",
+        "order": 2,
+        "text": "Для FILE определите Fclose с void operator()(FILE*) const noexcept, вызывающим fclose, и храните unique_ptr<FILE, Fclose>; результат fopen проверяйте через bool владельца — deleter не вызывается для null. shared_ptr принимает deleter при создании, но хранит его в блоке управления: тип не входит в shared_ptr<T>; make_shared пользовательский deleter не принимает. Ошибку fflush/fclose, важную приложению, обрабатывайте явной close-операцией до деструктора: бросать из деструктора нельзя. Заимствованный контекст внутри deleter обязан пережить все пути освобождения: reset, присваивание, разрушение перемещённого владельца.\n\nНельзя закрывать FILE через delete или освобождать память из new через free — несовместимые пары. Пустой deleter, который ничего не освобождает, маскирует утечку вместо владения.\n\nВ практике deleter хранит указатель на счётчик. Переместите owner и убедитесь, что закрытие учитывается ровно один раз. Затем переставьте объявления счётчика и владельца на бумаге и объясните зависимость времени жизни."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "arguments": [3, 7],
+        "expected": "10\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "arguments": [0, 0],
+        "expected": "0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный случай 1",
+        "arguments": [-8, 3],
+        "expected": "-5\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный случай 2",
+        "arguments": [5, -9],
+        "expected": "-4\n"
+      },
+      {
+        "id": "case-5",
+        "name": "Граничный случай 3",
+        "arguments": [-1000, 1000],
+        "expected": "0\n"
+      },
+      {
+        "id": "case-6",
+        "name": "Граничный случай 4",
+        "arguments": [1000, -1000],
+        "expected": "0\n"
+      },
+      {
+        "id": "case-7",
+        "name": "Граничный случай 5",
+        "arguments": [4, 4],
+        "expected": "8\n"
+      }
+    ],
+    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct CountingDelete { int* count; void operator()(int* p) const noexcept { ++*count; delete p; } };\nint solve(int a, int b) { int count = 0; std::unique_ptr<int, CountingDelete> p(new int(a), CountingDelete{&count}); auto q = std::move(p); int saved = *q + b; q.reset(); q.reset(); return count == 1 ? saved : -9999; }",
+    "solutionExplanation": "Для FILE определите Fclose с void operator()(FILE*) const noexcept, вызывающим fclose, и храните unique_ptr<FILE, Fclose>; результат fopen проверяйте через bool владельца — deleter не вызывается для null. shared_ptr принимает deleter при создании, но хранит его в блоке управления: тип не входит в shared_ptr<T>; make_shared пользовательский deleter не принимает. Ошибку fflush/fclose, важную приложению, обрабатывайте явной close-операцией до деструктора: бросать из деструктора нельзя. Заимствованный контекст внутри deleter обязан пережить все пути освобождения: reset, присваивание, разрушение перемещённого владельца.\n\nНельзя закрывать FILE через delete или освобождать память из new через free — несовместимые пары. Пустой deleter, который ничего не освобождает, маскирует утечку вместо владения.\n\nВ практике deleter хранит указатель на счётчик. Переместите owner и убедитесь, что закрытие учитывается ровно один раз. Затем переставьте объявления счётчика и владельца на бумаге и объясните зависимость времени жизни.",
+    "checking": {
+      "type": "function",
+      "functionName": "solve",
+      "returnType": "int",
+      "parameters": [
+        { "name": "a", "type": "int" },
+        { "name": "b", "type": "int" }
+      ]
+    }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "lifetime-custom-deleters-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "concept",
+        "question": "До какого момента обязан существовать контекст, заимствованный deleter?",
+        "options": [
+          "Только во время создания владельца",
+          "До завершения освобождения ресурса на любом пути: reset, присваивание, деструктор"
+        ],
+        "correct": 1,
+        "explanation": "Для FILE определите Fclose с void operator()(FILE*) const noexcept, вызывающим fclose, и храните unique_ptr<FILE, Fclose>; результат fopen проверяйте через bool владельца — deleter не вызывается для null. shared_ptr принимает deleter при создании, но хранит его в блоке управления: тип не входит в shared_ptr<T>; make_shared пользовательский deleter не принимает. Ошибку fflush/fclose, важную приложению, обрабатывайте явной close-операцией до деструктора: бросать из деструктора нельзя. Заимствованный контекст внутри deleter обязан пережить все пути освобождения: reset, присваивание, разрушение перемещённого владельца."
+      },
+      {
+        "id": "trace",
+        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
+        "options": ["3 1", "Ошибка компиляции", "Неопределённое поведение"],
+        "correct": 0,
+        "explanation": "owner: указатель на ресурс + deleter с контекстом\nreset или разрушение owner\n→ вызов deleter(resource)\n→ парная операция освобождения ровно один раз\nДля null deleter не вызывается; контекст жив до завершения вызова"
+      },
+      {
+        "id": "review",
+        "question": "Какое утверждение соответствует контракту урока?",
+        "options": [
+          "Если stdout совпал, любые операции со сроком жизни корректны.",
+          "Нельзя закрывать FILE через delete или освобождать память из new через free — несовместимые пары. Пустой deleter, который ничего не освобождает, маскирует утечку вместо владения."
+        ],
+        "correct": 1,
+        "explanation": "В практике deleter хранит указатель на счётчик. Переместите owner и убедитесь, что закрытие учитывается ровно один раз. Затем переставьте объявления счётчика и владельца на бумаге и объясните зависимость времени жизни."
+      }
+    ]
+  }
+}

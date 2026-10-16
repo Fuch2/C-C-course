@@ -1,0 +1,128 @@
+{
+  "id": "cpp20-string",
+  "title": "std::string",
+  "description": "Строка C++ владеет буфером и знает размер, в отличие от char* с sentinel\\0. Это снижает риск выхода за границы, но копирование всё ещё стоит O(n).",
+  "moduleId": "cpp-fundamentals",
+  "order": 5,
+  "difficulty": "beginner",
+  "estimatedMinutes": 35,
+  "prerequisites": ["cpp20-cin"],
+  "objectives": [
+    "Объяснить, зачем появился std::string и какую проблему он решает.",
+    "Сравнить стоимость и ограничения с аналогом в C.",
+    "Применить инструмент в задаче обработки данных."
+  ],
+  "tags": ["C++20", "основы C++", "std::string"],
+  "published": true,
+  "standard": "c++20",
+  "completion": "practice",
+  "exercise": {
+    "id": "cpp20-string-exercise",
+    "title": "Части команды с пустыми полями",
+    "description": "Прочитайте одну ASCII-строку длиной до 200 и разделите по ;. Выведите количество полей, затем каждое на новой строке. Сохраните пустые поля, включая последнее: a;;b; даёт четыре поля. Пустая строка содержит одно пустое поле. Не используйте strtok.",
+    "difficulty": "beginner",
+    "language": "cpp",
+    "standard": "c++20",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
+    "examples": [
+      {
+        "input": "a;;b;\n",
+        "output": "4\na\n\nb\n\n",
+        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+      },
+      {
+        "input": "\n",
+        "output": "1\n\n",
+        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Используйте C++20 и стандартную библиотеку.",
+      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
+      "Выводите только требуемый результат."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "a;;b;\n",
+        "expected": "4\na\n\nb\n\n"
+      },
+      { "id": "case-2", "name": "Пример 2", "stdin": "\n", "expected": "1\n\n" }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "stdin": ";",
+        "expected": "2\n\n\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "stdin": "abc",
+        "expected": "1\nabc\n"
+      },
+      {
+        "id": "case-5",
+        "name": "Граничный сценарий 3",
+        "stdin": " a ; b ",
+        "expected": "2\n a \n b \n"
+      }
+    ],
+    "referenceSolution": "#include <iostream>\n#include <string>\n\nvoid split_command(const std::string& text) {\n    std::size_t count = 1;\n    for (char ch : text) if (ch == ';') ++count;\n    std::cout << count << '\\n';\n    std::size_t start = 0;\n    while (true) {\n        const auto end = text.find(';', start);\n        std::cout << text.substr(start, end == std::string::npos ? end : end - start) << '\\n';\n        if (end == std::string::npos) break;\n        start = end + 1;\n    }\n}\nint main() {\n    std::string text;\n    std::getline(std::cin, text);\n    split_command(text);\n}\n",
+    "solutionExplanation": "find возвращает позицию либо npos; проверяем npos до прибавления единицы. substr(size) создаёт пустую строку. substr владеет результатом и копирует байты. Диапазоны не перекрываются, суммарный поиск и копирование O(n), пиковая рабочая память O(n). size считает char, а не буквы Unicode.",
+    "checking": { "type": "stdout", "comparison": "exact" }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "cpp20-string-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "purpose",
+        "question": "Что важно помнить в теме «std::string»?",
+        "options": [
+          "Выбирать инструмент по контракту, времени, памяти и владению",
+          "Всегда переписывать решение через указатели C"
+        ],
+        "correct": 0,
+        "explanation": "Строка C++ владеет буфером и знает размер, в отличие от char* с sentinel\\0. Это снижает риск выхода за границы, но копирование всё ещё стоит O(n)."
+      },
+      {
+        "id": "cost",
+        "question": "Что нужно учитывать при выборе инструмента?",
+        "options": [
+          "Только длину исходного кода",
+          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
+        ],
+        "correct": 1,
+        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+      },
+      {
+        "id": "mistake",
+        "question": "Как избежать типичной ошибки?",
+        "options": [
+          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
+          "Считать C-подход рекомендуемым стилем в любой задаче"
+        ],
+        "correct": 0,
+        "explanation": "Используйте std::string как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+      }
+    ]
+  }
+}

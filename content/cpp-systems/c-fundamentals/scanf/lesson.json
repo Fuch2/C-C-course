@@ -1,0 +1,558 @@
+{
+  "id": "c17-scanf",
+  "title": "Ввод данных: scanf",
+  "description": "Как scanf читает числа из стандартного ввода, зачем нужен &, как пропускаются пробелы, как читать время и даты и что возвращает scanf.",
+  "moduleId": "c-fundamentals",
+  "order": 5,
+  "difficulty": "beginner",
+  "estimatedMinutes": 40,
+  "prerequisites": ["c17-arithmetic"],
+  "objectives": [
+    "Читать одно и несколько чисел с помощью scanf",
+    "Объяснить, зачем перед переменной ставится &",
+    "Читать данные с разделителями: время, даты, дроби",
+    "Понимать, что возвращает scanf и что происходит при неверном вводе",
+    "Читать символ с помощью %c и \" %c\""
+  ],
+  "tags": ["C17", "scanf", "Ввод", "stdin"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-scanf-task-1",
+    "title": "Время в минуты",
+    "description": "Время записано в формате `ЧЧ:ММ`. Напечатайте, сколько минут прошло с полуночи.\n\n**Пример:** `13:45` → `825`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "13:45",
+        "output": "825\n"
+      },
+      {
+        "input": "00:00",
+        "output": "0\n"
+      }
+    ],
+    "constraints": ["Часы от 00 до 23, минуты от 00 до 59; часы и минуты всегда двумя цифрами."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Двоеточие в строке формата scanf совпадёт с двоеточием во вводе: \"%d:%d\".",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Минуты с полуночи — часы · 60 + минуты.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "13:45",
+        "expected": "825\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "00:00",
+        "expected": "0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "23:59",
+        "expected": "1439\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "08:05",
+        "expected": "485\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "12:00",
+        "expected": "720\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "00:01",
+        "expected": "1\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "09:09",
+        "expected": "549\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "19:30",
+        "expected": "1170\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int hours, minutes;\n    scanf(\"%d:%d\", &hours, &minutes);\n    printf(\"%d\\n\", hours * 60 + minutes);\n    return 0;\n}\n",
+    "solutionExplanation": "Формат `\"%d:%d\"` повторяет структуру ввода: число, двоеточие, число. `%d` спокойно читает `08` как 8 — ведущий ноль не мешает.\n\nЕсли записать формат `\"%d %d\"`, второе число не прочитается: после часов во вводе стоит двоеточие, а не пробел и цифры.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-scanf-task-2",
+      "title": "Дата в формате ISO",
+      "description": "Дата записана как `ДД.ММ.ГГГГ`. Напечатайте её в международном формате `ГГГГ-ММ-ДД` — день и месяц двумя цифрами.\n\n**Пример:** `9.10.2026` → `2026-10-09`. Обратите внимание: во вводе день и месяц могут быть записаны как с ведущим нулём, так и без.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "9.10.2026",
+          "output": "2026-10-09\n"
+        },
+        {
+          "input": "31.12.1999",
+          "output": "1999-12-31\n"
+        }
+      ],
+      "constraints": ["1 ≤ день ≤ 31, 1 ≤ месяц ≤ 12, 1000 ≤ год ≤ 9999."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Формат чтения: \"%d.%d.%d\".",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Формат вывода: \"%d-%02d-%02d\\n\" — год, месяц, день.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "9.10.2026",
+          "expected": "2026-10-09\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "31.12.1999",
+          "expected": "1999-12-31\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "01.01.2000",
+          "expected": "2000-01-01\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1.1.1000",
+          "expected": "1000-01-01\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "15.07.9999",
+          "expected": "9999-07-15\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "29.02.2024",
+          "expected": "2024-02-29\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "05.11.1985",
+          "expected": "1985-11-05\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "30.4.2012",
+          "expected": "2012-04-30\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int day, month, year;\n    scanf(\"%d.%d.%d\", &day, &month, &year);\n    printf(\"%d-%02d-%02d\\n\", year, month, day);\n    return 0;\n}\n",
+      "solutionExplanation": "`scanf` с форматом `\"%d.%d.%d\"` одинаково читает `09.10.2026` и `9.10.2026`: `%d` разбирает число, а точки совпадают с точками ввода. При выводе порядок меняется, а `%02d` добавляет ведущие нули.\n\nФормат ГГГГ-ММ-ДД (стандарт ISO 8601) удобен тем, что такие строки сортируются по алфавиту в хронологическом порядке.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-scanf-task-3",
+      "title": "Сумма пяти чисел",
+      "description": "Во вводе пять целых чисел. Они могут быть записаны в одну строку, в столбик или вперемешку, через любое количество пробелов. Напечатайте их сумму.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "1 2 3 4 5",
+          "output": "15\n"
+        },
+        {
+          "input": "10\n-20\n30\n-40\n50",
+          "output": "30\n",
+          "explanation": "Числа в столбик читаются так же."
+        }
+      ],
+      "constraints": ["Каждое число по модулю не больше 100 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "%d пропускает пробелы и переводы строк перед числом, поэтому расположение чисел не важно.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Можно прочитать все пять одним вызовом scanf с пятью %d.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1 2 3 4 5",
+          "expected": "15\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "10\n-20\n30\n-40\n50",
+          "expected": "30\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0 0 0 0 0",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "100000 100000 100000 100000 100000",
+          "expected": "500000\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "-100000\n-100000 -100000\n\n-100000 -100000",
+          "expected": "-500000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1   2\t3\n4     5",
+          "expected": "15\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "7 -7 7 -7 7",
+          "expected": "7\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "-1 -2 -3 -4 -5",
+          "expected": "-15\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "\n\n  42 0 0 0 0\n",
+          "expected": "42\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int a, b, c, d, e;\n    scanf(\"%d %d %d %d %d\", &a, &b, &c, &d, &e);\n    printf(\"%d\\n\", a + b + c + d + e);\n    return 0;\n}\n",
+      "solutionExplanation": "Каждый `%d` перед чтением числа пропускает все пробельные символы, включая переводы строк. Поэтому одна и та же строка формата подходит для любого расположения чисел.\n\nКогда чисел станет много — сто или тысяча, — пять переменных превратятся в цикл. Этому посвящён урок `for`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-scanf-task-4",
+      "title": "Сложение дробей",
+      "description": "Во вводе две дроби в виде `a/b c/d`. Напечатайте их сумму в виде `числитель/знаменатель`, **не сокращая** дробь:\n\n`a/b + c/d = (a·d + c·b) / (b·d)`\n\n**Пример:** `1/2 1/3` → `5/6`; `1/2 1/2` → `4/4` (без сокращения).",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "1/2 1/3",
+          "output": "5/6\n"
+        },
+        {
+          "input": "1/2 1/2",
+          "output": "4/4\n",
+          "explanation": "Дробь не сокращается."
+        }
+      ],
+      "constraints": ["−1000 ≤ a, c ≤ 1000; 1 ≤ b, d ≤ 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Формат чтения: \"%d/%d %d/%d\".",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Числитель a * d + c * b, знаменатель b * d.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1/2 1/3",
+          "expected": "5/6\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1/2 1/2",
+          "expected": "4/4\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0/1 0/1",
+          "expected": "0/1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "-1/2 1/3",
+          "expected": "-1/6\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1000/1000 1000/1000",
+          "expected": "2000000/1000000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "-1000/1 -1000/1",
+          "expected": "-2000/1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "3/7 -3/7",
+          "expected": "0/49\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "5/1 1/5",
+          "expected": "26/5\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int a, b, c, d;\n    scanf(\"%d/%d %d/%d\", &a, &b, &c, &d);\n    int numerator = a * d + c * b;\n    int denominator = b * d;\n    printf(\"%d/%d\\n\", numerator, denominator);\n    return 0;\n}\n",
+      "solutionExplanation": "Косая черта в формате совпадает с косой чертой ввода, как точка в дате. Дроби складываются через общий знаменатель `b·d`.\n\nСокращать дробь здесь не требуется. В практикуме по циклам вы напишете алгоритм Евклида для наибольшего общего делителя — с ним сокращение займёт две строки.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-scanf-task-5",
+      "title": "Координаты",
+      "description": "Во вводе точка записана в виде `x=… y=…`, например `x=3 y=-4`. Напечатайте её **манхэттенское расстояние** до начала координат — сколько кварталов нужно пройти по городу с прямыми улицами: `|x| + |y|`.\n\nДля модуля используйте функцию `abs(x)` из заголовка `<stdlib.h>`: она возвращает модуль целого числа.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "x=3 y=-4",
+          "output": "7\n"
+        },
+        {
+          "input": "x=0 y=0",
+          "output": "0\n"
+        }
+      ],
+      "constraints": ["−10 000 ≤ x, y ≤ 10 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Формат чтения повторяет ввод целиком: \"x=%d y=%d\".",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Добавьте #include <stdlib.h> и напечатайте abs(x) + abs(y).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "x=3 y=-4",
+          "expected": "7\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "x=0 y=0",
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "x=-10000 y=-10000",
+          "expected": "20000\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "x=10000 y=0",
+          "expected": "10000\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "x=-1 y=1",
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "x=25 y=17",
+          "expected": "42\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "x=0 y=-9",
+          "expected": "9\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "x=-7 y=0",
+          "expected": "7\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    int x, y;\n    scanf(\"x=%d y=%d\", &x, &y);\n    printf(\"%d\\n\", abs(x) + abs(y));\n    return 0;\n}\n",
+      "solutionExplanation": "Текст `x=` и `y=` в строке формата должен в точности совпасть с вводом — тогда `scanf` пропустит его и прочитает числа. Пробел в формате между `%d` и `y=` пропускает пробел во вводе.\n\n`abs` — первая встреченная нами функция стандартной библиотеки, кроме ввода-вывода. Она объявлена в `<stdlib.h>`, и без этого `#include` компилятор выдаст предупреждение о неявном объявлении.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-scanf-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Почему в scanf(\"%d\", &n) перед n стоит &?",
+        "explanation": "& даёт адрес переменной. Получив только значение, scanf не смог бы изменить саму переменную.",
+        "options": [
+          "scanf нужен адрес переменной, чтобы записать туда прочитанное число",
+          "Это украшение, его можно опустить",
+          "& означает «целое число»",
+          "& переводит строку после ввода"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа, если ввод — две строки: «7» и «  8»?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf(\"%d %d\", &a, &b);\n    printf(\"%d\\n\", a * b);\n    return 0;\n}",
+        "explanation": "%d пропускает пробелы и переводы строк перед числом, поэтому оба числа прочитаны: 7 · 8 = 56.",
+        "type": "text",
+        "answers": ["56"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа при вводе 23:59?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int h, m;\n    scanf(\"%d:%d\", &h, &m);\n    printf(\"%d\\n\", h * 60 + m + 1);\n    return 0;\n}",
+        "explanation": "Двоеточие в формате совпало с вводом: h = 23, m = 59. 23 · 60 + 59 + 1 = 1440.",
+        "type": "text",
+        "answers": ["1440"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа при вводе «4 x»?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int a = 0, b = 0;\n    int k = scanf(\"%d %d\", &a, &b);\n    printf(\"%d %d %d\\n\", k, a, b);\n    return 0;\n}",
+        "explanation": "Первое число прочитано, на «x» чтение остановилось. scanf вернул 1, b осталось равным 0.",
+        "type": "text",
+        "answers": ["1 4 0"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Что вернёт scanf(\"%d\", &n), если ввод пустой?",
+        "explanation": "Если ввод закончился до первого значения, scanf возвращает особую константу EOF (обычно −1).",
+        "options": ["0", "1", "EOF", "Программа не скомпилируется"],
+        "correct": 2
+      },
+      {
+        "id": "q6",
+        "question": "Чем опасна запись scanf(\"%d\\n\", &n) при вводе с клавиатуры?",
+        "explanation": "Пробельный символ в формате scanf означает «пропусти все пробелы и переводы строк» — функция ждёт, пока не встретит что-то другое.",
+        "options": [
+          "Программа будет ждать непробельный символ после числа и покажется зависшей",
+          "Ничем, так правильнее",
+          "Число прочитается дважды",
+          "Компилятор выдаст ошибку"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Какой формат прочитает ввод «12 + 30» в переменные int a, char op, int b? Выберите все подходящие.",
+        "explanation": "Пробел перед %c пропускает пробел после 12, и в op попадает +. Без него op получит пробел, а следующий %d упрётся в +. Формат \"%d + %d\" прочитает числа, но не символ операции.",
+        "type": "multiple",
+        "options": ["\"%d %c %d\"", "\"%d%c%d\"", "\"%d %d %d\"", "\"%d + %d\" (без op)"],
+        "correct": [0]
+      }
+    ]
+  }
+}

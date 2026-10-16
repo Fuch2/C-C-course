@@ -1,0 +1,637 @@
+{
+  "verifiedAt": "2026-10-15T20:28:17.587Z",
+  "complete": true,
+  "diagnostics": "ASan/UBSan",
+  "checks": [
+    {
+      "id": "advanced-translation-units-exercise",
+      "compiler": "gcc",
+      "fingerprint": "fb47c80ae5a228a85b986dd3977ce707e4a460b4c08d26759fabab0d9abe20fd",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-translation-units-exercise",
+      "compiler": "clang",
+      "fingerprint": "9c92d665e18ddd8e0110f66fd6b0fd037fa40bd125fb52ece23f6b20b13d71cb",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-headers-exercise",
+      "compiler": "gcc",
+      "fingerprint": "5e9cff0ff0d4fbecb8f9490936e09938ca666fbd9e19f46330f90ea4a755957e",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-headers-exercise",
+      "compiler": "clang",
+      "fingerprint": "6a23d874e51c8879c7e42f6e80b357af07960c975cf8496ba0fa37202fc2e750",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-header-guards-exercise",
+      "compiler": "gcc",
+      "fingerprint": "6da4bb0055d9e761b6ef9ae437fed0fd8f1bcd9a43324eae6cca3853aa490c71",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-header-guards-exercise",
+      "compiler": "clang",
+      "fingerprint": "f7c63558070247d305aecb6e93612b91406143eb0abc4e63d5d51b92e8eea774",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-preprocessor-exercise",
+      "compiler": "gcc",
+      "fingerprint": "81b5dc9cfcb533c1009aea15dc51856f4cc1f1b031d329deec0f9e7248c6ccf4",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-preprocessor-exercise",
+      "compiler": "clang",
+      "fingerprint": "a7a0ab684dae667a8931bf9ed9afc1e5ec2df928ffd6ee7999f9d0c4161986b5",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-define-exercise",
+      "compiler": "gcc",
+      "fingerprint": "1727b32305744796faf770cbab42c258ffca320ac583d23fc4c0077cbd270b4d",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-define-exercise",
+      "compiler": "clang",
+      "fingerprint": "e27ac6b1548dbd9caae5080980022bcf4eadb278a3c22e9e1ae67906db113c47",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-function-macros-exercise",
+      "compiler": "gcc",
+      "fingerprint": "38277bf58c11167145f72b1562171950bf3f8a6221caa552fdc23e4dc561fb7d",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-function-macros-exercise",
+      "compiler": "clang",
+      "fingerprint": "ef3cb1693777fdf5c4e3d8ac3604e7c8db56c723c2e4a660ac45da09b1c11d3e",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-macro-hazards-exercise",
+      "compiler": "gcc",
+      "fingerprint": "762c76d060c426126436882d824803f06e33718858535f80882c1ff8f473bc2c",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-macro-hazards-exercise",
+      "compiler": "clang",
+      "fingerprint": "565698cafedecdb258f43b7ab39c8eb80bc642c0822a0b415a4148e57d7947e1",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-conditional-compilation-exercise",
+      "compiler": "gcc",
+      "fingerprint": "7b5ab0109b839431585c41bb75b9e7e3ffe09da7dc4ffc9809c6419a32f0df14",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-conditional-compilation-exercise",
+      "compiler": "clang",
+      "fingerprint": "5964aed74d2fdd83e85d867df5a3a459f3ece70d0edb7a9b9c2ad3f6b2776f8a",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-static-exercise",
+      "compiler": "gcc",
+      "fingerprint": "a2196843a12b5d925257efed162729a506272ddb9b48aceb7981d66e84beb67e",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-static-exercise",
+      "compiler": "clang",
+      "fingerprint": "9825f266a5b709a91ad6baa3ecd1b89206981a585be22134f0a9a2be074fa9d6",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-extern-exercise",
+      "compiler": "gcc",
+      "fingerprint": "0f9d4c7bb69a23dffa67b57e362fd6460fab9916a17f47040abad166d4fa9d3a",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-extern-exercise",
+      "compiler": "clang",
+      "fingerprint": "ef5b893d383db55405cb381770052140c960a1c8cb775ea0259e3b317a8ac5b7",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-linkage-exercise",
+      "compiler": "gcc",
+      "fingerprint": "7fce9ef51197ef625ab9a10744472bcf9c42050df6604c7d15abaed2b058ebe4",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-linkage-exercise",
+      "compiler": "clang",
+      "fingerprint": "570c68e85bcb50db68241276c9eefce42022d3a104858f08b5f9ad1eb64fd84d",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-const-exercise",
+      "compiler": "gcc",
+      "fingerprint": "2b747d67072b9126279499f072238049b2fe09e479c8ba1d38ffad2e281092f6",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-const-exercise",
+      "compiler": "clang",
+      "fingerprint": "64e848cf32b5cc7351c513d816315efe34b6d020ea35f23f3bd6a6e155c80f2c",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-volatile-exercise",
+      "compiler": "gcc",
+      "fingerprint": "34f8fa9779ad99808d1d261b1150e32734298ff9a0f96aef9001c31894eb890e",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-volatile-exercise",
+      "compiler": "clang",
+      "fingerprint": "e1cf882e7995d4fe8d92c953207e8918520c109e44a16917a90328592f5e749a",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-function-pointers-exercise",
+      "compiler": "gcc",
+      "fingerprint": "94330757e9eeeb380c589289569f62dab0f4bbe9fe26c85a923a4f8aadb57074",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-function-pointers-exercise",
+      "compiler": "clang",
+      "fingerprint": "98693fe7d6a25e99f006722fdd96174415032a6860e333ec82dd024de21776db",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-callbacks-exercise",
+      "compiler": "gcc",
+      "fingerprint": "cada40102f9bcc6c5d02763061dab4699e40107e24e961c35d965ef1f7563326",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-callbacks-exercise",
+      "compiler": "clang",
+      "fingerprint": "ce7759f5b1591bf61c6b7c2672c81639921bfdccd2e416428b46d4401d0eb0d6",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-project-vector",
+      "compiler": "gcc",
+      "fingerprint": "3860d05b5f3d924f1f80e8f0253cde85820d655ff161fe953ad0d1cbb0b7eb5e",
+      "ok": true,
+      "tests": 6
+    },
+    {
+      "id": "advanced-project-vector",
+      "compiler": "clang",
+      "fingerprint": "b19dfb217331c3492ec64dfc922494a33ed2a562d9ac8690a814e011fdfd68a0",
+      "ok": true,
+      "tests": 6
+    },
+    {
+      "id": "advanced-void-pointer-exercise",
+      "compiler": "gcc",
+      "fingerprint": "68e79ddc4bb1d68b023313f7b9074c536fb640a53aa7e70fbef56fcb38397839",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-void-pointer-exercise",
+      "compiler": "clang",
+      "fingerprint": "c290a07430d1028843a366d80498091a57a2471afbcdf5418658a39a6414d6d9",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-bitwise-and-exercise",
+      "compiler": "gcc",
+      "fingerprint": "f07f319f224b4cd8e09f52c49fd6b0b31d9a950d381e7687fad53c32443a81cb",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-bitwise-and-exercise",
+      "compiler": "clang",
+      "fingerprint": "af22a4af1d3dd6f9b1d7360d9028d8f94440d6a08a4d8d7ec3376408717b1406",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-bitwise-or-exercise",
+      "compiler": "gcc",
+      "fingerprint": "7f149672dcce95c62ee8f6c59533690035998ccdf4e2da526c9fb1f94f983d8e",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-bitwise-or-exercise",
+      "compiler": "clang",
+      "fingerprint": "967e2ab3031b0e29e3e21b0a2f4a36d310c40915064995da55b1cadf07d1117b",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-xor-exercise",
+      "compiler": "gcc",
+      "fingerprint": "13e174be3181386648cbdba0361ab776a52bf95688bab2154f4ba1abef47d3d6",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-xor-exercise",
+      "compiler": "clang",
+      "fingerprint": "095d1c067a24b9c56904d60e053e7c82e59e09faab9b0cc338aa7d84a8e856b9",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-bit-shifts-exercise",
+      "compiler": "gcc",
+      "fingerprint": "0c21880d9784c2f666b988d6efc2f36b9ec68642ddfb0d25a8abe831b1791fa9",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "advanced-bit-shifts-exercise",
+      "compiler": "clang",
+      "fingerprint": "e435ffc3a19f40a2d867fffd59867f799a62cad42d7d4329e0303e666a6ab01f",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "advanced-bit-masks-exercise",
+      "compiler": "gcc",
+      "fingerprint": "21e523b654cec29e1cdd69bfab66272654b83c45a30817b23e00939d74a9d79a",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-bit-masks-exercise",
+      "compiler": "clang",
+      "fingerprint": "7fba314f860e787c6b6a7bc3b90b3918d297a4b554fdb80853aebdd5521d5559",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-registers-exercise",
+      "compiler": "gcc",
+      "fingerprint": "746ac5e653b01763da5f74629da419b521fc726c9c31ab3e037f0fb7432c20f7",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-registers-exercise",
+      "compiler": "clang",
+      "fingerprint": "25e10b9b83218bf851d8c52fb674ff9d483353694deb9f2c5e05d915462f92f1",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-binary-files-exercise",
+      "compiler": "gcc",
+      "fingerprint": "566148064a0c244d76bdb2c5e0989f8333525e8b624f6cbe76782b1421c944c1",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-binary-files-exercise",
+      "compiler": "clang",
+      "fingerprint": "c2d014f4c15a81df874edeb0dee896c9880c1177c20572af61037eca71932d49",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-file-stream-exercise",
+      "compiler": "gcc",
+      "fingerprint": "daa87a0140ff8e571dbe90a036dfa6dcd7f64f3b4b03ea223ba95a51fb06b563",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-file-stream-exercise",
+      "compiler": "clang",
+      "fingerprint": "3f4857f10d229e50507138b72e52c4350cd0d72c1c7ab38ab1b179ee573fac2f",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-fread-fwrite-exercise",
+      "compiler": "gcc",
+      "fingerprint": "fc6f0ff35ee59986148c1114327bac70a051f2a7c2aa8d5a7092a82ed3ce3b98",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-fread-fwrite-exercise",
+      "compiler": "clang",
+      "fingerprint": "957ca9180b5212e25b5ffe213a5b8172e4cc213d2441f5021f790249da3f4608",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-project-binary-parser",
+      "compiler": "gcc",
+      "fingerprint": "dbdf65435a9740f0fc2de8d57f4e5dfa67ba28611bb9328ae29a6b518655b10d",
+      "ok": true,
+      "tests": 9
+    },
+    {
+      "id": "advanced-project-binary-parser",
+      "compiler": "clang",
+      "fingerprint": "b305b983ec2d2695c86dd207d598d0a45948e1a88d919e7ca1ee36fcd986156b",
+      "ok": true,
+      "tests": 9
+    },
+    {
+      "id": "advanced-error-handling-exercise",
+      "compiler": "gcc",
+      "fingerprint": "1f2b6ffa8ad9d795a16c01fccb7b7832f4f62c4da8d74abdac092c157aad59a7",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "advanced-error-handling-exercise",
+      "compiler": "clang",
+      "fingerprint": "253445e67b62e5af07a639b93ca7acf6459ec260ee1c054e51c4c6e961a76923",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "advanced-project-measurement-log",
+      "compiler": "gcc",
+      "fingerprint": "879a2a478586ca887b096c1f07b67037a8dd92507dc77989ca7680c1002e7d83",
+      "ok": true,
+      "tests": 9
+    },
+    {
+      "id": "advanced-project-measurement-log",
+      "compiler": "clang",
+      "fingerprint": "79786192ee08c6125ab387c24b16bfac386cd0b477e27deda26ac05cbb00f828",
+      "ok": true,
+      "tests": 9
+    },
+    {
+      "id": "advanced-errno-exercise",
+      "compiler": "gcc",
+      "fingerprint": "0f3d957aecc6505bec3d304f4f11f785a2f4624ffede39a7edc9641390dbc50f",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "advanced-errno-exercise",
+      "compiler": "clang",
+      "fingerprint": "e78631120e2f7dc4c82c606d1d92b766a654c3e31e7832458dee41f6a181b1aa",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "advanced-assertions-exercise",
+      "compiler": "gcc",
+      "fingerprint": "4509e57f57eaf64456487137ad1a919b420f687952f8cbb1346fd6ea1c7992e5",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-assertions-exercise",
+      "compiler": "clang",
+      "fingerprint": "c5aade4f71c366cc3323217f94bbb0d27afaab0fcc9e7f20ffd561bb221b7712",
+      "ok": true,
+      "tests": 3
+    },
+    {
+      "id": "advanced-translation-units-example",
+      "compiler": "clang",
+      "fingerprint": "f1acb0c1c3c1d8be60adfd7ce5791b7a5276420bb647791a8d39f5ba32bc29dd",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-headers-example",
+      "compiler": "clang",
+      "fingerprint": "9bbcf5174ed36aa0c634f9fef1819d3c058daea248a48763721b6635fc093468",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-header-guards-example",
+      "compiler": "clang",
+      "fingerprint": "83b6711724d143a4c3b3afc7c81125bedf3c97363d5b5375e729dd12f62a3051",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-preprocessor-example",
+      "compiler": "clang",
+      "fingerprint": "c8e702382c11c3bb6ceafbf9541e8cc74fcde19da2f328bcc9a33d1748036d23",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-define-example",
+      "compiler": "clang",
+      "fingerprint": "0692aa4c859a0c6a66758a50d5d88dc9b96ec47ea568d0892ded52e37e95304f",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-macros-example",
+      "compiler": "clang",
+      "fingerprint": "a1903edc4a23341d49de0083fe9c2a5747ea62d891de218e9070cf05d7fc1cbf",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-macro-hazards-example",
+      "compiler": "clang",
+      "fingerprint": "689d083b43b26f962752ec8c2d3a0d2eef1b50f270ec431858c2e1dd4809a3b5",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-conditional-compilation-example",
+      "compiler": "clang",
+      "fingerprint": "f685db25bbfde1882dfdc2ef909c5a80d8948c2d7abd81deccee099c759468b7",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-static-example",
+      "compiler": "clang",
+      "fingerprint": "f0bf84689b64d45613df40e195b685fda2a34a6c2072be9dec653326da35f621",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-extern-example",
+      "compiler": "clang",
+      "fingerprint": "b1be12254e32617293d8e7ef0eaca0a1d6b732d87b204d46dc1d09cb1ea655c1",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-linkage-example",
+      "compiler": "clang",
+      "fingerprint": "4e91bf1cf690f13dba3fcd0672c5ae5860ede939e027e33d0aee75c786256ae8",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-const-example",
+      "compiler": "clang",
+      "fingerprint": "d78f093b2c6b8d4adbf7dfa8066b2a1230df758776db1e273b93101104447d80",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-volatile-example",
+      "compiler": "clang",
+      "fingerprint": "13d54daffe064a504a4f50054428460065e89f8a783f8270ae279687f589034f",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-pointers-example",
+      "compiler": "clang",
+      "fingerprint": "9cdc578b0cf687c6637eed93725d86f88c7946f3f4b1df5ffc186b21b174d552",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-callbacks-example",
+      "compiler": "clang",
+      "fingerprint": "fdce9a2d21bcb89649acb4a90608944316193ea8c02774ff54e9b87f3d7a4241",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-void-pointer-example",
+      "compiler": "clang",
+      "fingerprint": "c866ef805b241f227c858b53da8f4fe1ec6a9ce7fc0845cd07ca878c667546e5",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bitwise-and-example",
+      "compiler": "clang",
+      "fingerprint": "08c0f3328a02e9efc88a7cb155bc7e709eb18114b543e92fe81e26c1bb2300ad",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bitwise-or-example",
+      "compiler": "clang",
+      "fingerprint": "b2740d6625d1ff4ea4cec7469a99c36e97e780ce0c89d0c83664fa1972cb7090",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-xor-example",
+      "compiler": "clang",
+      "fingerprint": "e69f6b50faca58ed7af9bff624f7be56dbca8392c99997cc52ff687bf32007f5",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bit-shifts-example",
+      "compiler": "clang",
+      "fingerprint": "32e43018e047716ee72278db998a9ff93d3d976b5cf2a8be387d5fad779e761a",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bit-masks-example",
+      "compiler": "clang",
+      "fingerprint": "febd85e6d22838dee72b24d9255360a3011414bbaa8f034b2ce8fdd3c90d8411",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-registers-example",
+      "compiler": "clang",
+      "fingerprint": "f33d1010f4096cf35e34df2e968332012adfdaa280319a15949036057f208279",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-binary-files-example",
+      "compiler": "clang",
+      "fingerprint": "ed5764cece3bf3f80f08777c3411902dd6bee26b9b091a6b6cbf99c44e93fafc",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-file-stream-example",
+      "compiler": "clang",
+      "fingerprint": "c74c9879f5a5e501ee077e43f283301803f3b8f686853886c0ffc6e9087627a4",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-fread-fwrite-example",
+      "compiler": "clang",
+      "fingerprint": "1067a04150ddcf005177ab0d73c736ce17c5c35d0d8b89183fb0dcaaea0424e9",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-error-handling-example",
+      "compiler": "clang",
+      "fingerprint": "8093cd14d9a9f27dd9e751a3d2d0523b9928c6a76794151fee212b0ac449d600",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-errno-example",
+      "compiler": "clang",
+      "fingerprint": "bfd02fc95827dc8c879f390433866618cbe0f9997a6c285c275391d97b2b5e97",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-assertions-example",
+      "compiler": "clang",
+      "fingerprint": "75a4019509b1c69b69bd357e48855a03d689a56988cb48321c18f11d45a6b9a8",
+      "ok": true,
+      "tests": 1
+    }
+  ]
+}

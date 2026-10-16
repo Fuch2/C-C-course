@@ -1,0 +1,468 @@
+{
+  "id": "c17-signed-unsigned",
+  "title": "signed и unsigned, типы точного размера",
+  "description": "Беззнаковые типы и %u, арифметика по модулю 2ⁿ, ловушка смешивания знаковых и беззнаковых значений, типы из stdint.h.",
+  "moduleId": "c-fundamentals",
+  "order": 8,
+  "difficulty": "beginner",
+  "estimatedMinutes": 35,
+  "prerequisites": ["c17-floating"],
+  "objectives": [
+    "Объявлять и печатать беззнаковые значения",
+    "Предсказывать результат беззнакового переполнения и вычитания",
+    "Распознавать ошибку сравнения знакового и беззнакового числа",
+    "Использовать типы точного размера из stdint.h",
+    "Выбирать между знаковым и беззнаковым типом"
+  ],
+  "tags": ["C17", "unsigned", "stdint.h", "Переполнение"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-signed-unsigned-task-1",
+    "title": "Как увидит unsigned",
+    "description": "Прочитайте целое число `x` типа `int` и напечатайте его значение после приведения к `unsigned int`.\n\n**Пример:** `-1` → `4294967295`, `7` → `7`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "-1",
+        "output": "4294967295\n"
+      },
+      {
+        "input": "7",
+        "output": "7\n"
+      }
+    ],
+    "constraints": ["−2 147 483 648 ≤ x ≤ 2 147 483 647."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Приведение записывается как (unsigned int)x.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Печатайте через %u.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "-1",
+        "expected": "4294967295\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "7",
+        "expected": "7\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "0",
+        "expected": "0\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "-2147483648",
+        "expected": "2147483648\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "2147483647",
+        "expected": "2147483647\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "-2",
+        "expected": "4294967294\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "-1000",
+        "expected": "4294966296\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "123456",
+        "expected": "123456\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int x;\n    scanf(\"%d\", &x);\n    printf(\"%u\\n\", (unsigned int)x);\n    return 0;\n}\n",
+    "solutionExplanation": "Для неотрицательных `x` значение не меняется. Для отрицательных результат равен `x + 2³²`: −1 → 4 294 967 295, `INT_MIN` → 2 147 483 648.\n\nИменно это происходит неявно, когда `int` встречается в одном выражении с `unsigned int`. Теперь вы знаете, откуда берутся огромные числа в таких сравнениях.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-signed-unsigned-task-2",
+      "title": "Разность по кругу",
+      "description": "Прочитайте два неотрицательных числа `a` и `b` типа `unsigned int` и напечатайте `a - b`, вычисленное в беззнаковой арифметике.\n\nТак вычисляют, например, сколько тиков прошло между двумя показаниями 32-битного счётчика, который мог «перескочить» через ноль.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "10 3",
+          "output": "7\n"
+        },
+        {
+          "input": "5 4294967290",
+          "output": "11\n",
+          "explanation": "Счётчик перешёл через ноль."
+        }
+      ],
+      "constraints": ["0 ≤ a, b ≤ 4 294 967 295."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Читайте через %u в переменные unsigned int.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Ничего специально обрабатывать не нужно: беззнаковое вычитание само работает по модулю 2³².",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "10 3",
+          "expected": "7\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5 4294967290",
+          "expected": "11\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0 1",
+          "expected": "4294967295\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "0 0",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "4294967295 0",
+          "expected": "4294967295\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "0 4294967295",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "100 100",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "3 5",
+          "expected": "4294967294\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    unsigned int a, b;\n    scanf(\"%u %u\", &a, &b);\n    printf(\"%u\\n\", a - b);\n    return 0;\n}\n",
+      "solutionExplanation": "Если счётчик был равен 4 294 967 290, затем «перевалил» через максимум и стал равен 5, то прошло 11 тиков. Беззнаковое вычитание `5u - 4294967290u` даёт ровно 11 — арифметика по модулю 2³² сама учитывает переход через ноль.\n\nЭто одно из немногих мест, где «заворачивание» беззнаковых — именно то поведение, которое нужно.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-signed-unsigned-task-3",
+      "title": "Яркость пикселя",
+      "description": "Яркость канала хранится в `uint8_t` (от 0 до 255). Прочитайте текущую яркость `b` и изменение `d` (может быть отрицательным). Запишите `b + d` обратно в переменную типа `uint8_t` и напечатайте новое значение.\n\nЗначение «заворачивается» по модулю 256: `250 + 10` → `4`, `3 − 5` → `254`. (В настоящих графических редакторах так не делают — там значение ограничивают пределами 0 и 255. Это вы научитесь делать после урока `if`.)",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "250 10",
+          "output": "4\n"
+        },
+        {
+          "input": "3 -5",
+          "output": "254\n"
+        }
+      ],
+      "constraints": ["0 ≤ b ≤ 255, −1000 ≤ d ≤ 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Прочитайте b и d в int, затем присвойте uint8_t pixel = b + d;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Печатайте через %d: uint8_t при передаче в printf расширяется до int.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "250 10",
+          "expected": "4\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3 -5",
+          "expected": "254\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0 0",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "255 1",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "0 -1",
+          "expected": "255\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "100 50",
+          "expected": "150\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "0 -1000",
+          "expected": "24\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "255 1000",
+          "expected": "231\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "128 128",
+          "expected": "0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdint.h>\n\nint main(void) {\n    int b, d;\n    scanf(\"%d %d\", &b, &d);\n    uint8_t pixel = (uint8_t)(b + d);\n    printf(\"%d\\n\", pixel);\n    return 0;\n}\n",
+      "solutionExplanation": "При преобразовании в беззнаковый тип значение берётся по модулю 2⁸ = 256, и это верно и для отрицательных чисел: −2 → 254, −1000 → 24 (−1000 + 4 · 256).\n\nЯвное приведение `(uint8_t)` показывает читателю, что «заворачивание» задумано. Без него компилятор выполнил бы то же преобразование неявно.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-signed-unsigned-task-4",
+      "title": "Шестнадцатибитный счётчик",
+      "description": "Датчик считает импульсы в 16-битном беззнаковом счётчике (`uint16_t`, от 0 до 65 535). Прочитайте начальное показание `s` и число новых импульсов `k`. Напечатайте показание счётчика после `k` импульсов.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "65530 10",
+          "output": "4\n"
+        },
+        {
+          "input": "0 65536",
+          "output": "0\n",
+          "explanation": "Ровно один полный оборот."
+        }
+      ],
+      "constraints": ["0 ≤ s ≤ 65 535, 0 ≤ k ≤ 2 000 000 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сумма s + k не больше 2 000 065 535 — это ещё помещается в int, но с маленьким запасом. Надёжнее читать в long long.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Запишите сумму в uint16_t: значение возьмётся по модулю 65 536.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "65530 10",
+          "expected": "4\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0 65536",
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0 0",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "65535 1",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "100 2000000000",
+          "expected": "37988\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "65535 65535",
+          "expected": "65534\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "12345 54321",
+          "expected": "1130\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "1 0",
+          "expected": "1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdint.h>\n\nint main(void) {\n    long long s, k;\n    scanf(\"%lld %lld\", &s, &k);\n    uint16_t counter = (uint16_t)(s + k);\n    printf(\"%d\\n\", counter);\n    return 0;\n}\n",
+      "solutionExplanation": "16-битный счётчик после 65 535 возвращается к 0, поэтому ответ — `(s + k) mod 65 536`. Преобразование в `uint16_t` выполняет это взятие остатка автоматически.\n\nТот же результат даёт `(s + k) % 65536` — полезно уметь видеть обе записи: в коде микроконтроллеров встречается и та, и другая.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-signed-unsigned-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    unsigned int a = 3, b = 5;\n    printf(\"%u\\n\", a - b);\n    return 0;\n}",
+        "explanation": "Беззнаковое вычитание выполняется по модулю 2³²: 3 − 5 = 2³² − 2 = 4294967294.",
+        "type": "text",
+        "answers": ["4294967294"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n#include <stdint.h>\n\nint main(void) {\n    uint8_t x = 200;\n    x = x + 100;\n    printf(\"%d\\n\", x);\n    return 0;\n}",
+        "explanation": "300 не помещается в 8 бит: 300 mod 256 = 44.",
+        "type": "text",
+        "answers": ["44"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Чему равно выражение -1 < 1u (сравнение int и unsigned int)?",
+        "explanation": "−1 преобразуется в unsigned и становится 4294967295, что больше 1. Компилятор выдаёт предупреждение -Wsign-compare.",
+        "options": ["1 (истина)", "0 (ложь)", "Ошибка компиляции", "Неопределённое поведение"],
+        "correct": 1
+      },
+      {
+        "id": "q4",
+        "question": "Чем переполнение unsigned int отличается от переполнения int?",
+        "explanation": "Стандарт гарантирует «заворачивание» беззнаковых значений. Переполнение знаковых не определено.",
+        "options": [
+          "Для unsigned результат определён — вычисление по модулю 2ⁿ; для int это неопределённое поведение",
+          "Ничем",
+          "unsigned не может переполниться",
+          "Для unsigned программа аварийно завершается"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какие значения разумно хранить в беззнаковых типах? Выберите все.",
+        "explanation": "Беззнаковые типы подходят для данных, которые не бывают отрицательными и не вычитаются: цвета, маски, хеши. Остаток и разница могут быть отрицательными.",
+        "type": "multiple",
+        "options": [
+          "Цвет пикселя от 0 до 255",
+          "Остаток на банковском счёте, который может уйти в минус",
+          "Битовую маску настроек",
+          "Разницу температур",
+          "Значение хеш-функции"
+        ],
+        "correct": [0, 2, 4]
+      },
+      {
+        "id": "q6",
+        "question": "Какой спецификатор printf нужен для unsigned long long?",
+        "explanation": "%llu — unsigned long long. %lld для знакового long long напечатает большие значения как отрицательные.",
+        "options": ["%u", "%llu", "%lld", "%lu"],
+        "correct": 1
+      },
+      {
+        "id": "q7",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int x = -3;\n    printf(\"%u\\n\", (unsigned int)x);\n    return 0;\n}",
+        "explanation": "Приведение отрицательного значения к unsigned даёт x + 2³² = 4294967296 − 3.",
+        "type": "text",
+        "answers": ["4294967293"],
+        "placeholder": "Вывод программы"
+      }
+    ]
+  }
+}

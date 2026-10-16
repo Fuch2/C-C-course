@@ -1,0 +1,141 @@
+{
+  "id": "algo-tree",
+  "title": "Бинарное дерево — Binary tree",
+  "description": "В бинарном дереве у узла не более двух детей.",
+  "moduleId": "algorithms-structures",
+  "order": 23,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 60,
+  "prerequisites": ["algo-hash"],
+  "objectives": [
+    "Объяснить инвариант: Вложенные развилки без обещания, что меньшие числа лежат слева.",
+    "Обосновать время: O(n) для высоты и подсчёта листьев.",
+    "Оценить память и компромиссы: Гибкая структура против указателей и сложности владения; плотный массив удобен для почти полного дерева."
+  ],
+  "tags": [
+    "алгоритмы",
+    "C17",
+    "Бинарное дерево — Binary tree",
+    "структуры данных",
+    "cache locality"
+  ],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "algo-tree-exercise",
+    "title": "Высота и листья дерева",
+    "description": "Ввод n (0…256) и n позиций бинарного дерева в порядке индексов: дети i находятся в 2i+1 и 2i+2. Значение −9999 означает отсутствие узла, остальные значения −1000…1000. Потомки отсутствующих узлов также отсутствуют. Создайте узлы со ссылками, выведите высоту в узлах и число листьев; пустое дерево даёт 0 0. Освободите дерево.",
+    "difficulty": "intermediate",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "7 5 2 8 1 3 7 9",
+        "output": "3 4\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      },
+      {
+        "input": "1 4",
+        "output": "1 1\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Используйте C17 и диапазоны входа из условия.",
+      "Выводите только требуемый результат.",
+      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Вложенные развилки без обещания, что меньшие числа лежат слева."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Бинарное дерево не обязательно является деревом поиска."
+      },
+      {
+        "id": "hint-3",
+        "order": 3,
+        "text": "Корень с двумя листьями имеет высоту 2 и два листа. Цепочка из трёх узлов — высоту 3 и один лист."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "7 5 2 8 1 3 7 9",
+        "expected": "3 4\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1 4",
+        "expected": "1 1\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "stdin": "0",
+        "expected": "0 0\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "stdin": "1 -9999",
+        "expected": "0 0\n"
+      },
+      {
+        "id": "case-5",
+        "name": "Граничный сценарий 3",
+        "stdin": "7 5 -9999 8 -9999 -9999 7 9",
+        "expected": "3 2\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\ntypedef struct Node { int value; struct Node *left,*right; } Node;\nstatic void destroy(Node *root){if(root){destroy(root->left);destroy(root->right);free(root);}}\nstatic Node *build(const int *a,int n,int i,int *ok){\n    if(i>=n || a[i]==-9999)return NULL;\n    Node *node=malloc(sizeof *node);if(!node){*ok=0;return NULL;}\n    *node=(Node){a[i],NULL,NULL};\n    node->left=build(a,n,2*i+1,ok);node->right=build(a,n,2*i+2,ok);\n    return node;\n}\nstatic int height(const Node *root){\n    if(!root)return 0;int l=height(root->left),r=height(root->right);return 1+(l>r?l:r);\n}\nstatic int leaves(const Node *root){\n    if(!root)return 0;\n    if(!root->left && !root->right)return 1;\n    return leaves(root->left)+leaves(root->right);\n}\nint main(void) {\nint a[256]; int n;\nif (scanf(\"%d\", &n)!=1 || n<0 || n>256) return 1;\nfor(int i=0;i<n;++i) if(scanf(\"%d\", &a[i])!=1) return 1;\nint ok=1;Node *root=build(a,n,0,&ok);if(!ok){destroy(root);return 1;}printf(\"%d %d\\n\",height(root),leaves(root));destroy(root);\nreturn 0;\n}\n",
+    "solutionExplanation": "Инвариант: Вложенные развилки без обещания, что меньшие числа лежат слева.\n\nКорень с двумя листьями имеет высоту 2 и два листа. Цепочка из трёх узлов — высоту 3 и один лист.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. Бинарное дерево не обязательно является деревом поиска.\n\nВремя: O(n) для высоты и подсчёта листьев.\nПамять: O(n) узлов плюс O(h) стека обхода.\nКомпромисс: Гибкая структура против указателей и сложности владения; плотный массив удобен для почти полного дерева.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
+    "checking": { "type": "stdout", "comparison": "exact" }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "algo-tree-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "invariant",
+        "question": "Какова высота пустого дерева по контракту урока?",
+        "options": ["0", "1"],
+        "correct": 0,
+        "explanation": "Вложенные развилки без обещания, что меньшие числа лежат слева. Корень с двумя листьями имеет высоту 2 и два листа. Цепочка из трёх узлов — высоту 3 и один лист."
+      },
+      {
+        "id": "complexity",
+        "question": "Какая оценка соответствует рассмотренной реализации?",
+        "options": [
+          "Всегда O(1), потому что все тесты ограничены по размеру.",
+          "O(n) для высоты и подсчёта листьев."
+        ],
+        "correct": 1,
+        "explanation": "Гибкая структура против указателей и сложности владения; плотный массив удобен для почти полного дерева."
+      },
+      {
+        "id": "engineering",
+        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "options": [
+          "Бинарное дерево не обязательно является деревом поиска.",
+          "Совпадение Big O гарантирует одинаковое время на любой машине."
+        ],
+        "correct": 0,
+        "explanation": "Указатели удобны для произвольной формы, но размещение по отдельным malloc ухудшает локальность. O(n) узлов плюс O(h) стека обхода."
+      }
+    ]
+  }
+}

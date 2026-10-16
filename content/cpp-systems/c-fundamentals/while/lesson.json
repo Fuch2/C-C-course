@@ -1,0 +1,665 @@
+{
+  "id": "c17-while",
+  "title": "Цикл while",
+  "description": "Повторение с while, итерации и трассировка, три части цикла со счётчиком, накопление суммы, цифры числа произвольной длины, чтение до признака конца и поиск максимума.",
+  "moduleId": "c-fundamentals",
+  "order": 17,
+  "difficulty": "beginner",
+  "estimatedMinutes": 50,
+  "prerequisites": ["c17-practice-branches"],
+  "objectives": [
+    "Писать цикл while и выполнять его трассировку",
+    "Выделять инициализацию, условие и изменение счётчика",
+    "Накапливать сумму, количество и максимум",
+    "Обрабатывать цифры числа произвольной длины",
+    "Читать данные до признака конца"
+  ],
+  "tags": ["C17", "while", "Циклы", "Накопление"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-while-task-1",
+    "title": "Сумма от 1 до n",
+    "description": "Прочитайте `n` и напечатайте сумму `1 + 2 + … + n`, вычисленную **циклом** (формулу Гаусса вы уже знаете — здесь цель потренировать цикл).",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "100",
+        "output": "5050\n"
+      },
+      {
+        "input": "1",
+        "output": "1\n"
+      }
+    ],
+    "constraints": ["1 ≤ n ≤ 1 000 000."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Аккумулятор sum = 0 до цикла, счётчик i от 1 до n включительно.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Сумма до 5 · 10¹¹ — long long, вывод через %lld.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "100",
+        "expected": "5050\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1",
+        "expected": "1\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "2",
+        "expected": "3\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "10",
+        "expected": "55\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "1000000",
+        "expected": "500000500000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "65536",
+        "expected": "2147516416\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "999999",
+        "expected": "499999500000\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "12345",
+        "expected": "76205685\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    long long sum = 0;\n    int i = 1;\n    while (i <= n) {\n        sum += i;\n        i++;\n    }\n    printf(\"%lld\\n\", sum);\n    return 0;\n}\n",
+    "solutionExplanation": "Три части цикла: `int i = 1` — инициализация, `i <= n` — условие (включительно!), `i++` — изменение. Аккумулятор `sum` начинается с нуля.\n\nДля `n = 10⁶` сумма 500 000 500 000 не помещается в `int`, поэтому `long long`. Цикл из миллиона итераций выполняется за миллисекунды.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-while-task-2",
+      "title": "Сколько цифр",
+      "description": "Прочитайте натуральное число `n` и напечатайте количество его цифр и их сумму через пробел.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "90210",
+          "output": "5 12\n"
+        },
+        {
+          "input": "7",
+          "output": "1 7\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 10¹⁸."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Пока n > 0: прибавить n % 10 к сумме, увеличить счётчик, n /= 10.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "n до 10¹⁸ — тип long long, чтение через %lld.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "90210",
+          "expected": "5 12\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "7",
+          "expected": "1 7\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "10",
+          "expected": "2 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "99",
+          "expected": "2 18\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "100",
+          "expected": "3 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1000000000000000000",
+          "expected": "19 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "999999999999999999",
+          "expected": "18 162\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "123456789",
+          "expected": "9 45\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "1",
+          "expected": "1 1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long n;\n    scanf(\"%lld\", &n);\n    int count = 0;\n    int sum = 0;\n    while (n > 0) {\n        sum += n % 10;\n        count++;\n        n /= 10;\n    }\n    printf(\"%d %d\\n\", count, sum);\n    return 0;\n}\n",
+      "solutionExplanation": "Каждая итерация обрабатывает одну цифру и укорачивает число на одну цифру, поэтому итераций ровно столько, сколько цифр. У 10¹⁸ — 19 цифр, сумма 1.\n\n`n % 10` имеет тип `long long`, но значение от 0 до 9 спокойно прибавляется к `int`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-while-task-3",
+      "title": "Число наоборот",
+      "description": "Прочитайте натуральное число и напечатайте число, записанное теми же цифрами в обратном порядке. Ведущие нули результата не печатаются.\n\n**Примеры:** `12345` → `54321`, `1200` → `21`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "12345",
+          "output": "54321\n"
+        },
+        {
+          "input": "1200",
+          "output": "21\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 2 · 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Отщепляйте последнюю цифру n % 10 и дописывайте её справа к результату: result = result * 10 + digit.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Перевёрнутое число 2 · 10⁹ − 1 — около 9,9 · 10⁹. Нужен long long.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "12345",
+          "expected": "54321\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1200",
+          "expected": "21\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "10",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1999999999",
+          "expected": "9999999991\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "2000000000",
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "101",
+          "expected": "101\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "987654321",
+          "expected": "123456789\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "1000000000",
+          "expected": "1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long n;\n    scanf(\"%lld\", &n);\n    long long reversed = 0;\n    while (n > 0) {\n        reversed = reversed * 10 + n % 10;\n        n /= 10;\n    }\n    printf(\"%lld\\n\", reversed);\n    return 0;\n}\n",
+      "solutionExplanation": "`reversed * 10 + digit` сдвигает накопленные цифры влево и дописывает новую справа — так в уроке «Арифметика» собиралось трёхзначное число, только теперь для любой длины.\n\nВедущие нули исчезают сами: для 1200 первые две итерации дают `0` и `0`, затем `2` и `21`. Числа «с нулём впереди» не бывает.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-while-task-4",
+      "title": "Степени двойки",
+      "description": "Прочитайте `n` и напечатайте в одну строку через пробел все степени двойки, не превосходящие `n`: 1, 2, 4, 8, …",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "20",
+          "output": "1 2 4 8 16\n"
+        },
+        {
+          "input": "1",
+          "output": "1\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 10¹⁸."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Начните со степени p = 2 (единицу напечатайте заранее) и удваивайте, пока p <= n.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Чтобы не было пробела в конце: печатайте первое число отдельно, а перед каждым следующим — пробел.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "p может стать больше 10¹⁸ перед выходом из цикла: 2⁶⁰ ≈ 1,15 · 10¹⁸ помещается в long long.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "20",
+          "expected": "1 2 4 8 16\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1",
+          "expected": "1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "2",
+          "expected": "1 2\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "3",
+          "expected": "1 2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1024",
+          "expected": "1 2 4 8 16 32 64 128 256 512 1024\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1023",
+          "expected": "1 2 4 8 16 32 64 128 256 512\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1000000000000000000",
+          "expected": "1 2 4 8 16 32 64 128 256 512 1024 2048 4096 8192 16384 32768 65536 131072 262144 524288 1048576 2097152 4194304 8388608 16777216 33554432 67108864 134217728 268435456 536870912 1073741824 2147483648 4294967296 8589934592 17179869184 34359738368 68719476736 137438953472 274877906944 549755813888 1099511627776 2199023255552 4398046511104 8796093022208 17592186044416 35184372088832 70368744177664 140737488355328 281474976710656 562949953421312 1125899906842624 2251799813685248 4503599627370496 9007199254740992 18014398509481984 36028797018963968 72057594037927936 144115188075855872 288230376151711744 576460752303423488\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "7",
+          "expected": "1 2 4\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long n;\n    scanf(\"%lld\", &n);\n    printf(\"1\");\n    long long p = 2;\n    while (p <= n) {\n        printf(\" %lld\", p);\n        p *= 2;\n    }\n    printf(\"\\n\");\n    return 0;\n}\n",
+      "solutionExplanation": "Число 1 всегда входит в ответ (`n ≥ 1`), поэтому печатается до цикла, а каждое следующее число — с пробелом впереди. Так в конце строки не будет лишнего пробела.\n\nПоследнее удвоение даёт первое число больше `n`. Для `n = 10¹⁸` это 2⁶⁰ ≈ 1,15 · 10¹⁸ — меньше `LLONG_MAX`, переполнения нет.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-while-task-5",
+      "title": "Покупки",
+      "description": "Вводятся цены покупок — положительные целые числа. Признак конца списка — число 0. Напечатайте через пробел количество покупок, общую сумму и среднюю цену с двумя знаками после точки. Если покупок не было (первое же число 0), напечатайте `0 0 0.00`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "120 45 300 0",
+          "output": "3 465 155.00\n"
+        },
+        {
+          "input": "0",
+          "output": "0 0 0.00\n"
+        }
+      ],
+      "constraints": ["Покупок не больше 10 000, каждая цена от 1 до 1 000 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Прочитайте первое число до цикла, следующее — в конце тела.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Среднее — (double)sum / count, но только если count > 0.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "120 45 300 0",
+          "expected": "3 465 155.00\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0",
+          "expected": "0 0 0.00\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 0",
+          "expected": "1 1 1.00\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1000000 1000000 1000000 0",
+          "expected": "3 3000000 1000000.00\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "10 20 0",
+          "expected": "2 30 15.00\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "7 7 7 7 7 7 0",
+          "expected": "6 42 7.00\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "3 1 4 1 5 9 2 6 0",
+          "expected": "8 31 3.88\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "999999\n1\n0",
+          "expected": "2 1000000 500000.00\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int price;\n    int count = 0;\n    long long sum = 0;\n    scanf(\"%d\", &price);\n    while (price != 0) {\n        sum += price;\n        count++;\n        scanf(\"%d\", &price);\n    }\n    double average = 0.0;\n    if (count > 0) {\n        average = (double)sum / count;\n    }\n    printf(\"%d %lld %.2f\\n\", count, sum, average);\n    return 0;\n}\n",
+      "solutionExplanation": "Шаблон «прочитать — проверить — обработать — прочитать» гарантирует, что ноль не попадёт в сумму и не будет посчитан как покупка.\n\nПустой список — особый случай: делить на `count = 0` нельзя, поэтому среднее остаётся 0.00. Сумма до 10¹⁰ требует `long long`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-while-task-6",
+      "title": "Максимум и сколько раз",
+      "description": "Вводятся целые числа, последовательность заканчивается нулём (ноль не входит в последовательность, она содержит хотя бы одно число). Напечатайте наибольшее число и сколько раз оно встречается.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "3 7 2 7 1 0",
+          "output": "7 2\n"
+        },
+        {
+          "input": "-5 -2 -9 0",
+          "output": "-2 1\n"
+        }
+      ],
+      "constraints": ["Не больше 10 000 чисел, каждое по модулю не больше 10⁹ и не равно 0."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Максимум инициализируйте первым числом, счётчик — единицей.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Если x > max — новый максимум, счётчик снова 1. Если x == max — увеличить счётчик.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 7 2 7 1 0",
+          "expected": "7 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "-5 -2 -9 0",
+          "expected": "-2 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "5 0",
+          "expected": "5 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1 1 1 1 0",
+          "expected": "1 4\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "-1000000000 -1000000000 0",
+          "expected": "-1000000000 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1000000000 -1000000000 1000000000 0",
+          "expected": "1000000000 2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1 2 3 4 5 0",
+          "expected": "5 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "5 4 3 2 1 5 0",
+          "expected": "5 2\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int x;\n    scanf(\"%d\", &x);\n    int max = x;\n    int count = 0;\n    while (x != 0) {\n        if (x > max) {\n            max = x;\n            count = 1;\n        } else if (x == max) {\n            count++;\n        }\n        scanf(\"%d\", &x);\n    }\n    printf(\"%d %d\\n\", max, count);\n    return 0;\n}\n",
+      "solutionExplanation": "Когда встречается новый максимум, предыдущие подсчёты теряют смысл — счётчик сбрасывается на 1. Равный максимуму элемент увеличивает счётчик.\n\nПервое число обрабатывается в цикле как обычное: `max` уже равен ему, сработает ветка `x == max`, и счётчик станет 1. Поэтому `count` начинается с нуля.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-while-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа? Числа через пробел.",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int i = 10;\n    while (i > 0) {\n        printf(\"%d \", i);\n        i -= 3;\n    }\n    printf(\"\\n\");\n    return 0;\n}",
+        "explanation": "i принимает значения 10, 7, 4, 1, затем −2 — условие i > 0 ложно, цикл заканчивается.",
+        "type": "text",
+        "answers": ["10 7 4 1"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Сколько раз выполнится тело цикла?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int i = 0;\n    int count = 0;\n    while (i < 20) {\n        count++;\n        i += 4;\n    }\n    printf(\"%d\\n\", count);\n    return 0;\n}",
+        "explanation": "i = 0, 4, 8, 12, 16 — пять итераций. При i = 20 условие ложно.",
+        "type": "text",
+        "answers": ["5"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int n = 4096;\n    int steps = 0;\n    while (n > 1) {\n        n /= 2;\n        steps++;\n    }\n    printf(\"%d %d\\n\", n, steps);\n    return 0;\n}",
+        "explanation": "4096 = 2¹²: двенадцать делений пополам до единицы.",
+        "type": "text",
+        "answers": ["1 12"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int n = 7031;\n    int result = 0;\n    while (n > 0) {\n        result = result * 10 + n % 10;\n        n /= 10;\n    }\n    printf(\"%d\\n\", result);\n    return 0;\n}",
+        "explanation": "Каждая отщеплённая цифра дописывается справа к результату: 1, 13, 130, 1307. Число переворачивается.",
+        "type": "text",
+        "answers": ["1307"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Чем опасна запись while (i <= 10); { i++; } ?",
+        "explanation": "Телом while становится пустая инструкция ;. Блок с i++ к циклу не относится и до него дело не дойдёт.",
+        "options": [
+          "Точка с запятой делает тело пустым: i не меняется, цикл бесконечен",
+          "Ничем, это обычный цикл",
+          "Ошибка компиляции",
+          "Цикл выполнится ровно один раз"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Почему максимум последовательности инициализируют первым элементом, а не нулём?",
+        "explanation": "Начальное значение должно быть одним из элементов. Иначе результат зависит от выбранной «заглушки».",
+        "options": [
+          "Если все числа отрицательные, ноль окажется «максимумом», которого нет в данных",
+          "Ноль нельзя присваивать переменной",
+          "Так программа работает быстрее",
+          "Это требование компилятора"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Какие циклы гарантированно завершатся? Выберите все.",
+        "explanation": "i-- уводит i от 10 (формально до переполнения — неопределённого поведения). i += 2 с единицы даёт только нечётные числа и проскакивает 10.",
+        "type": "multiple",
+        "options": [
+          "int i = 0; while (i < 10) { i++; }",
+          "int i = 0; while (i < 10) { i--; }",
+          "int n = 100; while (n > 0) { n /= 10; }",
+          "int i = 1; while (i != 10) { i += 2; }"
+        ],
+        "correct": [0, 2]
+      }
+    ]
+  }
+}

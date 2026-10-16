@@ -1,0 +1,193 @@
+## Одна программа — несколько сборок
+
+В модуле о памяти вы уже читали отчёты AddressSanitizer и UBSan. Теперь посмотрим на них как на часть **процесса разработки**: какие сборки держать в проекте, как включать проверки в Make и CMake и чем защищать программу, которая уйдёт пользователям.
+
+Профессиональный проект собирают в нескольких конфигурациях — у каждой своя задача:
+
+| Сборка       | Флаги                                                         | Зачем                             |
+| ------------ | ------------------------------------------------------------- | --------------------------------- |
+| Debug        | `-g -O0`                                                      | пошаговая отладка                 |
+| ASan + UBSan | `-g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer` | поиск ошибок памяти и UB в тестах |
+| TSan         | `-g -O1 -fsanitize=thread`                                    | поиск гонок в многопоточном коде  |
+| Release      | `-O2 -DNDEBUG -D_FORTIFY_SOURCE=2 -fstack-protector-strong`   | то, что получат пользователи      |
+
+`-O1` в сборках с санитайзерами — компромисс: без оптимизаций программа под санитайзером работает слишком медленно, а с `-O2` отчёты хуже соответствуют исходнику. `-fno-omit-frame-pointer` сохраняет указатель кадра, по которому санитайзер быстро и надёжно строит стек вызовов в отчёте.
+
+## Семейство санитайзеров
+
+| Санитайзер | Флаг                   | Что находит                                         | Замедление | Компиляторы  |
+| ---------- | ---------------------- | --------------------------------------------------- | ---------- | ------------ |
+| ASan       | `-fsanitize=address`   | выход за границы, use-after-free, double free       | ~2×        | GCC, Clang   |
+| LSan       | `-fsanitize=leak`      | утечки памяти (на Linux уже входит в ASan)          | почти нет  | GCC, Clang   |
+| UBSan      | `-fsanitize=undefined` | переполнение `int`, сдвиги, деление на ноль, `NULL` | ~1,2×      | GCC, Clang   |
+| TSan       | `-fsanitize=thread`    | гонки данных между потоками                         | 5–15×      | GCC, Clang   |
+| MSan       | `-fsanitize=memory`    | чтение неинициализированной памяти                  | ~3×        | только Clang |
+
+ASan, TSan и MSan по-разному устроены внутри: каждый размечает **всю** память процесса по-своему. Поэтому они **несовместимы** друг с другом, и для каждого нужна отдельная сборка. UBSan сочетается с любым из них, а LSan — только с ASan, в который он на Linux и так входит. Обычный набор — `-fsanitize=address,undefined` для тестов плюс отдельная TSan-сборка, если в программе есть потоки.
+
+## Настройка во время запуска
+
+Поведение санитайзеров настраивается переменными окружения — без пересборки:
+
+```text
+$ ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 ./app
+$ UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 ./app
+```
+
+Важная деталь: UBSan по умолчанию **продолжает работу** после ошибки — печатает `runtime error` и идёт дальше. В тестах это опасно: программа может вывести правильный ответ и завершиться с кодом 0, и сообщение затеряется в журнале. Флаг сборки `-fno-sanitize-recover=all` (или `halt_on_error=1` при запуске) делает любую найденную ошибку фатальной:
+
+```c
+#include <limits.h>
+#include <stdio.h>
+
+int main(void) {
+    int balance = INT_MAX - 2;
+    for (int i = 0; i < 5; i++) {
+        balance += 1;                 // Ошибка памяти: переполнение int, UBSan остановит программу
+    }
+    printf("%d\n", balance);
+    return 0;
+}
+```
+
+```text
+main.c:7:17: runtime error: signed integer overflow: 2147483647 + 1 cannot be represented in type 'int'
+```
+
+Курс собирает проверки именно так — `-fsanitize=address,undefined -fno-sanitize-recover=all`: решение с UB не пройдёт тест, даже если «случайно» напечатало верное число.
+
+## Сборки в Make и CMake
+
+Конфигурации не пишут вручную каждый раз — их выбирают параметром. В Makefile:
+
+```text
+BUILD ?= debug
+
+CFLAGS = -std=c17 -Wall -Wextra
+ifeq ($(BUILD),debug)
+  CFLAGS += -g -O0
+else ifeq ($(BUILD),asan)
+  CFLAGS += -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all
+  LDFLAGS += -fsanitize=address,undefined
+else
+  CFLAGS += -O2 -DNDEBUG
+endif
+```
+
+```text
+$ make BUILD=asan && ./calc < tests/input1.txt
+```
+
+Флаг `-fsanitize` нужен **и при линковке**: он подключает библиотеку времени выполнения санитайзера. В CMake удобна опция, которую включают при настройке отдельного каталога сборки:
+
+```text
+option(CALC_SANITIZE "Собрать с ASan и UBSan" OFF)
+if(CALC_SANITIZE)
+  add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+  add_link_options(-fsanitize=address,undefined)
+endif()
+```
+
+```text
+$ cmake -S . -B build-asan -DCMAKE_BUILD_TYPE=Debug -DCALC_SANITIZE=ON
+$ cmake --build build-asan && ctest --test-dir build-asan
+```
+
+Здесь глобальные `add_compile_options` уместны: санитайзер должен инструментировать **весь** код программы, иначе часть ошибок пройдёт незамеченной.
+
+## Защита выпускной сборки
+
+Санитайзеры — инструмент разработки: они замедляют программу и сами могут быть точкой атаки, поэтому в выпуск их не включают. Для выпуска есть лёгкие защитные флаги:
+
+- `-D_FORTIFY_SOURCE=2` (работает только с `-O1` и выше) — `memcpy`, `strcpy`, `sprintf` проверяют размер буфера, когда он известен компилятору, и аварийно завершают программу вместо переполнения;
+- `-fstack-protector-strong` — «канарейка» в кадре функции: перезапись буфера на стеке обнаруживается при возврате;
+- `assert` — проверки инвариантов в отладочных сборках; `-DNDEBUG` отключает их в выпуске.
+
+```c
+#include <assert.h>
+#include <stdio.h>
+
+int average(const int *values, int count) {
+    assert(count > 0);              // Код завершения: assert остановит программу
+    int sum = 0;
+    for (int i = 0; i < count; i++) {
+        sum += values[i];
+    }
+    return sum / count;
+}
+
+int main(void) {
+    int data[3] = {4, 5, 6};
+    printf("%d\n", average(data, 3));
+    printf("%d\n", average(data, 0));
+    return 0;
+}
+```
+
+```text
+5
+app: main.c:5: average: Assertion `count > 0' failed.
+Aborted (core dumped)
+```
+
+`assert` сообщает файл, строку, функцию и само условие. С `-DNDEBUG` проверка исчезнет из кода — поэтому внутри `assert` нельзя писать действия, нужные программе (`assert(fclose(f) == 0)` в выпуске просто не закроет файл).
+
+## Статический анализ
+
+Санитайзеры находят ошибки, которые **случились** при запуске. Статический анализатор ищет их в коде, ничего не запуская:
+
+```text
+$ gcc -fanalyzer -c parser.c
+$ clang --analyze parser.c
+$ clang-tidy parser.c -- -Iinclude
+```
+
+Анализатор проверяет пути выполнения, до которых тесты могли не добраться: утечку при раннем `return`, разыменование указателя, который может быть `NULL`, использование после `free`. Он бывает неточен и даёт ложные срабатывания, поэтому дополняет санитайзеры, а не заменяет их.
+
+<Concept title="Каждая проверка — своё время">
+
+Предупреждения компилятора работают при сборке, статический анализ — над всеми путями кода, санитайзеры — на тех путях, которые реально выполнили тесты, защитные флаги — у пользователя. Ни один слой не ловит всё, вместе они закрывают большинство ошибок памяти и UB. Хорошая практика — прогонять тесты в CI и в обычной, и в санитайзерной сборке.
+
+</Concept>
+
+## Частые ошибки
+
+<CommonMistake title="-fsanitize только при компиляции">
+
+Если флаг указан для `gcc -c`, но не для линковки, получите сотни `undefined reference to '__asan_report_load4'`. Передавайте `-fsanitize=…` и компилятору, и линковщику.
+
+</CommonMistake>
+
+<CommonMistake title="ASan и TSan в одной сборке">
+
+`-fsanitize=address,thread` не соберётся: компилятор сообщит о несовместимости. Держите отдельные каталоги сборки: `build-asan/`, `build-tsan/`.
+
+</CommonMistake>
+
+<CommonMistake title="Пропущенный runtime error">
+
+UBSan без `-fno-sanitize-recover` печатает сообщение и продолжает работу. Тест с правильным выводом пройдёт, а ошибка останется. Делайте ошибки санитайзеров фатальными.
+
+</CommonMistake>
+
+<TryIt title="Попробуйте сами">
+
+Соберите пример с `balance` на своём компьютере трижды: без флагов, с `-fsanitize=undefined` и с `-fsanitize=undefined -fno-sanitize-recover=all`. Сравните вывод и код завершения (`echo $?`).
+
+</TryIt>
+
+## Практика
+
+1. **Совместимость санитайзеров** — проверить, можно ли собрать программу с указанным набором.
+2. **Разбор отчёта UBSan** — классифицировать сообщения `runtime error`.
+3. **Найди ошибку: гистограмма** — исправить ошибку, которую находит AddressSanitizer.
+
+<CodingExercise />
+
+## Итоги
+
+- Проект держит несколько сборок: Debug для отладчика, ASan + UBSan для тестов, TSan для потоков, Release для пользователей.
+- ASan, TSan и MSan несовместимы между собой; UBSan сочетается с любым, LSan — только с ASan; MSan есть только в Clang.
+- `-fsanitize` нужен и при компиляции, и при линковке; `-fno-sanitize-recover=all` делает ошибки UBSan фатальными; поведение настраивается через `ASAN_OPTIONS` и `UBSAN_OPTIONS`.
+- Выпускную сборку защищают `-D_FORTIFY_SOURCE=2` и `-fstack-protector-strong`; `assert` работает до `-DNDEBUG`.
+- Статический анализ (`-fanalyzer`, `clang --analyze`, `clang-tidy`) ищет ошибки без запуска и дополняет санитайзеры.

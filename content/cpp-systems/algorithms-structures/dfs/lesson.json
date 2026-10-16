@@ -1,0 +1,127 @@
+{
+  "id": "algo-dfs",
+  "title": "Поиск в глубину — DFS",
+  "description": "DFS сначала углубляется в одного непосещённого соседа, затем возвращается к отложенным ветвям.",
+  "moduleId": "algorithms-structures",
+  "order": 28,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 60,
+  "prerequisites": ["algo-bfs"],
+  "objectives": [
+    "Объяснить инвариант: Идём по одной тропе до конца, сохраняя развилки, к которым надо вернуться.",
+    "Обосновать время: O(V+E) для полного обхода списков.",
+    "Оценить память и компромиссы: Удобен для структуры зависимостей и postorder, но не гарантирует кратчайший путь."
+  ],
+  "tags": ["алгоритмы", "C17", "Поиск в глубину — DFS", "структуры данных", "cache locality"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "algo-dfs-exercise",
+    "title": "Компоненты связности",
+    "description": "Ввод V (1…32), E (0…128), затем E пар вершин 0…V−1. Граф неориентированный, петли и повторные рёбра допускаются. Храните списки смежности в массиве дуг. Выведите число компонент связности, включая изолированные вершины. Используйте DFS с пометкой до входа к соседям.",
+    "difficulty": "intermediate",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "5 2 0 1 2 3",
+        "output": "3\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      },
+      {
+        "input": "4 0",
+        "output": "4\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Используйте C17 и диапазоны входа из условия.",
+      "Выводите только требуемый результат.",
+      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Идём по одной тропе до конца, сохраняя развилки, к которым надо вернуться."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Для ориентированного графа такой счётчик запусков не является алгоритмом сильных компонент."
+      },
+      {
+        "id": "hint-3",
+        "order": 3,
+        "text": "Рёбра 0–1 и 2–3 при пяти вершинах дают три запуска: компоненты {0,1}, {2,3}, {4}."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "5 2 0 1 2 3",
+        "expected": "3\n"
+      },
+      { "id": "case-2", "name": "Пример 2", "stdin": "4 0", "expected": "4\n" }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "stdin": "3 3 0 1 1 2 2 0",
+        "expected": "1\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "stdin": "2 2 0 0 0 0",
+        "expected": "2\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\nenum { MAX_VERTICES=32, MAX_ARCS=256 };\ntypedef struct { int to,next; } Edge;\ntypedef struct { int head[MAX_VERTICES],count; Edge edges[MAX_ARCS]; } Graph;\nstatic void init(Graph *g){for(int i=0;i<MAX_VERTICES;++i)g->head[i]=-1;g->count=0;}\nstatic int connect(Graph *g,int from,int to){\n    if(g->count==MAX_ARCS)return 0;\n    g->edges[g->count]=(Edge){to,g->head[from]};g->head[from]=g->count++;return 1;\n}\nstatic int read_graph(Graph *g,int *vertices){\n    int m;if(scanf(\"%d%d\",vertices,&m)!=2 || *vertices<1 || *vertices>32 || m<0 || m>128)return 0;\n    init(g);\n    for(int i=0;i<m;++i){int a,b;if(scanf(\"%d%d\",&a,&b)!=2 || a<0 || b<0 || a>=*vertices || b>=*vertices)return 0;\n        if(!connect(g,a,b) || !connect(g,b,a))return 0;\n    }return 1;\n}\nstatic void visit(const Graph *g,int v,int *seen){\n    seen[v]=1;\n    for(int e=g->head[v];e!=-1;e=g->edges[e].next){int to=g->edges[e].to;if(!seen[to])visit(g,to,seen);}\n}\nstatic int components(const Graph *g,int n){\n    int seen[MAX_VERTICES]={0},count=0;\n    for(int i=0;i<n;++i)if(!seen[i]){++count;visit(g,i,seen);}\n    return count;\n}\nint main(void) {\nGraph g;int n;if(!read_graph(&g,&n))return 1;printf(\"%d\\n\",components(&g,n));\nreturn 0;\n}\n",
+    "solutionExplanation": "Инвариант: Идём по одной тропе до конца, сохраняя развилки, к которым надо вернуться.\n\nРёбра 0–1 и 2–3 при пяти вершинах дают три запуска: компоненты {0,1}, {2,3}, {4}.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. Для ориентированного графа такой счётчик запусков не является алгоритмом сильных компонент.\n\nВремя: O(V+E) для полного обхода списков.\nПамять: O(V) visited и O(V) стек в худшем случае.\nКомпромисс: Удобен для структуры зависимостей и postorder, но не гарантирует кратчайший путь.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
+    "checking": { "type": "stdout", "comparison": "exact" }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "algo-dfs-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "invariant",
+        "question": "Достаточен ли один DFS для всех компонент?",
+        "options": [
+          "Нет, нужны запуски из оставшихся непосещённых вершин",
+          "Да, даже если между компонентами нет рёбер"
+        ],
+        "correct": 0,
+        "explanation": "Идём по одной тропе до конца, сохраняя развилки, к которым надо вернуться. Рёбра 0–1 и 2–3 при пяти вершинах дают три запуска: компоненты {0,1}, {2,3}, {4}."
+      },
+      {
+        "id": "complexity",
+        "question": "Какая оценка соответствует рассмотренной реализации?",
+        "options": [
+          "Всегда O(1), потому что все тесты ограничены по размеру.",
+          "O(V+E) для полного обхода списков."
+        ],
+        "correct": 1,
+        "explanation": "Удобен для структуры зависимостей и postorder, но не гарантирует кратчайший путь."
+      },
+      {
+        "id": "engineering",
+        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "options": [
+          "Для ориентированного графа такой счётчик запусков не является алгоритмом сильных компонент.",
+          "Совпадение Big O гарантирует одинаковое время на любой машине."
+        ],
+        "correct": 0,
+        "explanation": "Глубокий путь может переходить по разным участкам графа; предвыборка менее предсказуема, чем линейный массив. O(V) visited и O(V) стек в худшем случае."
+      }
+    ]
+  }
+}

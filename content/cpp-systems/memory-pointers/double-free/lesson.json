@@ -1,0 +1,530 @@
+{
+  "id": "memory-double-free",
+  "title": "Двойное освобождение",
+  "description": "Повторный free одного блока: последствия для распределителя памяти, два владельца как настоящая причина, отчёты ASan и Valgrind, глубокая копия, передача владения, обнуление после free.",
+  "moduleId": "memory-pointers",
+  "order": 19,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["memory-use-after-free"],
+  "objectives": [
+    "Объяснять последствия двойного освобождения и читать отчёт attempting double-free",
+    "Находить двух владельцев одного блока, в том числе после копирования структуры",
+    "Исправлять ошибку глубокой копией, передачей владения или заимствованием",
+    "Делать функции очистки безопасными для повторного вызова"
+  ],
+  "tags": ["C17", "Память", "Double free", "Владение", "Найди ошибку"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "memory-double-free-task-1",
+    "title": "Найди ошибку: копия записи",
+    "description": "Программа читает контакт (имя и телефон) и новый телефон. Она делает резервную копию контакта, затем меняет телефон в оригинале и печатает обе записи. Резервная копия должна сохранить **старый** телефон.\n\nПрограмма печатает мусор и падает. Исправьте создание резервной копии: напишите глубокое копирование.",
+    "difficulty": "intermediate",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Contact {\n    char *name;\n    char *phone;\n};\n\nchar *copy_text(const char *s) {\n    char *c = malloc(strlen(s) + 1);\n    if (c != NULL) {\n        strcpy(c, s);\n    }\n    return c;\n}\n\nvoid contact_free(struct Contact *c) {\n    free(c->name);\n    free(c->phone);\n}\n\nint main(void) {\n    char name[32], phone[32], updated[32];\n    if (scanf(\"%31s %31s %31s\", name, phone, updated) != 3) {\n        return 1;\n    }\n    struct Contact original = {copy_text(name), copy_text(phone)};\n    struct Contact backup = original;\n    free(original.phone);\n    original.phone = copy_text(updated);\n    printf(\"original: %s %s\\n\", original.name, original.phone);\n    printf(\"backup: %s %s\\n\", backup.name, backup.phone);\n    contact_free(&original);\n    contact_free(&backup);\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "anna 111 222\n",
+        "output": "original: anna 222\nbackup: anna 111\n"
+      },
+      {
+        "input": "bob +7-900 +7-901\n",
+        "output": "original: bob +7-901\nbackup: bob +7-900\n"
+      }
+    ],
+    "constraints": ["Имя и телефоны — до 31 символа без пробелов."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Какие поля у original и backup указывают на одни и те же блоки?",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Глубокая копия: struct Contact backup = {copy_text(original.name), copy_text(original.phone)}; — у каждой записи свои строки, и contact_free для обеих корректен.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "anna 111 222\n",
+        "expected": "original: anna 222\nbackup: anna 111\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "bob +7-900 +7-901\n",
+        "expected": "original: bob +7-901\nbackup: bob +7-900\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Тот же телефон",
+        "stdin": "x 1 1\n",
+        "expected": "original: x 1\nbackup: x 1\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Длинное имя",
+        "stdin": "abcdefghijklmnopqrstuvwxyz01234 0 9\n",
+        "expected": "original: abcdefghijklmnopqrstuvwxyz01234 9\nbackup: abcdefghijklmnopqrstuvwxyz01234 0\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Длинный старый телефон",
+        "stdin": "cid 1234567890123456789012345678901 5\n",
+        "expected": "original: cid 5\nbackup: cid 1234567890123456789012345678901\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Длинный новый телефон",
+        "stdin": "dan 5 1234567890123456789012345678901\n",
+        "expected": "original: dan 1234567890123456789012345678901\nbackup: dan 5\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Нули и девятки",
+        "stdin": "eve 000 999\n",
+        "expected": "original: eve 999\nbackup: eve 000\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Однобуквенные",
+        "stdin": "f a b\n",
+        "expected": "original: f b\nbackup: f a\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "С дефисами",
+        "stdin": "george 555-1234 555-4321\n",
+        "expected": "original: george 555-4321\nbackup: george 555-1234\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Переставленные цифры",
+        "stdin": "h 12 21\n",
+        "expected": "original: h 21\nbackup: h 12\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Contact {\n    char *name;\n    char *phone;\n};\n\nchar *copy_text(const char *s) {\n    char *c = malloc(strlen(s) + 1);\n    if (c != NULL) {\n        strcpy(c, s);\n    }\n    return c;\n}\n\nvoid contact_free(struct Contact *c) {\n    free(c->name);\n    free(c->phone);\n}\n\nint main(void) {\n    char name[32], phone[32], updated[32];\n    if (scanf(\"%31s %31s %31s\", name, phone, updated) != 3) {\n        return 1;\n    }\n    struct Contact original = {copy_text(name), copy_text(phone)};\n    struct Contact backup = {copy_text(original.name), copy_text(original.phone)};\n    free(original.phone);\n    original.phone = copy_text(updated);\n    printf(\"original: %s %s\\n\", original.name, original.phone);\n    printf(\"backup: %s %s\\n\", backup.name, backup.phone);\n    contact_free(&original);\n    contact_free(&backup);\n    return 0;\n}\n",
+    "solutionExplanation": "`struct Contact backup = original;` копирует два адреса, и записи начинают делить строки. Замена телефона освобождает общий блок — у резервной копии остаётся висячий `phone` (use-after-free при печати), а в конце обе записи освобождают одно и то же имя (double free).\n\nГлубокая копия создаёт новые строки для резервной записи. Теперь у каждого блока ровно один владелец, и `contact_free` для обеих записей освобождает разные блоки.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "memory-double-free-task-2",
+      "title": "Найди ошибку: функция забирает владение",
+      "description": "Функция `log_and_release` по документации **забирает владение** сообщением: печатает его и освобождает. Программа читает `q` слов, создаёт для каждого сообщение `#номер слово` в куче, передаёт его в журнал, а затем печатает длину сообщения. Программа аварийно завершается.\n\nИсправьте `main`, не меняя `log_and_release`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n// Печатает сообщение и забирает владение им: освобождает строку.\nvoid log_and_release(char *message) {\n    printf(\"[log] %s\\n\", message);\n    free(message);\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 1; i <= q; i++) {\n        char word[32];\n        scanf(\"%31s\", word);\n        char *message = malloc(48);\n        if (message == NULL) {\n            return 1;\n        }\n        snprintf(message, 48, \"#%d %s\", i, word);\n        log_and_release(message);\n        printf(\"length=%zu\\n\", strlen(message));\n        free(message);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\nhello world\n",
+          "output": "[log] #1 hello\nlength=8\n[log] #2 world\nlength=8\n"
+        },
+        {
+          "input": "1\nx\n",
+          "output": "[log] #1 x\nlength=4\n"
+        }
+      ],
+      "constraints": ["1 ≤ q ≤ 20.", "Слова — до 31 символа."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Кто освобождает message после вызова log_and_release? Сколько раз?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Длину вычислите до передачи владения: size_t length = strlen(message); — и уберите обращения к message после вызова.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\nhello world\n",
+          "expected": "[log] #1 hello\nlength=8\n[log] #2 world\nlength=8\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nx\n",
+          "expected": "[log] #1 x\nlength=4\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Длинное слово",
+          "stdin": "1\nabcdefghijklmnopqrstuvwxyz01234\n",
+          "expected": "[log] #1 abcdefghijklmnopqrstuvwxyz01234\nlength=34\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Разная длина",
+          "stdin": "3\na bb ccc\n",
+          "expected": "[log] #1 a\nlength=4\n[log] #2 bb\nlength=5\n[log] #3 ccc\nlength=6\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Двузначные номера",
+          "stdin": "12\nw0 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11\n",
+          "expected": "[log] #1 w0\nlength=5\n[log] #2 w1\nlength=5\n[log] #3 w2\nlength=5\n[log] #4 w3\nlength=5\n[log] #5 w4\nlength=5\n[log] #6 w5\nlength=5\n[log] #7 w6\nlength=5\n[log] #8 w7\nlength=5\n[log] #9 w8\nlength=5\n[log] #10 w9\nlength=6\n[log] #11 w10\nlength=7\n[log] #12 w11\nlength=7\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Одинаковые слова",
+          "stdin": "2\nsame same\n",
+          "expected": "[log] #1 same\nlength=7\n[log] #2 same\nlength=7\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Число как слово",
+          "stdin": "1\n42\n",
+          "expected": "[log] #1 42\nlength=5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Двадцать сообщений",
+          "stdin": "20\nz z z z z z z z z z z z z z z z z z z z\n",
+          "expected": "[log] #1 z\nlength=4\n[log] #2 z\nlength=4\n[log] #3 z\nlength=4\n[log] #4 z\nlength=4\n[log] #5 z\nlength=4\n[log] #6 z\nlength=4\n[log] #7 z\nlength=4\n[log] #8 z\nlength=4\n[log] #9 z\nlength=4\n[log] #10 z\nlength=5\n[log] #11 z\nlength=5\n[log] #12 z\nlength=5\n[log] #13 z\nlength=5\n[log] #14 z\nlength=5\n[log] #15 z\nlength=5\n[log] #16 z\nlength=5\n[log] #17 z\nlength=5\n[log] #18 z\nlength=5\n[log] #19 z\nlength=5\n[log] #20 z\nlength=5\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Два слова",
+          "stdin": "2\nup down\n",
+          "expected": "[log] #1 up\nlength=5\n[log] #2 down\nlength=7\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Спецсимволы",
+          "stdin": "3\nC++ C# C\n",
+          "expected": "[log] #1 C++\nlength=6\n[log] #2 C#\nlength=5\n[log] #3 C\nlength=4\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n// Печатает сообщение и забирает владение им: освобождает строку.\nvoid log_and_release(char *message) {\n    printf(\"[log] %s\\n\", message);\n    free(message);\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 1; i <= q; i++) {\n        char word[32];\n        scanf(\"%31s\", word);\n        char *message = malloc(48);\n        if (message == NULL) {\n            return 1;\n        }\n        snprintf(message, 48, \"#%d %s\", i, word);\n        size_t length = strlen(message);\n        log_and_release(message);\n        printf(\"length=%zu\\n\", length);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "После `log_and_release(message)` строка принадлежит журналу, и тот её уже освободил. В исходном `main` две ошибки сразу: `strlen(message)` — use-after-free, а `free(message)` — двойное освобождение.\n\nПередача владения — одностороннее действие: после него вызывающий код не трогает объект вовсе. Всё, что нужно от объекта, берётся **до** передачи.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-double-free-task-3",
+      "title": "Найди ошибку: повторная очистка",
+      "description": "Буфер чисел обрабатывает команды: `fill k` (заменить содержимое числами 1…k), `sum` (напечатать сумму) и `reset` (очистить). В конце программа ещё раз очищает буфер. Если команда `reset` встречается хотя бы раз, программа падает.\n\nИсправьте `buffer_reset` так, чтобы её можно было вызывать сколько угодно раз.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Buffer {\n    int *data;\n    size_t count;\n};\n\nvoid buffer_reset(struct Buffer *b) {\n    free(b->data);\n}\n\nint main(void) {\n    struct Buffer b = {NULL, 0};\n    char cmd[8];\n    while (scanf(\"%7s\", cmd) == 1) {\n        if (strcmp(cmd, \"fill\") == 0) {\n            size_t k;\n            scanf(\"%zu\", &k);\n            buffer_reset(&b);\n            b.data = malloc(k * sizeof *b.data);\n            if (b.data == NULL) {\n                return 1;\n            }\n            for (size_t i = 0; i < k; i++) {\n                b.data[i] = (int)i + 1;\n            }\n            b.count = k;\n        } else if (strcmp(cmd, \"sum\") == 0) {\n            long long sum = 0;\n            for (size_t i = 0; i < b.count; i++) {\n                sum += b.data[i];\n            }\n            printf(\"%lld\\n\", sum);\n        } else {\n            buffer_reset(&b);\n        }\n    }\n    buffer_reset(&b);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "fill 3\nsum\nreset\nsum\n",
+          "output": "6\n0\n"
+        },
+        {
+          "input": "fill 4\nfill 2\nsum\n",
+          "output": "3\n"
+        }
+      ],
+      "constraints": ["Команд — до 50.", "1 ≤ k ≤ 10 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что лежит в b.data после первого buffer_reset? Что сделает следующий вызов?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "После free(b->data) запишите b->data = NULL; b->count = 0; — повторный free(NULL) безопасен, а sum увидит пустой буфер.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "fill 3\nsum\nreset\nsum\n",
+          "expected": "6\n0\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "fill 4\nfill 2\nsum\n",
+          "expected": "3\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Очистка пустого",
+          "stdin": "reset\nreset\nsum\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Очистка в конце",
+          "stdin": "fill 1\nreset\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-3",
+          "name": "Большой буфер",
+          "stdin": "fill 10000\nsum\n",
+          "expected": "50005000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Сумма пустого",
+          "stdin": "sum\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Несколько очисток",
+          "stdin": "fill 5\nreset\nfill 5\nsum\nreset\nreset\n",
+          "expected": "15\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Перезаполнение",
+          "stdin": "fill 2\nsum\nfill 3\nsum\nfill 4\nsum\n",
+          "expected": "3\n6\n10\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Сумма после очистки",
+          "stdin": "fill 100\nreset\nsum\nfill 100\nsum\n",
+          "expected": "0\n5050\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Без печати",
+          "stdin": "fill 7\n",
+          "expected": ""
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Buffer {\n    int *data;\n    size_t count;\n};\n\nvoid buffer_reset(struct Buffer *b) {\n    free(b->data);\n    b->data = NULL;\n    b->count = 0;\n}\n\nint main(void) {\n    struct Buffer b = {NULL, 0};\n    char cmd[8];\n    while (scanf(\"%7s\", cmd) == 1) {\n        if (strcmp(cmd, \"fill\") == 0) {\n            size_t k;\n            scanf(\"%zu\", &k);\n            buffer_reset(&b);\n            b.data = malloc(k * sizeof *b.data);\n            if (b.data == NULL) {\n                return 1;\n            }\n            for (size_t i = 0; i < k; i++) {\n                b.data[i] = (int)i + 1;\n            }\n            b.count = k;\n        } else if (strcmp(cmd, \"sum\") == 0) {\n            long long sum = 0;\n            for (size_t i = 0; i < b.count; i++) {\n                sum += b.data[i];\n            }\n            printf(\"%lld\\n\", sum);\n        } else {\n            buffer_reset(&b);\n        }\n    }\n    buffer_reset(&b);\n    return 0;\n}\n",
+      "solutionExplanation": "Исходная `buffer_reset` освобождает блок, но оставляет в структуре и висячий указатель, и старый счётчик. Следующий вызов (`fill`, `reset` или финальная очистка) освобождает тот же блок повторно, а `sum` после `reset` читает освобождённую память.\n\nФункция очистки должна оставлять объект в **корректном пустом состоянии**: `data = NULL`, `count = 0`. Тогда повторная очистка — это `free(NULL)`, а любые операции над пустым буфером работают как над пустым.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-double-free-task-4",
+      "title": "Передача владения",
+      "description": "Есть два списка строк — `inbox` и `archive` (до 50 строк каждый). Команды до конца ввода:\n- `add w` — добавить копию слова в конец `inbox`;\n- `move i` — **переместить** строку `inbox[i]` в конец `archive` (без копирования символов: переходит указатель вместе с владением); если индекса нет — напечатать `bad index`;\n- `print` — напечатать `inbox: …` и `archive: …` (слова через пробел).\n\nВ конце освободите все строки обоих списков — каждую ровно один раз.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "add a\nadd b\nadd c\nmove 1\nprint\n",
+          "output": "inbox: a c\narchive: b\n"
+        },
+        {
+          "input": "move 0\nprint\n",
+          "output": "bad index\ninbox:\narchive:\n"
+        }
+      ],
+      "constraints": ["Команд — до 100.", "Слова — до 31 символа.", "В inbox не больше 50 строк."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Перемещение: archive[archive_count++] = inbox[i]; затем удалите элемент из inbox сдвигом memmove — у строки остаётся один владелец.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Не вызывайте free при перемещении и не копируйте строку: блок тот же, меняется только список-владелец.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Пустой список печатайте как \"inbox:\" без пробела в конце — удобно печатать \" %s\" перед каждым словом.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add a\nadd b\nadd c\nmove 1\nprint\n",
+          "expected": "inbox: a c\narchive: b\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "move 0\nprint\n",
+          "expected": "bad index\ninbox:\narchive:\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Переместить единственную",
+          "stdin": "add x\nmove 0\nprint\n",
+          "expected": "inbox:\narchive: x\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Переместить всё",
+          "stdin": "add a\nadd b\nmove 0\nmove 0\nprint\n",
+          "expected": "inbox:\narchive: a b\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Неверные индексы",
+          "stdin": "add a\nmove 1\nmove -1\nprint\n",
+          "expected": "bad index\nbad index\ninbox: a\narchive:\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "С конца и с начала",
+          "stdin": "add a\nadd b\nadd c\nmove 2\nmove 0\nprint\n",
+          "expected": "inbox: b\narchive: c a\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Без перемещений",
+          "stdin": "add one\nadd two\nprint\n",
+          "expected": "inbox: one two\narchive:\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Пятьдесят строк",
+          "stdin": "add w0\nadd w1\nadd w2\nadd w3\nadd w4\nadd w5\nadd w6\nadd w7\nadd w8\nadd w9\nadd w10\nadd w11\nadd w12\nadd w13\nadd w14\nadd w15\nadd w16\nadd w17\nadd w18\nadd w19\nadd w20\nadd w21\nadd w22\nadd w23\nadd w24\nadd w25\nadd w26\nadd w27\nadd w28\nadd w29\nadd w30\nadd w31\nadd w32\nadd w33\nadd w34\nadd w35\nadd w36\nadd w37\nadd w38\nadd w39\nadd w40\nadd w41\nadd w42\nadd w43\nadd w44\nadd w45\nadd w46\nadd w47\nadd w48\nadd w49\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nmove 0\nprint\n",
+          "expected": "inbox: w25 w26 w27 w28 w29 w30 w31 w32 w33 w34 w35 w36 w37 w38 w39 w40 w41 w42 w43 w44 w45 w46 w47 w48 w49\narchive: w0 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15 w16 w17 w18 w19 w20 w21 w22 w23 w24\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Одинаковые слова",
+          "stdin": "add same\nadd same\nmove 1\nprint\n",
+          "expected": "inbox: same\narchive: same\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Длинное слово",
+          "stdin": "print\nadd abcdefghijklmnopqrstuvwxyz01234\nmove 0\nprint\n",
+          "expected": "inbox:\narchive:\ninbox:\narchive: abcdefghijklmnopqrstuvwxyz01234\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nvoid print_list(const char *title, char **items, int count) {\n    printf(\"%s:\", title);\n    for (int i = 0; i < count; i++) {\n        printf(\" %s\", items[i]);\n    }\n    printf(\"\\n\");\n}\n\nint main(void) {\n    char *inbox[50], *archive[50];\n    int inbox_count = 0, archive_count = 0;\n    char cmd[8];\n    while (scanf(\"%7s\", cmd) == 1) {\n        if (strcmp(cmd, \"add\") == 0) {\n            char word[32];\n            scanf(\"%31s\", word);\n            char *copy = malloc(strlen(word) + 1);\n            if (copy == NULL) {\n                break;\n            }\n            strcpy(copy, word);\n            inbox[inbox_count++] = copy;\n        } else if (strcmp(cmd, \"move\") == 0) {\n            int i;\n            scanf(\"%d\", &i);\n            if (i < 0 || i >= inbox_count) {\n                printf(\"bad index\\n\");\n                continue;\n            }\n            archive[archive_count++] = inbox[i];\n            memmove(&inbox[i], &inbox[i + 1], (size_t)(inbox_count - i - 1) * sizeof inbox[0]);\n            inbox_count--;\n        } else {\n            print_list(\"inbox\", inbox, inbox_count);\n            print_list(\"archive\", archive, archive_count);\n        }\n    }\n    for (int i = 0; i < inbox_count; i++) {\n        free(inbox[i]);\n    }\n    for (int i = 0; i < archive_count; i++) {\n        free(archive[i]);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Перемещение передаёт владение: указатель записывается в `archive` и **убирается** из `inbox` сдвигом. В каждый момент адрес строки хранится ровно в одном списке, поэтому финальная очистка двух списков освобождает каждую строку один раз.\n\nЕсли бы `move` только копировала указатель, не удаляя его из `inbox`, строка оказалась бы у двух владельцев, и очистка освободила бы её дважды. Если бы `move` копировала символы, пришлось бы освобождать оригинал — лишняя работа. Передача указателя — самый дешёвый и при этом безопасный вариант.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "memory-double-free-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Сколько раз будет освобождён блок строки в этом коде?",
+        "code": "struct Item { char *title; };\nstruct Item a = {malloc(10)};\nstruct Item b = a;\nstruct Item c = b;\nfree(a.title);\nfree(b.title);\nfree(c.title);",
+        "codeLanguage": "c",
+        "explanation": "Все три структуры хранят один адрес. Второй и третий free — двойное освобождение.",
+        "type": "text",
+        "answers": ["3"],
+        "placeholder": "Число освобождений"
+      },
+      {
+        "id": "q2",
+        "question": "Какие исправления убирают двойное освобождение после struct Config backup = original; ? Выберите все.",
+        "explanation": "Глубокая копия, передача владения и заимствование — три способа сделать владельца единственным.",
+        "type": "multiple",
+        "options": [
+          "Сделать глубокую копию: backup.path = копия строки original.path",
+          "После копирования записать original.path = NULL и освобождать только backup",
+          "Не освобождать backup.path, если backup лишь заимствует строку",
+          "Вызвать free(backup.path) дважды"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    int frees = 0;\n    char *p = malloc(8);\n    for (int i = 0; i < 3; i++) {\n        free(p);\n        p = NULL;\n        frees++;\n    }\n    printf(\"%d %d\\n\", frees, p == NULL);\n    return 0;\n}",
+        "explanation": "Первый free освобождает блок, затем p = NULL, и два следующих вызова — это безопасный free(NULL).",
+        "type": "text",
+        "answers": ["3 1"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Блок увеличен так: int *bigger = realloc(old, n); и bigger != NULL. Что нужно освобождать в конце?",
+        "explanation": "Если блок переехал, realloc уже освободила old. Если остался на месте, bigger == old. В обоих случаях освобождается только bigger.",
+        "options": [
+          "Только bigger",
+          "old и bigger",
+          "Только old",
+          "Ничего — realloc освобождает сам"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какое сообщение обычно выдаёт glibc при двойном освобождении без санитайзеров?",
+        "explanation": "Проверка в glibc ловит только простые случаи. Многие двойные освобождения проходят незаметно и портят кучу.",
+        "options": [
+          "free(): double free detected in tcache 2, затем аварийное завершение",
+          "Предупреждение компилятора",
+          "Ничего — программа продолжает работу корректно",
+          "Segmentation fault при компиляции"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Почему двойное освобождение — уязвимость безопасности?",
+        "explanation": "Распределитель хранит списки свободных блоков; дважды добавленный блок выдаётся дважды.",
+        "options": [
+          "Испорченная куча может выдать один блок двум владельцам, и злоумышленник перезапишет чужие данные",
+          "free печатает адреса в консоль",
+          "Двойной free удаляет файл программы",
+          "Это не уязвимость, а только утечка"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Функция void consume(char *s) по документации забирает владение строкой. Что верно? Выберите все.",
+        "explanation": "Передача владения означает, что освобождает получатель. Литерал нельзя освобождать, поэтому передавать его в consume нельзя.",
+        "type": "multiple",
+        "options": [
+          "После вызова consume(s) вызывающий код не должен освобождать s",
+          "После вызова consume(s) вызывающий код не должен обращаться к s",
+          "Вызывающий код обязан вызвать free(s) после consume",
+          "consume можно передать строковый литерал"
+        ],
+        "correct": [0, 1]
+      }
+    ]
+  }
+}

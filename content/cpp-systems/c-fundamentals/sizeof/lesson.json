@@ -1,0 +1,476 @@
+{
+  "id": "c17-sizeof",
+  "title": "sizeof и размер данных",
+  "description": "Оператор sizeof, тип size_t и спецификатор %zu, гарантии стандарта о размерах, число элементов массива и оценка памяти.",
+  "moduleId": "c-fundamentals",
+  "order": 9,
+  "difficulty": "beginner",
+  "estimatedMinutes": 30,
+  "prerequisites": ["c17-signed-unsigned"],
+  "objectives": [
+    "Определять размер типов и переменных оператором sizeof",
+    "Хранить и печатать размеры в size_t через %zu",
+    "Рассчитывать объём памяти для набора элементов",
+    "Объяснять, почему в коде пишут sizeof(тип), а не число"
+  ],
+  "tags": ["C17", "sizeof", "size_t", "Память"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-sizeof-task-1",
+    "title": "Сколько памяти",
+    "description": "Прочитайте количество элементов `n` и напечатайте через пробел, сколько байт займут `n` значений типа `int`, `double` и `char`. Используйте `sizeof`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "10",
+        "output": "40 80 10\n"
+      },
+      {
+        "input": "0",
+        "output": "0 0 0\n"
+      }
+    ],
+    "constraints": ["0 ≤ n ≤ 1 000 000 000."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "n · 8 может быть до 8 · 10⁹ — больше int. Храните n и результаты в size_t.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Чтение size_t: проще прочитать long long через %lld и привести к size_t. Печать — %zu.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "10",
+        "expected": "40 80 10\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "0",
+        "expected": "0 0 0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "1",
+        "expected": "4 8 1\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "1000000000",
+        "expected": "4000000000 8000000000 1000000000\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "1000000",
+        "expected": "4000000 8000000 1000000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "7",
+        "expected": "28 56 7\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "123456789",
+        "expected": "493827156 987654312 123456789\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "2",
+        "expected": "8 16 2\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "999999999",
+        "expected": "3999999996 7999999992 999999999\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long input;\n    scanf(\"%lld\", &input);\n    size_t n = (size_t)input;\n    printf(\"%zu %zu %zu\\n\", n * sizeof(int), n * sizeof(double), n * sizeof(char));\n    return 0;\n}\n",
+    "solutionExplanation": "Произведение `n * sizeof(...)` имеет тип `size_t`: оба операнда беззнаковые 64-битные, переполнения при `n ≤ 10⁹` нет.\n\nДля `size_t` в `scanf` тоже есть спецификатор `%zu`, но читать через `long long` надёжнее для начинающих: так при ошибочном отрицательном вводе значение можно проверить до приведения.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-sizeof-task-2",
+      "title": "Сколько поместится",
+      "description": "Есть буфер из `b` байт. Напечатайте через пробел, сколько **целых** значений типа `int`, `long long` и `double` в нём поместится.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "10",
+          "output": "2 1 1\n"
+        },
+        {
+          "input": "64",
+          "output": "16 8 8\n"
+        }
+      ],
+      "constraints": ["0 ≤ b ≤ 10¹²."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Количество — целая часть от деления размера буфера на размер элемента.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "b может быть больше INT_MAX — используйте size_t или long long.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "10",
+          "expected": "2 1 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "64",
+          "expected": "16 8 8\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0",
+          "expected": "0 0 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "3",
+          "expected": "0 0 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "7",
+          "expected": "1 0 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1000000000000",
+          "expected": "250000000000 125000000000 125000000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "4096",
+          "expected": "1024 512 512\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "999",
+          "expected": "249 124 124\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long input;\n    scanf(\"%lld\", &input);\n    size_t bytes = (size_t)input;\n    printf(\"%zu %zu %zu\\n\", bytes / sizeof(int), bytes / sizeof(long long),\n           bytes / sizeof(double));\n    return 0;\n}\n",
+      "solutionExplanation": "Деление `size_t` на `size_t` — целочисленное, поэтому неполный элемент в конце буфера отбрасывается: в 10 байт помещаются два `int` (8 байт), третий уже не влезает.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-sizeof-task-3",
+      "title": "Страницы памяти",
+      "description": "Операционная система выделяет память страницами по 4096 байт. Сколько страниц нужно, чтобы хранить `n` значений типа `double`?\n\nНеполная страница всё равно занимается целиком.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "512",
+          "output": "1\n"
+        },
+        {
+          "input": "513",
+          "output": "2\n"
+        }
+      ],
+      "constraints": ["0 ≤ n ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сначала найдите число байт: n * sizeof(double).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Округление вверх при делении: (bytes + 4096 - 1) / 4096.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "512",
+          "expected": "1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "513",
+          "expected": "2\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1024",
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1025",
+          "expected": "3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1000000000",
+          "expected": "1953125\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "100000",
+          "expected": "196\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long input;\n    scanf(\"%lld\", &input);\n    size_t bytes = (size_t)input * sizeof(double);\n    size_t page = 4096;\n    size_t pages = (bytes + page - 1) / page;\n    printf(\"%zu\\n\", pages);\n    return 0;\n}\n",
+      "solutionExplanation": "Задача сочетает два приёма: расчёт размера через `sizeof` и деление с округлением вверх из урока «Арифметика». Для `n = 0` страниц не нужно, и формула даёт `(0 + 4095) / 4096 = 0`.\n\n512 значений `double` занимают ровно 4096 байт — одна страница; 513-е значение требует второй.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-sizeof-task-4",
+      "title": "Размер изображения",
+      "description": "Изображение имеет ширину `w`, высоту `h` и `c` цветовых каналов; каждый канал пикселя хранится в одном байте типа `uint8_t`. Напечатайте размер изображения в байтах и в мебибайтах (1 МиБ = 1024 · 1024 байт) с двумя знаками после точки:\n\n```text\n6220800 5.93\n```",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "1920 1080 3",
+          "output": "6220800 5.93\n"
+        },
+        {
+          "input": "1 1 1",
+          "output": "1 0.00\n"
+        }
+      ],
+      "constraints": ["1 ≤ w, h ≤ 100 000, 1 ≤ c ≤ 4."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Байты: w * h * c * sizeof(uint8_t). Произведение может быть до 4 · 10¹⁰ — используйте size_t.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Мебибайты: bytes / (1024.0 * 1024.0) — делитель дробный, деление дробное.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1920 1080 3",
+          "expected": "6220800 5.93\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 1 1",
+          "expected": "1 0.00\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "100000 100000 4",
+          "expected": "40000000000 38146.97\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1024 1024 1",
+          "expected": "1048576 1.00\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "640 480 4",
+          "expected": "1228800 1.17\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "3840 2160 3",
+          "expected": "24883200 23.73\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "7 3 2",
+          "expected": "42 0.00\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "100000 1 1",
+          "expected": "100000 0.10\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "1 100000 4",
+          "expected": "400000 0.38\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "1023 1025 3",
+          "expected": "3145725 3.00\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdint.h>\n\nint main(void) {\n    long long w, h, c;\n    scanf(\"%lld %lld %lld\", &w, &h, &c);\n    size_t bytes = (size_t)w * (size_t)h * (size_t)c * sizeof(uint8_t);\n    printf(\"%zu %.2f\\n\", bytes, bytes / (1024.0 * 1024.0));\n    return 0;\n}\n",
+      "solutionExplanation": "`sizeof(uint8_t)` равен 1, и умножение на него кажется лишним. Но оно документирует расчёт: если формат перейдёт на 16-битные каналы (`uint16_t`), формула останется верной после замены типа.\n\nДеление на `1024.0 * 1024.0` дробное, потому что делитель — `double`. Деление на целое `1024 * 1024` отбросило бы дробную часть.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-sizeof-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Чему всегда равен sizeof(char) по стандарту C?",
+        "explanation": "Байт в C по определению — размер char, поэтому sizeof(char) всегда 1.",
+        "options": ["1", "2", "8", "Зависит от компьютера"],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа на сервере проверки?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int a = 5;\n    double b = 2.0;\n    printf(\"%zu\\n\", sizeof(a + b));\n    return 0;\n}",
+        "explanation": "a + b имеет тип double (один операнд дробный), а double занимает 8 байт.",
+        "type": "text",
+        "answers": ["8"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int n = 10;\n    size_t s = sizeof(n++);\n    printf(\"%d %zu\\n\", n, s);\n    return 0;\n}",
+        "explanation": "sizeof не вычисляет выражение, поэтому n++ не выполняется и n остаётся 10. Размер int — 4.",
+        "type": "text",
+        "answers": ["10 4"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Какой спецификатор printf предназначен для size_t?",
+        "explanation": "%zu — для size_t. Другие спецификаторы могут не совпасть по размеру и знаковости.",
+        "options": ["%d", "%u", "%zu", "%lld"],
+        "correct": 2
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    double values[] = {1.5, 2.5, 3.5, 4.5, 5.5};\n    printf(\"%zu\\n\", sizeof(values) / sizeof(values[0]));\n    return 0;\n}",
+        "explanation": "Массив занимает 5 · 8 = 40 байт, один элемент — 8. 40 / 8 = 5 элементов.",
+        "type": "text",
+        "answers": ["5"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Какие утверждения гарантирует стандарт C? Выберите все.",
+        "explanation": "Стандарт задаёт только минимумы и соотношения. int равен 4 байтам на большинстве систем, но не по стандарту; long бывает и 4, и 8 байт.",
+        "type": "multiple",
+        "options": [
+          "sizeof(char) == 1",
+          "sizeof(int) == 4",
+          "sizeof(int) <= sizeof(long long)",
+          "sizeof(long) == 8"
+        ],
+        "correct": [0, 2]
+      },
+      {
+        "id": "q7",
+        "question": "Почему count * sizeof(price) лучше, чем count * 8, для переменной double price?",
+        "explanation": "sizeof вычисляется компилятором из настоящего типа, а «магическое число» 8 придётся менять вручную.",
+        "options": [
+          "Расчёт останется верным, если тип price изменится или программа окажется на другой платформе",
+          "Так программа работает быстрее",
+          "Число 8 запрещено в C",
+          "Разницы нет"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

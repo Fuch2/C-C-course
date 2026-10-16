@@ -1,0 +1,535 @@
+{
+  "id": "memory-debugging-memory",
+  "title": "Практикум: отладка ошибок памяти",
+  "description": "Итоговый практикум модуля: симптомы ошибок памяти и их причины, метод отладки из семи шагов, assert и отладочный вывод, правила кода без ошибок памяти и задачи с несколькими ошибками.",
+  "moduleId": "memory-pointers",
+  "order": 28,
+  "difficulty": "advanced",
+  "estimatedMinutes": 70,
+  "prerequisites": ["memory-valgrind"],
+  "objectives": [
+    "Сопоставлять симптомы с вероятными причинами ошибок памяти",
+    "Применять метод отладки: воспроизведение, инструмент, отчёт, причина, исправление, тест",
+    "Использовать assert для проверки инвариантов",
+    "Писать и исправлять программы с динамическими строками и структурами без ошибок памяти"
+  ],
+  "tags": ["C17", "Память", "Отладка", "Практикум", "Найди ошибку"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "memory-debugging-memory-task-1",
+    "title": "Найди ошибку: телефонная книга",
+    "description": "Телефонная книга обрабатывает команды `add имя телефон`, `del имя` (печатает `deleted` или `not found`) и `list` (печатает записи или `empty`). В программе **две** ошибки памяти. Исправьте обе, действуя по методу: первый отчёт — причина — исправление — повторная проверка.",
+    "difficulty": "advanced",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Contact {\n    char *name;\n    char *phone;\n};\n\nchar *copy_text(const char *s) {\n    char *c = malloc(strlen(s));\n    if (c != NULL) {\n        strcpy(c, s);\n    }\n    return c;\n}\n\nint main(void) {\n    struct Contact book[50];\n    int count = 0;\n    char cmd[8];\n    while (scanf(\"%7s\", cmd) == 1) {\n        if (strcmp(cmd, \"add\") == 0) {\n            char name[32], phone[32];\n            scanf(\"%31s %31s\", name, phone);\n            if (count == 50) {\n                continue;\n            }\n            book[count].name = copy_text(name);\n            book[count].phone = copy_text(phone);\n            count++;\n        } else if (strcmp(cmd, \"del\") == 0) {\n            char name[32];\n            scanf(\"%31s\", name);\n            int found = -1;\n            for (int i = 0; i < count; i++) {\n                if (strcmp(book[i].name, name) == 0) {\n                    found = i;\n                    break;\n                }\n            }\n            if (found < 0) {\n                printf(\"not found\\n\");\n                continue;\n            }\n            free(book[found].name);\n            memmove(&book[found], &book[found + 1], (size_t)(count - found - 1) * sizeof book[0]);\n            count--;\n            printf(\"deleted\\n\");\n        } else {\n            if (count == 0) {\n                printf(\"empty\\n\");\n            }\n            for (int i = 0; i < count; i++) {\n                printf(\"%s %s\\n\", book[i].name, book[i].phone);\n            }\n        }\n    }\n    for (int i = 0; i < count; i++) {\n        free(book[i].name);\n        free(book[i].phone);\n    }\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "add ann 111\nadd bob 222\nlist\n",
+        "output": "ann 111\nbob 222\n"
+      },
+      {
+        "input": "add ann 111\ndel ann\nlist\ndel ann\n",
+        "output": "deleted\nempty\nnot found\n"
+      }
+    ],
+    "constraints": ["Команд — до 100.", "Имена и телефоны — до 31 символа."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Первая ошибка: сколько байтов выделяет copy_text и сколько записывает strcpy?",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Вторая ошибка: что освобождается при удалении записи, а что теряется после memmove?",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "add ann 111\nadd bob 222\nlist\n",
+        "expected": "ann 111\nbob 222\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "add ann 111\ndel ann\nlist\ndel ann\n",
+        "expected": "deleted\nempty\nnot found\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Пустая книга",
+        "stdin": "list\n",
+        "expected": "empty\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Удаление из середины",
+        "stdin": "add a 1\nadd b 2\nadd c 3\ndel b\nlist\n",
+        "expected": "deleted\na 1\nc 3\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Удалить всё",
+        "stdin": "add a 1\nadd b 2\ndel a\ndel b\nlist\n",
+        "expected": "deleted\ndeleted\nempty\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Длинное имя",
+        "stdin": "add abcdefghijklmnopqrstuvwxyz01234 +7-900-000-00-00\nlist\n",
+        "expected": "abcdefghijklmnopqrstuvwxyz01234 +7-900-000-00-00\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Одинаковые имена",
+        "stdin": "add x 1\nadd x 2\ndel x\nlist\n",
+        "expected": "deleted\nx 2\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Удаление отсутствующего",
+        "stdin": "del ghost\nadd z 9\nlist\n",
+        "expected": "not found\nz 9\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Тридцать записей",
+        "stdin": "add n0 0\nadd n1 1\nadd n2 2\nadd n3 3\nadd n4 4\nadd n5 5\nadd n6 6\nadd n7 7\nadd n8 8\nadd n9 9\nadd n10 10\nadd n11 11\nadd n12 12\nadd n13 13\nadd n14 14\nadd n15 15\nadd n16 16\nadd n17 17\nadd n18 18\nadd n19 19\nadd n20 20\nadd n21 21\nadd n22 22\nadd n23 23\nadd n24 24\nadd n25 25\nadd n26 26\nadd n27 27\nadd n28 28\nadd n29 29\ndel n0\ndel n2\ndel n4\ndel n6\ndel n8\ndel n10\ndel n12\ndel n14\ndel n16\ndel n18\ndel n20\ndel n22\ndel n24\ndel n26\ndel n28\nlist\n",
+        "expected": "deleted\ndeleted\ndeleted\ndeleted\ndeleted\ndeleted\ndeleted\ndeleted\ndeleted\ndeleted\ndeleted\ndeleted\ndeleted\ndeleted\ndeleted\nn1 1\nn3 3\nn5 5\nn7 7\nn9 9\nn11 11\nn13 13\nn15 15\nn17 17\nn19 19\nn21 21\nn23 23\nn25 25\nn27 27\nn29 29\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Повторное добавление",
+        "stdin": "add a 1\ndel a\nadd a 2\nlist\n",
+        "expected": "deleted\na 2\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Contact {\n    char *name;\n    char *phone;\n};\n\nchar *copy_text(const char *s) {\n    char *c = malloc(strlen(s) + 1);\n    if (c != NULL) {\n        strcpy(c, s);\n    }\n    return c;\n}\n\nint main(void) {\n    struct Contact book[50];\n    int count = 0;\n    char cmd[8];\n    while (scanf(\"%7s\", cmd) == 1) {\n        if (strcmp(cmd, \"add\") == 0) {\n            char name[32], phone[32];\n            scanf(\"%31s %31s\", name, phone);\n            if (count == 50) {\n                continue;\n            }\n            book[count].name = copy_text(name);\n            book[count].phone = copy_text(phone);\n            count++;\n        } else if (strcmp(cmd, \"del\") == 0) {\n            char name[32];\n            scanf(\"%31s\", name);\n            int found = -1;\n            for (int i = 0; i < count; i++) {\n                if (strcmp(book[i].name, name) == 0) {\n                    found = i;\n                    break;\n                }\n            }\n            if (found < 0) {\n                printf(\"not found\\n\");\n                continue;\n            }\n            free(book[found].name);\n            free(book[found].phone);\n            memmove(&book[found], &book[found + 1], (size_t)(count - found - 1) * sizeof book[0]);\n            count--;\n            printf(\"deleted\\n\");\n        } else {\n            if (count == 0) {\n                printf(\"empty\\n\");\n            }\n            for (int i = 0; i < count; i++) {\n                printf(\"%s %s\\n\", book[i].name, book[i].phone);\n            }\n        }\n    }\n    for (int i = 0; i < count; i++) {\n        free(book[i].name);\n        free(book[i].phone);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Первая ошибка — `malloc(strlen(s))`: `strcpy` записывает завершающий ноль за границу блока, ASan сообщает `heap-buffer-overflow` уже на первой команде `add`. Вторая видна только после исправления первой: при удалении освобождается имя, но не телефон, а `memmove` затирает запись — последний указатель на блок телефона теряется. LeakSanitizer сообщит об утечке в конце программы, и только если в тесте было удаление.\n\nОбе ошибки — нарушение договоров: размер строки и владение каждым полем записи.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "memory-debugging-memory-task-2",
+      "title": "Найди ошибку: кольцевой буфер",
+      "description": "Кольцевой буфер ёмкости `k` хранит последние `k` чисел. Команды: `push x` (если буфер полон, самое старое число вытесняется), `pop` (печатает и удаляет самое старое или печатает `empty`) и `size`. На некоторых последовательностях команд программа выходит за границу массива.\n\nНайдите и исправьте ошибку.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint main(void) {\n    int capacity;\n    scanf(\"%d\", &capacity);\n    int *items = malloc((size_t)capacity * sizeof *items);\n    if (items == NULL) {\n        return 1;\n    }\n    int head = 0, size = 0;\n    char cmd[8];\n    while (scanf(\"%7s\", cmd) == 1) {\n        if (strcmp(cmd, \"push\") == 0) {\n            int x;\n            scanf(\"%d\", &x);\n            int tail = (head + size) % (capacity + 1);\n            items[tail] = x;\n            if (size == capacity) {\n                head = (head + 1) % (capacity + 1);\n            } else {\n                size++;\n            }\n        } else if (strcmp(cmd, \"pop\") == 0) {\n            if (size == 0) {\n                printf(\"empty\\n\");\n            } else {\n                printf(\"%d\\n\", items[head]);\n                head = (head + 1) % (capacity + 1);\n                size--;\n            }\n        } else {\n            printf(\"%d\\n\", size);\n        }\n    }\n    free(items);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\npush 1\npush 2\npush 3\npush 4\npop\nsize\n",
+          "output": "2\n2\n"
+        },
+        {
+          "input": "2\npop\npush 5\npop\npop\n",
+          "output": "empty\n5\nempty\n"
+        }
+      ],
+      "constraints": ["1 ≤ k ≤ 100.", "Команд — до 500.", "|x| ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какие значения может принимать индекс (head + size) % (capacity + 1)? Сколько элементов в массиве items?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Индексы кольцевого буфера берутся по модулю ёмкости: % capacity — во всех трёх местах.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\npush 1\npush 2\npush 3\npush 4\npop\nsize\n",
+          "expected": "2\n2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\npop\npush 5\npop\npop\n",
+          "expected": "empty\n5\nempty\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ёмкость 1",
+          "stdin": "1\npush 1\npush 2\npop\nsize\n",
+          "expected": "2\n0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Многократное вытеснение",
+          "stdin": "2\npush 1\npush 2\npush 3\npush 4\npush 5\npop\npop\npop\n",
+          "expected": "4\n5\nempty\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Обход по кругу",
+          "stdin": "3\npush 1\npop\npush 2\npop\npush 3\npop\npush 4\npop\n",
+          "expected": "1\n2\n3\n4\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Ёмкость 100",
+          "stdin": "100\npush 0\npush 1\npush 2\npush 3\npush 4\npush 5\npush 6\npush 7\npush 8\npush 9\npush 10\npush 11\npush 12\npush 13\npush 14\npush 15\npush 16\npush 17\npush 18\npush 19\npush 20\npush 21\npush 22\npush 23\npush 24\npush 25\npush 26\npush 27\npush 28\npush 29\npush 30\npush 31\npush 32\npush 33\npush 34\npush 35\npush 36\npush 37\npush 38\npush 39\npush 40\npush 41\npush 42\npush 43\npush 44\npush 45\npush 46\npush 47\npush 48\npush 49\npush 50\npush 51\npush 52\npush 53\npush 54\npush 55\npush 56\npush 57\npush 58\npush 59\npush 60\npush 61\npush 62\npush 63\npush 64\npush 65\npush 66\npush 67\npush 68\npush 69\npush 70\npush 71\npush 72\npush 73\npush 74\npush 75\npush 76\npush 77\npush 78\npush 79\npush 80\npush 81\npush 82\npush 83\npush 84\npush 85\npush 86\npush 87\npush 88\npush 89\npush 90\npush 91\npush 92\npush 93\npush 94\npush 95\npush 96\npush 97\npush 98\npush 99\npush 100\npush 101\npush 102\npush 103\npush 104\npush 105\npush 106\npush 107\npush 108\npush 109\npush 110\npush 111\npush 112\npush 113\npush 114\npush 115\npush 116\npush 117\npush 118\npush 119\npush 120\npush 121\npush 122\npush 123\npush 124\npush 125\npush 126\npush 127\npush 128\npush 129\npush 130\npush 131\npush 132\npush 133\npush 134\npush 135\npush 136\npush 137\npush 138\npush 139\npush 140\npush 141\npush 142\npush 143\npush 144\npush 145\npush 146\npush 147\npush 148\npush 149\npush 150\npush 151\npush 152\npush 153\npush 154\npush 155\npush 156\npush 157\npush 158\npush 159\npush 160\npush 161\npush 162\npush 163\npush 164\npush 165\npush 166\npush 167\npush 168\npush 169\npush 170\npush 171\npush 172\npush 173\npush 174\npush 175\npush 176\npush 177\npush 178\npush 179\npush 180\npush 181\npush 182\npush 183\npush 184\npush 185\npush 186\npush 187\npush 188\npush 189\npush 190\npush 191\npush 192\npush 193\npush 194\npush 195\npush 196\npush 197\npush 198\npush 199\npush 200\npush 201\npush 202\npush 203\npush 204\npush 205\npush 206\npush 207\npush 208\npush 209\npush 210\npush 211\npush 212\npush 213\npush 214\npush 215\npush 216\npush 217\npush 218\npush 219\npush 220\npush 221\npush 222\npush 223\npush 224\npush 225\npush 226\npush 227\npush 228\npush 229\npush 230\npush 231\npush 232\npush 233\npush 234\npush 235\npush 236\npush 237\npush 238\npush 239\npush 240\npush 241\npush 242\npush 243\npush 244\npush 245\npush 246\npush 247\npush 248\npush 249\nsize\npop\n",
+          "expected": "100\n150\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Крайние значения",
+          "stdin": "4\nsize\npush -1000000000\npush 1000000000\npop\npop\nsize\n",
+          "expected": "0\n-1000000000\n1000000000\n0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Смешанные",
+          "stdin": "5\npush 1\npush 2\npush 3\npop\npush 4\npush 5\npush 6\npush 7\npop\npop\n",
+          "expected": "1\n3\n4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Опустошение и снова",
+          "stdin": "3\npush 7\npush 8\npop\npop\npop\npush 9\nsize\n",
+          "expected": "7\n8\nempty\n1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Полный буфер",
+          "stdin": "2\npush 1\npush 2\npush 3\nsize\npop\npop\n",
+          "expected": "2\n2\n3\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint main(void) {\n    int capacity;\n    scanf(\"%d\", &capacity);\n    int *items = malloc((size_t)capacity * sizeof *items);\n    if (items == NULL) {\n        return 1;\n    }\n    int head = 0, size = 0;\n    char cmd[8];\n    while (scanf(\"%7s\", cmd) == 1) {\n        if (strcmp(cmd, \"push\") == 0) {\n            int x;\n            scanf(\"%d\", &x);\n            int tail = (head + size) % capacity;\n            items[tail] = x;\n            if (size == capacity) {\n                head = (head + 1) % capacity;\n            } else {\n                size++;\n            }\n        } else if (strcmp(cmd, \"pop\") == 0) {\n            if (size == 0) {\n                printf(\"empty\\n\");\n            } else {\n                printf(\"%d\\n\", items[head]);\n                head = (head + 1) % capacity;\n                size--;\n            }\n        } else {\n            printf(\"%d\\n\", size);\n        }\n    }\n    free(items);\n    return 0;\n}\n",
+      "solutionExplanation": "Массив `items` содержит `capacity` элементов с индексами `0 … capacity − 1`, а остаток по модулю `capacity + 1` может равняться `capacity` — запись за концом блока. Кроме выхода за границу, неверный модуль ломает и логику: «круг» становится на одну ячейку длиннее массива, и порядок элементов путается.\n\nОшибки на единицу в модуле — частый спутник кольцевых буферов. Инвариант простой: каждый индекс лежит в `[0, capacity)`, а значит, берётся по модулю `capacity`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-debugging-memory-task-3",
+      "title": "Найди ошибку: разбор CSV",
+      "description": "Первая строка ввода — минимальный возраст. Следующие строки — записи `имя,город,возраст`. Программа печатает записи с возрастом не меньше минимального в формате `имя (город) возраст`. Возрасты печатаются верно, а имена и города у всех записей одинаковые.\n\nИсправьте программу так, чтобы каждая запись хранила свои строки (и не забудьте их освободить).",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Record {\n    char *name;\n    char *city;\n    int age;\n};\n\nint main(void) {\n    int min_age;\n    char line[128];\n    if (fgets(line, sizeof line, stdin) == NULL || sscanf(line, \"%d\", &min_age) != 1) {\n        return 1;\n    }\n    struct Record records[50];\n    int count = 0;\n    while (count < 50 && fgets(line, sizeof line, stdin) != NULL) {\n        line[strcspn(line, \"\\n\")] = '\\0';\n        char *comma1 = strchr(line, ',');\n        char *comma2 = comma1 ? strchr(comma1 + 1, ',') : NULL;\n        if (comma2 == NULL) {\n            continue;\n        }\n        *comma1 = '\\0';\n        *comma2 = '\\0';\n        records[count].name = line;\n        records[count].city = comma1 + 1;\n        records[count].age = atoi(comma2 + 1);\n        count++;\n    }\n    for (int i = 0; i < count; i++) {\n        if (records[i].age >= min_age) {\n            printf(\"%s (%s) %d\\n\", records[i].name, records[i].city, records[i].age);\n        }\n    }\n\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "18\nann,Paris,20\nbob,Oslo,17\ncid,Rome,30\n",
+          "output": "ann (Paris) 20\ncid (Rome) 30\n"
+        },
+        {
+          "input": "0\nx,Y,0\n",
+          "output": "x (Y) 0\n"
+        }
+      ],
+      "constraints": ["Записей — до 50.", "Строка — до 100 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Куда указывают name и city каждой записи? Что происходит с буфером line при чтении следующей строки?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Копируйте поля в кучу: records[count].name = copy_text(line); — и освобождайте копии в конце.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "18\nann,Paris,20\nbob,Oslo,17\ncid,Rome,30\n",
+          "expected": "ann (Paris) 20\ncid (Rome) 30\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0\nx,Y,0\n",
+          "expected": "x (Y) 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Никто не подходит",
+          "stdin": "100\nann,Paris,20\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-2",
+          "name": "Все подходят",
+          "stdin": "1\na,A,1\nb,B,2\nc,C,3\n",
+          "expected": "a (A) 1\nb (B) 2\nc (C) 3\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Граница возраста",
+          "stdin": "25\nlongname_person,Saint-Petersburg,25\nz,Q,24\n",
+          "expected": "longname_person (Saint-Petersburg) 25\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Строка без запятых",
+          "stdin": "10\nbad line\nok,City,11\n",
+          "expected": "ok (City) 11\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Пустые поля",
+          "stdin": "0\n,Empty,5\nnoname,,6\n",
+          "expected": " (Empty) 5\nnoname () 6\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Сорок записей",
+          "stdin": "20\np0,c0,0\np1,c1,1\np2,c2,2\np3,c3,3\np4,c4,4\np5,c5,5\np6,c6,6\np7,c7,7\np8,c8,8\np9,c9,9\np10,c10,10\np11,c11,11\np12,c12,12\np13,c13,13\np14,c14,14\np15,c15,15\np16,c16,16\np17,c17,17\np18,c18,18\np19,c19,19\np20,c20,20\np21,c21,21\np22,c22,22\np23,c23,23\np24,c24,24\np25,c25,25\np26,c26,26\np27,c27,27\np28,c28,28\np29,c29,29\np30,c30,30\np31,c31,31\np32,c32,32\np33,c33,33\np34,c34,34\np35,c35,35\np36,c36,36\np37,c37,37\np38,c38,38\np39,c39,39\n",
+          "expected": "p20 (c20) 20\np21 (c21) 21\np22 (c22) 22\np23 (c23) 23\np24 (c24) 24\np25 (c25) 25\np26 (c26) 26\np27 (c27) 27\np28 (c28) 28\np29 (c29) 29\np30 (c30) 30\np31 (c31) 31\np32 (c32) 32\np33 (c33) 33\np34 (c34) 34\np35 (c35) 35\np36 (c36) 36\np37 (c37) 37\np38 (c38) 38\np39 (c39) 39\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Одинаковые имена",
+          "stdin": "30\nann,Paris,30\nann,Paris,31\n",
+          "expected": "ann (Paris) 30\nann (Paris) 31\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Три города",
+          "stdin": "5\nal,Rio,5\nbo,Kyiv,4\nce,Lima,6\n",
+          "expected": "al (Rio) 5\nce (Lima) 6\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Record {\n    char *name;\n    char *city;\n    int age;\n};\n\nchar *copy_text(const char *s) {\n    char *c = malloc(strlen(s) + 1);\n    if (c != NULL) {\n        strcpy(c, s);\n    }\n    return c;\n}\n\nint main(void) {\n    int min_age;\n    char line[128];\n    if (fgets(line, sizeof line, stdin) == NULL || sscanf(line, \"%d\", &min_age) != 1) {\n        return 1;\n    }\n    struct Record records[50];\n    int count = 0;\n    while (count < 50 && fgets(line, sizeof line, stdin) != NULL) {\n        line[strcspn(line, \"\\n\")] = '\\0';\n        char *comma1 = strchr(line, ',');\n        char *comma2 = comma1 ? strchr(comma1 + 1, ',') : NULL;\n        if (comma2 == NULL) {\n            continue;\n        }\n        *comma1 = '\\0';\n        *comma2 = '\\0';\n        records[count].name = copy_text(line);\n        records[count].city = copy_text(comma1 + 1);\n        if (records[count].name == NULL || records[count].city == NULL) {\n            free(records[count].name);\n            free(records[count].city);\n            break;\n        }\n        records[count].age = atoi(comma2 + 1);\n        count++;\n    }\n    for (int i = 0; i < count; i++) {\n        if (records[i].age >= min_age) {\n            printf(\"%s (%s) %d\\n\", records[i].name, records[i].city, records[i].age);\n        }\n    }\n    for (int i = 0; i < count; i++) {\n        free(records[i].name);\n        free(records[i].city);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Поля `name` и `city` указывали **внутрь** буфера `line`, который перезаписывается каждой следующей строкой. После цикла все указатели смотрят в одну и ту же память, где лежит последняя запись. Санитайзеры молчат: буфер жив, границы не нарушены. Возраст печатается правильно, потому что он скопирован числом.\n\nКопирование в кучу даёт каждой записи собственные строки — и обязанность освободить их. Исправленная программа проверяется LeakSanitizer, поэтому цикл освобождения в конце обязателен.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-debugging-memory-task-4",
+      "title": "Мини-словарь",
+      "description": "Реализуйте словарь «строка → число» на динамическом массиве записей `{ char *key; int value; }`. Команды до конца ввода:\n- `set k v` — создать или изменить запись;\n- `get k` — напечатать значение или `missing`;\n- `del k` — удалить запись, напечатать `ok` или `missing`;\n- `count` — напечатать число записей.\n\nКлючи храните копиями в куче, массив записей растите через `realloc`, при удалении освобождайте ключ. В конце освободите всё. Порядок записей не важен.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "set a 1\nset b 2\nget a\nset a 5\nget a\ncount\n",
+          "output": "1\n5\n2\n"
+        },
+        {
+          "input": "get x\ndel x\nset x 3\ndel x\ncount\n",
+          "output": "missing\nmissing\nok\n0\n"
+        }
+      ],
+      "constraints": ["Команд — до 1000.", "Ключи — до 31 символа.", "|v| ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Поиск — линейный по strcmp. Функция find возвращает индекс или −1.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Удаление без сдвига: освободить key, перенести последнюю запись на место удалённой, уменьшить count.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "set для существующего ключа меняет только value — новый ключ не выделяется, иначе старый утечёт.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "set a 1\nset b 2\nget a\nset a 5\nget a\ncount\n",
+          "expected": "1\n5\n2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "get x\ndel x\nset x 3\ndel x\ncount\n",
+          "expected": "missing\nmissing\nok\n0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустой словарь",
+          "stdin": "count\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Перезапись значения",
+          "stdin": "set k 1\nset k 2\nset k 3\ncount\nget k\n",
+          "expected": "1\n3\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Удаление первого",
+          "stdin": "set a 1\nset b 2\nset c 3\ndel a\nget c\nget b\ncount\n",
+          "expected": "ok\n3\n2\n2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Триста ключей",
+          "stdin": "set key0 0\nset key1 1\nset key2 2\nset key3 3\nset key4 4\nset key5 5\nset key6 6\nset key7 7\nset key8 8\nset key9 9\nset key10 10\nset key11 11\nset key12 12\nset key13 13\nset key14 14\nset key15 15\nset key16 16\nset key17 17\nset key18 18\nset key19 19\nset key20 20\nset key21 21\nset key22 22\nset key23 23\nset key24 24\nset key25 25\nset key26 26\nset key27 27\nset key28 28\nset key29 29\nset key30 30\nset key31 31\nset key32 32\nset key33 33\nset key34 34\nset key35 35\nset key36 36\nset key37 37\nset key38 38\nset key39 39\nset key40 40\nset key41 41\nset key42 42\nset key43 43\nset key44 44\nset key45 45\nset key46 46\nset key47 47\nset key48 48\nset key49 49\nset key50 50\nset key51 51\nset key52 52\nset key53 53\nset key54 54\nset key55 55\nset key56 56\nset key57 57\nset key58 58\nset key59 59\nset key60 60\nset key61 61\nset key62 62\nset key63 63\nset key64 64\nset key65 65\nset key66 66\nset key67 67\nset key68 68\nset key69 69\nset key70 70\nset key71 71\nset key72 72\nset key73 73\nset key74 74\nset key75 75\nset key76 76\nset key77 77\nset key78 78\nset key79 79\nset key80 80\nset key81 81\nset key82 82\nset key83 83\nset key84 84\nset key85 85\nset key86 86\nset key87 87\nset key88 88\nset key89 89\nset key90 90\nset key91 91\nset key92 92\nset key93 93\nset key94 94\nset key95 95\nset key96 96\nset key97 97\nset key98 98\nset key99 99\nset key100 100\nset key101 101\nset key102 102\nset key103 103\nset key104 104\nset key105 105\nset key106 106\nset key107 107\nset key108 108\nset key109 109\nset key110 110\nset key111 111\nset key112 112\nset key113 113\nset key114 114\nset key115 115\nset key116 116\nset key117 117\nset key118 118\nset key119 119\nset key120 120\nset key121 121\nset key122 122\nset key123 123\nset key124 124\nset key125 125\nset key126 126\nset key127 127\nset key128 128\nset key129 129\nset key130 130\nset key131 131\nset key132 132\nset key133 133\nset key134 134\nset key135 135\nset key136 136\nset key137 137\nset key138 138\nset key139 139\nset key140 140\nset key141 141\nset key142 142\nset key143 143\nset key144 144\nset key145 145\nset key146 146\nset key147 147\nset key148 148\nset key149 149\nset key150 150\nset key151 151\nset key152 152\nset key153 153\nset key154 154\nset key155 155\nset key156 156\nset key157 157\nset key158 158\nset key159 159\nset key160 160\nset key161 161\nset key162 162\nset key163 163\nset key164 164\nset key165 165\nset key166 166\nset key167 167\nset key168 168\nset key169 169\nset key170 170\nset key171 171\nset key172 172\nset key173 173\nset key174 174\nset key175 175\nset key176 176\nset key177 177\nset key178 178\nset key179 179\nset key180 180\nset key181 181\nset key182 182\nset key183 183\nset key184 184\nset key185 185\nset key186 186\nset key187 187\nset key188 188\nset key189 189\nset key190 190\nset key191 191\nset key192 192\nset key193 193\nset key194 194\nset key195 195\nset key196 196\nset key197 197\nset key198 198\nset key199 199\nset key200 200\nset key201 201\nset key202 202\nset key203 203\nset key204 204\nset key205 205\nset key206 206\nset key207 207\nset key208 208\nset key209 209\nset key210 210\nset key211 211\nset key212 212\nset key213 213\nset key214 214\nset key215 215\nset key216 216\nset key217 217\nset key218 218\nset key219 219\nset key220 220\nset key221 221\nset key222 222\nset key223 223\nset key224 224\nset key225 225\nset key226 226\nset key227 227\nset key228 228\nset key229 229\nset key230 230\nset key231 231\nset key232 232\nset key233 233\nset key234 234\nset key235 235\nset key236 236\nset key237 237\nset key238 238\nset key239 239\nset key240 240\nset key241 241\nset key242 242\nset key243 243\nset key244 244\nset key245 245\nset key246 246\nset key247 247\nset key248 248\nset key249 249\nset key250 250\nset key251 251\nset key252 252\nset key253 253\nset key254 254\nset key255 255\nset key256 256\nset key257 257\nset key258 258\nset key259 259\nset key260 260\nset key261 261\nset key262 262\nset key263 263\nset key264 264\nset key265 265\nset key266 266\nset key267 267\nset key268 268\nset key269 269\nset key270 270\nset key271 271\nset key272 272\nset key273 273\nset key274 274\nset key275 275\nset key276 276\nset key277 277\nset key278 278\nset key279 279\nset key280 280\nset key281 281\nset key282 282\nset key283 283\nset key284 284\nset key285 285\nset key286 286\nset key287 287\nset key288 288\nset key289 289\nset key290 290\nset key291 291\nset key292 292\nset key293 293\nset key294 294\nset key295 295\nset key296 296\nset key297 297\nset key298 298\nset key299 299\nget key0\nget key299\ncount\n",
+          "expected": "0\n299\n300\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Добавить и удалить всё",
+          "stdin": "set k0 0\nset k1 1\nset k2 2\nset k3 3\nset k4 4\nset k5 5\nset k6 6\nset k7 7\nset k8 8\nset k9 9\nset k10 10\nset k11 11\nset k12 12\nset k13 13\nset k14 14\nset k15 15\nset k16 16\nset k17 17\nset k18 18\nset k19 19\nset k20 20\nset k21 21\nset k22 22\nset k23 23\nset k24 24\nset k25 25\nset k26 26\nset k27 27\nset k28 28\nset k29 29\nset k30 30\nset k31 31\nset k32 32\nset k33 33\nset k34 34\nset k35 35\nset k36 36\nset k37 37\nset k38 38\nset k39 39\nset k40 40\nset k41 41\nset k42 42\nset k43 43\nset k44 44\nset k45 45\nset k46 46\nset k47 47\nset k48 48\nset k49 49\ndel k0\ndel k1\ndel k2\ndel k3\ndel k4\ndel k5\ndel k6\ndel k7\ndel k8\ndel k9\ndel k10\ndel k11\ndel k12\ndel k13\ndel k14\ndel k15\ndel k16\ndel k17\ndel k18\ndel k19\ndel k20\ndel k21\ndel k22\ndel k23\ndel k24\ndel k25\ndel k26\ndel k27\ndel k28\ndel k29\ndel k30\ndel k31\ndel k32\ndel k33\ndel k34\ndel k35\ndel k36\ndel k37\ndel k38\ndel k39\ndel k40\ndel k41\ndel k42\ndel k43\ndel k44\ndel k45\ndel k46\ndel k47\ndel k48\ndel k49\ncount\n",
+          "expected": "ok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\nok\n0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Длинный ключ",
+          "stdin": "set abcdefghijklmnopqrstuvwxyz01234 -1000000000\nget abcdefghijklmnopqrstuvwxyz01234\n",
+          "expected": "-1000000000\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Повторное создание",
+          "stdin": "set a 1\ndel a\nset a 2\nget a\ncount\n",
+          "expected": "ok\n2\n1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Двойное удаление",
+          "stdin": "set x 1\nset y 2\ndel y\ndel y\nget x\n",
+          "expected": "ok\nmissing\n1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Entry {\n    char *key;\n    int value;\n};\n\nstruct Dict {\n    struct Entry *items;\n    int count, capacity;\n};\n\nint dict_find(const struct Dict *d, const char *key) {\n    for (int i = 0; i < d->count; i++) {\n        if (strcmp(d->items[i].key, key) == 0) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nint dict_set(struct Dict *d, const char *key, int value) {\n    int i = dict_find(d, key);\n    if (i >= 0) {\n        d->items[i].value = value;\n        return 0;\n    }\n    if (d->count == d->capacity) {\n        int capacity = d->capacity ? d->capacity * 2 : 4;\n        struct Entry *bigger = realloc(d->items, (size_t)capacity * sizeof *bigger);\n        if (bigger == NULL) {\n            return -1;\n        }\n        d->items = bigger;\n        d->capacity = capacity;\n    }\n    char *copy = malloc(strlen(key) + 1);\n    if (copy == NULL) {\n        return -1;\n    }\n    strcpy(copy, key);\n    d->items[d->count].key = copy;\n    d->items[d->count].value = value;\n    d->count++;\n    return 0;\n}\n\nint dict_del(struct Dict *d, const char *key) {\n    int i = dict_find(d, key);\n    if (i < 0) {\n        return -1;\n    }\n    free(d->items[i].key);\n    d->items[i] = d->items[d->count - 1];\n    d->count--;\n    return 0;\n}\n\nvoid dict_free(struct Dict *d) {\n    for (int i = 0; i < d->count; i++) {\n        free(d->items[i].key);\n    }\n    free(d->items);\n    d->items = NULL;\n    d->count = d->capacity = 0;\n}\n\nint main(void) {\n    struct Dict d = {NULL, 0, 0};\n    char cmd[8], key[32];\n    while (scanf(\"%7s\", cmd) == 1) {\n        if (strcmp(cmd, \"count\") == 0) {\n            printf(\"%d\\n\", d.count);\n            continue;\n        }\n        scanf(\"%31s\", key);\n        if (strcmp(cmd, \"set\") == 0) {\n            int value;\n            scanf(\"%d\", &value);\n            if (dict_set(&d, key, value) != 0) {\n                break;\n            }\n        } else if (strcmp(cmd, \"get\") == 0) {\n            int i = dict_find(&d, key);\n            if (i < 0) {\n                printf(\"missing\\n\");\n            } else {\n                printf(\"%d\\n\", d.items[i].value);\n            }\n        } else {\n            printf(\"%s\\n\", dict_del(&d, key) == 0 ? \"ok\" : \"missing\");\n        }\n    }\n    dict_free(&d);\n    return 0;\n}\n",
+      "solutionExplanation": "Словарь объединяет всё, что было в модуле. Массив записей растёт удвоением через временный указатель. Каждый ключ — копия в куче, которой владеет словарь; `set` для существующего ключа не создаёт копию, а `del` освобождает ключ **до** того, как запись затирается последней. Удаление переносом последней записи работает за O(1) и не оставляет дыр.\n\nОбращения к записям идут по индексам, вычисленным заново после каждой операции, поэтому `realloc` не создаёт висячих указателей. `dict_free` возвращает словарь в пустое состояние — вызвать её повторно безопасно.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "memory-debugging-memory-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Программа работает правильно, но после добавления printf для отладки начинает выдавать другой результат. Какая причина вероятнее всего?",
+        "explanation": "Новый вызов меняет расположение данных на стеке и в куче. Если программа читает чужую память, от этого меняется её поведение.",
+        "options": [
+          "Порча памяти: выход за границу или use-after-free",
+          "printf меняет значения переменных",
+          "Ошибка компилятора",
+          "Утечка памяти"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Расположите первые шаги метода отладки. Какой шаг идёт сразу после «воспроизвести на минимальном входе»?",
+        "explanation": "Сначала нужно получить точный отчёт, и только потом искать причину и исправлять.",
+        "options": [
+          "Запустить с AddressSanitizer/UBSan",
+          "Исправить подозрительную строку",
+          "Добавить тест",
+          "Переписать функцию заново"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "ASan сообщает heap-use-after-free в строке 40. Что верно? Выберите все.",
+        "explanation": "Удаление free превратит ошибку в утечку. Исправляют время жизни или владение.",
+        "type": "multiple",
+        "options": [
+          "Строка 40 — место, где ошибка проявилась; причина может быть в другом месте",
+          "Нужно посмотреть, где блок освобождён (стек «freed by»)",
+          "Достаточно удалить free, указанный в отчёте",
+          "Нужно решить, кто владеет объектом и сколько он должен жить"
+        ],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q4",
+        "question": "Что произойдёт при вызове assert(i < n) с ложным условием в отладочной сборке?",
+        "explanation": "При сборке с -DNDEBUG assert отключается, поэтому внутри него нельзя писать код с побочными эффектами.",
+        "options": [
+          "Программа остановится и напечатает условие, файл и строку",
+          "Условие будет пропущено",
+          "Переменная i станет равна n − 1",
+          "Компилятор выдаст ошибку"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какое исправление heap-buffer-overflow при копировании строки правильное?",
+        "code": "char *copy = malloc(strlen(s));\nstrcpy(copy, s);",
+        "codeLanguage": "c",
+        "explanation": "Запас «на всякий случай» прячет неверную формулу, копия без нуля даёт строку без конца. Правильный размер — длина плюс один байт.",
+        "options": [
+          "malloc(strlen(s) + 1)",
+          "malloc(strlen(s) + 16) на всякий случай",
+          "Заменить strcpy на memcpy(copy, s, strlen(s)) без нуля",
+          "Убрать проверку санитайзера"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint main(void) {\n    char *names[3];\n    char buffer[16];\n    const char *input[] = {\"ann\", \"bob\", \"cid\"};\n    for (int i = 0; i < 3; i++) {\n        strcpy(buffer, input[i]);\n        names[i] = malloc(strlen(buffer) + 1);\n        if (names[i] == NULL) {\n            return 1;\n        }\n        strcpy(names[i], buffer);\n    }\n    printf(\"%s %s %s\\n\", names[0], names[1], names[2]);\n    for (int i = 0; i < 3; i++) {\n        free(names[i]);\n    }\n    return 0;\n}",
+        "explanation": "Каждое имя скопировано в собственный блок, поэтому перезапись buffer на них не влияет.",
+        "type": "text",
+        "answers": ["ann bob cid"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Какие правила снижают вероятность ошибок памяти? Выберите все.",
+        "explanation": "Указатели на элементы растущего массива становятся висячими после realloc, а ошибки чаще всего прячутся в ветках обработки ошибок.",
+        "type": "multiple",
+        "options": [
+          "Инициализировать переменные при объявлении",
+          "Передавать размер буфера вместе с буфером",
+          "Хранить указатели на элементы растущего массива дольше одной операции",
+          "У каждого блока — один владелец и парная функция destroy",
+          "Тестировать только успешные сценарии"
+        ],
+        "correct": [0, 1, 3]
+      }
+    ]
+  }
+}

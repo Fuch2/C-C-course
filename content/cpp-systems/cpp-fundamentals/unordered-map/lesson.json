@@ -1,0 +1,121 @@
+{
+  "id": "cpp20-unordered-map",
+  "title": "std::unordered_map",
+  "description": "unordered_map использует хеширование и даёт ожидаемое O(1). Порядок не определён, а плохие хеши дают O(n).",
+  "moduleId": "cpp-fundamentals",
+  "order": 16,
+  "difficulty": "advanced",
+  "estimatedMinutes": 50,
+  "prerequisites": ["cpp20-map"],
+  "objectives": [
+    "Объяснить, зачем появился std::unordered_map и какую проблему он решает.",
+    "Сравнить стоимость и ограничения с аналогом в C.",
+    "Применить инструмент в задаче обработки данных."
+  ],
+  "tags": ["C++20", "основы C++", "std::unordered_map"],
+  "published": true,
+  "standard": "c++20",
+  "completion": "practice",
+  "exercise": {
+    "id": "cpp20-unordered-map-exercise",
+    "title": "Частоты событий",
+    "description": "Ввод n имён, затем q запросов. Подсчитайте частоты в std::unordered_map и выведите частоту каждого запроса; отсутствующий ключ — 0.",
+    "difficulty": "advanced",
+    "language": "cpp",
+    "standard": "c++20",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
+    "examples": [
+      {
+        "input": "3 a b a 3 a c b",
+        "output": "2\n0\n1\n",
+        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+      },
+      {
+        "input": "0 2 x y",
+        "output": "0\n0\n",
+        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Используйте C++20 и стандартную библиотеку.",
+      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
+      "Выводите только требуемый результат."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "3 a b a 3 a c b",
+        "expected": "2\n0\n1\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "0 2 x y",
+        "expected": "0\n0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "stdin": "4 x x x x 1 x",
+        "expected": "4\n"
+      }
+    ],
+    "referenceSolution": "#include <iostream>\n#include <unordered_map>\n#include <string>\n\n\nint main() {\n    int n{};if(!(std::cin>>n)||n<0||n>100)return 1;std::unordered_map<std::string,int> m;for(int i=0;i<n;++i){std::string s;std::cin>>s;++m[s];}int q{};std::cin>>q;for(int i=0;i<q;++i){std::string s;std::cin>>s;auto it=m.find(s);std::cout<<(it==m.end()?0:it->second)<<'\\n';}\n}\n",
+    "solutionExplanation": "Хеш-таблица даёт ожидаемое O(1), но не гарантирует порядок и имеет худший O(n). find не создаёт отсутствующий ключ, в отличие от operator[].",
+    "checking": { "type": "stdout", "comparison": "exact" }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "cpp20-unordered-map-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "purpose",
+        "question": "Что важно помнить в теме «std::unordered_map»?",
+        "options": [
+          "Выбирать инструмент по контракту, времени, памяти и владению",
+          "Всегда переписывать решение через указатели C"
+        ],
+        "correct": 0,
+        "explanation": "unordered_map использует хеширование и даёт ожидаемое O(1). Порядок не определён, а плохие хеши дают O(n)."
+      },
+      {
+        "id": "cost",
+        "question": "Что нужно учитывать при выборе инструмента?",
+        "options": [
+          "Только длину исходного кода",
+          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
+        ],
+        "correct": 1,
+        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+      },
+      {
+        "id": "mistake",
+        "question": "Как избежать типичной ошибки?",
+        "options": [
+          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
+          "Считать C-подход рекомендуемым стилем в любой задаче"
+        ],
+        "correct": 0,
+        "explanation": "Используйте std::unordered_map как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+      }
+    ]
+  }
+}

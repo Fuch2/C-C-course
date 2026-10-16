@@ -1,0 +1,118 @@
+{
+  "id": "advanced-void-pointer",
+  "title": "void*",
+  "description": "void * переносит адрес объекта без информации о его конкретном типе.",
+  "moduleId": "advanced-c",
+  "order": 16,
+  "difficulty": "advanced",
+  "estimatedMinutes": 40,
+  "prerequisites": ["advanced-callbacks"],
+  "objectives": [
+    "Объяснить: void*",
+    "Различать корректный контракт и ошибку: void * не означает «можно разыменовать как любой тип»; произвольный cast может нарушить alignment и aliasing.",
+    "Реализовать и проверить практику на обычном и граничном вводе"
+  ],
+  "tags": ["C17", "углублённый C", "void*"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "advanced-void-pointer-exercise",
+    "title": "Практика: void*",
+    "description": "Реализуйте swap_bytes(void *, void *, size_t) через unsigned char. Ввод два int −1000…1000; поменяйте их представления и выведите значения.",
+    "difficulty": "advanced",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "2 9",
+        "output": "9 2\n",
+        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+      },
+      {
+        "input": "-5 0",
+        "output": "0 -5\n",
+        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
+      "В stdout только требуемый результат.",
+      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Адрес без этикетки: прежде чем открыть коробку, восстановите размер, тип и владельца."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "void * не означает «можно разыменовать как любой тип»; произвольный cast может нарушить alignment и aliasing."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "test-1",
+        "name": "Основной сценарий",
+        "stdin": "2 9",
+        "expected": "9 2\n"
+      },
+      {
+        "id": "test-2",
+        "name": "Граничный сценарий 1",
+        "stdin": "-5 0",
+        "expected": "0 -5\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "test-3",
+        "name": "Граничный сценарий 2",
+        "stdin": "7 7",
+        "expected": "7 7\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\nstatic void swap_bytes(void *left,void *right,size_t count){unsigned char *a=left,*b=right;for(size_t i=0;i<count;++i){unsigned char t=a[i];a[i]=b[i];b[i]=t;}}\nint main(void) {\n    int a,b; if(scanf(\"%d%d\",&a,&b)!=2)return 1;\n    swap_bytes(&a,&b,sizeof a);\n    printf(\"%d %d\\n\",a,b);\n    return 0;\n}\n",
+    "solutionExplanation": "Адрес без этикетки: прежде чем открыть коробку, восстановите размер, тип и владельца.\n\nvoid * не означает «можно разыменовать как любой тип»; произвольный cast может нарушить alignment и aliasing.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '2 9' → '9 2\\n'; '-5 0' → '0 -5\\n'; '7 7' → '7 7\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "advanced-void-pointer-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "concept",
+        "question": "Как обходить байты объекта в C17?",
+        "options": ["Через unsigned char *", "Через арифметику void *"],
+        "correct": 0,
+        "explanation": "void * переносит адрес объекта без информации о его конкретном типе. Преобразование объектного указателя в void * и обратно к исходному типу сохраняет возможность доступа. Для разыменования нужен подходящий тип, корректное выравнивание и живой объект. Арифметика void * не входит в стандарт C17; для обхода представления используют unsigned char *."
+      },
+      {
+        "id": "mistake",
+        "question": "Какое утверждение корректно?",
+        "options": [
+          "Успешный вывод одного примера доказывает корректность на всех входах.",
+          "void * не означает «можно разыменовать как любой тип»; произвольный cast может нарушить alignment и aliasing."
+        ],
+        "correct": 1,
+        "explanation": "Адрес без этикетки: прежде чем открыть коробку, восстановите размер, тип и владельца."
+      },
+      {
+        "id": "trace",
+        "question": "Какой stdout выдаст запускаемый пример урока?",
+        "options": ["9", "Ошибка компиляции при корректном C17", "Никакого вывода"],
+        "correct": 0,
+        "explanation": "Проследите значения последовательно: int value=9;void *opaque=&value;int *restored=opaque;printf(\"%d\\n\",*restored); Ожидаемый результат: 9"
+      }
+    ]
+  }
+}

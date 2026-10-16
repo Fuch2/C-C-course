@@ -1,0 +1,567 @@
+{
+  "id": "advanced-gdb",
+  "title": "Отладчик GDB",
+  "description": "Сборка с -g, запуск программы в GDB, точки останова и условия, next, step, finish и continue, print и info locals, стек вызовов bt и frame, разбор падения и точки наблюдения watch.",
+  "moduleId": "developer-tools",
+  "order": 9,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 55,
+  "prerequisites": ["advanced-cmake"],
+  "objectives": [
+    "Запускать программу в GDB и останавливать её точками останова",
+    "Проходить код по шагам и смотреть значения переменных",
+    "Находить место падения по стеку вызовов",
+    "Находить момент изменения переменной точкой наблюдения"
+  ],
+  "tags": ["GDB", "Отладка", "Точки останова", "Стек вызовов", "watch"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "advanced-gdb-task-1",
+    "title": "Читаем backtrace",
+    "description": "На вход до конца ввода подаётся вывод команды `bt`. Строки кадров начинаются с `#N`; остальные строки пропускайте. Кадр выглядит так:\n\n```\n#1  0x0000555555555190 in longest (words=0x7fffffffe3b0, count=3) at main.c:7\n#2  main () at main.c:17\n#0  0x00007ffff7e4b6a5 in __strlen_avx2 () from /lib/x86_64-linux-gnu/libc.so.6\n```\n\nАдрес и слово `in` могут отсутствовать. Имя функции идёт до ` (`. Место — после последнего ` at ` в виде `файл:строка` или после ` from ` (библиотека).\n\nКадр относится к **вашему коду**, если у него есть ` at `, а файл не начинается с `/` и `../`.\n\nНапечатайте:\n- `цепочка: …` — функции от последнего кадра к `#0` через ` -> `; у кадров вашего кода после имени в скобках место `(файл:строка)`;\n- `ваш код: функция, файл:строка` для кадра вашего кода с наименьшим номером или `ваш код: не найден`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "#0  __strlen_avx2 () at ../sysdeps/x86_64/multiarch/strlen-avx2.S:76\n#1  0x0000555555555190 in longest (words=0x7fffffffe3b0, count=3) at main.c:7\n#2  0x00005555555551f4 in main () at main.c:17\n",
+        "output": "цепочка: main (main.c:17) -> longest (main.c:7) -> __strlen_avx2\nваш код: longest, main.c:7\n"
+      },
+      {
+        "input": "#0  sum (values=0x7fffffffe3d0, count=4) at main.c:6\n#1  0x00005555555551d2 in main () at main.c:13\n",
+        "output": "цепочка: main (main.c:13) -> sum (main.c:6)\nваш код: sum, main.c:6\n"
+      }
+    ],
+    "constraints": [
+      "От 1 до 30 кадров, строки не длиннее 300 символов; кадры идут по возрастанию номеров."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Начало имени: после номера и пробелов; если там адрес 0x…, имя начинается после подстроки \" in \". Конец имени — strstr(name, \" (\").",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Последнее вхождение \" at \" найдите циклом: while ((next = strstr(p + 1, \" at \")) != NULL) p = next;.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Кадры сохраните в массив и печатайте цепочку с конца.",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "#0  __strlen_avx2 () at ../sysdeps/x86_64/multiarch/strlen-avx2.S:76\n#1  0x0000555555555190 in longest (words=0x7fffffffe3b0, count=3) at main.c:7\n#2  0x00005555555551f4 in main () at main.c:17\n",
+        "expected": "цепочка: main (main.c:17) -> longest (main.c:7) -> __strlen_avx2\nваш код: longest, main.c:7\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "#0  sum (values=0x7fffffffe3d0, count=4) at main.c:6\n#1  0x00005555555551d2 in main () at main.c:13\n",
+        "expected": "цепочка: main (main.c:13) -> sum (main.c:6)\nваш код: sum, main.c:6\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Только библиотека",
+        "stdin": "#0  0x00007ffff7e4b6a5 in __strlen_avx2 () from /lib/x86_64-linux-gnu/libc.so.6\n#1  0x00007ffff7e01234 in puts () from /lib/x86_64-linux-gnu/libc.so.6\n",
+        "expected": "цепочка: puts -> __strlen_avx2\nваш код: не найден\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Один кадр",
+        "stdin": "#0  main () at main.c:3\n",
+        "expected": "цепочка: main (main.c:3)\nваш код: main, main.c:3\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Посторонние строки",
+        "stdin": "Program received signal SIGSEGV, Segmentation fault.\n#0  parse_number (s=0x0) at src/parser.c:42\n#1  0x0000555555555300 in parse (line=0x5555555592a0 \"1 + x\") at src/parser.c:80\n#2  0x0000555555555400 in main (argc=1, argv=0x7fffffffe4a8) at src/main.c:12\n(gdb)\n",
+        "expected": "цепочка: main (src/main.c:12) -> parse (src/parser.c:80) -> parse_number (src/parser.c:42)\nваш код: parse_number, src/parser.c:42\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "memmove",
+        "stdin": "#0  __memmove_avx_unaligned_erms () at ../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:317\n#1  0x00005555555551a0 in copy_name (dst=0x7fffffffe3b0 \"\", src=0x0) at names.c:14\n#2  0x00005555555551f0 in main () at names.c:30\n",
+        "expected": "цепочка: main (names.c:30) -> copy_name (names.c:14) -> __memmove_avx_unaligned_erms\nваш код: copy_name, names.c:14\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "\" at \" в аргументе",
+        "stdin": "#0  helper (msg=0x5555555560 \"look at me\") at util.c:5\n#1  0x0000555555555170 in main () at main.c:9\n",
+        "expected": "цепочка: main (main.c:9) -> helper (util.c:5)\nваш код: helper, util.c:5\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Сработал assert",
+        "stdin": "#0  0x00007ffff7c4a9fc in __pthread_kill_implementation () from /lib/libc.so.6\n#1  0x00007ffff7bf6476 in raise () from /lib/libc.so.6\n#2  0x00007ffff7bdc7f3 in abort () from /lib/libc.so.6\n#3  0x00007ffff7bdc71b in __assert_fail_base () from /lib/libc.so.6\n#4  0x0000555555555189 in check_range (value=-1) at check.c:8\n#5  0x00005555555551c0 in main () at check.c:20\n",
+        "expected": "цепочка: main (check.c:20) -> check_range (check.c:8) -> __assert_fail_base -> abort -> raise -> __pthread_kill_implementation\nваш код: check_range, check.c:8\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Абсолютные пути",
+        "stdin": "#0  free_list (head=0x5555555592c0) at /usr/src/app/list.c:31\n#1  0x0000555555555300 in main () at /usr/src/app/main.c:44\n",
+        "expected": "цепочка: main -> free_list\nваш код: не найден\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Рекурсия",
+        "stdin": "#0  visit (node=0x0, depth=3) at tree.c:12\n#1  0x0000555555555220 in visit (node=0x5555555593a0, depth=2) at tree.c:15\n#2  0x0000555555555220 in visit (node=0x555555559380, depth=1) at tree.c:15\n#3  0x0000555555555260 in main () at tree.c:40\n",
+        "expected": "цепочка: main (tree.c:40) -> visit (tree.c:15) -> visit (tree.c:15) -> visit (tree.c:12)\nваш код: visit, tree.c:12\n"
+      },
+      {
+        "id": "hidden-9",
+        "name": "Кадр без адреса в середине",
+        "stdin": "#0  0x0000555555555199 in step () at sim.c:3\n#1  run () at sim.c:9\n#2  0x00005555555551e0 in main () at sim.c:14\n",
+        "expected": "цепочка: main (sim.c:14) -> run (sim.c:9) -> step (sim.c:3)\nваш код: step, sim.c:3\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define LINE 320\n#define FRAMES 30\n\nstatic char functions[FRAMES][LINE];\nstatic char places[FRAMES][LINE];\nstatic int is_user[FRAMES];\n\nint main(void) {\n    char line[LINE];\n    int count = 0;\n    while (fgets(line, sizeof line, stdin) != NULL && count < FRAMES) {\n        line[strcspn(line, \"\\r\\n\")] = '\\0';\n        if (line[0] != '#') {\n            continue;\n        }\n        char *p = line + 1;\n        while (*p >= '0' && *p <= '9') {\n            p++;\n        }\n        while (*p == ' ') {\n            p++;\n        }\n        if (strncmp(p, \"0x\", 2) == 0) {\n            char *in = strstr(p, \" in \");\n            if (in == NULL) {\n                continue;\n            }\n            p = in + 4;\n        }\n        char *paren = strstr(p, \" (\");\n        size_t length = paren != NULL ? (size_t)(paren - p) : strlen(p);\n        memcpy(functions[count], p, length);\n        functions[count][length] = '\\0';\n        char *at = strstr(p, \" at \");\n        if (at != NULL) {\n            char *next;\n            while ((next = strstr(at + 1, \" at \")) != NULL) {\n                at = next;\n            }\n            strcpy(places[count], at + 4);\n            is_user[count] = places[count][0] != '/' && strncmp(places[count], \"../\", 3) != 0;\n        } else {\n            places[count][0] = '\\0';\n            is_user[count] = 0;\n        }\n        count++;\n    }\n    printf(\"цепочка:\");\n    for (int i = count - 1; i >= 0; i--) {\n        printf(\" %s\", functions[i]);\n        if (is_user[i]) {\n            printf(\" (%s)\", places[i]);\n        }\n        if (i > 0) {\n            printf(\" ->\");\n        }\n    }\n    putchar('\\n');\n    for (int i = 0; i < count; i++) {\n        if (is_user[i]) {\n            printf(\"ваш код: %s, %s\\n\", functions[i], places[i]);\n            return 0;\n        }\n    }\n    printf(\"ваш код: не найден\\n\");\n    return 0;\n}\n",
+    "solutionExplanation": "Backtrace читают снизу вверх, чтобы понять **как** программа сюда попала, и сверху вниз, чтобы найти **где** искать ошибку. Верхние кадры часто принадлежат библиотеке C: `strlen`, `memcpy`, `printf` падают, когда получили неверный указатель. Пути вида `../sysdeps/…` или `from /lib/…` выдают чужой код.\n\nПервый кадр вашего кода — место, где был сформирован плохой аргумент или нарушено условие. С него начинается расследование: `frame N`, затем `info locals` и `print` для подозрительных значений.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "advanced-gdb-task-2",
+      "title": "Точка наблюдения",
+      "description": "Смоделируйте команду `watch`. В первой строке — `watch ИМЯ`. Во второй — число событий `n`, далее `n` строк `строка переменная значение`: при выполнении строки программы переменной присвоено значение. В начале все переменные равны 0.\n\nGDB останавливается, только когда наблюдаемая переменная **меняет** значение. Для каждой остановки напечатайте `строка L: СТАРОЕ -> НОВОЕ`. В конце напечатайте `остановок: K`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "watch total\n4\n5 total 0\n6 total 3\n6 i 1\n6 total 4\n",
+          "output": "строка 6: 0 -> 3\nстрока 6: 3 -> 4\nостановок: 2\n"
+        },
+        {
+          "input": "watch limit\n2\n3 count 7\n4 count 8\n",
+          "output": "остановок: 0\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 1000; имена не длиннее 30 символов; значения — целые от −10¹⁸ до 10¹⁸."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Отслеживать нужно только одну переменную: храните её текущее значение в long long current = 0.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Событие с другой переменной пропускайте; событие с наблюдаемой — сравнивайте новое значение с current.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "watch total\n4\n5 total 0\n6 total 3\n6 i 1\n6 total 4\n",
+          "expected": "строка 6: 0 -> 3\nстрока 6: 3 -> 4\nостановок: 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "watch limit\n2\n3 count 7\n4 count 8\n",
+          "expected": "остановок: 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одно изменение",
+          "stdin": "watch x\n1\n10 x 5\n",
+          "expected": "строка 10: 0 -> 5\nостановок: 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Присваивание того же значения",
+          "stdin": "watch x\n3\n1 x 0\n2 x 0\n3 x 0\n",
+          "expected": "остановок: 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Возврат к старому",
+          "stdin": "watch x\n4\n1 x 1\n2 x 2\n3 x 1\n4 x 1\n",
+          "expected": "строка 1: 0 -> 1\nстрока 2: 1 -> 2\nстрока 3: 2 -> 1\nостановок: 3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Большие числа",
+          "stdin": "watch big\n2\n7 big 1000000000000000000\n8 big -1000000000000000000\n",
+          "expected": "строка 7: 0 -> 1000000000000000000\nстрока 8: 1000000000000000000 -> -1000000000000000000\nостановок: 2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Похожие имена",
+          "stdin": "watch a\n3\n1 ab 5\n2 b 5\n3 a 5\n",
+          "expected": "строка 3: 0 -> 5\nостановок: 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Отрицательные",
+          "stdin": "watch n\n5\n2 n -1\n3 n -2\n4 m -3\n5 n -2\n6 n 0\n",
+          "expected": "строка 2: 0 -> -1\nстрока 3: -1 -> -2\nстрока 6: -2 -> 0\nостановок: 3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Порча соседней переменной",
+          "stdin": "watch limit\n6\n12 limit 10\n20 buf 65\n21 buf 66\n22 limit 66\n23 limit 66\n30 limit 10\n",
+          "expected": "строка 12: 0 -> 10\nстрока 22: 10 -> 66\nстрока 30: 66 -> 10\nостановок: 3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Другая переменная",
+          "stdin": "watch sum\n1\n4 total 9\n",
+          "expected": "остановок: 0\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Счётчик цикла",
+          "stdin": "watch i\n8\n5 i 0\n5 i 1\n5 i 2\n5 i 3\n6 sum 6\n5 i 4\n5 i 5\n7 i 5\n",
+          "expected": "строка 5: 0 -> 1\nстрока 5: 1 -> 2\nстрока 5: 2 -> 3\nстрока 5: 3 -> 4\nстрока 5: 4 -> 5\nостановок: 5\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char watched[64];\n    int n;\n    if (scanf(\"watch %63s %d\", watched, &n) != 2) {\n        return 0;\n    }\n    long long current = 0;\n    int stops = 0;\n    for (int i = 0; i < n; i++) {\n        int line;\n        char name[64];\n        long long value;\n        if (scanf(\"%d %63s %lld\", &line, name, &value) != 3) {\n            break;\n        }\n        if (strcmp(name, watched) != 0 || value == current) {\n            continue;\n        }\n        printf(\"строка %d: %lld -> %lld\\n\", line, current, value);\n        current = value;\n        stops++;\n    }\n    printf(\"остановок: %d\\n\", stops);\n    return 0;\n}\n",
+      "solutionExplanation": "Точка наблюдения реагирует на **изменение значения**, а не на присваивание: `total = total;` или запись того же числа программу не остановит. Аппаратные точки наблюдения (`Hardware watchpoint`) процессор проверяет сам при каждой записи по адресу, поэтому программа почти не замедляется.\n\nЭто самый быстрый способ найти, кто портит переменную: вместо поиска всех мест, где она упоминается, отладчик сам укажет на строку — даже если запись идёт через чужой указатель или за границей соседнего массива.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-gdb-task-3",
+      "title": "Сеанс отладчика",
+      "description": "Смоделируйте сеанс GDB. В первой строке — длина трассы `t` и `t` номеров строк: в таком порядке программа выполняет строки при запуске. Далее до конца ввода — команды:\n\n| Команда | Действие и вывод |\n| --- | --- |\n| `break N` | точка останова с очередным номером K (нумерация общая, с 1): `Breakpoint K at line N` |\n| `tbreak N` | временная точка, удаляется после первого срабатывания: `Temporary breakpoint K at line N` |\n| `delete K` | удалить точку K; если её нет — `No breakpoint number K.` |\n| `run` | запустить программу с начала трассы (даже если она уже запущена) |\n| `continue` | продолжить с позиции после текущей |\n| `next` | перейти к следующей позиции трассы: `line N`; точки останова при этом не проверяются |\n| `info breakpoints` | для каждой точки: `K line N hits H`, у временных в конце ` temp`; если точек нет — `No breakpoints.` |\n\nПри `run` и `continue` программа выполняется до первой позиции, строка которой совпадает со строкой существующей точки останова. Если таких точек несколько, срабатывает точка с наименьшим номером: увеличьте её счётчик и напечатайте `Breakpoint K, line N` (для временной — `Temporary breakpoint K, line N`, после чего удалите её). Если программа дошла до конца трассы — `program exited`, и программа больше не выполняется.\n\nЕсли программа не выполняется, `continue` и `next` печатают `The program is not being run.`",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "7 1 2 3 4 3 4 5\nbreak 4\nrun\ncontinue\ninfo breakpoints\ncontinue\n",
+          "output": "Breakpoint 1 at line 4\nBreakpoint 1, line 4\nBreakpoint 1, line 4\n1 line 4 hits 2\nprogram exited\n"
+        },
+        {
+          "input": "4 10 11 12 13\ntbreak 11\nrun\nnext\nnext\nnext\ncontinue\n",
+          "output": "Temporary breakpoint 1 at line 11\nTemporary breakpoint 1, line 11\nline 12\nline 13\nprogram exited\nThe program is not being run.\n"
+        }
+      ],
+      "constraints": ["1 ≤ t ≤ 1000; не больше 100 команд; номера строк — от 1 до 10⁴."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Состояние: позиция в трассе pos и флаг running. Точки храните в массиве структур { number, line, hits, temporary, deleted }.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Общая функция resume(start) ищет первую позицию p ≥ start, для которой есть точка на строке trace[p]. Для run — start = 0, для continue — pos + 1.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Команды читайте словами: scanf(\"%15s\", command), затем для break, tbreak и delete — число.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "7 1 2 3 4 3 4 5\nbreak 4\nrun\ncontinue\ninfo breakpoints\ncontinue\n",
+          "expected": "Breakpoint 1 at line 4\nBreakpoint 1, line 4\nBreakpoint 1, line 4\n1 line 4 hits 2\nprogram exited\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "4 10 11 12 13\ntbreak 11\nrun\nnext\nnext\nnext\ncontinue\n",
+          "expected": "Temporary breakpoint 1 at line 11\nTemporary breakpoint 1, line 11\nline 12\nline 13\nprogram exited\nThe program is not being run.\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Без точек",
+          "stdin": "3 1 2 3\nrun\n",
+          "expected": "program exited\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Программа не запущена",
+          "stdin": "3 1 2 3\ncontinue\nnext\ninfo breakpoints\n",
+          "expected": "The program is not being run.\nThe program is not being run.\nNo breakpoints.\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Две точки",
+          "stdin": "5 1 2 3 2 3\nbreak 3\nbreak 2\nrun\ncontinue\ncontinue\ncontinue\ncontinue\n",
+          "expected": "Breakpoint 1 at line 3\nBreakpoint 2 at line 2\nBreakpoint 2, line 2\nBreakpoint 1, line 3\nBreakpoint 2, line 2\nBreakpoint 1, line 3\nprogram exited\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Две точки на одной строке",
+          "stdin": "4 5 5 5 5\nbreak 5\nbreak 5\nrun\ninfo breakpoints\n",
+          "expected": "Breakpoint 1 at line 5\nBreakpoint 2 at line 5\nBreakpoint 1, line 5\n1 line 5 hits 1\n2 line 5 hits 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Удаление",
+          "stdin": "3 1 2 3\nbreak 2\ndelete 1\ndelete 1\ndelete 7\nrun\n",
+          "expected": "Breakpoint 1 at line 2\nNo breakpoint number 1.\nNo breakpoint number 7.\nprogram exited\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Временная и обычная",
+          "stdin": "6 1 2 3 1 2 3\ntbreak 2\nbreak 3\nrun\ncontinue\ncontinue\ninfo breakpoints\n",
+          "expected": "Temporary breakpoint 1 at line 2\nBreakpoint 2 at line 3\nTemporary breakpoint 1, line 2\nBreakpoint 2, line 3\nBreakpoint 2, line 3\n2 line 3 hits 2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Повторный run",
+          "stdin": "4 1 2 3 4\nbreak 3\nrun\nrun\nnext\nnext\n",
+          "expected": "Breakpoint 1 at line 3\nBreakpoint 1, line 3\nBreakpoint 1, line 3\nline 4\nprogram exited\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Смена точек на ходу",
+          "stdin": "10 1 2 3 4 3 4 3 4 3 5\nbreak 4\nrun\ncontinue\ndelete 1\nbreak 5\ncontinue\ninfo breakpoints\n",
+          "expected": "Breakpoint 1 at line 4\nBreakpoint 1, line 4\nBreakpoint 1, line 4\nBreakpoint 2 at line 5\nBreakpoint 2, line 5\n2 line 5 hits 1\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "next в конце",
+          "stdin": "2 7 8\nbreak 8\nrun\nnext\nnext\n",
+          "expected": "Breakpoint 1 at line 8\nBreakpoint 1, line 8\nprogram exited\nThe program is not being run.\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    int line;\n    int hits;\n    int temporary;\n    int deleted;\n} Breakpoint;\n\nstatic int trace[1000];\nstatic int trace_length;\nstatic Breakpoint points[101];\nstatic int point_count;\nstatic int pos;\nstatic int running;\n\nstatic int find_point(int line) {\n    for (int i = 0; i < point_count; i++) {\n        if (!points[i].deleted && points[i].line == line) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nstatic void resume(int start) {\n    for (int p = start; p < trace_length; p++) {\n        int k = find_point(trace[p]);\n        if (k >= 0) {\n            pos = p;\n            running = 1;\n            points[k].hits++;\n            printf(\"%sreakpoint %d, line %d\\n\", points[k].temporary ? \"Temporary b\" : \"B\", k + 1,\n                   trace[p]);\n            if (points[k].temporary) {\n                points[k].deleted = 1;\n            }\n            return;\n        }\n    }\n    running = 0;\n    printf(\"program exited\\n\");\n}\n\nint main(void) {\n    if (scanf(\"%d\", &trace_length) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < trace_length; i++) {\n        if (scanf(\"%d\", &trace[i]) != 1) {\n            return 0;\n        }\n    }\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"break\") == 0 || strcmp(command, \"tbreak\") == 0) {\n            int line;\n            if (scanf(\"%d\", &line) != 1 || point_count >= 100) {\n                break;\n            }\n            Breakpoint *point = &points[point_count++];\n            point->line = line;\n            point->temporary = command[0] == 't';\n            printf(\"%sreakpoint %d at line %d\\n\", point->temporary ? \"Temporary b\" : \"B\",\n                   point_count, line);\n        } else if (strcmp(command, \"delete\") == 0) {\n            int number;\n            if (scanf(\"%d\", &number) != 1) {\n                break;\n            }\n            if (number < 1 || number > point_count || points[number - 1].deleted) {\n                printf(\"No breakpoint number %d.\\n\", number);\n            } else {\n                points[number - 1].deleted = 1;\n            }\n        } else if (strcmp(command, \"run\") == 0) {\n            resume(0);\n        } else if (strcmp(command, \"continue\") == 0) {\n            if (running) {\n                resume(pos + 1);\n            } else {\n                printf(\"The program is not being run.\\n\");\n            }\n        } else if (strcmp(command, \"next\") == 0) {\n            if (!running) {\n                printf(\"The program is not being run.\\n\");\n            } else if (pos + 1 >= trace_length) {\n                running = 0;\n                printf(\"program exited\\n\");\n            } else {\n                pos++;\n                printf(\"line %d\\n\", trace[pos]);\n            }\n        } else if (strcmp(command, \"info\") == 0) {\n            char what[16];\n            if (scanf(\"%15s\", what) != 1) {\n                break;\n            }\n            int shown = 0;\n            for (int i = 0; i < point_count; i++) {\n                if (!points[i].deleted) {\n                    printf(\"%d line %d hits %d%s\\n\", i + 1, points[i].line, points[i].hits,\n                           points[i].temporary ? \" temp\" : \"\");\n                    shown++;\n                }\n            }\n            if (shown == 0) {\n                printf(\"No breakpoints.\\n\");\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Трасса — это последовательность строк, которые выполняет программа; цикл даёт повторы одних и тех же номеров. Поэтому одна точка останова в теле цикла срабатывает много раз, и счётчик `hits` в `info breakpoints` показывает, сколько итераций прошло. Так же работает и настоящий GDB, а команда `ignore K 99` позволяет пропустить первые 99 срабатываний.\n\nКлючевое различие команд: `continue` «бежит» до следующей точки, а `next` делает ровно один шаг. Временная точка (`tbreak`) удобна, чтобы один раз остановиться в начале интересного участка, не загромождая список. Нумерация точек общая и не переиспользуется после `delete` — как в GDB.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-gdb-task-4",
+      "title": "Найди ошибку: падение",
+      "description": "Программа читает `n` слов и печатает длину самого длинного слова и само слово (первое из самых длинных). На всех тестах она аварийно завершается.\n\nВ GDB backtrace выглядит так:\n\n```\n#0  __strlen_avx2 () at ../sysdeps/x86_64/multiarch/strlen-avx2.S:76\n#1  0x0000555555555231 in longest (words=0x5555555592a0, count=3) at main.c:8\n#2  0x0000555555555390 in main () at main.c:27\n```\n\nНайдите первый кадр своего кода, выясните, при каком `i` происходит падение, и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstatic int longest(char *const *words, int count) {\n    int best = 0;\n    for (int i = 0; i <= count; i++) {\n        if (strlen(words[i]) > strlen(words[best])) {\n            best = i;\n        }\n    }\n    return best;\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1) {\n        return 0;\n    }\n    char **words = malloc((size_t)n * sizeof *words);\n    char buffer[64];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%63s\", buffer);\n        words[i] = malloc(strlen(buffer) + 1);\n        strcpy(words[i], buffer);\n    }\n    int best = longest(words, n);\n    printf(\"%zu %s\\n\", strlen(words[best]), words[best]);\n    for (int i = 0; i < n; i++) {\n        free(words[i]);\n    }\n    free(words);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\ngdb debugger stack\n",
+          "output": "8 debugger\n"
+        },
+        {
+          "input": "1\nx\n",
+          "output": "1 x\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 100; слова из латинских букв, не длиннее 63 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Кадр #1 — функция longest, строка с strlen(words[i]). Какое последнее значение принимает i при count = 3?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Массив words содержит count указателей: допустимые индексы — от 0 до count − 1.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\ngdb debugger stack\n",
+          "expected": "8 debugger\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nx\n",
+          "expected": "1 x\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Равные длины — первое",
+          "stdin": "2\nab cd\n",
+          "expected": "2 ab\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Последнее длиннее",
+          "stdin": "4\na bb ccc dddd\n",
+          "expected": "4 dddd\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Первое длиннее",
+          "stdin": "4\ndddd ccc bb a\n",
+          "expected": "4 dddd\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Несколько самых длинных",
+          "stdin": "3\nbreak watch frame\n",
+          "expected": "5 break\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Максимальная длина",
+          "stdin": "1\nabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk\n",
+          "expected": "63 abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Команды GDB",
+          "stdin": "5\nrun next step finish continue\n",
+          "expected": "8 continue\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Однобуквенные",
+          "stdin": "6\na b c d e f\n",
+          "expected": "1 a\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Растущие",
+          "stdin": "3\nlong longer longest\n",
+          "expected": "7 longest\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Два слова",
+          "stdin": "2\nbacktrace bt\n",
+          "expected": "9 backtrace\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstatic int longest(char *const *words, int count) {\n    int best = 0;\n    for (int i = 0; i < count; i++) {\n        if (strlen(words[i]) > strlen(words[best])) {\n            best = i;\n        }\n    }\n    return best;\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1) {\n        return 0;\n    }\n    char **words = malloc((size_t)n * sizeof *words);\n    char buffer[64];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%63s\", buffer);\n        words[i] = malloc(strlen(buffer) + 1);\n        strcpy(words[i], buffer);\n    }\n    int best = longest(words, n);\n    printf(\"%zu %s\\n\", strlen(words[best]), words[best]);\n    for (int i = 0; i < n; i++) {\n        free(words[i]);\n    }\n    free(words);\n    return 0;\n}\n",
+      "solutionExplanation": "Кадр `#0` — `strlen` из библиотеки C, но она лишь получила плохой указатель. Первый кадр своего кода — `longest`, строка 8. В отладчике `frame 1` и `print i` показали бы `i = 3` при `count = 3`: условие `i <= count` делает лишнюю итерацию и читает `words[3]` — за концом массива из трёх указателей.\n\nБез санитайзеров такое чтение иногда «работает» — за массивом случайно оказывается что-то похожее на указатель. AddressSanitizer сообщает `heap-buffer-overflow` при первом же запуске, а GDB помогает понять, **почему** индекс вышел за границу.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "advanced-gdb-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "С какими флагами собрать программу для удобной отладки в GDB?",
+        "explanation": "-g добавляет отладочную информацию, -O0 сохраняет код близким к исходнику. -Wall полезен, но на отладку не влияет.",
+        "options": ["-g -O0", "-O2", "-O3 -DNDEBUG", "-Wall"],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Программа остановлена на строке total = compute(x);. Чем next отличается от step?",
+        "explanation": "step нужен, когда ошибка, вероятно, внутри вызываемой функции; next — когда ей можно доверять.",
+        "options": [
+          "next выполнит строку целиком, step зайдёт внутрь compute",
+          "step выполнит строку целиком, next зайдёт внутрь compute",
+          "next продолжит до следующей точки останова",
+          "Ничем"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Какой командой GDB посмотреть цепочку вызовов, которая привела к текущему месту?",
+        "explanation": "bt печатает кадры от текущей функции до main; frame N переключает на нужный кадр.",
+        "type": "text",
+        "answers": ["bt", "backtrace", "where"],
+        "placeholder": "Команда"
+      },
+      {
+        "id": "q4",
+        "question": "Что напечатает print arr[0]@3, если int arr[5] = {7, 8, 9, 10, 11}?",
+        "explanation": "Запись x@n показывает n элементов подряд, начиная с x.",
+        "options": ["{7, 8, 9}", "7", "{7, 8, 9, 10, 11}", "3"],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Переменная limit где-то получает неверное значение, но в коде много мест, где она меняется. Что поможет быстрее всего?",
+        "explanation": "Точка наблюдения покажет старое и новое значение и строку, где произошло изменение, — даже если запись идёт по чужому указателю.",
+        "options": [
+          "watch limit — GDB остановится в момент изменения",
+          "break main и много раз next",
+          "print limit в начале программы",
+          "Пересобрать с -O2"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Программа упала с SIGSEGV, кадр #0 — __memcpy_avx_unaligned в libc. Что делать дальше?",
+        "explanation": "Библиотечная функция падает, когда ей передали неверный указатель или размер. Ошибка — в месте вызова.",
+        "options": [
+          "Подняться по bt до первого кадра своего кода и проверить аргументы вызова",
+          "Сообщить об ошибке в библиотеке C",
+          "Пересобрать программу без -g",
+          "Заменить memcpy на цикл"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Напишите команду GDB, которая ставит точку останова на строку 25 файла parser.c.",
+        "explanation": "Формат файл:строка; если файл один, достаточно номера строки: b 25.",
+        "type": "text",
+        "answers": ["break parser.c:25", "b parser.c:25"],
+        "placeholder": "Команда"
+      },
+      {
+        "id": "q8",
+        "question": "Цикл выполняется 1000 раз, ошибка проявляется при i == 999. Как остановиться сразу в нужной итерации?",
+        "explanation": "Условная точка останова проверяет выражение при каждом прохождении строки и останавливает программу, только когда оно истинно.",
+        "options": ["break 30 if i == 999", "break 30 и 999 раз continue", "watch i", "step 999"],
+        "correct": 0
+      },
+      {
+        "id": "q9",
+        "question": "Что делает команда finish?",
+        "explanation": "finish удобен, если вы случайно зашли step в неинтересную функцию или хотите увидеть её результат.",
+        "options": [
+          "Дорабатывает текущую функцию до возврата и показывает возвращённое значение",
+          "Завершает программу",
+          "Удаляет все точки останова",
+          "Выходит из GDB"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

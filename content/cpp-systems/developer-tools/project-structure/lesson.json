@@ -1,0 +1,462 @@
+{
+  "id": "project-structure",
+  "title": "Структура проекта",
+  "description": "Раскладка каталогов include, src, tests и build, модуль как пара заголовка и реализации, правила заголовков, static и префиксы имён, слои зависимостей без циклов и сборка вне исходников.",
+  "moduleId": "developer-tools",
+  "order": 6,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["link-errors"],
+  "objectives": [
+    "Раскладывать файлы проекта по каталогам include, src, tests и build",
+    "Разделять модуль на заголовок-интерфейс и файл реализации",
+    "Скрывать внутренние функции через static и именовать публичные с префиксом",
+    "Замечать циклические зависимости между модулями"
+  ],
+  "tags": ["Структура проекта", "Модули", "Заголовки", "Зависимости", "Сборка"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "project-structure-task-1",
+    "title": "Ревизия модуля",
+    "description": "Проверьте, согласованы ли заголовок модуля и его реализация. Ввод:\n- первая строка — префикс модуля, например `stack`;\n- вторая — число `k` и `k` имён функций, объявленных в заголовке;\n- третья — число `m` и `m` определений из файла `.c`: имя, перед которым может стоять слово `static`.\n\nНапечатайте замечания в таком порядке:\n1. для каждого имени из заголовка по порядку: `не определена: X`, если в `.c` нет его определения, или `static, но объявлена в заголовке: X`, если определение есть, но со `static`;\n2. для каждого определения без `static`, которого нет в заголовке: `должна быть static: X`;\n3. для каждого имени из заголовка, которое не начинается с `префикс_`: `нет префикса: X`.\n\nЕсли замечаний нет, напечатайте `модуль в порядке`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "stack\n3 stack_init stack_push stack_pop\n4 stack_init stack_push stack_pop static is_full\n",
+        "output": "модуль в порядке\n"
+      },
+      {
+        "input": "stack\n2 stack_push peek\n3 static stack_push grow peek\n",
+        "output": "static, но объявлена в заголовке: stack_push\nдолжна быть static: grow\nнет префикса: peek\n"
+      }
+    ],
+    "constraints": ["0 ≤ k, m ≤ 20; имена не длиннее 40 символов."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Определения читайте по словам: если прочитано static, следующее слово — имя, и у него отметка is_static = 1.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Проверка префикса: сравните первые strlen(prefix) символов через strncmp и убедитесь, что следующий символ — _.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Каждое правило — отдельный цикл по своему списку. Считайте замечания, чтобы в конце решить, печатать ли «модуль в порядке».",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "stack\n3 stack_init stack_push stack_pop\n4 stack_init stack_push stack_pop static is_full\n",
+        "expected": "модуль в порядке\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "stack\n2 stack_push peek\n3 static stack_push grow peek\n",
+        "expected": "static, но объявлена в заголовке: stack_push\nдолжна быть static: grow\nнет префикса: peek\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Не определена",
+        "stdin": "list\n1 list_free\n0\n",
+        "expected": "не определена: list_free\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Без заголовка",
+        "stdin": "list\n0\n2 helper static other\n",
+        "expected": "должна быть static: helper\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Префикс без подчёркивания",
+        "stdin": "queue\n2 queue_push queuepop\n2 queue_push queuepop\n",
+        "expected": "нет префикса: queuepop\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Другой порядок",
+        "stdin": "io\n2 io_read io_write\n2 io_write io_read\n",
+        "expected": "модуль в порядке\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Пустой модуль",
+        "stdin": "net\n0\n0\n",
+        "expected": "модуль в порядке\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Все виды замечаний",
+        "stdin": "calc\n3 calc_eval calc_parse eval\n5 calc_eval static calc_parse static tokenize eval dump\n",
+        "expected": "static, но объявлена в заголовке: calc_parse\nдолжна быть static: dump\nнет префикса: eval\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Похожий префикс",
+        "stdin": "str\n1 strings_join\n1 strings_join\n",
+        "expected": "нет префикса: strings_join\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Хороший модуль",
+        "stdin": "map\n2 map_get map_set\n3 static hash map_get map_set\n",
+        "expected": "модуль в порядке\n"
+      },
+      {
+        "id": "hidden-9",
+        "name": "Лишняя глобальная",
+        "stdin": "log\n1 log_line\n2 log_line log_line_internal\n",
+        "expected": "должна быть static: log_line_internal\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define NAME 64\n\nstatic char declared[20][NAME];\nstatic char defined[20][NAME];\nstatic int is_static[20];\nstatic int declared_count;\nstatic int defined_count;\n\nstatic int find_defined(const char *name) {\n    for (int i = 0; i < defined_count; i++) {\n        if (strcmp(defined[i], name) == 0) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nstatic int is_declared(const char *name) {\n    for (int i = 0; i < declared_count; i++) {\n        if (strcmp(declared[i], name) == 0) {\n            return 1;\n        }\n    }\n    return 0;\n}\n\nint main(void) {\n    char prefix[NAME];\n    if (scanf(\"%63s %d\", prefix, &declared_count) != 2) {\n        return 0;\n    }\n    for (int i = 0; i < declared_count; i++) {\n        if (scanf(\"%63s\", declared[i]) != 1) {\n            return 0;\n        }\n    }\n    if (scanf(\"%d\", &defined_count) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < defined_count; i++) {\n        char word[NAME];\n        if (scanf(\"%63s\", word) != 1) {\n            return 0;\n        }\n        is_static[i] = strcmp(word, \"static\") == 0;\n        if (is_static[i] && scanf(\"%63s\", word) != 1) {\n            return 0;\n        }\n        strcpy(defined[i], word);\n    }\n    int notes = 0;\n    for (int i = 0; i < declared_count; i++) {\n        int index = find_defined(declared[i]);\n        if (index < 0) {\n            printf(\"не определена: %s\\n\", declared[i]);\n            notes++;\n        } else if (is_static[index]) {\n            printf(\"static, но объявлена в заголовке: %s\\n\", declared[i]);\n            notes++;\n        }\n    }\n    for (int i = 0; i < defined_count; i++) {\n        if (!is_static[i] && !is_declared(defined[i])) {\n            printf(\"должна быть static: %s\\n\", defined[i]);\n            notes++;\n        }\n    }\n    size_t length = strlen(prefix);\n    for (int i = 0; i < declared_count; i++) {\n        if (strncmp(declared[i], prefix, length) != 0 || declared[i][length] != '_') {\n            printf(\"нет префикса: %s\\n\", declared[i]);\n            notes++;\n        }\n    }\n    if (notes == 0) {\n        printf(\"модуль в порядке\\n\");\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Каждое замечание — будущая ошибка сборки или архитектуры. Объявленная, но не определённая функция даст `undefined reference` у первого же пользователя. `static`-определение для объявленной в заголовке функции — тоже: символ локальный, и линковщик его не увидит. Публичная функция без объявления в заголовке — лишний глобальный символ, который рано или поздно столкнётся с одноимённым.\n\nПроверка префикса требует символа `_` после префикса: `stackpush` и `stacks_count` не принадлежат модулю `stack`, хотя начинаются с тех же букв. Похожие проверки выполняют линтеры и скрипты в CI больших проектов.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "project-structure-task-2",
+      "title": "Относительный путь",
+      "description": "Вычислите относительный путь от каталога до файла — так записывают пути в `#include` и в файлах сборки. В первой строке — число запросов `q`. Каждый запрос — две строки: абсолютный путь каталога и абсолютный путь файла.\n\nПути нормализованы: начинаются с `/`, не содержат `.`, `..`, повторных и завершающих `/`; корень записан как `/`. Напечатайте для каждого запроса путь, который ведёт из каталога к файлу: сначала нужное число `..`, затем каталоги вниз и имя файла, всё через `/`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "1\n/home/u/calc/src\n/home/u/calc/include/calc.h\n",
+          "output": "../include/calc.h\n"
+        },
+        {
+          "input": "2\n/home/u/calc\n/home/u/calc/main.c\n/a/b/c\n/a/x.h\n",
+          "output": "main.c\n../../x.h\n"
+        }
+      ],
+      "constraints": ["1 ≤ q ≤ 10; пути не длиннее 200 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Разбейте оба пути на компоненты через strtok(copy, \"/\") и сохраните указатели в массивы.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Общая часть — сколько первых компонентов каталога совпадает с компонентами каталога файла (всех, кроме последнего). Сравнивайте компоненты целиком через strcmp, а не строки посимвольно.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Ответ: (число компонентов каталога − общая часть) раз \"../\", затем оставшиеся компоненты файла через \"/\".",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1\n/home/u/calc/src\n/home/u/calc/include/calc.h\n",
+          "expected": "../include/calc.h\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\n/home/u/calc\n/home/u/calc/main.c\n/a/b/c\n/a/x.h\n",
+          "expected": "main.c\n../../x.h\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Из корня",
+          "stdin": "1\n/\n/x.h\n",
+          "expected": "x.h\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Похожие имена",
+          "stdin": "1\n/home/ann\n/home/anna/x.c\n",
+          "expected": "../anna/x.c\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Только вниз",
+          "stdin": "1\n/a/b\n/a/b/c/d/e.h\n",
+          "expected": "c/d/e.h\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Только вверх до корня",
+          "stdin": "1\n/a/b/c/d\n/e.h\n",
+          "expected": "../../../../e.h\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Параллельные деревья",
+          "stdin": "1\n/p/src/net\n/p/include/net/socket.h\n",
+          "expected": "../../include/net/socket.h\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Нет общего предка кроме корня",
+          "stdin": "1\n/x/y\n/z/w.c\n",
+          "expected": "../../z/w.c\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Вложенный тест",
+          "stdin": "1\n/p/tests\n/p/tests/unit/main_test.c\n",
+          "expected": "unit/main_test.c\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Несколько запросов",
+          "stdin": "3\n/w/build\n/w/src/main.c\n/w/src\n/w/build/main.o\n/w\n/w/CMakeLists.txt\n",
+          "expected": "../src/main.c\n../build/main.o\nCMakeLists.txt\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Повторяющиеся имена",
+          "stdin": "1\n/a/a/a\n/a/a/a/a.h\n",
+          "expected": "a.h\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define LINE 256\n\nstatic int split(char *path, char *parts[]) {\n    int count = 0;\n    for (char *part = strtok(path, \"/\"); part != NULL; part = strtok(NULL, \"/\")) {\n        parts[count++] = part;\n    }\n    return count;\n}\n\nint main(void) {\n    int q;\n    char line[LINE];\n    if (fgets(line, sizeof line, stdin) == NULL || sscanf(line, \"%d\", &q) != 1) {\n        return 0;\n    }\n    for (int query = 0; query < q; query++) {\n        char from[LINE];\n        char to[LINE];\n        if (fgets(from, sizeof from, stdin) == NULL || fgets(to, sizeof to, stdin) == NULL) {\n            break;\n        }\n        from[strcspn(from, \"\\r\\n\")] = '\\0';\n        to[strcspn(to, \"\\r\\n\")] = '\\0';\n        char *from_parts[LINE];\n        char *to_parts[LINE];\n        int from_count = split(from, from_parts);\n        int to_count = split(to, to_parts);\n        int common = 0;\n        while (common < from_count && common < to_count - 1 &&\n               strcmp(from_parts[common], to_parts[common]) == 0) {\n            common++;\n        }\n        for (int i = common; i < from_count; i++) {\n            printf(\"../\");\n        }\n        for (int i = common; i < to_count; i++) {\n            printf(\"%s%s\", to_parts[i], i + 1 < to_count ? \"/\" : \"\\n\");\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Относительный путь — это «подняться до общего предка, затем спуститься». Общий предок — самый длинный общий **набор компонентов**, а не общий префикс строк: у `/home/ann` и `/home/anna/x.c` общий только `/home`, хотя строки совпадают на девять символов. Поэтому пути сначала разбиваются на компоненты.\n\nПоследний компонент файла — его имя, а не каталог, поэтому он не участвует в поиске общего предка: файл `/a/b` из каталога `/a/b` невозможен, а из каталога `/a` это просто `b`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "project-structure-task-3",
+      "title": "Циклические зависимости",
+      "description": "Проверьте граф зависимостей модулей. В первой строке — число модулей `n`. Далее `n` строк `имя k зав₁ … завₖ`: модуль и модули, заголовки которых он подключает.\n\nОбойдите граф в глубину: модули — в порядке ввода, зависимости — в порядке строки. Если найден цикл, напечатайте первый найденный в виде `цикл: a -> b -> c -> a` (от модуля, с которого цикл начинается, до него же) и больше ничего.\n\nЕсли циклов нет, напечатайте `порядок сборки:` и модули через пробел в таком порядке, чтобы каждый модуль шёл **после** всех своих зависимостей: модуль добавляется в список, когда обход всех его зависимостей завершён.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "3\nmain 1 parser\nparser 1 lexer\nlexer 0\n",
+          "output": "порядок сборки: lexer parser main\n"
+        },
+        {
+          "input": "3\nlexer 1 parser\nparser 1 eval\neval 1 lexer\n",
+          "output": "цикл: lexer -> parser -> eval -> lexer\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 30; 0 ≤ k ≤ 10; имена не длиннее 30 символов.",
+        "Каждая зависимость описана в одной из n строк."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Используйте три состояния модуля: 0 — не посещён, 1 — в текущем пути обхода, 2 — полностью обработан. Встреча модуля в состоянии 1 означает цикл.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Храните текущий путь обхода в массиве-стеке path. Цикл — часть пути от найденного модуля до конца плюс он сам ещё раз.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Модуль добавляйте в порядок сборки в момент, когда переводите его в состояние 2.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\nmain 1 parser\nparser 1 lexer\nlexer 0\n",
+          "expected": "порядок сборки: lexer parser main\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3\nlexer 1 parser\nparser 1 eval\neval 1 lexer\n",
+          "expected": "цикл: lexer -> parser -> eval -> lexer\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Один модуль",
+          "stdin": "1\nsolo 0\n",
+          "expected": "порядок сборки: solo\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Зависит сам от себя",
+          "stdin": "1\nself 1 self\n",
+          "expected": "цикл: self -> self\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Ромб — не цикл",
+          "stdin": "4\na 2 b c\nb 1 d\nc 1 d\nd 0\n",
+          "expected": "порядок сборки: d b c a\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Цикл не с первого модуля",
+          "stdin": "4\nmain 1 a\na 1 b\nb 1 c\nc 1 a\n",
+          "expected": "цикл: a -> b -> c -> a\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Независимые модули",
+          "stdin": "3\nx 0\ny 0\nz 0\n",
+          "expected": "порядок сборки: x y z\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Слои",
+          "stdin": "6\napp 2 net ui\nnet 2 proto util\nui 1 util\nproto 1 util\nutil 0\ntests 2 net ui\n",
+          "expected": "порядок сборки: util proto net ui app tests\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Нижние модули первыми",
+          "stdin": "4\nutil 0\nlog 1 util\nconfig 2 log util\nmain 2 config log\n",
+          "expected": "порядок сборки: util log config main\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Цикл во второй компоненте",
+          "stdin": "5\na 1 b\nb 0\nc 1 d\nd 1 e\ne 1 c\n",
+          "expected": "цикл: c -> d -> e -> c\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Цикл через вторую зависимость",
+          "stdin": "3\na 2 b c\nb 0\nc 1 a\n",
+          "expected": "цикл: a -> c -> a\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define MODULES 30\n#define NAME 32\n\nstatic char names[MODULES][NAME];\nstatic char deps[MODULES][10][NAME];\nstatic int dep_count[MODULES];\nstatic int state[MODULES];\nstatic int module_count;\nstatic int path[MODULES];\nstatic int path_length;\nstatic int order[MODULES];\nstatic int order_length;\n\nstatic int find(const char *name) {\n    for (int i = 0; i < module_count; i++) {\n        if (strcmp(names[i], name) == 0) {\n            return i;\n        }\n    }\n    return -1;\n}\n\n/* Возвращает 1, если найден и напечатан цикл. */\nstatic int visit(int module) {\n    state[module] = 1;\n    path[path_length++] = module;\n    for (int i = 0; i < dep_count[module]; i++) {\n        int next = find(deps[module][i]);\n        if (next < 0 || state[next] == 2) {\n            continue;\n        }\n        if (state[next] == 1) {\n            int start = 0;\n            while (path[start] != next) {\n                start++;\n            }\n            printf(\"цикл:\");\n            for (int j = start; j < path_length; j++) {\n                printf(\" %s ->\", names[path[j]]);\n            }\n            printf(\" %s\\n\", names[next]);\n            return 1;\n        }\n        if (visit(next)) {\n            return 1;\n        }\n    }\n    path_length--;\n    state[module] = 2;\n    order[order_length++] = module;\n    return 0;\n}\n\nint main(void) {\n    if (scanf(\"%d\", &module_count) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < module_count; i++) {\n        if (scanf(\"%31s %d\", names[i], &dep_count[i]) != 2) {\n            return 0;\n        }\n        for (int j = 0; j < dep_count[i]; j++) {\n            if (scanf(\"%31s\", deps[i][j]) != 1) {\n                return 0;\n            }\n        }\n    }\n    for (int i = 0; i < module_count; i++) {\n        if (state[i] == 0 && visit(i)) {\n            return 0;\n        }\n    }\n    printf(\"порядок сборки:\");\n    for (int i = 0; i < order_length; i++) {\n        printf(\" %s\", names[order[i]]);\n    }\n    putchar('\\n');\n    return 0;\n}\n",
+      "solutionExplanation": "Три состояния отличают «уже видели в **другой** ветке» (2 — безопасно, просто пропустить) от «видим в **текущем** пути» (1 — вернулись туда, откуда пришли, это цикл). Двух состояний не хватило бы: ромб `a → b → d`, `a → c → d` выглядел бы как цикл.\n\nПорядок, в котором модули завершают обход, — топологическая сортировка: модуль заканчивает обработку только после всех своих зависимостей, значит, они в списке раньше него. В таком порядке модули можно собирать и тестировать снизу вверх. Тот же алгоритм используют Make и CMake, когда решают, какую цель собирать первой.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "project-structure-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Где в типичном проекте лежат заголовки, которыми пользуются другие части программы и внешние пользователи?",
+        "explanation": "include/ — публичный интерфейс. Внутренние заголовки, нужные только реализации, оставляют в src/.",
+        "options": ["include/", "src/", "build/", "tests/"],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Зачем складывать объектные и исполняемые файлы в отдельный каталог build/?",
+        "explanation": "Чистая сборка — rm -r build, а в .gitignore достаточно одной строки build/.",
+        "options": [
+          "Результаты сборки не смешиваются с исходниками, их легко удалить и исключить из Git",
+          "Компилятор работает быстрее, если файлы в build/",
+          "Без каталога build/ линковщик не найдёт объектные файлы",
+          "Так требует стандарт C17"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Что должно находиться в заголовке модуля? Выберите все.",
+        "explanation": "Тело функции в заголовке даст multiple definition, если заголовок подключат два файла. Внутренние static-функции — дело файла .c.",
+        "type": "multiple",
+        "options": [
+          "Прототипы публичных функций",
+          "Объявления глобальных переменных с extern",
+          "Определения типов, которые используют эти функции",
+          "Тело публичной функции",
+          "static-функции, нужные только реализации"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q4",
+        "question": "Почему в stack.c первым подключают собственный заголовок stack.h?",
+        "explanation": "Заголовок должен быть самодостаточным. Первая строка .c — его бесплатная проверка.",
+        "options": [
+          "Если stack.h забыл нужный #include, ошибка сразу проявится при компиляции stack.c",
+          "Иначе линковщик не найдёт функции модуля",
+          "Так быстрее работает препроцессор",
+          "Иначе не сработает include guard"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Публичные заголовки лежат в include/net/socket.h. Какой флаг нужно передать компилятору, чтобы писать #include \"net/socket.h\"?",
+        "explanation": "Путь в #include отсчитывается от каталога поиска; каталогом поиска становится include.",
+        "type": "text",
+        "answers": ["-Iinclude", "-I include", "-I./include", "-I include/"],
+        "placeholder": "Флаг"
+      },
+      {
+        "id": "q6",
+        "question": "Зачем публичным функциям модуля стека давать имена вида calc_stack_push, а не просто push?",
+        "explanation": "Функция push в модуле стека и push в модуле очереди дали бы multiple definition. Префикс заменяет пространства имён.",
+        "options": [
+          "Все глобальные имена программы на C находятся в одном пространстве, и префикс предотвращает конфликты",
+          "Так требует линковщик",
+          "Без префикса функцию нельзя объявить в заголовке",
+          "Префикс ускоряет вызов функции"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Функция is_full используется только внутри stack.c. Как её правильно объявить?",
+        "explanation": "static делает символ локальным: он не виден линковщику и не столкнётся с is_full другого модуля.",
+        "options": [
+          "static int is_full(...) в stack.c, без упоминания в заголовке",
+          "int is_full(...) в stack.h",
+          "extern int is_full(...) в stack.c",
+          "inline int is_full(...) в stack.h без static"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "lexer.h подключает parser.h, а parser.h — lexer.h. Чем это плохо?",
+        "explanation": "Include guard спасает от бесконечного включения, но не от запутанной архитектуры. Общие типы выносят в отдельный нижний модуль.",
+        "options": [
+          "Модули нельзя понять и протестировать по отдельности, а порядок включений становится хрупким",
+          "Препроцессор зациклится навсегда даже с include guard",
+          "Это ошибка компиляции в любом случае",
+          "Ничем, так принято в больших проектах"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

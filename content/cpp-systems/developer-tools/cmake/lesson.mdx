@@ -1,0 +1,167 @@
+## Зачем ещё один инструмент
+
+Makefile из прошлого урока работает, но у него есть пределы. Он привязан к `make` и оболочке Unix — в Windows с Visual Studio его не открыть. Флаги приходится писать для конкретного компилятора. А в большом проекте с библиотеками, тестами и внешними зависимостями Makefile разрастается до тысяч строк.
+
+**CMake** решает задачу на уровень выше. Вы описываете **что** собрать — программы, библиотеки, их зависимости, — а CMake **генерирует** сборочную систему для конкретной платформы: Makefile, проект Ninja, решение Visual Studio или Xcode. Сегодня это стандарт де-факто для C и C++: на нём собираются LLVM, OpenCV, CLion и VS Code открывают такие проекты без настройки.
+
+## Первый CMakeLists.txt
+
+Описание проекта лежит в файле `CMakeLists.txt` в корне:
+
+```text
+cmake_minimum_required(VERSION 3.20)
+project(calc LANGUAGES C)
+
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+
+add_executable(calc src/main.c src/lexer.c src/parser.c)
+target_include_directories(calc PRIVATE include)
+target_compile_options(calc PRIVATE -Wall -Wextra)
+```
+
+| Команда                      | Смысл                                                             |
+| ---------------------------- | ----------------------------------------------------------------- |
+| `cmake_minimum_required`     | минимальная версия CMake, поведение которой ожидает файл          |
+| `project`                    | имя проекта и языки                                               |
+| `set(CMAKE_C_STANDARD 17)`   | стандарт C17; `EXTENSIONS OFF` даёт `-std=c17`, а не `-std=gnu17` |
+| `add_executable(имя файлы…)` | **цель** — программа из этих исходников                           |
+| `target_include_directories` | каталоги `-I` для цели                                            |
+| `target_compile_options`     | дополнительные флаги компиляции цели                              |
+
+## Два шага: настройка и сборка
+
+```text
+$ cmake -S . -B build              # настройка: прочитать CMakeLists.txt, создать build/
+-- The C compiler identification is GNU 13.2.0
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/u/calc/build
+$ cmake --build build              # сборка: запустить сгенерированную систему
+[ 25%] Building C object CMakeFiles/calc.dir/src/main.c.o
+[ 50%] Building C object CMakeFiles/calc.dir/src/lexer.c.o
+[ 75%] Building C object CMakeFiles/calc.dir/src/parser.c.o
+[100%] Linking C executable calc
+$ ./build/calc
+```
+
+- **Настройка** (`-S` — каталог исходников, `-B` — каталог сборки) находит компилятор, проверяет его и генерирует Makefile в `build/`. Её запускают один раз; после правки `CMakeLists.txt` она перезапустится сама.
+- **Сборка** `cmake --build build` вызывает `make` (или Ninja) внутри `build/`. Дальше работает всё, что вы знаете о Make: пересобирается только изменённое, зависимости от заголовков CMake отслеживает сам.
+
+Вся сборка — внутри `build/`, исходники остаются чистыми. Разные варианты сборки живут в разных каталогах: `build-debug/` и `build-release/`.
+
+## Цели и библиотеки
+
+Главное понятие CMake — **цель** (target). Разобьём калькулятор на библиотеку с логикой и программу, которая её использует, — тогда ту же библиотеку подключат и тесты:
+
+```text
+add_library(calc_core STATIC src/lexer.c src/parser.c)
+target_include_directories(calc_core PUBLIC include)
+
+add_executable(calc src/main.c)
+target_link_libraries(calc PRIVATE calc_core m)
+
+add_executable(calc_tests tests/parser_test.c)
+target_link_libraries(calc_tests PRIVATE calc_core)
+```
+
+`add_library(… STATIC …)` создаёт `libcalc_core.a` (`SHARED` — `.so`). `target_link_libraries` связывает цели: CMake сам соберёт библиотеку раньше программы, добавит её в команду линковки и, что важнее всего, передаст программе **требования** библиотеки. Имя `m` — не цель, поэтому оно превращается в `-lm`.
+
+## PUBLIC, PRIVATE, INTERFACE
+
+У каждого требования цели — каталога заголовков, макроса, флага — есть видимость:
+
+| Ключевое слово | Используется при сборке самой цели | Передаётся тем, кто её подключает |
+| -------------- | :--------------------------------: | :-------------------------------: |
+| `PRIVATE`      |                 да                 |                нет                |
+| `PUBLIC`       |                 да                 |                да                 |
+| `INTERFACE`    |                нет                 |                да                 |
+
+`target_include_directories(calc_core PUBLIC include)` означает: `calc_core` сама компилируется с `-Iinclude`, **и** каждая цель, связанная с ней, тоже получит `-Iinclude`. Поэтому для `calc` и `calc_tests` писать каталог заголовков не нужно — он пришёл вместе с библиотекой.
+
+Правило выбора простое: если заголовок нужен **пользователям** библиотеки (его подключают публичные `.h`), — `PUBLIC`; если только реализации — `PRIVATE`. Видимость есть и у самой связи: `target_link_libraries(net PUBLIC calc_core)` передаёт требования `calc_core` дальше — всем, кто подключает `net`; с `PRIVATE` цепочка обрывается на `net`.
+
+## Типы сборки
+
+Для генераторов вроде Make тип сборки задаётся при настройке:
+
+```text
+$ cmake -S . -B build-debug -DCMAKE_BUILD_TYPE=Debug
+$ cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
+```
+
+| `CMAKE_BUILD_TYPE` | Флаги GCC/Clang   | Назначение                      |
+| ------------------ | ----------------- | ------------------------------- |
+| `Debug`            | `-g`              | отладка                         |
+| `Release`          | `-O3 -DNDEBUG`    | выпуск                          |
+| `RelWithDebInfo`   | `-O2 -g -DNDEBUG` | выпуск с отладочной информацией |
+| `MinSizeRel`       | `-Os -DNDEBUG`    | минимальный размер              |
+
+Флаг `-D` в команде `cmake` задаёт **переменную CMake**, а не макрос C. Значения сохраняются в `build/CMakeCache.txt` и действуют при следующих запусках.
+
+## Тесты
+
+CMake регистрирует тесты, а программа `ctest` запускает их и сводит результаты:
+
+```text
+enable_testing()
+add_test(NAME parser COMMAND calc_tests)
+```
+
+```text
+$ cmake --build build && ctest --test-dir build
+    Start 1: parser
+1/1 Test #1: parser ...........................   Passed    0.01 sec
+100% tests passed, 0 tests failed out of 1
+```
+
+Тест считается пройденным, если программа вернула код завершения 0, — вот где пригождается знание из первого урока модуля.
+
+<Concept title="Цель несёт свои требования">
+
+В Make вы раздаёте флаги командам. В CMake вы описываете цели и их требования, а флаги для каждой команды CMake вычисляет сам — по графу `target_link_libraries`. Поэтому современный CMake избегает глобальных `include_directories()` и `CMAKE_C_FLAGS`: требования, привязанные к цели, путешествуют вместе с ней в любой проект.
+
+</Concept>
+
+## Частые ошибки
+
+<CommonMistake title="Сборка в каталоге исходников">
+
+`cmake .` в корне засыпает проект файлами `CMakeCache.txt`, `CMakeFiles/`, `Makefile`. Всегда указывайте отдельный каталог: `cmake -S . -B build`, и добавьте `build/` в `.gitignore`.
+
+</CommonMistake>
+
+<CommonMistake title="PRIVATE там, где нужен PUBLIC">
+
+Публичный `calc/parser.h` подключает `calc/lexer.h`, но каталог `include` объявлен `PRIVATE`. Библиотека собирается, а программа падает с `fatal error: calc/lexer.h: No such file or directory`. Каталоги, нужные публичным заголовкам, — `PUBLIC`.
+
+</CommonMistake>
+
+<CommonMistake title="Удивляться -std=gnu17">
+
+`set(CMAKE_C_STANDARD 17)` без `set(CMAKE_C_EXTENSIONS OFF)` даёт `-std=gnu17` — C17 с расширениями GNU. Для строгого стандарта отключайте расширения.
+
+</CommonMistake>
+
+<TryIt title="Попробуйте сами">
+
+Соберите проект с библиотекой `calc_core` и программой `calc`. Выполните `cmake --build build --verbose` — CMake покажет полные команды `gcc`, и вы найдёте в них `-Iinclude`, полученный через `PUBLIC`. Поменяйте `PUBLIC` на `PRIVATE` и посмотрите, что сломается.
+
+</TryIt>
+
+## Практика
+
+1. **Команда компиляции** — собрать команду gcc из настроек CMake.
+2. **PUBLIC и PRIVATE** — вычислить каталоги заголовков каждой цели.
+3. **Шаги параллельной сборки** — разбить цели на шаги, которые можно собирать одновременно.
+
+<CodingExercise />
+
+## Итоги
+
+- CMake описывает цели и генерирует сборочную систему; работа идёт в два шага: `cmake -S . -B build` и `cmake --build build`.
+- `add_executable` и `add_library` создают цели, `target_include_directories`, `target_compile_options`, `target_link_libraries` задают их требования.
+- `PRIVATE` — только для самой цели, `INTERFACE` — только для пользователей, `PUBLIC` — для обоих; требования распространяются по графу связей.
+- `CMAKE_BUILD_TYPE` выбирает набор флагов: `Debug` — `-g`, `Release` — `-O3 -DNDEBUG`; `CMAKE_C_EXTENSIONS OFF` даёт строгий `-std=c17`.
+- `enable_testing`, `add_test` и `ctest` запускают тесты; успех — код завершения 0.

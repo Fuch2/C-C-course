@@ -1,0 +1,484 @@
+{
+  "id": "git-basic-workflow",
+  "title": "Git: базовый рабочий процесс",
+  "description": "Рабочий каталог, индекс и история, git add и git commit, git status --short, git diff и унифицированный формат, .gitignore для проекта на C, отмена изменений, ветки и конфликты, удалённые репозитории и хорошие коммиты.",
+  "moduleId": "developer-tools",
+  "order": 12,
+  "difficulty": "beginner",
+  "estimatedMinutes": 55,
+  "prerequisites": ["advanced-sanitizers"],
+  "objectives": [
+    "Сохранять изменения в истории через индекс и коммиты",
+    "Читать git status --short и вывод git diff",
+    "Составлять .gitignore для проекта на C",
+    "Отменять изменения, работать с ветками и решать конфликты"
+  ],
+  "tags": ["Git", "Контроль версий", "diff", ".gitignore", "Ветки"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "git-basic-workflow-task-1",
+    "title": "git status --short",
+    "description": "Вычислите вывод `git status --short`. В первой строке — число файлов `n`. Далее `n` строк `имя коммит индекс рабочий`: версия файла в последнем коммите, в индексе и в рабочем каталоге. Версия — слово (например, `v1`) или `-`, если файла там нет.\n\nПервая буква статуса **X** сравнивает индекс с коммитом: `A` — в коммите нет, в индексе есть; `D` — в коммите есть, в индексе нет; `M` — версии различаются; пробел — совпадают. Вторая буква **Y** сравнивает рабочий каталог с индексом: `D` — в индексе есть, в рабочем нет; `M` — версии различаются; пробел — совпадают.\n\nЕсли файла нет в индексе, но он есть в рабочем каталоге, Y не вычисляется, а файл считается неотслеживаемым: сначала печатается строка `X  имя` (если X не пробел), затем `?? имя`. Строки со статусом из двух пробелов не печатаются.\n\nВыводите строки `XY имя` в порядке ввода. Если печатать нечего — `nothing to commit, working tree clean`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "5\nlexer.c v1 v2 v2\nparser.c v1 v1 v2\nmain.c v1 v2 v3\neval.c - v1 v1\nnotes.txt v1 v1 -\n",
+        "output": "M  lexer.c\n M parser.c\nMM main.c\nA  eval.c\n D notes.txt\n"
+      },
+      {
+        "input": "2\nmain.c v1 v1 v1\nMakefile v2 v2 v2\n",
+        "output": "nothing to commit, working tree clean\n"
+      }
+    ],
+    "constraints": ["1 ≤ n ≤ 50; имена и версии не длиннее 40 символов."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Сравнивайте версии строками через strcmp; отсутствие — строка \"-\".",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Вычислите X отдельной функцией status_letter(old, new), которая возвращает A, D, M или пробел. Y — та же функция для пары индекс → рабочий, но без варианта A.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Случай «нет в индексе, есть в рабочем каталоге» разберите первым — он даёт строку ??.",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "5\nlexer.c v1 v2 v2\nparser.c v1 v1 v2\nmain.c v1 v2 v3\neval.c - v1 v1\nnotes.txt v1 v1 -\n",
+        "expected": "M  lexer.c\n M parser.c\nMM main.c\nA  eval.c\n D notes.txt\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "2\nmain.c v1 v1 v1\nMakefile v2 v2 v2\n",
+        "expected": "nothing to commit, working tree clean\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Неотслеживаемый",
+        "stdin": "1\nbuild.o - - v1\n",
+        "expected": "?? build.o\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "git rm --cached",
+        "stdin": "1\nsecret.env v1 - v1\n",
+        "expected": "D  secret.env\n?? secret.env\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Удалён через git rm",
+        "stdin": "1\nold.c v1 - -\n",
+        "expected": "D  old.c\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Добавлен и снова изменён",
+        "stdin": "1\nnew.c - v1 v2\n",
+        "expected": "AM new.c\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Добавлен и удалён с диска",
+        "stdin": "1\nnew.c - v1 -\n",
+        "expected": "AD new.c\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Нигде нет",
+        "stdin": "1\nghost.c - - -\n",
+        "expected": "nothing to commit, working tree clean\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Вернули как было",
+        "stdin": "1\nmain.c v1 v2 v1\n",
+        "expected": "MM main.c\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Вперемешку",
+        "stdin": "6\na.c v1 v1 v1\nb.c v1 v1 v9\nc.c - - v1\nd.c v3 v4 v4\ne.c v2 - v2\nf.c v1 v1 v1\n",
+        "expected": " M b.c\n?? c.c\nM  d.c\nD  e.c\n?? e.c\n"
+      },
+      {
+        "id": "hidden-9",
+        "name": "Удаления",
+        "stdin": "2\nREADME.md v1 v2 -\nLICENSE v1 - -\n",
+        "expected": "MD README.md\nD  LICENSE\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstatic char status_letter(const char *old, const char *new_version) {\n    int had = strcmp(old, \"-\") != 0;\n    int has = strcmp(new_version, \"-\") != 0;\n    if (!had && has) {\n        return 'A';\n    }\n    if (had && !has) {\n        return 'D';\n    }\n    if (had && has && strcmp(old, new_version) != 0) {\n        return 'M';\n    }\n    return ' ';\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1) {\n        return 0;\n    }\n    int printed = 0;\n    for (int i = 0; i < n; i++) {\n        char name[64];\n        char head[64];\n        char index[64];\n        char work[64];\n        if (scanf(\"%63s %63s %63s %63s\", name, head, index, work) != 4) {\n            break;\n        }\n        char x = status_letter(head, index);\n        if (strcmp(index, \"-\") == 0 && strcmp(work, \"-\") != 0) {\n            if (x != ' ') {\n                printf(\"%c  %s\\n\", x, name);\n            }\n            printf(\"?? %s\\n\", name);\n            printed++;\n            continue;\n        }\n        char y = status_letter(index, work);\n        if (x == ' ' && y == ' ') {\n            continue;\n        }\n        printf(\"%c%c %s\\n\", x, y, name);\n        printed++;\n    }\n    if (printed == 0) {\n        printf(\"nothing to commit, working tree clean\\n\");\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Две буквы статуса — два независимых сравнения: «что войдёт в коммит» (индекс против последнего коммита) и «что я ещё не добавил» (рабочий каталог против индекса). Поэтому файл может иметь статус `MM`: часть правок уже в индексе, а после `git add` файл правили снова — и следующий коммит получит версию из индекса, а не последнюю.\n\nОсобый случай — файл, удалённый из индекса командой `git rm --cached`, но оставшийся на диске. Для Git это сразу два события: удаление в следующем коммите (`D `) и новый неотслеживаемый файл (`??`). Так обычно убирают из репозитория случайно закоммиченный `build/` перед добавлением его в `.gitignore`.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "git-basic-workflow-task-2",
+      "title": "Шаблоны .gitignore",
+      "description": "Определите, какие файлы Git проигнорирует. В первой строке — число строк `.gitignore` `p`, далее `p` строк. Пустые строки и строки, начинающиеся с `#`, пропускаются. Затем число путей `q` и `q` путей файлов от корня проекта (например, `src/main.c`).\n\nПравила шаблонов:\n- `!` в начале — исключение: подходящий путь снова отслеживается;\n- `/` в конце — шаблон подходит только к **каталогам**;\n- если в шаблоне (без завершающего `/`) есть `/` — он сравнивается с путём от корня (ведущий `/` отбрасывается); иначе — с **одним** компонентом пути на любой глубине;\n- `*` — любая последовательность символов без `/`, `?` — один любой символ, кроме `/`.\n\nРешение для файла:\n1. Проверьте каждый каталог на пути к файлу сверху вниз (`src`, затем `src/gen`, …). Каталог проигнорирован, если последний подходящий к нему шаблон — не исключение. Если проигнорирован хоть один каталог, файл игнорируется — исключения внутри не работают.\n2. Иначе файл проигнорирован, если последний подходящий к нему шаблон — не исключение.\n\nДля каждого пути напечатайте `путь: игнорируется` или `путь: отслеживается`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "4\n# сборка\nbuild/\n*.o\n/calc\n5\nmain.c\nsrc/lexer.o\nbuild/calc\ncalc\nsrc/calc/main.c\n",
+          "output": "main.c: отслеживается\nsrc/lexer.o: игнорируется\nbuild/calc: игнорируется\ncalc: игнорируется\nsrc/calc/main.c: отслеживается\n"
+        },
+        {
+          "input": "2\n*.h\n!config.h\n2\ngen/table.h\ngen/config.h\n",
+          "output": "gen/table.h: игнорируется\ngen/config.h: отслеживается\n"
+        }
+      ],
+      "constraints": [
+        "0 ≤ p ≤ 30; 1 ≤ q ≤ 30; строки не длиннее 100 символов; пути не содержат пробелов."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сопоставление с * удобно написать рекурсивно: match(p, s) — если *p == '*', попробуйте отдать звёздочке 0, 1, 2… символов s, пока не встретится '/'.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Шаблон проверяется против «объекта» — пути от корня до какого-то каталога или до файла. Для неякорного шаблона нужен только последний компонент этого объекта.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Для каждого объекта пройдите все шаблоны по порядку и запомните результат последнего подходящего: 1 — игнорировать, 0 — исключение, −1 — ни один не подошёл.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\n# сборка\nbuild/\n*.o\n/calc\n5\nmain.c\nsrc/lexer.o\nbuild/calc\ncalc\nsrc/calc/main.c\n",
+          "expected": "main.c: отслеживается\nsrc/lexer.o: игнорируется\nbuild/calc: игнорируется\ncalc: игнорируется\nsrc/calc/main.c: отслеживается\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\n*.h\n!config.h\n2\ngen/table.h\ngen/config.h\n",
+          "expected": "gen/table.h: игнорируется\ngen/config.h: отслеживается\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Исключение в игнорируемом каталоге",
+          "stdin": "2\nbuild/\n!build/keep.txt\n1\nbuild/keep.txt\n",
+          "expected": "build/keep.txt: игнорируется\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Игнорировать содержимое",
+          "stdin": "2\nbuild/*\n!build/keep.txt\n2\nbuild/keep.txt\nbuild/app\n",
+          "expected": "build/keep.txt: отслеживается\nbuild/app: игнорируется\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Файл с именем каталога",
+          "stdin": "1\nbuild/\n2\nbuild\nsrc/build/x.o\n",
+          "expected": "build: отслеживается\nsrc/build/x.o: игнорируется\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Якорный путь",
+          "stdin": "1\nsrc/gen.c\n2\nsrc/gen.c\nlib/src/gen.c\n",
+          "expected": "src/gen.c: игнорируется\nlib/src/gen.c: отслеживается\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Знак вопроса",
+          "stdin": "1\n?.o\n3\na.o\nab.o\nx/b.o\n",
+          "expected": "a.o: игнорируется\nab.o: отслеживается\nx/b.o: игнорируется\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Пустой .gitignore",
+          "stdin": "0\n2\na.c\nb/c.d\n",
+          "expected": "a.c: отслеживается\nb/c.d: отслеживается\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Комментарии и пустые строки",
+          "stdin": "3\n\n# комментарий\n.env\n2\n.env\nconfig/.env\n",
+          "expected": ".env: игнорируется\nconfig/.env: игнорируется\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Исключение по имени",
+          "stdin": "2\n*.log\n!important.log\n3\nlogs/a.log\nimportant.log\nlogs/important.log\n",
+          "expected": "logs/a.log: игнорируется\nimportant.log: отслеживается\nlogs/important.log: отслеживается\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Звёздочка не пересекает /",
+          "stdin": "2\n/docs/*.md\n*.tmp\n3\ndocs/a.md\ndocs/sub/b.md\nnotes/c.md\n",
+          "expected": "docs/a.md: игнорируется\ndocs/sub/b.md: отслеживается\nnotes/c.md: отслеживается\n"
+        },
+        {
+          "id": "hidden-10",
+          "name": "Файлы редакторов",
+          "stdin": "3\n.vscode/\n.DS_Store\n*.so\n3\n.vscode/settings.json\nsrc/.DS_Store\nlib/libcalc.so\n",
+          "expected": ".vscode/settings.json: игнорируется\nsrc/.DS_Store: игнорируется\nlib/libcalc.so: игнорируется\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define LINE 128\n\ntypedef struct {\n    char text[LINE];\n    int negate;\n    int dir_only;\n    int anchored;\n} Pattern;\n\nstatic Pattern patterns[30];\nstatic int pattern_count;\n\nstatic int match(const char *p, const char *s) {\n    if (*p == '\\0') {\n        return *s == '\\0';\n    }\n    if (*p == '*') {\n        for (const char *t = s;; t++) {\n            if (match(p + 1, t)) {\n                return 1;\n            }\n            if (*t == '\\0' || *t == '/') {\n                return 0;\n            }\n        }\n    }\n    if (*s == '\\0') {\n        return 0;\n    }\n    if (*p == '?' ? *s == '/' : *p != *s) {\n        return 0;\n    }\n    return match(p + 1, s + 1);\n}\n\n/* Результат для пути object: 1 — игнорировать, 0 — исключение, -1 — нет подходящих. */\nstatic int decide(const char *object, int is_dir) {\n    const char *slash = strrchr(object, '/');\n    const char *base = slash != NULL ? slash + 1 : object;\n    int result = -1;\n    for (int i = 0; i < pattern_count; i++) {\n        const Pattern *pattern = &patterns[i];\n        if (pattern->dir_only && !is_dir) {\n            continue;\n        }\n        if (match(pattern->text, pattern->anchored ? object : base)) {\n            result = pattern->negate ? 0 : 1;\n        }\n    }\n    return result;\n}\n\nint main(void) {\n    char line[LINE];\n    int p = 0;\n    if (fgets(line, sizeof line, stdin) == NULL || sscanf(line, \"%d\", &p) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < p && fgets(line, sizeof line, stdin) != NULL; i++) {\n        line[strcspn(line, \"\\r\\n\")] = '\\0';\n        if (line[0] == '\\0' || line[0] == '#') {\n            continue;\n        }\n        Pattern *pattern = &patterns[pattern_count++];\n        const char *text = line;\n        pattern->negate = *text == '!';\n        if (pattern->negate) {\n            text++;\n        }\n        strcpy(pattern->text, text);\n        size_t length = strlen(pattern->text);\n        pattern->dir_only = length > 0 && pattern->text[length - 1] == '/';\n        if (pattern->dir_only) {\n            pattern->text[length - 1] = '\\0';\n        }\n        pattern->anchored = strchr(pattern->text, '/') != NULL;\n        if (pattern->text[0] == '/') {\n            memmove(pattern->text, pattern->text + 1, strlen(pattern->text));\n        }\n    }\n    int q;\n    if (fgets(line, sizeof line, stdin) == NULL || sscanf(line, \"%d\", &q) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < q && fgets(line, sizeof line, stdin) != NULL; i++) {\n        line[strcspn(line, \"\\r\\n\")] = '\\0';\n        char object[LINE];\n        int ignored = 0;\n        for (const char *s = strchr(line, '/'); s != NULL && !ignored; s = strchr(s + 1, '/')) {\n            size_t length = (size_t)(s - line);\n            memcpy(object, line, length);\n            object[length] = '\\0';\n            ignored = decide(object, 1) == 1;\n        }\n        if (!ignored) {\n            ignored = decide(line, 0) == 1;\n        }\n        printf(\"%s: %s\\n\", line, ignored ? \"игнорируется\" : \"отслеживается\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Git проверяет путь **сверху вниз**: сначала каталоги, потом файл. Проигнорированный каталог Git даже не открывает — поэтому `!build/keep.txt` при правиле `build/` не сработает, и в документации Git это записано явно. Если нужно сохранить файл внутри, игнорируют содержимое, а не каталог: `build/*` и `!build/keep.txt`.\n\n«Последний подходящий побеждает» позволяет строить правила как «всё, кроме»: `*.h` в сгенерированном каталоге, а затем `!config.h`. Неякорный шаблон (`*.o`, `build/`) действует на любой глубине, якорный (`/calc`, `src/gen.c`) — только по пути от корня: так исполняемый файл `/calc` в корне игнорируется, а каталог `src/calc/` с исходниками — нет.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "git-basic-workflow-task-3",
+      "title": "Построчный diff",
+      "description": "Постройте минимальную построчную разницу между старой и новой версией файла, как `git diff`. Ввод: число строк `n` и `n` строк старой версии, затем число `m` и `m` строк новой. Строки могут содержать пробелы.\n\nНайдите наибольшую общую подпоследовательность строк (LCS) и напечатайте все строки обеих версий с префиксом: `' '` — строка есть в обеих версиях, `-` — удалена, `+` — добавлена. Чтобы ответ был однозначным, стройте его так. Пусть `L(i, j)` — длина LCS суффиксов старой версии с позиции `i` и новой с позиции `j`. Начиная с `i = j = 0`:\n- если строки `old[i]` и `new[j]` равны — печатайте `' '` и сдвигайте оба индекса;\n- иначе, если `L(i + 1, j) ≥ L(i, j + 1)`, — печатайте `-old[i]` и сдвигайте `i`;\n- иначе печатайте `+new[j]` и сдвигайте `j`.\n\nКогда одна версия закончилась, допечатайте остаток другой. В конце напечатайте `+A -D` — число добавленных и удалённых строк.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "4\nint main(void) {\n    printf(\"%g\\n\", a / b);\n    return 0;\n}\n5\nint main(void) {\n    if (b == 0) return 1;\n    printf(\"%g\\n\", a / b);\n    return 0;\n}\n",
+          "output": " int main(void) {\n+    if (b == 0) return 1;\n     printf(\"%g\\n\", a / b);\n     return 0;\n }\n+1 -0\n"
+        },
+        {
+          "input": "3\na\nb\nc\n3\na\nx\nc\n",
+          "output": " a\n-b\n+x\n c\n+1 -1\n"
+        }
+      ],
+      "constraints": ["0 ≤ n, m ≤ 200; строки не длиннее 100 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Таблицу L заполняйте с конца: L[i][j] = old[i] == new[j] ? L[i+1][j+1] + 1 : max(L[i+1][j], L[i][j+1]); строка и столбец за концом — нули.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Строки читайте через fgets и отрезайте перевод строки; число строк — отдельной строкой через sscanf.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Таблица 201 × 201 из int занимает около 160 КБ — объявите её static, а не локальной переменной.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\nint main(void) {\n    printf(\"%g\\n\", a / b);\n    return 0;\n}\n5\nint main(void) {\n    if (b == 0) return 1;\n    printf(\"%g\\n\", a / b);\n    return 0;\n}\n",
+          "expected": " int main(void) {\n+    if (b == 0) return 1;\n     printf(\"%g\\n\", a / b);\n     return 0;\n }\n+1 -0\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3\na\nb\nc\n3\na\nx\nc\n",
+          "expected": " a\n-b\n+x\n c\n+1 -1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Оба пустые",
+          "stdin": "0\n0\n",
+          "expected": "+0 -0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Новый файл",
+          "stdin": "0\n2\nnew\nfile\n",
+          "expected": "+new\n+file\n+2 -0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Файл удалён",
+          "stdin": "2\nold\nfile\n0\n",
+          "expected": "-old\n-file\n+0 -2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Без изменений",
+          "stdin": "3\nsame\nlines\nhere\n3\nsame\nlines\nhere\n",
+          "expected": " same\n lines\n here\n+0 -0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Обратный порядок",
+          "stdin": "3\na\nb\nc\n3\nc\nb\na\n",
+          "expected": "-a\n-b\n c\n+b\n+a\n+2 -2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Удаление первой строки",
+          "stdin": "4\nx\na\nb\nc\n3\na\nb\nc\n",
+          "expected": "-x\n a\n b\n c\n+0 -1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Пробелы важны",
+          "stdin": "2\n  indented\nplain\n2\nindented\nplain\n",
+          "expected": "-  indented\n+indented\n plain\n+1 -1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Повторяющиеся строки",
+          "stdin": "5\na\nb\na\nb\na\n4\nb\na\nb\nb\n",
+          "expected": "-a\n b\n a\n b\n-a\n+b\n+1 -2\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Пустые строки",
+          "stdin": "3\n\nmiddle\n\n2\nmiddle\n\n",
+          "expected": "-\n middle\n \n+0 -1\n"
+        },
+        {
+          "id": "hidden-10",
+          "name": "Правка программы",
+          "stdin": "6\n#include <stdio.h>\n\nint main(void) {\n    puts(\"hi\");\n    return 0;\n}\n7\n#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    puts(\"hello\");\n    return EXIT_SUCCESS;\n}\n",
+          "expected": " #include <stdio.h>\n+#include <stdlib.h>\n \n int main(void) {\n-    puts(\"hi\");\n-    return 0;\n+    puts(\"hello\");\n+    return EXIT_SUCCESS;\n }\n+3 -2\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define MAX 201\n#define LINE 128\n\nstatic char old_lines[MAX][LINE];\nstatic char new_lines[MAX][LINE];\nstatic int lcs[MAX][MAX];\n\nstatic int read_block(char lines[][LINE]) {\n    char line[LINE];\n    int count = 0;\n    if (fgets(line, sizeof line, stdin) == NULL || sscanf(line, \"%d\", &count) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < count; i++) {\n        if (fgets(lines[i], LINE, stdin) == NULL) {\n            lines[i][0] = '\\0';\n        }\n        lines[i][strcspn(lines[i], \"\\r\\n\")] = '\\0';\n    }\n    return count;\n}\n\nint main(void) {\n    int n = read_block(old_lines);\n    int m = read_block(new_lines);\n    for (int i = n; i >= 0; i--) {\n        for (int j = m; j >= 0; j--) {\n            if (i == n || j == m) {\n                lcs[i][j] = 0;\n            } else if (strcmp(old_lines[i], new_lines[j]) == 0) {\n                lcs[i][j] = lcs[i + 1][j + 1] + 1;\n            } else {\n                lcs[i][j] = lcs[i + 1][j] >= lcs[i][j + 1] ? lcs[i + 1][j] : lcs[i][j + 1];\n            }\n        }\n    }\n    int i = 0;\n    int j = 0;\n    int added = 0;\n    int deleted = 0;\n    while (i < n || j < m) {\n        if (i < n && j < m && strcmp(old_lines[i], new_lines[j]) == 0) {\n            printf(\" %s\\n\", old_lines[i]);\n            i++;\n            j++;\n        } else if (j == m || (i < n && lcs[i + 1][j] >= lcs[i][j + 1])) {\n            printf(\"-%s\\n\", old_lines[i]);\n            i++;\n            deleted++;\n        } else {\n            printf(\"+%s\\n\", new_lines[j]);\n            j++;\n            added++;\n        }\n    }\n    printf(\"+%d -%d\\n\", added, deleted);\n    return 0;\n}\n",
+      "solutionExplanation": "Минимальный diff — это задача о наибольшей общей подпоследовательности: строки, которые входят в LCS, остаются на месте, всё остальное старой версии удаляется, а новой — добавляется. Меньше изменений быть не может, иначе нашлась бы более длинная общая подпоследовательность.\n\nТаблица суффиксов позволяет на каждом шаге знать, какой выбор сохраняет оптимальность: если пропуск строки старой версии не уменьшает LCS, её можно удалить. Правило «при равенстве — сначала удаление» делает ответ однозначным и даёт привычный вид: старая строка с `-`, сразу под ней новая с `+`.\n\nНастоящий Git использует более быстрый алгоритм Майерса, сравнивает хеши строк вместо самих строк и группирует изменения во фрагменты `@@` с тремя строками контекста — но в основе та же идея минимального редактирования.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "git-basic-workflow-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что делает git add main.c?",
+        "explanation": "Коммит создаёт git commit из того, что лежит в индексе. Правки, сделанные после git add, в индекс не попадут, пока не выполнить git add снова.",
+        "options": [
+          "Добавляет текущее состояние main.c в индекс — черновик следующего коммита",
+          "Сразу сохраняет main.c в истории",
+          "Отправляет main.c на сервер",
+          "Начинает отслеживать main.c, но изменения в коммит не попадут"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Какой командой посмотреть изменения, которые ещё не добавлены в индекс?",
+        "explanation": "git diff сравнивает рабочий каталог с индексом, git diff --staged — индекс с последним коммитом.",
+        "type": "text",
+        "answers": ["git diff"],
+        "placeholder": "Команда"
+      },
+      {
+        "id": "q3",
+        "question": "git status -s показывает \" M parser.c\" (пробел, затем M). Что это значит?",
+        "explanation": "Первая буква — индекс относительно коммита, вторая — рабочий каталог относительно индекса. \"M \" означало бы, что изменение уже в индексе.",
+        "options": [
+          "Файл изменён, но изменения не добавлены в индекс",
+          "Изменения добавлены в индекс и войдут в коммит",
+          "Файл новый и не отслеживается",
+          "Файл удалён"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что нужно добавить в .gitignore проекта на C? Выберите все.",
+        "explanation": "Результаты сборки создаются заново, а секреты не должны попадать в историю. Исходники и файлы сборки — основа репозитория.",
+        "type": "multiple",
+        "options": ["build/", "*.o", ".env с паролями", "main.c", "Makefile"],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q5",
+        "question": "Что сделает git restore main.c?",
+        "explanation": "Убрать из индекса, сохранив правки, — git restore --staged main.c. Отменить коммит — git revert.",
+        "options": [
+          "Выбросит несохранённые в коммитах правки main.c — их нельзя будет вернуть",
+          "Восстановит удалённый коммит",
+          "Уберёт main.c из индекса, сохранив правки",
+          "Отменит последний коммит"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "В репозиторий попал файл с ключом API. Следующим коммитом его удалили. Достаточно ли этого?",
+        "explanation": "Любой, у кого есть копия репозитория, может открыть старый коммит. Скомпрометированный секрет всегда заменяют.",
+        "options": [
+          "Нет: ключ остаётся в истории, его нужно отозвать и заменить",
+          "Да: после удаления файла ключ недоступен",
+          "Да, если сделать git push",
+          "Нет, нужно ещё добавить файл в .gitignore — и тогда достаточно"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что означает строка, начинающаяся с +, в выводе git diff?",
+        "explanation": "- — удалённая строка, пробел — контекст без изменений. Изменённая строка показывается парой - и +.",
+        "options": [
+          "Строка добавлена",
+          "Строка удалена",
+          "Строка не изменилась",
+          "Строка конфликтует"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Зачем делать новую функцию в отдельной ветке?",
+        "explanation": "Ветка — параллельная линия истории. Когда функция готова и проверена, её вливают в main через git merge или запрос на слияние.",
+        "options": [
+          "Чтобы незаконченная работа не ломала рабочую версию в main",
+          "Так коммиты занимают меньше места",
+          "Без ветки нельзя сделать коммит",
+          "Чтобы Git проверил код компилятором"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q9",
+        "question": "После git merge в файле появились строки <<<<<<< HEAD, ======= и >>>>>>> feature. Что делать?",
+        "explanation": "Конфликт значит, что обе ветки изменили одни и те же строки. Решение принимает человек: иногда нужен один из вариантов, иногда их сочетание.",
+        "options": [
+          "Оставить правильный вариант кода, удалить маркеры, затем git add и git commit",
+          "Удалить файл и повторить слияние",
+          "Сделать git commit как есть — Git сам уберёт маркеры",
+          "Выполнить git restore для всего проекта"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

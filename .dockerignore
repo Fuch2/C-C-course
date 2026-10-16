@@ -1,0 +1,14 @@
+node_modules
+**/node_modules
+**/.next
+**/.next-integration*
+**/dist
+.git
+.env
+**/*.db
+**/*.db-*
+coverage
+test-results
+apps/web/public/monaco
+
+**/__pycache__

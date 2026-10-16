@@ -1,0 +1,466 @@
+{
+  "id": "advanced-cmake",
+  "title": "CMake",
+  "description": "CMakeLists.txt и цели, настройка и сборка вне исходников, add_executable и add_library, target_include_directories и target_link_libraries, видимость PUBLIC, PRIVATE и INTERFACE, типы сборки, стандарт языка и тесты через ctest.",
+  "moduleId": "developer-tools",
+  "order": 8,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 55,
+  "prerequisites": ["advanced-makefile"],
+  "objectives": [
+    "Описывать программу и библиотеку в CMakeLists.txt",
+    "Настраивать и собирать проект вне каталога исходников",
+    "Выбирать видимость PUBLIC, PRIVATE и INTERFACE для требований цели",
+    "Выбирать тип сборки и подключать тесты через ctest"
+  ],
+  "tags": ["CMake", "Сборка", "Цели", "Библиотеки", "ctest"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "advanced-cmake-task-1",
+    "title": "Команда компиляции",
+    "description": "Смоделируйте, какую команду компиляции CMake сгенерирует для единственной программы. На вход до конца ввода подаются команды CMake по одной в строке (пустые строки возможны):\n\n- `set(CMAKE_BUILD_TYPE тип)`, `set(CMAKE_C_STANDARD N)`, `set(CMAKE_C_EXTENSIONS ON|OFF)`;\n- `add_executable(имя файл₁ …)`;\n- `target_compile_definitions`, `target_include_directories`, `target_compile_options` — имя цели, затем значения, перед которыми стоят ключевые слова `PRIVATE`, `PUBLIC` или `INTERFACE`;\n- остальные команды игнорируются.\n\nДля каждого исходника из `add_executable` по порядку напечатайте:\n\n```\ngcc <макросы> <каталоги> <флаги типа> <стандарт> <опции> -c <файл>\n```\n\n- макросы — `-DЗНАЧЕНИЕ`, каталоги — `-IКАТАЛОГ`, опции — как есть, в порядке появления; значения с видимостью `INTERFACE` к самой цели не применяются;\n- флаги типа: `Debug` — `-g`, `Release` — `-O3 -DNDEBUG`, `RelWithDebInfo` — `-O2 -g -DNDEBUG`, `MinSizeRel` — `-Os -DNDEBUG`, иначе ничего;\n- стандарт печатается, только если задан `CMAKE_C_STANDARD`: `-std=cN` при `CMAKE_C_EXTENSIONS OFF`, иначе `-std=gnuN`.\n\nПустые части пропускаются; между частями — ровно один пробел.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "cmake_minimum_required(VERSION 3.20)\nproject(app LANGUAGES C)\nset(CMAKE_C_STANDARD 17)\nset(CMAKE_C_EXTENSIONS OFF)\nset(CMAKE_BUILD_TYPE Release)\nadd_executable(app src/main.c src/util.c)\ntarget_include_directories(app PRIVATE include)\ntarget_compile_options(app PRIVATE -Wall -Wextra)\n",
+        "output": "gcc -Iinclude -O3 -DNDEBUG -std=c17 -Wall -Wextra -c src/main.c\ngcc -Iinclude -O3 -DNDEBUG -std=c17 -Wall -Wextra -c src/util.c\n"
+      },
+      {
+        "input": "add_executable(hello hello.c)\n",
+        "output": "gcc -c hello.c\n"
+      }
+    ],
+    "constraints": [
+      "Не больше 30 строк, каждая — не длиннее 200 символов; значения не содержат пробелов и скобок."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Разбор строки: найдите ( и последнюю ), имя команды — текст до (, аргументы — слова между скобками (strtok по пробелам).",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Копите части команды в строках defines, includes, options. Ключевые слова видимости меняют текущий режим и сами в команду не попадают.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Напишите функцию add(char *out, const char *text), которая дописывает пробел и text, только если text не пустой.",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "cmake_minimum_required(VERSION 3.20)\nproject(app LANGUAGES C)\nset(CMAKE_C_STANDARD 17)\nset(CMAKE_C_EXTENSIONS OFF)\nset(CMAKE_BUILD_TYPE Release)\nadd_executable(app src/main.c src/util.c)\ntarget_include_directories(app PRIVATE include)\ntarget_compile_options(app PRIVATE -Wall -Wextra)\n",
+        "expected": "gcc -Iinclude -O3 -DNDEBUG -std=c17 -Wall -Wextra -c src/main.c\ngcc -Iinclude -O3 -DNDEBUG -std=c17 -Wall -Wextra -c src/util.c\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "add_executable(hello hello.c)\n",
+        "expected": "gcc -c hello.c\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Расширения по умолчанию",
+        "stdin": "set(CMAKE_C_STANDARD 11)\nadd_executable(a a.c)\n",
+        "expected": "gcc -std=gnu11 -c a.c\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Debug",
+        "stdin": "set(CMAKE_BUILD_TYPE Debug)\nadd_executable(a a.c)\n",
+        "expected": "gcc -g -c a.c\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "RelWithDebInfo",
+        "stdin": "set(CMAKE_BUILD_TYPE RelWithDebInfo)\nadd_executable(a a.c)\n",
+        "expected": "gcc -O2 -g -DNDEBUG -c a.c\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "MinSizeRel",
+        "stdin": "set(CMAKE_BUILD_TYPE MinSizeRel)\nadd_executable(a a.c)\n",
+        "expected": "gcc -Os -DNDEBUG -c a.c\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Неизвестный тип",
+        "stdin": "set(CMAKE_BUILD_TYPE Fast)\nadd_executable(a a.c)\n",
+        "expected": "gcc -c a.c\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Макросы и INTERFACE",
+        "stdin": "add_executable(app main.c)\ntarget_compile_definitions(app PRIVATE USE_COLOR LIMIT=5 INTERFACE APP_API)\n",
+        "expected": "gcc -DUSE_COLOR -DLIMIT=5 -c main.c\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Порядок команд и пустая строка",
+        "stdin": "add_executable(app main.c)\ntarget_include_directories(app PUBLIC include PRIVATE src INTERFACE api)\n\nset(CMAKE_C_EXTENSIONS OFF)\n",
+        "expected": "gcc -Iinclude -Isrc -c main.c\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Полный проект",
+        "stdin": "set(CMAKE_C_STANDARD 17)\nset(CMAKE_C_EXTENSIONS OFF)\nset(CMAKE_BUILD_TYPE Debug)\nadd_executable(calc src/main.c src/lexer.c src/parser.c)\ntarget_compile_options(calc PRIVATE -Wall -Wextra -Wpedantic)\ntarget_compile_definitions(calc PRIVATE CALC_DEBUG)\ntarget_include_directories(calc PRIVATE include third_party)\n",
+        "expected": "gcc -DCALC_DEBUG -Iinclude -Ithird_party -g -std=c17 -Wall -Wextra -Wpedantic -c src/main.c\ngcc -DCALC_DEBUG -Iinclude -Ithird_party -g -std=c17 -Wall -Wextra -Wpedantic -c src/lexer.c\ngcc -DCALC_DEBUG -Iinclude -Ithird_party -g -std=c17 -Wall -Wextra -Wpedantic -c src/parser.c\n"
+      },
+      {
+        "id": "hidden-9",
+        "name": "Явно включённые расширения",
+        "stdin": "set(CMAKE_C_STANDARD 99)\nset(CMAKE_C_EXTENSIONS ON)\nadd_executable(old legacy.c)\ntarget_compile_options(old PRIVATE -w)\n",
+        "expected": "gcc -std=gnu99 -w -c legacy.c\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define LINE 256\n#define LIST 2048\n\nstatic void add(char *out, const char *text) {\n    if (text[0] == '\\0') {\n        return;\n    }\n    if (out[0] != '\\0') {\n        strcat(out, \" \");\n    }\n    strcat(out, text);\n}\n\nstatic int parse(char *line, char **command, char *args[]) {\n    char *open = strchr(line, '(');\n    char *close = strrchr(line, ')');\n    if (open == NULL || close == NULL || close < open) {\n        return -1;\n    }\n    *open = '\\0';\n    *close = '\\0';\n    *command = line;\n    while (**command == ' ') {\n        (*command)++;\n    }\n    int count = 0;\n    for (char *word = strtok(open + 1, \" \\t\"); word != NULL; word = strtok(NULL, \" \\t\")) {\n        args[count++] = word;\n    }\n    return count;\n}\n\nstatic int is_visibility(const char *word) {\n    return strcmp(word, \"PRIVATE\") == 0 || strcmp(word, \"PUBLIC\") == 0 ||\n           strcmp(word, \"INTERFACE\") == 0;\n}\n\nint main(void) {\n    static char defines[LIST];\n    static char includes[LIST];\n    static char options[LIST];\n    static char sources[64][LINE];\n    int source_count = 0;\n    char build_type[LINE] = \"\";\n    char standard[LINE] = \"\";\n    int extensions = 1;\n    char line[LINE];\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        line[strcspn(line, \"\\r\\n\")] = '\\0';\n        char *command;\n        char *args[64];\n        int count = parse(line, &command, args);\n        if (count < 1) {\n            continue;\n        }\n        if (strcmp(command, \"set\") == 0 && count >= 2) {\n            if (strcmp(args[0], \"CMAKE_BUILD_TYPE\") == 0) {\n                strcpy(build_type, args[1]);\n            } else if (strcmp(args[0], \"CMAKE_C_STANDARD\") == 0) {\n                strcpy(standard, args[1]);\n            } else if (strcmp(args[0], \"CMAKE_C_EXTENSIONS\") == 0) {\n                extensions = strcmp(args[1], \"OFF\") != 0;\n            }\n        } else if (strcmp(command, \"add_executable\") == 0) {\n            for (int i = 1; i < count && source_count < 64; i++) {\n                strcpy(sources[source_count++], args[i]);\n            }\n        } else if (strcmp(command, \"target_compile_definitions\") == 0 ||\n                   strcmp(command, \"target_include_directories\") == 0 ||\n                   strcmp(command, \"target_compile_options\") == 0) {\n            int is_define = strcmp(command, \"target_compile_definitions\") == 0;\n            int is_include = strcmp(command, \"target_include_directories\") == 0;\n            int applies = 1;\n            for (int i = 1; i < count; i++) {\n                if (is_visibility(args[i])) {\n                    applies = strcmp(args[i], \"INTERFACE\") != 0;\n                    continue;\n                }\n                if (!applies) {\n                    continue;\n                }\n                char item[LINE + 2];\n                if (is_define) {\n                    snprintf(item, sizeof item, \"-D%s\", args[i]);\n                    add(defines, item);\n                } else if (is_include) {\n                    snprintf(item, sizeof item, \"-I%s\", args[i]);\n                    add(includes, item);\n                } else {\n                    add(options, args[i]);\n                }\n            }\n        }\n    }\n    const char *type_flags = \"\";\n    if (strcmp(build_type, \"Debug\") == 0) {\n        type_flags = \"-g\";\n    } else if (strcmp(build_type, \"Release\") == 0) {\n        type_flags = \"-O3 -DNDEBUG\";\n    } else if (strcmp(build_type, \"RelWithDebInfo\") == 0) {\n        type_flags = \"-O2 -g -DNDEBUG\";\n    } else if (strcmp(build_type, \"MinSizeRel\") == 0) {\n        type_flags = \"-Os -DNDEBUG\";\n    }\n    char std_flag[LINE + 16] = \"\";\n    if (standard[0] != '\\0') {\n        snprintf(std_flag, sizeof std_flag, \"-std=%s%s\", extensions ? \"gnu\" : \"c\", standard);\n    }\n    for (int i = 0; i < source_count; i++) {\n        static char out[4 * LIST];\n        strcpy(out, \"gcc\");\n        add(out, defines);\n        add(out, includes);\n        add(out, type_flags);\n        add(out, std_flag);\n        add(out, options);\n        add(out, \"-c\");\n        add(out, sources[i]);\n        puts(out);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "CMake не придумывает флаги — он собирает их из свойств цели: макросов, каталогов, опций, стандарта и типа сборки. Если сборка ведёт себя странно, первым делом посмотрите на итоговую команду: `cmake --build build --verbose`.\n\nВидимость работает уже на уровне одной цели: `INTERFACE`-требование описывает, что нужно **пользователям** цели, и к её собственной компиляции не применяется. А тип сборки — единственный параметр, который выбирается при настройке, а не в `CMakeLists.txt`: один и тот же файл даёт и отладочную, и выпускную сборку.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "advanced-cmake-task-2",
+      "title": "PUBLIC и PRIVATE",
+      "description": "Вычислите, с какими каталогами заголовков компилируется каждая цель. На вход до конца ввода подаются команды CMake:\n\n- `add_library(имя STATIC|SHARED файлы…)` и `add_executable(имя файлы…)` объявляют цели;\n- `target_include_directories(цель ВИДИМОСТЬ каталоги… ВИДИМОСТЬ каталоги…)`;\n- `target_link_libraries(цель ВИДИМОСТЬ имена…)` — имена, не являющиеся целями (например, `m`), на каталоги не влияют.\n\nВидимость — `PRIVATE`, `PUBLIC` или `INTERFACE`; она всегда стоит перед значениями.\n\n**Интерфейс** цели — её каталоги `PUBLIC` и `INTERFACE` плюс интерфейсы целей, связанных с ней как `PUBLIC` или `INTERFACE`. **Каталоги компиляции** цели — её каталоги `PRIVATE` и `PUBLIC` плюс интерфейсы целей, связанных с ней как `PRIVATE` или `PUBLIC`.\n\nДля каждой цели в порядке объявления напечатайте `имя: каталоги` — свои каталоги в порядке появления, затем каталоги связей в порядке связей, каждый каталог один раз. Если каталогов нет — `имя: -`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "add_library(core STATIC src/core.c)\ntarget_include_directories(core PUBLIC include PRIVATE src)\nadd_executable(app src/main.c)\ntarget_link_libraries(app PRIVATE core m)\n",
+          "output": "core: include src\napp: include\n"
+        },
+        {
+          "input": "add_library(core STATIC c.c)\ntarget_include_directories(core PUBLIC core_inc)\nadd_library(net STATIC n.c)\ntarget_include_directories(net PUBLIC net_inc)\ntarget_link_libraries(net PRIVATE core)\nadd_executable(app main.c)\ntarget_link_libraries(app PRIVATE net)\n",
+          "output": "core: core_inc\nnet: net_inc core_inc\napp: net_inc\n"
+        }
+      ],
+      "constraints": [
+        "Не больше 20 целей и 50 строк; строки не длиннее 200 символов.",
+        "Связи не образуют циклов."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сохраните для каждой цели списки «каталог + видимость» и «связь + видимость» в порядке появления команд.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Напишите рекурсивную функцию interface(target, out): свои PUBLIC и INTERFACE каталоги, затем interface() целей из PUBLIC- и INTERFACE-связей. Функция add_unique добавляет каталог, если его ещё нет в out.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Каталоги компиляции: свои PRIVATE и PUBLIC каталоги, затем interface() целей из PRIVATE- и PUBLIC-связей.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add_library(core STATIC src/core.c)\ntarget_include_directories(core PUBLIC include PRIVATE src)\nadd_executable(app src/main.c)\ntarget_link_libraries(app PRIVATE core m)\n",
+          "expected": "core: include src\napp: include\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "add_library(core STATIC c.c)\ntarget_include_directories(core PUBLIC core_inc)\nadd_library(net STATIC n.c)\ntarget_include_directories(net PUBLIC net_inc)\ntarget_link_libraries(net PRIVATE core)\nadd_executable(app main.c)\ntarget_link_libraries(app PRIVATE net)\n",
+          "expected": "core: core_inc\nnet: net_inc core_inc\napp: net_inc\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Без каталогов",
+          "stdin": "add_executable(solo main.c)\n",
+          "expected": "solo: -\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "PUBLIC-цепочка",
+          "stdin": "add_library(core STATIC c.c)\ntarget_include_directories(core PUBLIC core_inc)\nadd_library(net STATIC n.c)\ntarget_link_libraries(net PUBLIC core)\nadd_executable(app main.c)\ntarget_link_libraries(app PRIVATE net)\n",
+          "expected": "core: core_inc\nnet: core_inc\napp: core_inc\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "INTERFACE-каталог",
+          "stdin": "add_library(api STATIC a.c)\ntarget_include_directories(api INTERFACE api_inc PRIVATE impl)\nadd_executable(app main.c)\ntarget_link_libraries(app PUBLIC api)\n",
+          "expected": "api: impl\napp: api_inc\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "INTERFACE-связь",
+          "stdin": "add_library(base STATIC b.c)\ntarget_include_directories(base PUBLIC base_inc)\nadd_library(wrap STATIC w.c)\ntarget_link_libraries(wrap INTERFACE base)\nadd_executable(app main.c)\ntarget_link_libraries(app PRIVATE wrap)\n",
+          "expected": "base: base_inc\nwrap: -\napp: base_inc\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Повторы каталогов",
+          "stdin": "add_library(a STATIC a.c)\ntarget_include_directories(a PUBLIC shared a_inc)\nadd_library(b STATIC b.c)\ntarget_include_directories(b PUBLIC shared b_inc)\nadd_executable(app main.c)\ntarget_include_directories(app PRIVATE shared)\ntarget_link_libraries(app PRIVATE a b)\n",
+          "expected": "a: shared a_inc\nb: shared b_inc\napp: shared a_inc b_inc\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Цель объявлена позже",
+          "stdin": "add_executable(app main.c)\ntarget_link_libraries(app PRIVATE core)\nadd_library(core STATIC c.c)\ntarget_include_directories(core PUBLIC inc)\n",
+          "expected": "app: inc\ncore: inc\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Чередование видимости",
+          "stdin": "add_library(x SHARED x.c)\ntarget_include_directories(x PRIVATE p1 PUBLIC q1 PRIVATE p2 PUBLIC q2)\nadd_executable(app main.c)\ntarget_link_libraries(app PRIVATE x pthread m)\n",
+          "expected": "x: p1 q1 p2 q2\napp: q1 q2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Длинная цепочка",
+          "stdin": "add_library(l1 STATIC a.c)\ntarget_include_directories(l1 PUBLIC i1)\nadd_library(l2 STATIC b.c)\ntarget_include_directories(l2 PUBLIC i2)\ntarget_link_libraries(l2 PUBLIC l1)\nadd_library(l3 STATIC c.c)\ntarget_include_directories(l3 PUBLIC i3)\ntarget_link_libraries(l3 PUBLIC l2)\nadd_executable(app main.c)\ntarget_link_libraries(app PRIVATE l3)\n",
+          "expected": "l1: i1\nl2: i2 i1\nl3: i3 i2 i1\napp: i3 i2 i1\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Программа и тесты",
+          "stdin": "add_library(core STATIC c.c)\ntarget_include_directories(core PUBLIC include)\nadd_executable(calc main.c)\ntarget_link_libraries(calc PRIVATE core)\nadd_executable(calc_tests t.c)\ntarget_include_directories(calc_tests PRIVATE tests)\ntarget_link_libraries(calc_tests PRIVATE core)\n",
+          "expected": "core: include\ncalc: include\ncalc_tests: tests include\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define LINE 256\n#define TARGETS 20\n#define ITEMS 20\n#define NAME 64\n\nenum { PRIVATE_VIS, PUBLIC_VIS, INTERFACE_VIS };\n\ntypedef struct {\n    char name[NAME];\n    char dirs[ITEMS][NAME];\n    int dir_vis[ITEMS];\n    int dir_count;\n    char links[ITEMS][NAME];\n    int link_vis[ITEMS];\n    int link_count;\n} Target;\n\nstatic Target targets[TARGETS];\nstatic int target_count;\n\nstatic int find(const char *name) {\n    for (int i = 0; i < target_count; i++) {\n        if (strcmp(targets[i].name, name) == 0) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nstatic int visibility(const char *word) {\n    if (strcmp(word, \"PRIVATE\") == 0) {\n        return PRIVATE_VIS;\n    }\n    if (strcmp(word, \"PUBLIC\") == 0) {\n        return PUBLIC_VIS;\n    }\n    if (strcmp(word, \"INTERFACE\") == 0) {\n        return INTERFACE_VIS;\n    }\n    return -1;\n}\n\nstatic void add_unique(char list[][NAME], int *count, const char *dir) {\n    for (int i = 0; i < *count; i++) {\n        if (strcmp(list[i], dir) == 0) {\n            return;\n        }\n    }\n    strcpy(list[(*count)++], dir);\n}\n\nstatic void interface(int t, char out[][NAME], int *count) {\n    const Target *target = &targets[t];\n    for (int i = 0; i < target->dir_count; i++) {\n        if (target->dir_vis[i] != PRIVATE_VIS) {\n            add_unique(out, count, target->dirs[i]);\n        }\n    }\n    for (int i = 0; i < target->link_count; i++) {\n        int other = find(target->links[i]);\n        if (other >= 0 && target->link_vis[i] != PRIVATE_VIS) {\n            interface(other, out, count);\n        }\n    }\n}\n\nint main(void) {\n    char line[LINE];\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        line[strcspn(line, \"\\r\\n\")] = '\\0';\n        char *open = strchr(line, '(');\n        char *close = strrchr(line, ')');\n        if (open == NULL || close == NULL || close < open) {\n            continue;\n        }\n        *open = '\\0';\n        *close = '\\0';\n        char *args[64];\n        int count = 0;\n        for (char *word = strtok(open + 1, \" \\t\"); word != NULL; word = strtok(NULL, \" \\t\")) {\n            args[count++] = word;\n        }\n        if (count == 0) {\n            continue;\n        }\n        if (strcmp(line, \"add_library\") == 0 || strcmp(line, \"add_executable\") == 0) {\n            if (target_count < TARGETS && find(args[0]) < 0) {\n                strcpy(targets[target_count++].name, args[0]);\n            }\n            continue;\n        }\n        int is_dirs = strcmp(line, \"target_include_directories\") == 0;\n        int is_links = strcmp(line, \"target_link_libraries\") == 0;\n        int t = find(args[0]);\n        if ((!is_dirs && !is_links) || t < 0) {\n            continue;\n        }\n        Target *target = &targets[t];\n        int mode = PRIVATE_VIS;\n        for (int i = 1; i < count; i++) {\n            int vis = visibility(args[i]);\n            if (vis >= 0) {\n                mode = vis;\n            } else if (is_dirs && target->dir_count < ITEMS) {\n                strcpy(target->dirs[target->dir_count], args[i]);\n                target->dir_vis[target->dir_count++] = mode;\n            } else if (is_links && target->link_count < ITEMS) {\n                strcpy(target->links[target->link_count], args[i]);\n                target->link_vis[target->link_count++] = mode;\n            }\n        }\n    }\n    for (int t = 0; t < target_count; t++) {\n        static char out[TARGETS * ITEMS][NAME];\n        int out_count = 0;\n        const Target *target = &targets[t];\n        for (int i = 0; i < target->dir_count; i++) {\n            if (target->dir_vis[i] != INTERFACE_VIS) {\n                add_unique(out, &out_count, target->dirs[i]);\n            }\n        }\n        for (int i = 0; i < target->link_count; i++) {\n            int other = find(target->links[i]);\n            if (other >= 0 && target->link_vis[i] != INTERFACE_VIS) {\n                interface(other, out, &out_count);\n            }\n        }\n        printf(\"%s:\", target->name);\n        if (out_count == 0) {\n            printf(\" -\");\n        }\n        for (int i = 0; i < out_count; i++) {\n            printf(\" %s\", out[i]);\n        }\n        putchar('\\n');\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Две рекурсивные половины решения соответствуют двум вопросам о цели: «с чем компилируюсь **я**» и «что я **обещаю** тем, кто меня подключит». `PRIVATE` отвечает только на первый, `INTERFACE` — только на второй, `PUBLIC` — на оба.\n\nЦепочка распространяется, пока связи `PUBLIC`: если `app` подключает `net`, а `net` публично подключает `core`, то `app` получит каталоги `core`. Если же `net` подключает `core` как `PRIVATE`, каталоги `core` остаются внутренним делом `net`. Правильная видимость сокращает команды компиляции и не даёт коду случайно зависеть от того, что ему не обещали.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-cmake-task-3",
+      "title": "Шаги параллельной сборки",
+      "description": "При `cmake --build build -j` независимые цели собираются одновременно, но библиотека должна быть готова раньше целей, которые с ней связаны. Разбейте цели на шаги.\n\nНа вход до конца ввода подаются команды `add_library(имя …)`, `add_executable(имя …)` и `target_link_libraries(цель ВИДИМОСТЬ имена…)`. Связь с именем, которое не является целью, не учитывается; видимость на порядок не влияет.\n\nШаг цели — 1, если она не связана с другими целями, иначе 1 + наибольший шаг среди целей, с которыми она связана. Напечатайте `шаг K: цели` для K = 1, 2, … — цели шага в порядке объявления через пробел. Если связи образуют цикл, напечатайте только `ошибка: циклическая зависимость`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "add_library(lexer STATIC lexer.c)\nadd_library(parser STATIC parser.c)\ntarget_link_libraries(parser PUBLIC lexer)\nadd_executable(calc main.c)\ntarget_link_libraries(calc PRIVATE parser m)\nadd_executable(lexer_tests t.c)\ntarget_link_libraries(lexer_tests PRIVATE lexer)\n",
+          "output": "шаг 1: lexer\nшаг 2: parser lexer_tests\nшаг 3: calc\n"
+        },
+        {
+          "input": "add_library(a STATIC a.c)\nadd_library(b STATIC b.c)\ntarget_link_libraries(a PRIVATE b)\ntarget_link_libraries(b PRIVATE a)\n",
+          "output": "ошибка: циклическая зависимость\n"
+        }
+      ],
+      "constraints": ["Не больше 20 целей и 50 строк; строки не длиннее 200 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сначала прочитайте все команды, затем считайте шаги: связь может ссылаться на цель, объявленную ниже.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Шаг считайте рекурсивно с запоминанием: level(t) = 1 + max(level(d)). Состояние «вычисляется сейчас» позволяет заметить цикл.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Для вывода переберите K от 1 до максимального шага и для каждого — цели в порядке объявления.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add_library(lexer STATIC lexer.c)\nadd_library(parser STATIC parser.c)\ntarget_link_libraries(parser PUBLIC lexer)\nadd_executable(calc main.c)\ntarget_link_libraries(calc PRIVATE parser m)\nadd_executable(lexer_tests t.c)\ntarget_link_libraries(lexer_tests PRIVATE lexer)\n",
+          "expected": "шаг 1: lexer\nшаг 2: parser lexer_tests\nшаг 3: calc\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "add_library(a STATIC a.c)\nadd_library(b STATIC b.c)\ntarget_link_libraries(a PRIVATE b)\ntarget_link_libraries(b PRIVATE a)\n",
+          "expected": "ошибка: циклическая зависимость\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна цель",
+          "stdin": "add_executable(app main.c)\n",
+          "expected": "шаг 1: app\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Всё независимо",
+          "stdin": "add_library(a STATIC a.c)\nadd_library(b STATIC b.c)\nadd_executable(c c.c)\n",
+          "expected": "шаг 1: a b c\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Цель объявлена позже",
+          "stdin": "add_executable(app main.c)\ntarget_link_libraries(app PRIVATE core)\nadd_library(core STATIC c.c)\n",
+          "expected": "шаг 1: core\nшаг 2: app\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Цепочка",
+          "stdin": "add_library(a STATIC a.c)\nadd_library(b STATIC b.c)\nadd_library(c STATIC c.c)\nadd_library(d STATIC d.c)\ntarget_link_libraries(b PUBLIC a)\ntarget_link_libraries(c PUBLIC b)\ntarget_link_libraries(d PUBLIC c)\n",
+          "expected": "шаг 1: a\nшаг 2: b\nшаг 3: c\nшаг 4: d\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Ромб",
+          "stdin": "add_library(util STATIC u.c)\nadd_library(net STATIC n.c)\nadd_library(ui STATIC i.c)\ntarget_link_libraries(net PRIVATE util)\ntarget_link_libraries(ui PRIVATE util)\nadd_executable(app main.c)\ntarget_link_libraries(app PRIVATE net ui util)\n",
+          "expected": "шаг 1: util\nшаг 2: net ui\nшаг 3: app\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Связь с собой",
+          "stdin": "add_library(self STATIC s.c)\ntarget_link_libraries(self PRIVATE self)\n",
+          "expected": "ошибка: циклическая зависимость\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Только системные библиотеки",
+          "stdin": "add_executable(app main.c)\ntarget_link_libraries(app PRIVATE m pthread dl)\n",
+          "expected": "шаг 1: app\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Длинный цикл",
+          "stdin": "add_library(a STATIC a.c)\nadd_library(b STATIC b.c)\nadd_library(c STATIC c.c)\ntarget_link_libraries(a PRIVATE b)\ntarget_link_libraries(b PRIVATE c)\ntarget_link_libraries(c PRIVATE a)\nadd_executable(app main.c)\n",
+          "expected": "ошибка: циклическая зависимость\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Тесты на одной библиотеке",
+          "stdin": "add_library(core STATIC c.c)\nadd_executable(t1 t1.c)\nadd_executable(t2 t2.c)\nadd_executable(t3 t3.c)\ntarget_link_libraries(t1 PRIVATE core)\ntarget_link_libraries(t2 PRIVATE core)\ntarget_link_libraries(t3 PRIVATE t1 core)\n",
+          "expected": "шаг 1: core\nшаг 2: t1 t2\nшаг 3: t3\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define LINE 256\n#define TARGETS 20\n#define NAME 64\n\nstatic char names[TARGETS][NAME];\nstatic char links[TARGETS][40][NAME];\nstatic int link_count[TARGETS];\nstatic int levels[TARGETS];\nstatic int state[TARGETS];\nstatic int target_count;\nstatic int has_cycle;\n\nstatic int find(const char *name) {\n    for (int i = 0; i < target_count; i++) {\n        if (strcmp(names[i], name) == 0) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nstatic int level(int t) {\n    if (state[t] == 2) {\n        return levels[t];\n    }\n    if (state[t] == 1) {\n        has_cycle = 1;\n        return 0;\n    }\n    state[t] = 1;\n    int best = 0;\n    for (int i = 0; i < link_count[t]; i++) {\n        int other = find(links[t][i]);\n        if (other >= 0) {\n            int value = level(other);\n            if (value > best) {\n                best = value;\n            }\n        }\n    }\n    state[t] = 2;\n    levels[t] = best + 1;\n    return levels[t];\n}\n\nint main(void) {\n    char line[LINE];\n    static char pending_owner[50][NAME];\n    static char pending_line[50][LINE];\n    int pending = 0;\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        line[strcspn(line, \"\\r\\n\")] = '\\0';\n        char *open = strchr(line, '(');\n        char *close = strrchr(line, ')');\n        if (open == NULL || close == NULL || close < open) {\n            continue;\n        }\n        *open = '\\0';\n        *close = '\\0';\n        char *first = strtok(open + 1, \" \\t\");\n        if (first == NULL) {\n            continue;\n        }\n        if (strcmp(line, \"add_library\") == 0 || strcmp(line, \"add_executable\") == 0) {\n            if (target_count < TARGETS && find(first) < 0) {\n                strcpy(names[target_count++], first);\n            }\n        } else if (strcmp(line, \"target_link_libraries\") == 0 && pending < 50) {\n            strcpy(pending_owner[pending], first);\n            char *rest = strtok(NULL, \"\");\n            strcpy(pending_line[pending], rest != NULL ? rest : \"\");\n            pending++;\n        }\n    }\n    for (int p = 0; p < pending; p++) {\n        int t = find(pending_owner[p]);\n        if (t < 0) {\n            continue;\n        }\n        for (char *word = strtok(pending_line[p], \" \\t\"); word != NULL;\n             word = strtok(NULL, \" \\t\")) {\n            if (strcmp(word, \"PRIVATE\") != 0 && strcmp(word, \"PUBLIC\") != 0 &&\n                strcmp(word, \"INTERFACE\") != 0 && link_count[t] < 40) {\n                strcpy(links[t][link_count[t]++], word);\n            }\n        }\n    }\n    int max_level = 0;\n    for (int t = 0; t < target_count; t++) {\n        int value = level(t);\n        if (value > max_level) {\n            max_level = value;\n        }\n    }\n    if (has_cycle) {\n        printf(\"ошибка: циклическая зависимость\\n\");\n        return 0;\n    }\n    for (int k = 1; k <= max_level; k++) {\n        printf(\"шаг %d:\", k);\n        for (int t = 0; t < target_count; t++) {\n            if (levels[t] == k) {\n                printf(\" %s\", names[t]);\n            }\n        }\n        putchar('\\n');\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Шаг цели — длина самой длинной цепочки зависимостей под ней. Все цели одного шага не зависят друг от друга, поэтому их можно собирать одновременно, а следующий шаг начинается, когда готовы все нужные ему библиотеки. Число шагов — нижняя граница времени сборки при любом числе ядер: длинную цепочку библиотек не ускорит даже `-j64`.\n\nСвязи сохраняются до конца чтения, потому что в CMake `target_link_libraries` может ссылаться на цель, объявленную ниже, — граф известен только целиком. Запоминание шагов (`state` и `levels`) делает подсчёт линейным: каждая цель вычисляется один раз.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "advanced-cmake-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что делает CMake?",
+        "explanation": "Компилирует по-прежнему gcc или clang, а запускает их make или Ninja. CMake пишет для них инструкции.",
+        "options": [
+          "По описанию целей генерирует сборочную систему: Makefile, проект Ninja, Visual Studio",
+          "Компилирует исходники вместо gcc",
+          "Заменяет линковщик",
+          "Устанавливает компилятор"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Какая команда настраивает проект из текущего каталога со сборкой в каталоге build?",
+        "explanation": "-S — каталог исходников, -B — каталог сборки. cmake --build build — уже следующий шаг.",
+        "options": ["cmake -S . -B build", "cmake --build build", "make -C build", "cmake build"],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Проект настроен в каталоге build. Какой командой CMake его собрать?",
+        "explanation": "cmake --build запускает сгенерированную систему сборки, не важно, Make это или Ninja.",
+        "type": "text",
+        "answers": ["cmake --build build", "cmake --build build/", "cmake --build ./build"],
+        "placeholder": "Команда"
+      },
+      {
+        "id": "q4",
+        "question": "Библиотека core объявила target_include_directories(core PRIVATE include). Программа app подключает core и в своём коде пишет #include \"core.h\" из include/. Что будет?",
+        "explanation": "PRIVATE — только для сборки самой core. Чтобы каталог получили пользователи, нужен PUBLIC (или INTERFACE).",
+        "options": [
+          "app не скомпилируется: каталог include не передаётся пользователям core",
+          "Всё соберётся: каталоги библиотеки всегда видны программе",
+          "Ошибка линковки",
+          "CMake выдаст ошибку при настройке"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какие флаги добавляет CMAKE_BUILD_TYPE=Release для GCC?",
+        "explanation": "-O2 -g -DNDEBUG — это RelWithDebInfo, -g — Debug.",
+        "options": ["-O3 -DNDEBUG", "-g", "-O0 -g", "-O2 -g -DNDEBUG"],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Почему в современном CMake используют target_include_directories, а не глобальный include_directories?",
+        "explanation": "Глобальные настройки действуют на всё подряд и не переносятся вместе с библиотекой в другой проект.",
+        "options": [
+          "Требования привязаны к цели и автоматически передаются тем, кто её подключает",
+          "Глобальная команда не работает в CMake 3",
+          "target_* быстрее собирается",
+          "include_directories не поддерживает относительные пути"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "В CMakeLists.txt написано только set(CMAKE_C_STANDARD 17). Какой флаг стандарта получит gcc?",
+        "explanation": "По умолчанию CMAKE_C_EXTENSIONS включён. Для -std=c17 нужен set(CMAKE_C_EXTENSIONS OFF).",
+        "type": "text",
+        "answers": ["-std=gnu17"],
+        "placeholder": "Флаг"
+      },
+      {
+        "id": "q8",
+        "question": "Что из этого нужно хранить в Git? Выберите все.",
+        "explanation": "Всё в build/ генерируется заново командой cmake -S . -B build. CMakeCache.txt хранит пути конкретного компьютера.",
+        "type": "multiple",
+        "options": [
+          "CMakeLists.txt",
+          "Исходники src/ и include/",
+          "Каталог build/",
+          "build/CMakeCache.txt"
+        ],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q9",
+        "question": "Когда ctest считает тест, зарегистрированный add_test, пройденным?",
+        "explanation": "Код завершения — договор между программой и инструментами. Тестовая программа возвращает ненулевой код при любом провале.",
+        "options": [
+          "Когда программа теста завершилась с кодом 0",
+          "Когда программа ничего не вывела в stderr",
+          "Когда программа вывела слово OK",
+          "Когда программа собралась без предупреждений"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "id": "oop-runtime-polymorphism",
+  "title": "Полиморфизм во время выполнения",
+  "description": "Гетерогенная коллекция содержит разные конкретные типы за общим интерфейсом. vector<unique_ptr<Sensor>> владеет датчиками, сохраняя их динамические типы. unique_ptr — единственный владелец; std::make_unique создаёт объект, а std::move передаёт владение. Копировать unique_ptr нельзя. Перемещение не копирует сам датчик и оставляет исходный указатель пустым.",
+  "moduleId": "cpp-oop",
+  "order": 19,
+  "difficulty": "advanced",
+  "estimatedMinutes": 60,
+  "prerequisites": ["oop-abstract-classes"],
+  "objectives": [
+    "Применить Полиморфизм во время выполнения в работающем C++20 коде.",
+    "Проследить состояние и время жизни объектов в примере.",
+    "Реализовать контракт практики и проверить граничные случаи."
+  ],
+  "tags": ["C++20", "ООП", "Полиморфизм во время выполнения"],
+  "published": true,
+  "standard": "c++20",
+  "completion": "practice",
+  "exercise": {
+    "id": "oop-runtime-polymorphism-exercise",
+    "title": "Практика: Полиморфизм во время выполнения",
+    "description": "Source имеет pure virtual read() const и виртуальный деструктор. Direct(int) возвращает сохранённое число, Doubled(int) — удвоенное. solve(a,b) создаёт vector<unique_ptr<Source>>, добавляет Direct{a} и Doubled{b} через make_unique, затем возвращает сумму read в одном цикле. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
+    "difficulty": "advanced",
+    "language": "cpp",
+    "standard": "c++20",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "solve(3, 4)",
+        "output": "11\n",
+        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+      },
+      {
+        "input": "solve(0, 0)",
+        "output": "0\n",
+        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+      }
+    ],
+    "constraints": [
+      "Аргументы a, b — целые от −1000 до 1000 включительно.",
+      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
+      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "arguments": [3, 4],
+        "expected": "11\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "arguments": [0, 0],
+        "expected": "0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "arguments": [-3, 2],
+        "expected": "1\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "arguments": [1000, -1000],
+        "expected": "-1000\n"
+      }
+    ],
+    "referenceSolution": "#include <memory>\n#include <vector>\nstruct Source { virtual int read() const = 0; virtual ~Source() = default; };\nclass Direct : public Source { int value_; public: explicit Direct(int x) : value_(x) {} int read() const override { return value_; } };\nclass Doubled : public Source { int value_; public: explicit Doubled(int x) : value_(x) {} int read() const override { return value_*2; } };\nint solve(int a,int b) { std::vector<std::unique_ptr<Source>> v; v.push_back(std::make_unique<Direct>(a)); v.push_back(std::make_unique<Doubled>(b)); int total=0; for(const auto& s:v) total+=s->read(); return total; }",
+    "solutionExplanation": "Source имеет pure virtual read() const и виртуальный деструктор. Direct(int) возвращает сохранённое число, Doubled(int) — удвоенное. solve(a,b) создаёт vector<unique_ptr<Source>>, добавляет Direct{a} и Doubled{b} через make_unique, затем возвращает сумму read в одном цикле. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не храните производные значения в vector<Base>: это либо невозможно для абстрактной базы, либо приводит к срезке. Не используйте голый new как способ избежать размышления о владельце. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "checking": {
+      "type": "function",
+      "functionName": "solve",
+      "returnType": "int",
+      "parameters": [
+        { "name": "a", "type": "int" },
+        { "name": "b", "type": "int" }
+      ]
+    }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "oop-runtime-polymorphism-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "contract",
+        "question": "Что происходит при перемещении unique_ptr в коллекцию?",
+        "options": [
+          "Передаётся владение существующим объектом",
+          "Копируется весь производный объект в базовый"
+        ],
+        "correct": 0,
+        "explanation": "Алгоритм проходит по коллекции и вызывает read без switch по типам. Новый класс датчика не требует изменения цикла. Цена — косвенный вызов, отдельные размещения объектов и возможное ухудшение локальности. Если набор типов закрыт и значения малы, другие представления могут быть выгоднее; здесь нужен открытый интерфейс. Для заимствованной коллекции подойдут ссылки или указатели с внешним владельцем, но это другой контракт времени жизни."
+      },
+      {
+        "id": "trace",
+        "question": "Какой вывод даёт запускаемый пример этого урока?",
+        "options": ["Ошибка компиляции", "11", "Программа ничего не выводит"],
+        "correct": 1,
+        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 11. Гетерогенная коллекция содержит разные конкретные типы за общим интерфейсом. vector<unique_ptr<Sensor>> владеет датчиками, сохраняя их динамические типы. unique_ptr — единственный владелец; std::make_unique создаёт объект, а std::move передаёт владение. Копировать unique_ptr нельзя. Перемещение не копирует сам датчик и оставляет исходный указатель пустым."
+      },
+      {
+        "id": "review",
+        "question": "Какое замечание нужно учесть при ревью решения?",
+        "options": [
+          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
+          "Не храните производные значения в vector<Base>: это либо невозможно для абстрактной базы, либо приводит к срезке. Не используйте голый new как способ избежать размышления о владельце."
+        ],
+        "correct": 1,
+        "explanation": "Добавьте третий источник и оставьте цикл неизменным. После std::move(ptr) нельзя разыменовывать исходный unique_ptr без проверки: он пуст. reserve для вектора переносит владельцев, но сами отдельно выделенные Sensor сохраняют адреса до удаления."
+      }
+    ]
+  }
+}

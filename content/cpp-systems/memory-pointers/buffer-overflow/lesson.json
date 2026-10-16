@@ -1,0 +1,510 @@
+{
+  "id": "memory-buffer-overflow",
+  "title": "Переполнение буфера",
+  "description": "Запись строк за границу массива на стеке и в куче: отчёты stack-buffer-overflow и heap-buffer-overflow, опасные функции и их замены, snprintf с обнаружением обрезки, ширина в scanf, безопасная склейка.",
+  "moduleId": "memory-pointers",
+  "order": 20,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["memory-double-free"],
+  "objectives": [
+    "Объяснять, почему переполнение буфера опасно и как его находит AddressSanitizer",
+    "Заменять gets, strcpy, strcat, sprintf и scanf(\"%s\") безопасными вариантами",
+    "Использовать возвращаемое значение snprintf для обнаружения обрезки",
+    "Писать функции записи строк, получающие размер буфера"
+  ],
+  "tags": ["C17", "Память", "Переполнение буфера", "Строки", "snprintf"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "memory-buffer-overflow-task-1",
+    "title": "Найди ошибку: копия имени",
+    "description": "Программа читает `n` игроков (имя и счёт) и печатает их. Поле `name` вмещает 11 символов; более длинные имена нужно **обрезать** до 11 символов. На коротких именах всё работает, на длинных — `stack-buffer-overflow`.\n\nИсправьте копирование имени.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n#include <string.h>\n\nstruct Player {\n    char name[12];\n    int score;\n};\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    struct Player players[20];\n    for (int i = 0; i < n; i++) {\n        char buffer[64];\n        scanf(\"%63s %d\", buffer, &players[i].score);\n        strcpy(players[i].name, buffer);\n    }\n    for (int i = 0; i < n; i++) {\n        printf(\"%s %d\\n\", players[i].name, players[i].score);\n    }\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "2\nann 10\nbob 7\n",
+        "output": "ann 10\nbob 7\n"
+      },
+      {
+        "input": "1\nmaximilianus 99\n",
+        "output": "maximilianu 99\n"
+      }
+    ],
+    "constraints": ["1 ≤ n ≤ 20.", "Имена — до 63 символов без пробелов."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Сколько байтов записывает strcpy, если имя длиннее 11 символов?",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Ограничьте длину копии: len = strlen(buffer), но не больше sizeof name − 1; затем memcpy(name, buffer, len) и name[len] = '\\0'. Вариант с snprintf(name, sizeof name, \"%s\", buffer) тоже безопасен, но GCC предупредит о возможной обрезке.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "2\nann 10\nbob 7\n",
+        "expected": "ann 10\nbob 7\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1\nmaximilianus 99\n",
+        "expected": "maximilianu 99\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Ровно 11 символов",
+        "stdin": "1\nabcdefghijk 1\n",
+        "expected": "abcdefghijk 1\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "12 символов",
+        "stdin": "1\nabcdefghijkl 2\n",
+        "expected": "abcdefghijk 2\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Максимальная длина",
+        "stdin": "1\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 3\n",
+        "expected": "xxxxxxxxxxx 3\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Двадцать игроков",
+        "stdin": "20\np 0\npppp 1\nppppppp 2\npppppppppp 3\nppppppppppppp 4\npppppppppppppppp 5\nppppppppppppppppppp 6\npppppppppppppppppppppp 7\nppppppppppppppppppppppppp 8\npppppppppppppppppppppppppppp 9\nppppppppppppppppppppppppppppppp 10\npppppppppppppppppppppppppppppppppp 11\nppppppppppppppppppppppppppppppppppppp 12\npppppppppppppppppppppppppppppppppppppppp 13\nppppppppppppppppppppppppppppppppppppppppppp 14\npppppppppppppppppppppppppppppppppppppppppppppp 15\nppppppppppppppppppppppppppppppppppppppppppppppppp 16\npppppppppppppppppppppppppppppppppppppppppppppppppppp 17\nppppppppppppppppppppppppppppppppppppppppppppppppppppppp 18\npppppppppppppppppppppppppppppppppppppppppppppppppppppppppp 19\n",
+        "expected": "p 0\npppp 1\nppppppp 2\npppppppppp 3\nppppppppppp 4\nppppppppppp 5\nppppppppppp 6\nppppppppppp 7\nppppppppppp 8\nppppppppppp 9\nppppppppppp 10\nppppppppppp 11\nppppppppppp 12\nppppppppppp 13\nppppppppppp 14\nppppppppppp 15\nppppppppppp 16\nppppppppppp 17\nppppppppppp 18\nppppppppppp 19\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Чередование длин",
+        "stdin": "3\nverylongplayername 1\nshort 2\nanotherlongname 3\n",
+        "expected": "verylongpla 1\nshort 2\nanotherlong 3\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Однобуквенное",
+        "stdin": "1\na 0\n",
+        "expected": "a 0\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Отрицательный счёт",
+        "stdin": "2\nbartholomew_the_great 100\nzed -5\n",
+        "expected": "bartholomew 100\nzed -5\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Цифры",
+        "stdin": "1\n123456789012345 12\n",
+        "expected": "12345678901 12\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstruct Player {\n    char name[12];\n    int score;\n};\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    struct Player players[20];\n    for (int i = 0; i < n; i++) {\n        char buffer[64];\n        scanf(\"%63s %d\", buffer, &players[i].score);\n        size_t len = strlen(buffer);\n        if (len >= sizeof players[i].name) {\n            len = sizeof players[i].name - 1;\n        }\n        memcpy(players[i].name, buffer, len);\n        players[i].name[len] = '\\0';\n    }\n    for (int i = 0; i < n; i++) {\n        printf(\"%s %d\\n\", players[i].name, players[i].score);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "`strcpy` копирует строку целиком, не зная, что поле `name` вмещает только 12 байтов. Длинное имя затирает поле `score` и соседние элементы массива — AddressSanitizer сообщает о записи за пределы `players`, если переполнение выходит за конец массива, а внутри массива порча проявляется неверными счётами.\n\nИсправление явно ограничивает длину копии размером поля минус один байт под `'\\0'` и сам ставит завершающий ноль. Так обрезка по условию становится видна в коде. `snprintf(name, sizeof name, \"%s\", buffer)` делает то же самое, но GCC с `-Wall` предупредит о возможной обрезке — предупреждение честное: обрезка здесь действительно происходит, только намеренно.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "memory-buffer-overflow-task-2",
+      "title": "Найди ошибку: ширина scanf",
+      "description": "Программа читает слова до конца ввода и для каждого печатает его первые 7 символов (короткие слова — целиком), а в конце — количество слов. Слова бывают до 100 символов. На длинных словах программа выходит за границу массива.\n\nИсправьте чтение слов.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    char word[8];\n    int count = 0;\n    while (scanf(\"%s\", word) == 1) {\n        word[7] = '\\0';\n        printf(\"%s\\n\", word);\n        count++;\n    }\n    printf(\"words=%d\\n\", count);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "cat elephant\n",
+          "output": "cat\nelephan\nwords=2\n"
+        },
+        {
+          "input": "abcdefg\n",
+          "output": "abcdefg\nwords=1\n"
+        }
+      ],
+      "constraints": ["Слов — до 100.", "Каждое слово — до 100 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "scanf(\"%s\", word) пишет всё слово целиком, сколько бы места ни было в word.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Читайте в достаточно большой буфер с шириной: char word[128]; scanf(\"%127s\", word); — а печатайте префикс через printf(\"%.7s\\n\", word).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "cat elephant\n",
+          "expected": "cat\nelephan\nwords=2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "abcdefg\n",
+          "expected": "abcdefg\nwords=1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Восемь символов",
+          "stdin": "abcdefgh\n",
+          "expected": "abcdefg\nwords=1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Сто символов",
+          "stdin": "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL\n",
+          "expected": "LLLLLLL\nwords=1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Короткие слова",
+          "stdin": "a b c d\n",
+          "expected": "a\nb\nc\nd\nwords=4\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Нет слов",
+          "stdin": "\n",
+          "expected": "words=0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Сто слов",
+          "stdin": "w ww www wwww wwwww wwwwww wwwwwww wwwwwwww wwwwwwwww wwwwwwwwww wwwwwwwwwww wwwwwwwwwwww wwwwwwwwwwwww wwwwwwwwwwwwww wwwwwwwwwwwwwww wwwwwwwwwwwwwwww wwwwwwwwwwwwwwwww wwwwwwwwwwwwwwwwww wwwwwwwwwwwwwwwwwww wwwwwwwwwwwwwwwwwwww w ww www wwww wwwww wwwwww wwwwwww wwwwwwww wwwwwwwww wwwwwwwwww wwwwwwwwwww wwwwwwwwwwww wwwwwwwwwwwww wwwwwwwwwwwwww wwwwwwwwwwwwwww wwwwwwwwwwwwwwww wwwwwwwwwwwwwwwww wwwwwwwwwwwwwwwwww wwwwwwwwwwwwwwwwwww wwwwwwwwwwwwwwwwwwww w ww www wwww wwwww wwwwww wwwwwww wwwwwwww wwwwwwwww wwwwwwwwww wwwwwwwwwww wwwwwwwwwwww wwwwwwwwwwwww wwwwwwwwwwwwww wwwwwwwwwwwwwww wwwwwwwwwwwwwwww wwwwwwwwwwwwwwwww wwwwwwwwwwwwwwwwww wwwwwwwwwwwwwwwwwww wwwwwwwwwwwwwwwwwwww w ww www wwww wwwww wwwwww wwwwwww wwwwwwww wwwwwwwww wwwwwwwwww wwwwwwwwwww wwwwwwwwwwww wwwwwwwwwwwww wwwwwwwwwwwwww wwwwwwwwwwwwwww wwwwwwwwwwwwwwww wwwwwwwwwwwwwwwww wwwwwwwwwwwwwwwwww wwwwwwwwwwwwwwwwwww wwwwwwwwwwwwwwwwwwww w ww www wwww wwwww wwwwww wwwwwww wwwwwwww wwwwwwwww wwwwwwwwww wwwwwwwwwww wwwwwwwwwwww wwwwwwwwwwwww wwwwwwwwwwwwww wwwwwwwwwwwwwww wwwwwwwwwwwwwwww wwwwwwwwwwwwwwwww wwwwwwwwwwwwwwwwww wwwwwwwwwwwwwwwwwww wwwwwwwwwwwwwwwwwwww\n",
+          "expected": "w\nww\nwww\nwwww\nwwwww\nwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nw\nww\nwww\nwwww\nwwwww\nwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nw\nww\nwww\nwwww\nwwwww\nwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nw\nww\nwww\nwwww\nwwwww\nwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nw\nww\nwww\nwwww\nwwwww\nwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwwwwwww\nwords=100\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Длинные слова",
+          "stdin": "internationalization localization\n",
+          "expected": "interna\nlocaliz\nwords=2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "По строкам",
+          "stdin": "one\ntwo\nthree\n",
+          "expected": "one\ntwo\nthree\nwords=3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Длинное и короткое",
+          "stdin": "supercalifragilisticexpialidocious x\n",
+          "expected": "superca\nx\nwords=2\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    char word[128];\n    int count = 0;\n    while (scanf(\"%127s\", word) == 1) {\n        printf(\"%.7s\\n\", word);\n        count++;\n    }\n    printf(\"words=%d\\n\", count);\n    return 0;\n}\n",
+      "solutionExplanation": "`scanf(\"%s\")` не знает размера массива и записывает слово целиком. Обрезка `word[7] = '\\0'` после чтения уже ничего не спасает: переполнение произошло внутри `scanf`.\n\nШирина `%127s` ограничивает запись размером буфера, а точность `%.7s` в `printf` печатает не больше 7 символов, не меняя строку. Можно было бы читать сразу `%7s`, но тогда длинное слово разбилось бы на несколько «слов» и счётчик стал бы неверным.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-buffer-overflow-task-3",
+      "title": "Безопасная склейка",
+      "description": "Реализуйте функцию\n\n```c\nint append(char *dst, size_t size, const char *src);\n```\n\nОна дописывает `src` в конец строки `dst`, если результат вместе с `'\\0'` помещается в `size` байтов, и возвращает 0. Иначе возвращает −1 и **не меняет** `dst`.\n\nФункция `main` дана: путь `path[32]` собирается из `q` частей, после каждой печатается `ok …` или `overflow …`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <string.h>\n\nint append(char *dst, size_t size, const char *src) {\n    return -1;\n}\n\nint main(void) {\n    char path[32] = \"\";\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        char part[64];\n        scanf(\"%63s\", part);\n        if (append(path, sizeof path, part) == 0) {\n            printf(\"ok %s\\n\", path);\n        } else {\n            printf(\"overflow %s\\n\", path);\n        }\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\n/home\n/user\n/documents/reports/2026\n",
+          "output": "ok /home\nok /home/user\noverflow /home/user\n"
+        },
+        {
+          "input": "1\nabcdefghijklmnopqrstuvwxyz01234\n",
+          "output": "ok abcdefghijklmnopqrstuvwxyz01234\n"
+        }
+      ],
+      "constraints": ["1 ≤ q ≤ 20.", "Части — до 63 символов без пробелов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Проверка: strlen(dst) + strlen(src) + 1 > size — места не хватает.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Запись: memcpy(dst + used, src, extra + 1); — вместе с завершающим нулём.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\n/home\n/user\n/documents/reports/2026\n",
+          "expected": "ok /home\nok /home/user\noverflow /home/user\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nabcdefghijklmnopqrstuvwxyz01234\n",
+          "expected": "ok abcdefghijklmnopqrstuvwxyz01234\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "32 символа",
+          "stdin": "1\nabcdefghijklmnopqrstuvwxyz012345\n",
+          "expected": "overflow \n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Ровно 32 вместе",
+          "stdin": "2\nabcdefghijklmnop\nqrstuvwxyz012345\n",
+          "expected": "ok abcdefghijklmnop\noverflow abcdefghijklmnop\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Ровно 31 вместе",
+          "stdin": "2\nabcdefghijklmnop\nqrstuvwxyz01234\n",
+          "expected": "ok abcdefghijklmnop\nok abcdefghijklmnopqrstuvwxyz01234\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "По одному символу",
+          "stdin": "3\na\nb\nc\n",
+          "expected": "ok a\nok ab\nok abc\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Слишком длинная часть",
+          "stdin": "1\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n",
+          "expected": "overflow \n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Отказ после нескольких",
+          "stdin": "4\n/very/long/directory\n/x\n/y\n/zzzzzzzzzz\n",
+          "expected": "ok /very/long/directory\nok /very/long/directory/x\nok /very/long/directory/x/y\noverflow /very/long/directory/x/y\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Отказ и продолжение",
+          "stdin": "3\nfirst_part_is_long_enough\n_more\n_x\n",
+          "expected": "ok first_part_is_long_enough\nok first_part_is_long_enough_more\noverflow first_part_is_long_enough_more\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Двадцать частей",
+          "stdin": "20\nab\nab\nab\nab\nab\nab\nab\nab\nab\nab\nab\nab\nab\nab\nab\nab\nab\nab\nab\nab\n",
+          "expected": "ok ab\nok abab\nok ababab\nok abababab\nok ababababab\nok abababababab\nok ababababababab\nok abababababababab\nok ababababababababab\nok abababababababababab\nok ababababababababababab\nok abababababababababababab\nok ababababababababababababab\nok abababababababababababababab\nok ababababababababababababababab\noverflow ababababababababababababababab\noverflow ababababababababababababababab\noverflow ababababababababababababababab\noverflow ababababababababababababababab\noverflow ababababababababababababababab\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nint append(char *dst, size_t size, const char *src) {\n    size_t used = strlen(dst);\n    size_t extra = strlen(src);\n    if (used + extra + 1 > size) {\n        return -1;\n    }\n    memcpy(dst + used, src, extra + 1);\n    return 0;\n}\n\nint main(void) {\n    char path[32] = \"\";\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        char part[64];\n        scanf(\"%63s\", part);\n        if (append(path, sizeof path, part) == 0) {\n            printf(\"ok %s\\n\", path);\n        } else {\n            printf(\"overflow %s\\n\", path);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Функция получает размер буфера и проверяет место **до** записи. Если места не хватает, строка остаётся прежней — вызывающий код может сообщить об ошибке, не получив наполовину обрезанный путь.\n\nГраничный случай: результат длиной ровно 31 символ помещается (31 + 1 = 32), а 32 символа — уже нет. Условие `used + extra + 1 > size` учитывает завершающий ноль, о котором чаще всего забывают.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-buffer-overflow-task-4",
+      "title": "Метки с обрезкой",
+      "description": "Сформируйте метки для `n` товаров по шаблону `имя#номер` в буфере, вмещающем `w` символов (то есть размером `w + 1` байт). Если метка не помещается, печатается обрезанная версия со звёздочкой в конце строки вывода.\n\nВвод: `w` и `n`, затем `n` строк «имя номер». Для каждой — строка вывода: метка, а если она обрезана — ещё пробел и `*` и в скобках полная длина, например `humidity#1 * (11)`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "10 2\ntemp 3\nhumidity 12\n",
+          "output": "temp#3\nhumidity#1 * (11)\n"
+        },
+        {
+          "input": "1 1\na 5\n",
+          "output": "a * (3)\n"
+        }
+      ],
+      "constraints": ["1 ≤ w ≤ 30.", "1 ≤ n ≤ 20.", "Имена — до 40 символов, 0 ≤ номер ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "char label[31]; int needed = snprintf(label, (size_t)w + 1, \"%s#%d\", name, id); — размер передаётся как w + 1.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Обрезано, если needed > w.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "10 2\ntemp 3\nhumidity 12\n",
+          "expected": "temp#3\nhumidity#1 * (11)\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 1\na 5\n",
+          "expected": "a * (3)\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ровно 30",
+          "stdin": "30 1\nabcdefghijklmnopqrstuvwxyz 1234\n",
+          "expected": "abcdefghijklmnopqrstuvwxyz#123 * (31)\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "31 символ",
+          "stdin": "30 1\nabcdefghijklmnopqrstuvwxyz 12345\n",
+          "expected": "abcdefghijklmnopqrstuvwxyz#123 * (32)\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Граница ширины",
+          "stdin": "5 3\nab 1\nabc 1\nabcd 1\n",
+          "expected": "ab#1\nabc#1\nabcd# * (6)\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Очень длинное имя",
+          "stdin": "20 1\nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn 1000000000\n",
+          "expected": "nnnnnnnnnnnnnnnnnnnn * (51)\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Ноль и миллиард",
+          "stdin": "12 2\nsensor 0\nsensor 1000000000\n",
+          "expected": "sensor#0\nsensor#10000 * (17)\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Маленькая ширина",
+          "stdin": "3 2\nx 9\nx 10\n",
+          "expected": "x#9\nx#1 * (4)\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смешанные",
+          "stdin": "15 4\nalpha 1\nbeta 22\ngamma 333\ndelta_epsilon 4444\n",
+          "expected": "alpha#1\nbeta#22\ngamma#333\ndelta_epsilon#4 * (18)\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Обрезка до двух",
+          "stdin": "2 1\nab 1\n",
+          "expected": "ab * (4)\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int w, n;\n    scanf(\"%d %d\", &w, &n);\n    for (int i = 0; i < n; i++) {\n        char name[41];\n        int id;\n        scanf(\"%40s %d\", name, &id);\n        char label[31];\n        int needed = snprintf(label, (size_t)w + 1, \"%s#%d\", name, id);\n        if (needed > w) {\n            printf(\"%s * (%d)\\n\", label, needed);\n        } else {\n            printf(\"%s\\n\", label);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`snprintf` пишет не больше `w + 1` байтов и всегда ставит завершающий ноль, поэтому даже очень длинное имя не выйдет за массив `label`. Возвращаемое значение — длина, которую имела бы полная строка, — позволяет отличить обрезанную метку от уместившейся.\n\nБуфер объявлен с запасом (31 байт), а реальный лимит передаётся параметром. Так обычно и бывает: размер «окна» для записи задаётся логикой программы, а не размером массива.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "memory-buffer-overflow-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Какая ширина нужна в scanf для массива char name[20]?",
+        "explanation": "Ширина — число символов без завершающего нуля: 20 − 1 = 19.",
+        "type": "text",
+        "answers": ["19", "%19s"],
+        "placeholder": "Ширина"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    char buf[6];\n    int n = snprintf(buf, sizeof buf, \"%d-%d\", 123, 4567);\n    printf(\"%d %s\\n\", n, buf);\n    return 0;\n}",
+        "explanation": "Полная строка \"123-4567\" заняла бы 8 символов — это и возвращает snprintf. В буфер из 6 байтов поместились 5 символов и ноль.",
+        "type": "text",
+        "answers": ["8 123-4"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Какие функции не получают размер приёмника и поэтому опасны для произвольных данных? Выберите все.",
+        "explanation": "fgets и snprintf принимают размер буфера и никогда не выходят за него.",
+        "type": "multiple",
+        "options": ["gets", "strcpy", "sprintf", "fgets", "snprintf"],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q4",
+        "question": "Отчёт: heap-buffer-overflow … located 0 bytes to the right of 10-byte region. Что это скорее всего означает?",
+        "explanation": "Смещение 0 вправо от конца — первый байт за границей; ровно туда пишется ноль строки, если размер посчитан как strlen.",
+        "options": [
+          "Запись сразу за концом блока — типичный забытый байт под '\\0'",
+          "Запись в середину блока",
+          "Блок был освобождён",
+          "Утечка 10 байтов"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Сколько байтов нужно для строки \"data.csv\" вместе с завершающим нулём?",
+        "explanation": "8 символов и \\0.",
+        "type": "text",
+        "answers": ["9"],
+        "placeholder": "Байтов"
+      },
+      {
+        "id": "q6",
+        "question": "Почему функция gets удалена из стандарта C11?",
+        "explanation": "Любая достаточно длинная строка ввода переполнит буфер. Замена — fgets.",
+        "options": [
+          "Она не знает размер буфера, и защититься от переполнения при её использовании невозможно",
+          "Она слишком медленная",
+          "Её заменила scanf",
+          "Она не работает со стандартным вводом"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char a[4] = \"abc\";\n    char b[16] = \"xy\";\n    if (strlen(b) + strlen(a) + 1 <= sizeof b) {\n        strcat(b, a);\n    }\n    printf(\"%s %zu\\n\", b, strlen(b));\n    return 0;\n}",
+        "explanation": "Места достаточно: 2 + 3 + 1 = 6 ≤ 16, поэтому склейка безопасна.",
+        "type": "text",
+        "answers": ["xyabc 5"],
+        "placeholder": "Вывод программы"
+      }
+    ]
+  }
+}

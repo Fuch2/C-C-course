@@ -1,0 +1,144 @@
+{
+  "id": "algo-hash",
+  "title": "Хеш-таблица — Hash table",
+  "description": "Хеш-функция выбирает начальную позицию, но совпадение хеша не доказывает равенство ключей.",
+  "moduleId": "algorithms-structures",
+  "order": 22,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 60,
+  "prerequisites": ["algo-ring"],
+  "objectives": [
+    "Объяснить инвариант: Хеш указывает начало района поиска, а ключ подтверждает конкретный адрес.",
+    "Обосновать время: Ожидаемо O(1) при хороших хешах и ограниченной загрузке; худший O(n), rehash O(n).",
+    "Оценить память и компромиссы: Быстрый поиск по равенству против отсутствия порядка и зависимости от качества хеша."
+  ],
+  "tags": ["алгоритмы", "C17", "Хеш-таблица — Hash table", "структуры данных", "cache locality"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "algo-hash-exercise",
+    "title": "Справочник с коллизиями и удалением",
+    "description": "Ввод q (0…128), затем S key value — вставить/обновить без вывода (ПОЛНО при отсутствии места); G key — значение или НЕТ; D key — удалить и вывести ДА/НЕТ. key/value — int −1000…1000. Таблица 17 слотов, линейное пробирование, tombstone. Обновление существующего ключа должно работать и в полной таблице.",
+    "difficulty": "intermediate",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "7 S 0 10 S 17 20 D 0 G 17 S 17 30 G 17 G 0",
+        "output": "ДА\n20\n30\nНЕТ\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      },
+      {
+        "input": "4 S -17 5 G -17 D -17 G -17",
+        "output": "5\nДА\nНЕТ\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Используйте C17 и диапазоны входа из условия.",
+      "Выводите только требуемый результат.",
+      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Хеш указывает начало района поиска, а ключ подтверждает конкретный адрес."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Замена удалённого слота на EMPTY может сделать существующий ключ недоступным."
+      },
+      {
+        "id": "hint-3",
+        "order": 3,
+        "text": "0 и 17 попадают в один стартовый слот. После удаления 0 поиск 17 должен пройти через tombstone, а не остановиться."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "7 S 0 10 S 17 20 D 0 G 17 S 17 30 G 17 G 0",
+        "expected": "ДА\n20\n30\nНЕТ\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "4 S -17 5 G -17 D -17 G -17",
+        "expected": "5\nДА\nНЕТ\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "stdin": "3 D 9 G 9 D 9",
+        "expected": "НЕТ\nНЕТ\nНЕТ\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "stdin": "0",
+        "expected": ""
+      },
+      {
+        "id": "case-5",
+        "name": "Граничный сценарий 3",
+        "stdin": "6 S 0 1 S 17 2 D 0 S 34 3 G 17 G 34",
+        "expected": "ДА\n2\n3\n"
+      },
+      {
+        "id": "case-6",
+        "name": "Граничный сценарий 4",
+        "stdin": "21 S 0 0 S 1 1 S 2 2 S 3 3 S 4 4 S 5 5 S 6 6 S 7 7 S 8 8 S 9 9 S 10 10 S 11 11 S 12 12 S 13 13 S 14 14 S 15 15 S 16 16 S 100 1 S 0 99 G 0 G 16",
+        "expected": "ПОЛНО\n99\n16\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\nenum { CAPACITY=17, EMPTY=0, FULL=1, DELETED=2 };\ntypedef struct { int key,value,state; } Slot;\ntypedef struct { Slot slots[CAPACITY]; } Table;\nstatic int hash(int key){return (key%CAPACITY+CAPACITY)%CAPACITY;}\nstatic int find(const Table *t,int key){\n    for(int step=0;step<CAPACITY;++step){\n        int i=(hash(key)+step)%CAPACITY;\n        if(t->slots[i].state==EMPTY)return -1;\n        if(t->slots[i].state==FULL && t->slots[i].key==key)return i;\n    }\n    return -1;\n}\nstatic int set(Table *t,int key,int value){\n    int candidate=-1;\n    for(int step=0;step<CAPACITY;++step){\n        int i=(hash(key)+step)%CAPACITY;Slot *s=&t->slots[i];\n        if(s->state==FULL && s->key==key){s->value=value;return 1;}\n        if(s->state!=FULL && candidate<0)candidate=i;\n        if(s->state==EMPTY)break;\n    }\n    if(candidate<0)return 0;\n    t->slots[candidate]=(Slot){key,value,FULL};return 1;\n}\nstatic int remove_key(Table *t,int key){\n    int i=find(t,key);if(i<0)return 0;t->slots[i].state=DELETED;return 1;\n}\nint main(void) {\nTable table={0};int q;if(scanf(\"%d\",&q)!=1||q<0||q>128)return 1;for(int j=0;j<q;++j){char c;int key,value;if(scanf(\" %c%d\",&c,&key)!=2)return 1;if(c=='S'){if(scanf(\"%d\",&value)!=1)return 1;if(!set(&table,key,value))puts(\"ПОЛНО\");}else if(c=='G'){int i=find(&table,key);if(i<0)puts(\"НЕТ\");else printf(\"%d\\n\",table.slots[i].value);}else if(c=='D')puts(remove_key(&table,key)?\"ДА\":\"НЕТ\");else return 1;}\nreturn 0;\n}\n",
+    "solutionExplanation": "Инвариант: Хеш указывает начало района поиска, а ключ подтверждает конкретный адрес.\n\n0 и 17 попадают в один стартовый слот. После удаления 0 поиск 17 должен пройти через tombstone, а не остановиться.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. Замена удалённого слота на EMPTY может сделать существующий ключ недоступным.\n\nВремя: Ожидаемо O(1) при хороших хешах и ограниченной загрузке; худший O(n), rehash O(n).\nПамять: O(capacity), включая свободные и удалённые слоты.\nКомпромисс: Быстрый поиск по равенству против отсутствия порядка и зависимости от качества хеша.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
+    "checking": { "type": "stdout", "comparison": "exact" }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "algo-hash-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "invariant",
+        "question": "Зачем tombstone при удалении?",
+        "options": [
+          "Чтобы сохранить непрерывность цепочки поиска",
+          "Чтобы удалить все ключи с тем же хешем"
+        ],
+        "correct": 0,
+        "explanation": "Хеш указывает начало района поиска, а ключ подтверждает конкретный адрес. 0 и 17 попадают в один стартовый слот. После удаления 0 поиск 17 должен пройти через tombstone, а не остановиться."
+      },
+      {
+        "id": "complexity",
+        "question": "Какая оценка соответствует рассмотренной реализации?",
+        "options": [
+          "Всегда O(1), потому что все тесты ограничены по размеру.",
+          "Ожидаемо O(1) при хороших хешах и ограниченной загрузке; худший O(n), rehash O(n)."
+        ],
+        "correct": 1,
+        "explanation": "Быстрый поиск по равенству против отсутствия порядка и зависимости от качества хеша."
+      },
+      {
+        "id": "engineering",
+        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "options": [
+          "Замена удалённого слота на EMPTY может сделать существующий ключ недоступным.",
+          "Совпадение Big O гарантирует одинаковое время на любой машине."
+        ],
+        "correct": 0,
+        "explanation": "Линейное пробирование читает соседние слоты, но кластеры повышают число чтений. O(capacity), включая свободные и удалённые слоты."
+      }
+    ]
+  }
+}

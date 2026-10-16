@@ -1,0 +1,544 @@
+{
+  "id": "memory-malloc",
+  "title": "malloc: договор выделения",
+  "description": "Что обещает malloc и что требует взамен: размер в байтах, неинициализированное содержимое, переполнение при вычислении размера, обработка отказа без утечек, структуры и строки в куче.",
+  "moduleId": "memory-pointers",
+  "order": 11,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["memory-void-pointer"],
+  "objectives": [
+    "Выделять память записью p = malloc(n * sizeof *p) и проверять результат",
+    "Объяснять, почему содержимое нового блока нужно записать до чтения",
+    "Обнаруживать переполнение при вычислении размера до вызова malloc",
+    "Обрабатывать отказ выделения без утечек и создавать структуры и строки в куче"
+  ],
+  "tags": ["C17", "Память", "malloc", "Куча", "Переполнение"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "memory-malloc-task-1",
+    "title": "Копия строки",
+    "description": "Реализуйте функцию `char *copy_string(const char *s)`, которая создаёт в куче копию строки (аналог `strdup`) или возвращает `NULL` при ошибке.\n\nФункция `main` дана: она читает `n` слов в **один и тот же** буфер и сохраняет копии в массив указателей, затем печатает слова в обратном порядке и освобождает копии. Без настоящего копирования все элементы указывали бы на один буфер.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nchar *copy_string(const char *s) {\n    return NULL;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    char *words[50];\n    char buffer[51];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%50s\", buffer);\n        words[i] = copy_string(buffer);\n        if (words[i] == NULL) {\n            return 1;\n        }\n    }\n    for (int i = n - 1; i >= 0; i--) {\n        printf(i > 0 ? \"%s \" : \"%s\\n\", words[i]);\n    }\n    for (int i = 0; i < n; i++) {\n        free(words[i]);\n    }\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "3\nred green blue\n",
+        "output": "blue green red\n"
+      },
+      {
+        "input": "1\nx\n",
+        "output": "x\n"
+      }
+    ],
+    "constraints": ["1 ≤ n ≤ 50.", "Слова — до 50 символов без пробелов."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Размер: strlen(s) + 1 — включая завершающий ноль.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "char *copy = malloc(strlen(s) + 1); if (copy == NULL) return NULL; затем memcpy(copy, s, len + 1) или strcpy(copy, s).",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "3\nred green blue\n",
+        "expected": "blue green red\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1\nx\n",
+        "expected": "x\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Разная длина",
+        "stdin": "2\na bb\n",
+        "expected": "bb a\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Одинаковые",
+        "stdin": "4\nsame same same same\n",
+        "expected": "same same same same\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Максимальная длина",
+        "stdin": "2\nabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx y\n",
+        "expected": "y abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Растущая длина",
+        "stdin": "5\n1 22 333 4444 55555\n",
+        "expected": "55555 4444 333 22 1\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Короткое после длинного",
+        "stdin": "3\nlong s longer\n",
+        "expected": "longer s long\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Буквы",
+        "stdin": "6\nf e d c b a\n",
+        "expected": "a b c d e f\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Префикс",
+        "stdin": "2\nhello hello!\n",
+        "expected": "hello! hello\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Спецсимволы",
+        "stdin": "3\nC++ C# C\n",
+        "expected": "C C# C++\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nchar *copy_string(const char *s) {\n    size_t len = strlen(s);\n    char *copy = malloc(len + 1);\n    if (copy == NULL) {\n        return NULL;\n    }\n    memcpy(copy, s, len + 1);\n    return copy;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    char *words[50];\n    char buffer[51];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%50s\", buffer);\n        words[i] = copy_string(buffer);\n        if (words[i] == NULL) {\n            return 1;\n        }\n    }\n    for (int i = n - 1; i >= 0; i--) {\n        printf(i > 0 ? \"%s \" : \"%s\\n\", words[i]);\n    }\n    for (int i = 0; i < n; i++) {\n        free(words[i]);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Буфер `buffer` перезаписывается при каждом чтении, поэтому сохранять его адрес бессмысленно: все элементы показывали бы последнее слово. `copy_string` создаёт для каждого слова отдельный блок ровно нужного размера — `strlen + 1` байт — и копирует туда символы вместе с `'\\0'`.\n\nФункция передаёт владение блоком вызывающему коду, поэтому `main` освобождает каждую копию. Если выделить `strlen(s)` байтов без единицы, `'\\0'` запишется за границу блока, и AddressSanitizer сообщит `heap-buffer-overflow`.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "memory-malloc-task-2",
+      "title": "Повтор строки",
+      "description": "Реализуйте функцию\n\n```c\nchar *repeat(const char *s, int k, char sep);\n```\n\nОна возвращает новую строку из `k` копий `s`, разделённых символом `sep` (без разделителя в конце). При `k = 0` результат — пустая строка (не `NULL`). При ошибке выделения — `NULL`.\n\nФункция `main` дана: печатает результат в квадратных скобках и освобождает его.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nchar *repeat(const char *s, int k, char sep) {\n    return NULL;\n}\n\nint main(void) {\n    char s[51];\n    int k;\n    scanf(\"%50s %d\", s, &k);\n    char *r = repeat(s, k, '-');\n    if (r == NULL) {\n        return 1;\n    }\n    printf(\"[%s]\\n\", r);\n    free(r);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "ab 3\n",
+          "output": "[ab-ab-ab]\n"
+        },
+        {
+          "input": "x 0\n",
+          "output": "[]\n",
+          "explanation": "Ноль копий — пустая строка, а не NULL."
+        }
+      ],
+      "constraints": ["Строка s — от 1 до 50 символов без пробелов.", "0 ≤ k ≤ 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Длина результата: k * len + (k > 0 ? k - 1 : 0), и ещё 1 байт под '\\0'.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Собирайте через указатель-курсор: char *pos = out; memcpy(pos, s, len); pos += len; перед каждой копией, кроме первой, — *pos++ = sep;",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "В конце *pos = '\\0'; — для k = 0 это единственный байт блока.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "ab 3\n",
+          "expected": "[ab-ab-ab]\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "x 0\n",
+          "expected": "[]\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна копия",
+          "stdin": "word 1\n",
+          "expected": "[word]\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Две копии",
+          "stdin": "z 2\n",
+          "expected": "[z-z]\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Десять копий",
+          "stdin": "abc 10\n",
+          "expected": "[abc-abc-abc-abc-abc-abc-abc-abc-abc-abc]\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Максимальный размер",
+          "stdin": "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx 100\n",
+          "expected": "[abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx-abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx]\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Сто однобуквенных",
+          "stdin": "a 100\n",
+          "expected": "[a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a-a]\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Ноль копий длинной строки",
+          "stdin": "long_text 0\n",
+          "expected": "[]\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Строка из разделителей",
+          "stdin": "--- 3\n",
+          "expected": "[-----------]\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пять копий",
+          "stdin": "hello 5\n",
+          "expected": "[hello-hello-hello-hello-hello]\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nchar *repeat(const char *s, int k, char sep) {\n    size_t len = strlen(s);\n    size_t total = (size_t)k * len + (k > 0 ? (size_t)k - 1 : 0);\n    char *out = malloc(total + 1);\n    if (out == NULL) {\n        return NULL;\n    }\n    char *pos = out;\n    for (int i = 0; i < k; i++) {\n        if (i > 0) {\n            *pos++ = sep;\n        }\n        memcpy(pos, s, len);\n        pos += len;\n    }\n    *pos = '\\0';\n    return out;\n}\n\nint main(void) {\n    char s[51];\n    int k;\n    scanf(\"%50s %d\", s, &k);\n    char *r = repeat(s, k, '-');\n    if (r == NULL) {\n        return 1;\n    }\n    printf(\"[%s]\\n\", r);\n    free(r);\n    return 0;\n}\n",
+      "solutionExplanation": "Длина результата вычисляется заранее и точно: `k` копий, `k − 1` разделителей и завершающий ноль. Ошибка на единицу в любую сторону даёт либо лишний мусорный символ, либо запись за границу блока — оба случая проверка с AddressSanitizer поймает.\n\nКурсор `pos` двигается по блоку и всегда указывает на следующую свободную позицию. Это быстрее, чем `strcat` в цикле: `strcat` каждый раз заново ищет конец строки.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-malloc-task-3",
+      "title": "Проверка размера перед malloc",
+      "description": "Реализуйте функцию\n\n```c\nint checked_mul(size_t a, size_t b, size_t *out);\n```\n\nЕсли произведение `a · b` помещается в `size_t`, она записывает его в `*out` и возвращает 0; иначе возвращает −1 и `*out` не меняет. Само переполняющееся произведение вычислять нельзя.\n\nФункция `main` дана: для каждой из `q` пар печатает произведение или `overflow`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdint.h>\n#include <stdio.h>\n\nint checked_mul(size_t a, size_t b, size_t *out) {\n    return -1;\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        size_t a, b, product;\n        scanf(\"%zu %zu\", &a, &b);\n        if (checked_mul(a, b, &product) == 0) {\n            printf(\"%zu\\n\", product);\n        } else {\n            printf(\"overflow\\n\");\n        }\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\n1000 8\n18446744073709551615 2\n",
+          "output": "8000\noverflow\n"
+        },
+        {
+          "input": "1\n0 18446744073709551615\n",
+          "output": "0\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ q ≤ 10.",
+        "0 ≤ a, b ≤ 18 446 744 073 709 551 615 (SIZE_MAX на 64-битной системе)."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Если b == 0, произведение 0 — переполнения нет (и делить на b нельзя).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Иначе переполнение тогда и только тогда, когда a > SIZE_MAX / b. SIZE_MAX объявлен в <stdint.h>.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\n1000 8\n18446744073709551615 2\n",
+          "expected": "8000\noverflow\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n0 18446744073709551615\n",
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Максимум на 1",
+          "stdin": "1\n18446744073709551615 1\n",
+          "expected": "18446744073709551615\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Умножение на 0",
+          "stdin": "1\n18446744073709551615 0\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "2³² · 2³²",
+          "stdin": "1\n4294967296 4294967296\n",
+          "expected": "overflow\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Почти максимум",
+          "stdin": "1\n4294967296 4294967295\n",
+          "expected": "18446744069414584320\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "2⁶¹ · 8",
+          "stdin": "1\n2305843009213693952 8\n",
+          "expected": "overflow\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "На единицу меньше",
+          "stdin": "1\n2305843009213693951 8\n",
+          "expected": "18446744073709551608\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Маленькие",
+          "stdin": "3\n1 1\n0 0\n3 5\n",
+          "expected": "1\n0\n15\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "2⁶³ · 2",
+          "stdin": "1\n9223372036854775808 2\n",
+          "expected": "overflow\n"
+        }
+      ],
+      "referenceSolution": "#include <stdint.h>\n#include <stdio.h>\n\nint checked_mul(size_t a, size_t b, size_t *out) {\n    if (b != 0 && a > SIZE_MAX / b) {\n        return -1;\n    }\n    *out = a * b;\n    return 0;\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        size_t a, b, product;\n        scanf(\"%zu %zu\", &a, &b);\n        if (checked_mul(a, b, &product) == 0) {\n            printf(\"%zu\\n\", product);\n        } else {\n            printf(\"overflow\\n\");\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`SIZE_MAX / b` — наибольшее `a`, при котором `a · b ≤ SIZE_MAX`. Деление не переполняется никогда, поэтому проверка безопасна. После неё умножение гарантированно точное.\n\nИменно так защищают выделение массива с размером из входных данных: `if (checked_mul(count, sizeof *p, &bytes) != 0) return ошибка; p = malloc(bytes);`. GCC и Clang предоставляют для этого и встроенную функцию `__builtin_mul_overflow`, а в C23 появился стандартный `ckd_mul`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-malloc-task-4",
+      "title": "Задачи в куче",
+      "description": "Реализуйте функцию-конструктор\n\n```c\nstruct Task *task_create(const char *title, int priority);\n```\n\nОна выделяет структуру в куче, заполняет все поля (`done = 0`) и возвращает указатель или `NULL`.\n\nПрограмма читает `n` задач «приоритет название», затем номера выполненных задач до числа `-1`. Напечатайте **невыполненные** задачи по убыванию приоритета (при равенстве — в порядке ввода) в формате `приоритет название`, либо `all done`, если невыполненных нет. Освободите все структуры.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nstruct Task {\n    char title[31];\n    int priority;\n    int done;\n};\n\nstruct Task *task_create(const char *title, int priority) {\n    return NULL;\n}\n\nint main(void) {\n    // Прочитайте задачи, отметьте выполненные и напечатайте остальные.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "4\n2 mail\n5 deploy\n2 call\n7 fix\n3 -1\n",
+          "output": "5 deploy\n2 mail\n2 call\n"
+        },
+        {
+          "input": "2\n1 a\n1 b\n0 1 -1\n",
+          "output": "all done\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 50.",
+        "Название — до 30 символов без пробелов.",
+        "1 ≤ приоритет ≤ 10.",
+        "Номера выполненных — от 0 до n − 1, могут повторяться."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "struct Task *t = malloc(sizeof *t); — размер от *t. Название копируйте с ограничением: snprintf(t->title, sizeof t->title, \"%s\", title);",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Храните указатели в struct Task *tasks[50]; для сортировки переставляйте указатели (вставками — это сохранит порядок ввода при равных приоритетах).",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Если какой-то task_create вернул NULL, освободите уже созданные задачи перед выходом.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\n2 mail\n5 deploy\n2 call\n7 fix\n3 -1\n",
+          "expected": "5 deploy\n2 mail\n2 call\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\n1 a\n1 b\n0 1 -1\n",
+          "expected": "all done\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна задача",
+          "stdin": "1\n10 only\n-1\n",
+          "expected": "10 only\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Ничего не выполнено",
+          "stdin": "3\n1 a\n2 b\n3 c\n-1\n",
+          "expected": "3 c\n2 b\n1 a\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Равные приоритеты",
+          "stdin": "3\n5 a\n5 b\n5 c\n1 -1\n",
+          "expected": "5 a\n5 c\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Повторная отметка",
+          "stdin": "3\n1 x\n2 y\n3 z\n0 0 0 -1\n",
+          "expected": "3 z\n2 y\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Длинное название",
+          "stdin": "4\n1 abcdefghijklmnopqrstuvwxyz1234\n2 b\n3 c\n4 d\n1 2 3 -1\n",
+          "expected": "1 abcdefghijklmnopqrstuvwxyz1234\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Три равных",
+          "stdin": "5\n3 a\n1 b\n3 c\n2 d\n3 e\n4 -1\n",
+          "expected": "3 a\n3 c\n2 d\n1 b\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Крайние приоритеты",
+          "stdin": "2\n10 hi\n1 lo\n-1\n",
+          "expected": "10 hi\n1 lo\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Половина выполнена",
+          "stdin": "6\n1 a\n2 b\n3 c\n4 d\n5 e\n6 f\n0 2 4 -1\n",
+          "expected": "6 f\n4 d\n2 b\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\nstruct Task {\n    char title[31];\n    int priority;\n    int done;\n};\n\nstruct Task *task_create(const char *title, int priority) {\n    struct Task *t = malloc(sizeof *t);\n    if (t == NULL) {\n        return NULL;\n    }\n    snprintf(t->title, sizeof t->title, \"%s\", title);\n    t->priority = priority;\n    t->done = 0;\n    return t;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    struct Task *tasks[50];\n    for (int i = 0; i < n; i++) {\n        int priority;\n        char title[31];\n        scanf(\"%d %30s\", &priority, title);\n        tasks[i] = task_create(title, priority);\n        if (tasks[i] == NULL) {\n            for (int k = 0; k < i; k++) {\n                free(tasks[k]);\n            }\n            return 1;\n        }\n    }\n    int id;\n    while (scanf(\"%d\", &id) == 1 && id != -1) {\n        tasks[id]->done = 1;\n    }\n    for (int i = 1; i < n; i++) {\n        struct Task *current = tasks[i];\n        int j = i - 1;\n        while (j >= 0 && tasks[j]->priority < current->priority) {\n            tasks[j + 1] = tasks[j];\n            j--;\n        }\n        tasks[j + 1] = current;\n    }\n    int printed = 0;\n    for (int i = 0; i < n; i++) {\n        if (!tasks[i]->done) {\n            printf(\"%d %s\\n\", tasks[i]->priority, tasks[i]->title);\n            printed++;\n        }\n    }\n    if (printed == 0) {\n        printf(\"all done\\n\");\n    }\n    for (int i = 0; i < n; i++) {\n        free(tasks[i]);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Конструктор инкапсулирует три обязанности: выделить ровно `sizeof *t` байтов, проверить результат и задать **каждое** поле — включая `done`, которое без явной записи содержало бы мусор.\n\nСортировка вставками переставляет 8-байтовые указатели, а сами структуры остаются на месте в куче. Она устойчива: элемент сдвигается, только если впереди стоит задача со строго меньшим приоритетом, поэтому равные сохраняют порядок ввода. Каждой успешной `task_create` соответствует ровно один `free` — и на обычном пути, и при ошибке.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "memory-malloc-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что гарантирует malloc при успешном выделении? Выберите все.",
+        "explanation": "Содержимое malloc не инициализировано. sizeof от указателя даёт размер указателя, а не блока — длину программа хранит сама.",
+        "type": "multiple",
+        "options": [
+          "Блок не меньше запрошенного размера",
+          "Блок выровнен для хранения любого типа",
+          "Блок заполнен нулями",
+          "Блок можно освободить ровно одним вызовом free",
+          "Размер блока можно узнать через sizeof"
+        ],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q2",
+        "question": "Сколько байтов нужно выделить под копию строки \"data\"?",
+        "explanation": "Четыре символа и завершающий \\0: strlen(s) + 1 = 5.",
+        "type": "text",
+        "answers": ["5"],
+        "placeholder": "Байтов"
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа на 64-битной системе?",
+        "code": "#include <stdint.h>\n#include <stdio.h>\n\nint main(void) {\n    size_t count = SIZE_MAX / 8 + 1;\n    printf(\"%zu\\n\", count * 8);\n    return 0;\n}",
+        "explanation": "count · 8 = 2⁶⁴, а беззнаковое произведение берётся по модулю 2⁶⁴. malloc(0) вместо огромного блока — источник уязвимостей.",
+        "type": "text",
+        "answers": ["0"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Какая проверка верно определяет, что count * size переполнит size_t (size > 0)?",
+        "explanation": "Произведение не может быть больше SIZE_MAX — оно уже обрезано. Беззнаковое не бывает отрицательным. Деление выполняет проверку без переполнения.",
+        "options": [
+          "count > SIZE_MAX / size",
+          "count * size > SIZE_MAX",
+          "count * size < 0",
+          "count > SIZE_MAX - size"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Функция выделила первый блок, а второй malloc вернул NULL. Что она должна сделать?",
+        "explanation": "Иначе первый блок утечёт: его адрес знает только эта функция. Каждая ветка ошибки возвращает всё, что успела получить.",
+        "options": [
+          "Освободить первый блок и сообщить об ошибке вызывающему коду",
+          "Вернуть ошибку, первый блок освободит операционная система",
+          "Повторять malloc, пока не получится",
+          "Продолжить работу с одним блоком"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Почему в C не пишут приведение int *p = (int *)malloc(n * sizeof *p); ?",
+        "explanation": "В C++ приведение обязательно, а в C — лишний шум. Заодно размер берут от *p, а не от названия типа.",
+        "options": [
+          "void * превращается в int * неявно, а приведение может скрыть забытый #include <stdlib.h>",
+          "Приведение запрещено стандартом",
+          "Приведение замедляет программу",
+          "Без приведения malloc сама узнаёт тип"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что напечатает программа, если в первом блоке случайно оказались нули, а во втором запуске — нет?",
+        "code": "int *a = malloc(3 * sizeof *a);\na[1] = 5;\nprintf(\"%d\\n\", a[0] + a[1]);",
+        "codeLanguage": "c",
+        "explanation": "Содержимое malloc не инициализировано. «Иногда работает» — признак чтения мусора.",
+        "options": [
+          "Результат не определён: a[0] читается до записи",
+          "Всегда 5",
+          "Всегда 0",
+          "Ошибка компиляции"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

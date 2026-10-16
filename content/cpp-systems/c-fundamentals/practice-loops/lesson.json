@@ -1,0 +1,678 @@
+{
+  "id": "c17-practice-loops",
+  "title": "Практикум: циклы",
+  "description": "Шесть задач на циклы: алгоритм Евклида, палиндромы, двоичная запись, второй максимум, серии и совершенные числа. Инвариант цикла и проверка крайних случаев.",
+  "moduleId": "c-fundamentals",
+  "order": 22,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 90,
+  "prerequisites": ["c17-nested-loops"],
+  "objectives": [
+    "Формулировать инвариант цикла и проверять по нему начало, шаг и конец",
+    "Проверять циклы на нуле, одной и многих итерациях",
+    "Применять алгоритм Евклида для НОД и НОК",
+    "Хранить несколько «лучших» значений при одном проходе по данным"
+  ],
+  "tags": ["C17", "Практикум", "Циклы", "Алгоритм Евклида"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-practice-loops-task-1",
+    "title": "НОД и НОК",
+    "description": "Прочитайте два натуральных числа и напечатайте через пробел их наибольший общий делитель и наименьшее общее кратное.",
+    "difficulty": "intermediate",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "12 18",
+        "output": "6 36\n"
+      },
+      {
+        "input": "7 13",
+        "output": "1 91\n"
+      }
+    ],
+    "constraints": ["1 ≤ a, b ≤ 10⁹."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "НОД — алгоритм Евклида: пока b != 0, заменить (a, b) на (b, a % b).",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "НОК = a / НОД · b. Сохраните исходные a и b до алгоритма Евклида: он их изменяет.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "НОК может достигать 10¹⁸ — long long.",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "12 18",
+        "expected": "6 36\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "7 13",
+        "expected": "1 91\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "1 1",
+        "expected": "1 1\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "1000000000 1000000000",
+        "expected": "1000000000 1000000000\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "999999937 999999929",
+        "expected": "1 999999866000004473\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "1071 462",
+        "expected": "21 23562\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "1 1000000000",
+        "expected": "1 1000000000\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "48 180",
+        "expected": "12 720\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "1000000000 999999999",
+        "expected": "1 999999999000000000\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long a, b;\n    scanf(\"%lld %lld\", &a, &b);\n    long long x = a, y = b;\n    while (y != 0) {\n        long long r = x % y;\n        x = y;\n        y = r;\n    }\n    long long gcd = x;\n    long long lcm = a / gcd * b;\n    printf(\"%lld %lld\\n\", gcd, lcm);\n    return 0;\n}\n",
+    "solutionExplanation": "Алгоритм Евклида работает с копиями `x` и `y`, чтобы исходные `a` и `b` остались для НОК. Связь НОД и НОК: `НОД · НОК = a · b`.\n\nПорядок операций в `a / gcd * b` защищает от переполнения промежуточного произведения: `a · b` может достигать 10¹⁸, а при больших множителях — превышать `LLONG_MAX` в других задачах. Деление на НОД точное, поэтому результат не теряет точности.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-practice-loops-task-2",
+      "title": "Палиндром",
+      "description": "Число называется палиндромом, если читается одинаково слева направо и справа налево: 12321, 7, 4554. Прочитайте неотрицательное число и напечатайте `да`, если оно палиндром, иначе `нет`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "12321",
+          "output": "да\n"
+        },
+        {
+          "input": "120",
+          "output": "нет\n"
+        }
+      ],
+      "constraints": ["0 ≤ n ≤ 10¹⁸."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Переверните число циклом (как в уроке while) и сравните с исходным.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Оцените размер перевёрнутого числа: поместится ли оно в long long для любого n из ограничений?",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "12321",
+          "expected": "да\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "120",
+          "expected": "нет\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "7",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "10",
+          "expected": "нет\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "11",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1000000000000000000",
+          "expected": "нет\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "123456789987654321",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "100000000000000001",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "1001",
+          "expected": "да\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long n;\n    scanf(\"%lld\", &n);\n    long long rest = n, reversed = 0;\n    while (rest > 0) {\n        reversed = reversed * 10 + rest % 10;\n        rest /= 10;\n    }\n    printf(\"%s\\n\", reversed == n ? \"да\" : \"нет\");\n    return 0;\n}\n",
+      "solutionExplanation": "Перевёрнутое число сравнивается с исходным. Ноль переворачивается в ноль и корректно считается палиндромом.\n\nПроверим размер. Все числа из ограничений, кроме самого 10¹⁸, содержат не больше 18 цифр, поэтому и перевёрнутое число меньше 10¹⁸ и помещается в `long long`. А 10¹⁸ переворачивается в 1. Такую оценку стоит делать в каждой задаче, где число «собирается» из цифр.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-practice-loops-task-3",
+      "title": "Двоичная запись",
+      "description": "Прочитайте неотрицательное число и напечатайте его запись в двоичной системе без ведущих нулей.\n\n**Примеры:** `13` → `1101`, `0` → `0`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "13",
+          "output": "1101\n"
+        },
+        {
+          "input": "0",
+          "output": "0\n"
+        }
+      ],
+      "constraints": ["0 ≤ n ≤ 10¹⁸."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Найдите наибольшую степень двойки p, не превосходящую n.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Идите по степеням вниз: если n >= p — печатайте 1 и вычитайте p, иначе печатайте 0; затем p /= 2, пока p > 0.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "n = 0 — особый случай: степени нет, печатайте 0.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "13",
+          "expected": "1101\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0",
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "2",
+          "expected": "10\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "255",
+          "expected": "11111111\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "256",
+          "expected": "100000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1000000000000000000",
+          "expected": "110111100000101101101011001110100111011001000000000000000000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "1023",
+          "expected": "1111111111\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "1024",
+          "expected": "10000000000\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long n;\n    scanf(\"%lld\", &n);\n    if (n == 0) {\n        printf(\"0\\n\");\n        return 0;\n    }\n    long long p = 1;\n    while (p * 2 <= n) {\n        p *= 2;\n    }\n    while (p > 0) {\n        if (n >= p) {\n            printf(\"1\");\n            n -= p;\n        } else {\n            printf(\"0\");\n        }\n        p /= 2;\n    }\n    printf(\"\\n\");\n    return 0;\n}\n",
+      "solutionExplanation": "Остатки от деления на 2 дают двоичные цифры, но в обратном порядке, а массивов, чтобы их развернуть, пока нет. Поэтому решение идёт от старшего разряда: находит наибольшую степень двойки и для каждой степени решает, входит ли она в число.\n\nИнвариант второго цикла: `n` — та часть числа, которую ещё предстоит записать, и она меньше `2p`. Для `n = 10¹⁸` наибольшая степень 2⁵⁹, а `p * 2` при проверке достигает 2⁶⁰ — переполнения нет.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-practice-loops-task-4",
+      "title": "Второй максимум",
+      "description": "Даны `n` целых чисел. Напечатайте второе по величине число — то, которое оказалось бы вторым, если упорядочить числа по убыванию. Если наибольшее число встречается несколько раз, второе по величине равно ему.\n\n**Примеры:** `5 1 9 7` → `7`; `9 3 9` → `9`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "4\n5 1 9 7",
+          "output": "7\n"
+        },
+        {
+          "input": "3\n9 3 9",
+          "output": "9\n"
+        }
+      ],
+      "constraints": ["2 ≤ n ≤ 10 000; числа по модулю не больше 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Храните два значения: first ≥ second. Инициализируйте их первыми двумя числами в правильном порядке.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Для каждого следующего x: если x > first — second = first, first = x; иначе если x > second — second = x.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\n5 1 9 7",
+          "expected": "7\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3\n9 3 9",
+          "expected": "9\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "2\n1 2",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "2\n2 1",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "2\n5 5",
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "5\n-1 -2 -3 -4 -5",
+          "expected": "-2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "6\n1 2 3 4 5 6",
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "6\n6 5 4 3 2 1",
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "4\n-1000000000 1000000000 -1000000000 1000000000",
+          "expected": "1000000000\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int a, b;\n    scanf(\"%d %d\", &a, &b);\n    int first = a > b ? a : b;\n    int second = a > b ? b : a;\n    for (int i = 2; i < n; i++) {\n        int x;\n        scanf(\"%d\", &x);\n        if (x > first) {\n            second = first;\n            first = x;\n        } else if (x > second) {\n            second = x;\n        }\n    }\n    printf(\"%d\\n\", second);\n    return 0;\n}\n",
+      "solutionExplanation": "Инвариант: `first` и `second` — два наибольших значения среди просмотренных чисел, `first ≥ second`. Новый максимум «сдвигает» старый на второе место, число между ними заменяет только второе.\n\nВажна строгость сравнений. При `x == first` срабатывает вторая ветка (`x > second`, если second меньше), и второй максимум становится равным первому — как требует условие для повторяющегося максимума.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-practice-loops-task-5",
+      "title": "Самая длинная серия",
+      "description": "Даны `n` целых чисел. Серия — это несколько подряд идущих одинаковых чисел. Напечатайте длину самой длинной серии.\n\n**Пример:** `1 1 2 2 2 1` → `3`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "6\n1 1 2 2 2 1",
+          "output": "3\n"
+        },
+        {
+          "input": "1\n42",
+          "output": "1\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 10 000; числа по модулю не больше 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Храните предыдущее число, длину текущей серии и лучшую длину.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Если x равен предыдущему — текущая серия растёт, иначе начинается новая длиной 1. После каждого шага обновите лучшую.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "6\n1 1 2 2 2 1",
+          "expected": "3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n42",
+          "expected": "1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "5\n7 7 7 7 7",
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "5\n1 2 3 4 5",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "6\n1 2 3 3 3 3",
+          "expected": "4\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "7\n5 5 1 5 5 5 1",
+          "expected": "3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "4\n-1 -1 1 1",
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "3\n0 0 1",
+          "expected": "2\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int prev;\n    scanf(\"%d\", &prev);\n    int current = 1, best = 1;\n    for (int i = 1; i < n; i++) {\n        int x;\n        scanf(\"%d\", &x);\n        if (x == prev) {\n            current++;\n        } else {\n            current = 1;\n        }\n        if (current > best) {\n            best = current;\n        }\n        prev = x;\n    }\n    printf(\"%d\\n\", best);\n    return 0;\n}\n",
+      "solutionExplanation": "Задача сочетает два шаблона: «текущее состояние» (длина серии, которая продолжается прямо сейчас) и «лучшее на данный момент». Лучшая длина обновляется после каждого числа — иначе серия в самом конце последовательности не будет учтена.\n\nТесты включают серию в конце, одно число, все числа одинаковые и все разные.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-practice-loops-task-6",
+      "title": "Совершенные числа",
+      "description": "Совершенное число равно сумме своих собственных делителей (всех делителей, кроме самого числа): 6 = 1 + 2 + 3. Прочитайте `n` и напечатайте все совершенные числа от 1 до `n` через пробел. Если таких нет, напечатайте `нет`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "30",
+          "output": "6 28\n"
+        },
+        {
+          "input": "5",
+          "output": "нет\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 100 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Для каждого k считайте сумму делителей парами: если d делит k, то и k / d тоже делитель. Перебирайте d до корня.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Не прибавляйте пару дважды, если d == k / d, и не учитывайте само k.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Единица не совершенное число: у неё нет собственных делителей, сумма 0.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "30",
+          "expected": "6 28\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5",
+          "expected": "нет\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1",
+          "expected": "нет\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "6",
+          "expected": "6\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "27",
+          "expected": "6\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "28",
+          "expected": "6 28\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "496",
+          "expected": "6 28 496\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "100000",
+          "expected": "6 28 496 8128\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "8127",
+          "expected": "6 28 496\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int found = 0;\n    for (int k = 2; k <= n; k++) {\n        int sum = 1;\n        for (int d = 2; d * d <= k; d++) {\n            if (k % d == 0) {\n                sum += d;\n                if (d != k / d) {\n                    sum += k / d;\n                }\n            }\n        }\n        if (sum == k) {\n            if (found > 0) {\n                printf(\" \");\n            }\n            printf(\"%d\", k);\n            found++;\n        }\n    }\n    if (found == 0) {\n        printf(\"нет\");\n    }\n    printf(\"\\n\");\n    return 0;\n}\n",
+      "solutionExplanation": "Делитель 1 есть у каждого `k ≥ 2`, поэтому сумма начинается с 1, а перебор — с 2. Каждый найденный делитель `d ≤ √k` даёт пару `k / d`; для полного квадрата пара совпадает и прибавляется один раз. Само `k` в сумму не попадает: его «пара» — делитель 1, который учтён заранее, а не в цикле.\n\nПеребор до корня делает решение примерно в 300 раз быстрее полного: около 2 · 10⁷ операций для `n = 100 000`. Совершенных чисел до 100 000 всего четыре: 6, 28, 496 и 8128.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-practice-loops-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Чему равен НОД(48, 18)? Выполните алгоритм Евклида вручную.",
+        "explanation": "(48, 18) → (18, 12) → (12, 6) → (6, 0). НОД = 6.",
+        "type": "text",
+        "answers": ["6"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q2",
+        "question": "Какое утверждение — инвариант цикла подсчёта суммы for (i = 0; i < n; i++) sum += x[i]?",
+        "explanation": "Это утверждение верно до первой итерации (0 элементов, сумма 0), сохраняется на каждом шаге и в конце даёт ответ.",
+        "options": [
+          "Перед каждой итерацией sum равна сумме первых i элементов",
+          "sum всегда положительна",
+          "i всегда меньше sum",
+          "sum равна сумме всех n элементов на каждой итерации"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int a = 13;\n    int bits = 0;\n    while (a > 0) {\n        bits += a % 2;\n        a /= 2;\n    }\n    printf(\"%d\\n\", bits);\n    return 0;\n}",
+        "explanation": "Остатки от деления на 2 — двоичные цифры числа: 13 = 1101₂. Единиц три.",
+        "type": "text",
+        "answers": ["3"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "НОК(a, b) можно найти через НОД. Какая формула не переполнится раньше времени при больших a и b?",
+        "explanation": "a / gcd — точное деление, и только потом умножение. a * b может переполниться, даже если НОК помещается в тип.",
+        "options": ["a / gcd * b", "a * b / gcd", "(a * b) / (gcd * gcd)", "a + b - gcd"],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Запишите число 13 в двоичной системе.",
+        "explanation": "13 = 8 + 4 + 1. Алгоритм из урока: остатки от деления на 2 — 1, 0, 1, 1 — читаются в обратном порядке.",
+        "type": "text",
+        "answers": ["1101"],
+        "placeholder": "Двоичная запись"
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int a[8] = {1, 1, 2, 2, 2, 1, 3, 3};\n    int best = 1, cur = 1;\n    for (int i = 1; i < 8; i++) {\n        if (a[i] == a[i - 1]) {\n            cur++;\n        } else {\n            cur = 1;\n        }\n        if (cur > best) {\n            best = cur;\n        }\n    }\n    printf(\"%d\\n\", best);\n    return 0;\n}",
+        "explanation": "Программа ищет самую длинную серию одинаковых чисел подряд: три двойки.",
+        "type": "text",
+        "answers": ["3"],
+        "placeholder": "Вывод программы"
+      }
+    ]
+  }
+}

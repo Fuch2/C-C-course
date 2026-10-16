@@ -1,0 +1,67 @@
+{
+  "name": "code-systems-course",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "npm run dev --workspace @course/web",
+    "dev:runner": "node scripts/tool.mjs tsx apps/runner/src/index.ts",
+    "build": "npm run build --workspace @course/web && node scripts/tool.mjs tsc -p apps/runner/tsconfig.build.json",
+    "start": "npm run start --workspace @course/web",
+    "typecheck": "node scripts/tool.mjs tsc --noEmit && node scripts/tool.mjs tsc --noEmit -p apps/web/tsconfig.json",
+    "lint": "node scripts/tool.mjs eslint . --max-warnings 0",
+    "format": "node scripts/tool.mjs prettier --write .",
+    "format:check": "node scripts/tool.mjs prettier --check .",
+    "test": "node scripts/tool.mjs vitest run tests/unit",
+    "test:integration": "node scripts/tool.mjs vitest run tests/integration",
+    "test:runner": "RUN_DOCKER_TESTS=1 node scripts/tool.mjs vitest run tests/runner --maxWorkers=1",
+    "test:solutions": "node scripts/tool.mjs tsx scripts/verify-solutions.ts",
+    "db:generate": "node scripts/tool.mjs prisma generate",
+    "db:migrate": "node scripts/tool.mjs prisma migrate deploy",
+    "setup": "node scripts/setup.mjs && npm run db:generate && npm run db:migrate",
+    "check": "npm run content:check && npm run format:check && npm run typecheck && npm run lint && npm test && npm run test:integration && npm run build",
+    "content:check": "node scripts/tool.mjs tsx scripts/check-content.ts",
+    "test:memory": "node scripts/tool.mjs tsx scripts/verify-memory.ts",
+    "test:advanced": "node scripts/tool.mjs tsx scripts/verify-advanced.ts",
+    "test:algorithms": "node --import tsx scripts/verify-algorithms.ts",
+    "test:cpp-fundamentals": "node --import tsx scripts/verify-cpp-fundamentals.ts",
+    "test:advanced-projects": "RUN_DOCKER_TESTS=1 node scripts/tool.mjs vitest run tests/runner/advanced-projects.test.ts --maxWorkers=1",
+    "test:oop": "node --import tsx scripts/verify-oop.ts",
+    "test:oop-project": "RUN_DOCKER_TESTS=1 node scripts/tool.mjs vitest run tests/runner/oop-project.test.ts --maxWorkers=1",
+    "test:lifetime": "node --import tsx scripts/verify-lifetime.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.2",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@types/hast": "^3.0.5",
+    "@types/mdast": "^4.0.4",
+    "@types/node": "^22.19.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "16.3.4",
+    "prettier": "^3.7.0",
+    "prisma": "6.19.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.0",
+    "vitest": "^5.0.0"
+  },
+  "overrides": {
+    "effect": "^3.20.0",
+    "deepmerge-ts": "^8.0.0",
+    "dompurify": "^3.4.13",
+    "monaco-editor": "0.56.0"
+  }
+}

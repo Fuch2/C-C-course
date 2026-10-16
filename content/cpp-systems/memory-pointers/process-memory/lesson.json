@@ -1,0 +1,433 @@
+{
+  "id": "memory-process-memory",
+  "title": "Карта памяти программы",
+  "description": "Код, статические данные, стек и куча; три вида времени жизни объектов; static внутри функции, обнуление глобальных переменных и строковые литералы только для чтения.",
+  "moduleId": "memory-pointers",
+  "order": 1,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
+  "prerequisites": [],
+  "objectives": [
+    "Называть четыре области памяти процесса и объекты, которые в них хранятся",
+    "Различать статическую, автоматическую и выделенную длительность хранения",
+    "Использовать static-переменные для данных, сохраняющихся между вызовами",
+    "Объяснять, почему нельзя изменять строковый литерал"
+  ],
+  "tags": ["C17", "Память", "static", "Стек", "Куча"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "memory-process-memory-task-1",
+    "title": "Статистика без глобального массива",
+    "description": "Функция `main` уже написана: она читает количество чисел `n`, затем `n` целых чисел и передаёт каждое в функцию `record`. В конце вызывается `report`.\n\nРеализуйте `record` и `report`, храня состояние в переменных `static` уровня файла. Хранить сами числа не нужно — только накопленные величины.\n\n`report` печатает одну строку:\n- если чисел не было — `count=0`;\n- иначе — `count=N sum=S max=M`, где `S` — сумма, `M` — наибольшее число.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\n// Объявите здесь static-переменные уровня файла.\n\nvoid record(int x) {\n    // Учтите x в накопленной статистике.\n}\n\nvoid report(void) {\n    // Напечатайте результат.\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        int x;\n        scanf(\"%d\", &x);\n        record(x);\n    }\n    report();\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "4\n3 -1 7 2\n",
+        "output": "count=4 sum=11 max=7\n"
+      },
+      {
+        "input": "0\n",
+        "output": "count=0\n",
+        "explanation": "Чисел нет — печатается только количество."
+      }
+    ],
+    "constraints": ["0 ≤ n ≤ 1000.", "|x| ≤ 10⁶.", "Не меняйте функцию main."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Нужны три переменные уровня файла: static int count; static long long sum; static int max;. Счётчик и сумма автоматически равны нулю.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Максимум нельзя начинать с 0: все числа могут быть отрицательными. При первом вызове (count == 0) присвойте max = x.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Сумма до 1000 · 10⁶ = 10⁹ помещается в int впритык, но long long избавляет от сомнений; печатайте её через %lld.",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "4\n3 -1 7 2\n",
+        "expected": "count=4 sum=11 max=7\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "0\n",
+        "expected": "count=0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Одно отрицательное число",
+        "stdin": "1\n-5\n",
+        "expected": "count=1 sum=-5 max=-5\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Все отрицательные",
+        "stdin": "3\n-7 -2 -9\n",
+        "expected": "count=3 sum=-18 max=-2\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Нули",
+        "stdin": "5\n0 0 0 0 0\n",
+        "expected": "count=5 sum=0 max=0\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Большие значения",
+        "stdin": "3\n1000000 1000000 1000000\n",
+        "expected": "count=3 sum=3000000 max=1000000\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Минимальные значения",
+        "stdin": "4\n-1000000 -1000000 -1000000 -1000000\n",
+        "expected": "count=4 sum=-4000000 max=-1000000\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Повторяющийся максимум",
+        "stdin": "6\n5 9 9 1 9 0\n",
+        "expected": "count=6 sum=33 max=9\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Сумма ноль",
+        "stdin": "2\n10 -10\n",
+        "expected": "count=2 sum=0 max=10\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Возрастание",
+        "stdin": "7\n1 2 3 4 5 6 7\n",
+        "expected": "count=7 sum=28 max=7\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nstatic int count;\nstatic long long sum;\nstatic int max;\n\nvoid record(int x) {\n    if (count == 0 || x > max) {\n        max = x;\n    }\n    count++;\n    sum += x;\n}\n\nvoid report(void) {\n    if (count == 0) {\n        printf(\"count=0\\n\");\n    } else {\n        printf(\"count=%d sum=%lld max=%d\\n\", count, sum, max);\n    }\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        int x;\n        scanf(\"%d\", &x);\n        record(x);\n    }\n    report();\n    return 0;\n}\n",
+    "solutionExplanation": "Состояние, которое должно пережить много вызовов `record`, нельзя хранить в её локальных переменных — они исчезают при каждом возврате. Переменные `static` уровня файла живут всю программу, обнуляются автоматически и при этом не видны из других файлов программы.\n\nПервое значение особенное: до него максимума просто нет. Условие `count == 0 || x > max` делает первое число начальным максимумом — так решение верно и для полностью отрицательных данных.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "memory-process-memory-task-2",
+      "title": "Скользящее среднее",
+      "description": "Датчик присылает `n` целых показаний. После каждого показания нужно напечатать среднее **последних трёх** показаний (в начале, пока показаний меньше трёх, — среднее всех имеющихся) с двумя знаками после запятой.\n\nРеализуйте функцию `double moving_average(int x)`, которая принимает очередное показание и возвращает текущее среднее. Последние значения храните в `static`-массиве **внутри** функции. Функция `main` дана.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\ndouble moving_average(int x) {\n    // Храните последние три значения в static-массиве.\n    return 0.0;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        int x;\n        scanf(\"%d\", &x);\n        printf(\"%.2f\\n\", moving_average(x));\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "4\n3 6 9 12\n",
+          "output": "3.00\n4.50\n6.00\n9.00\n"
+        },
+        {
+          "input": "1\n-7\n",
+          "output": "-7.00\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 100.", "|x| ≤ 10⁴."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Внутри функции: static int last[3]; static int stored; static int pos;. stored — сколько значений уже накоплено (не больше 3), pos — куда писать следующее.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Кольцевая запись: last[pos] = x; pos = (pos + 1) % 3; if (stored < 3) stored++;",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Сумму считайте по stored элементам и делите как double: (double)sum / stored.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\n3 6 9 12\n",
+          "expected": "3.00\n4.50\n6.00\n9.00\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n-7\n",
+          "expected": "-7.00\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Меньше трёх значений",
+          "stdin": "2\n1 2\n",
+          "expected": "1.00\n1.50\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скачок",
+          "stdin": "5\n1 1 1 1 100\n",
+          "expected": "1.00\n1.00\n1.00\n1.00\n34.00\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Смена знака",
+          "stdin": "6\n-3 -3 -3 3 3 3\n",
+          "expected": "-3.00\n-3.00\n-3.00\n-1.00\n1.00\n3.00\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Максимальные значения",
+          "stdin": "3\n10000 10000 10000\n",
+          "expected": "10000.00\n10000.00\n10000.00\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Чередование",
+          "stdin": "7\n0 1 0 1 0 1 0\n",
+          "expected": "0.00\n0.50\n0.33\n0.67\n0.33\n0.67\n0.33\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Крайние значения",
+          "stdin": "4\n5 -10000 10000 2\n",
+          "expected": "5.00\n-4997.50\n1.67\n0.67\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Длинный ряд",
+          "stdin": "10\n1 2 3 4 5 6 7 8 9 10\n",
+          "expected": "1.00\n1.50\n2.00\n3.00\n4.00\n5.00\n6.00\n7.00\n8.00\n9.00\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Дробное среднее",
+          "stdin": "3\n1 2 4\n",
+          "expected": "1.00\n1.50\n2.33\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\ndouble moving_average(int x) {\n    static int last[3];\n    static int stored = 0;\n    static int pos = 0;\n    last[pos] = x;\n    pos = (pos + 1) % 3;\n    if (stored < 3) {\n        stored++;\n    }\n    int sum = 0;\n    for (int i = 0; i < stored; i++) {\n        sum += last[i];\n    }\n    return (double)sum / stored;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        int x;\n        scanf(\"%d\", &x);\n        printf(\"%.2f\\n\", moving_average(x));\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Массив `last` и счётчики объявлены `static` внутри функции: снаружи их не видно, но значения сохраняются между вызовами. Новое значение записывается на место самого старого — это **кольцевой буфер**, индекс `pos` идёт по кругу 0, 1, 2, 0, …\n\nПока накоплено меньше трёх значений, заполнены ровно первые `stored` ячеек, поэтому суммирование первых `stored` элементов корректно и в начале, и потом. Деление выполняется в `double`, иначе `5 / 2` дало бы 2.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-process-memory-task-3",
+      "title": "Встречалось ли раньше",
+      "description": "На вход подаются `n` номеров заказов — целые числа от 0 до 100 000. Для каждого номера напечатайте `new`, если он встретился впервые, и `repeat`, если уже был.\n\nРеализуйте функцию `int seen_before(int id)`: она возвращает 1, если `id` уже передавался, и 0 иначе (и запоминает `id`). Используйте `static`-массив отметок — он обнулится автоматически, ручная инициализация не нужна.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint seen_before(int id) {\n    // Используйте static-массив отметок.\n    return 0;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        int id;\n        scanf(\"%d\", &id);\n        printf(\"%s\\n\", seen_before(id) ? \"repeat\" : \"new\");\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5\n7 3 7 0 3\n",
+          "output": "new\nnew\nrepeat\nnew\nrepeat\n"
+        },
+        {
+          "input": "1\n100000\n",
+          "output": "new\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000.", "0 ≤ id ≤ 100 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Массив на 100 001 элемент: static unsigned char seen[100001]; — индекс совпадает с номером.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Прочитайте старую отметку, затем поставьте новую: int was = seen[id]; seen[id] = 1; return was;",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Массив такого размера лучше не делать локальным: 100 КБ на стеке — много, а static-массив лежит в статических данных и уже заполнен нулями.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5\n7 3 7 0 3\n",
+          "expected": "new\nnew\nrepeat\nnew\nrepeat\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n100000\n",
+          "expected": "new\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Номер 0 трижды",
+          "stdin": "3\n0 0 0\n",
+          "expected": "new\nrepeat\nrepeat\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Максимальный номер дважды",
+          "stdin": "2\n100000 100000\n",
+          "expected": "new\nrepeat\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Все разные",
+          "stdin": "4\n1 2 3 4\n",
+          "expected": "new\nnew\nnew\nnew\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Чередование повторов",
+          "stdin": "6\n5 5 6 6 5 6\n",
+          "expected": "new\nrepeat\nnew\nrepeat\nrepeat\nrepeat\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Края диапазона",
+          "stdin": "5\n99999 100000 0 1 99999\n",
+          "expected": "new\nnew\nnew\nnew\nrepeat\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Повтор через один",
+          "stdin": "3\n42 43 42\n",
+          "expected": "new\nnew\nrepeat\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Вторая половина — повторы",
+          "stdin": "8\n10 20 30 40 10 20 30 40\n",
+          "expected": "new\nnew\nnew\nnew\nrepeat\nrepeat\nrepeat\nrepeat\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Минимум и максимум",
+          "stdin": "2\n0 100000\n",
+          "expected": "new\nnew\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\n#define MAX_ID 100000\n\nint seen_before(int id) {\n    static unsigned char seen[MAX_ID + 1];\n    int was = seen[id];\n    seen[id] = 1;\n    return was;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        int id;\n        scanf(\"%d\", &id);\n        printf(\"%s\\n\", seen_before(id) ? \"repeat\" : \"new\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Отметка для номера `id` хранится в `seen[id]` — поиск и запись выполняются за одно обращение к массиву. Массив объявлен `static`, поэтому:\n\n- он существует всю программу и помнит отметки между вызовами;\n- он гарантированно заполнен нулями — «ни один номер ещё не встречался»;\n- его 100 001 байт лежат в статических данных, а не на стеке.\n\nРазмер `MAX_ID + 1` нужен потому, что допустим номер 100 000 включительно: индексы идут от 0 до 100 000.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "memory-process-memory-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint tick(void) {\n    static int n = 10;\n    int step = 1;\n    n += step;\n    step++;\n    return n;\n}\n\nint main(void) {\n    tick();\n    tick();\n    printf(\"%d\\n\", tick());\n    return 0;\n}",
+        "explanation": "n — static: инициализируется один раз значением 10 и растёт на 1 при каждом вызове: 11, 12, 13. step — локальная, при каждом вызове снова 1.",
+        "type": "text",
+        "answers": ["13"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint scores[4];\nstatic double rate;\n\nint main(void) {\n    printf(\"%d %d %.1f\\n\", scores[0], scores[3], rate);\n    return 0;\n}",
+        "explanation": "Объекты со статической длительностью хранения без инициализатора обнуляются до запуска main.",
+        "type": "text",
+        "answers": ["0 0 0.0"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Какие объекты имеют статическую длительность хранения? Выберите все.",
+        "explanation": "Глобальные переменные, static-переменные и литералы живут всю программу. Параметр — автоматический объект на стеке, блок malloc имеет выделенную длительность и живёт до free.",
+        "type": "multiple",
+        "options": [
+          "Глобальная переменная int total;",
+          "Переменная static int calls; внутри функции",
+          "Символы строкового литерала \"error\"",
+          "Параметр функции int x",
+          "Блок, выделенный malloc"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q4",
+        "question": "Где обычно хранится локальная переменная int i, объявленная в теле функции?",
+        "explanation": "Локальные переменные и параметры живут в кадре функции на стеке и исчезают при возврате из неё.",
+        "options": [
+          "На стеке, в кадре вызова функции",
+          "В куче",
+          "В статических данных",
+          "В области кода"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что произойдёт при выполнении кода char *s = \"abc\"; s[0] = 'X'; ?",
+        "explanation": "Указатель смотрит прямо на литерал в памяти только для чтения. Для изменяемой строки нужен массив char s[] = \"abc\";.",
+        "options": [
+          "Неопределённое поведение: запись в строковый литерал, обычно аварийное завершение",
+          "Строка станет \"Xbc\"",
+          "Ошибка компиляции",
+          "Будет изменена копия литерала"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Чем различаются int a; объявленная вне функций и int b; объявленная внутри main без инициализатора?",
+        "explanation": "Статические объекты обнуляются автоматически, автоматические (локальные) — нет. Читать b до записи нельзя.",
+        "options": [
+          "a гарантированно равна 0, значение b не определено",
+          "Обе равны 0",
+          "Значения обеих не определены",
+          "a не определена, b равна 0"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint counter(int reset) {\n    static int value;\n    if (reset) {\n        value = 0;\n    }\n    return ++value;\n}\n\nint main(void) {\n    counter(0);\n    counter(0);\n    counter(1);\n    int last = counter(0);\n    printf(\"%d\\n\", last);\n    return 0;\n}",
+        "explanation": "value: 1, 2, затем сброс до 0 и увеличение до 1, затем 2. static-переменную можно менять внутри функции как обычную.",
+        "type": "text",
+        "answers": ["2"],
+        "placeholder": "Вывод программы"
+      }
+    ]
+  }
+}

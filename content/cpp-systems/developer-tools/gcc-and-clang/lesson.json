@@ -1,0 +1,575 @@
+{
+  "id": "gcc-and-clang",
+  "title": "GCC, Clang и флаги компилятора",
+  "description": "GCC и Clang, группы флагов сборки, выбор стандарта -std и -Wpedantic, предупреждения -Wall, -Wextra, -Werror и -Wno-…, уровни оптимизации -O, отладочная информация -g и различия сообщений двух компиляторов.",
+  "moduleId": "developer-tools",
+  "order": 4,
+  "difficulty": "beginner",
+  "estimatedMinutes": 50,
+  "prerequisites": ["toolchain-pipeline"],
+  "objectives": [
+    "Читать команду сборки и относить каждый флаг к своей стадии",
+    "Выбирать стандарт языка и набор предупреждений для проекта",
+    "Исправлять ошибки, найденные предупреждениями -Wall и -Wextra",
+    "Выбирать флаги для отладочной сборки и для выпуска"
+  ],
+  "tags": ["GCC", "Clang", "Флаги", "Предупреждения", "Оптимизация"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "gcc-and-clang-task-1",
+    "title": "Разбор флагов",
+    "description": "Дана команда сборки: имя компилятора и аргументы через пробел. Разложите её по группам и напечатайте ровно 10 строк:\n\n```\nкомпилятор: …\nстандарт: …\nоптимизация: …\nотладка: …\nпредупреждения: …\nмакросы: …\nзаголовки: …\nбиблиотеки: …\nфайлы: …\nрезультат: …\n```\n\n- `-std=X` — стандарт `X` (по умолчанию `gnu17`);\n- `-O0`, `-O1`, `-O2`, `-O3`, `-Os`, `-Og` — оптимизация (по умолчанию `-O0`); одиночный `-O` означает `-O1`;\n- любой флаг, начинающийся с `-g`, — отладка `да` (иначе `нет`);\n- флаги, начинающиеся с `-W`, — предупреждения в порядке ввода;\n- `-DИМЯ` или `-DИМЯ=значение` — макрос (печатается без `-D`), `-Iкаталог` — каталог заголовков, `-lимя` — библиотека;\n- `-o имя` — результат (по умолчанию `a.out`); прочие флаги игнорируются, остальные слова — файлы.\n\nПри повторе `-std` и `-O` действует последний. Пустой список печатайте как `-`. Элементы списков разделяйте пробелом.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "gcc -std=c17 -Wall -Wextra -g -O0 -Iinclude -DDEBUG main.c util.c -o app -lm\n",
+        "output": "компилятор: gcc\nстандарт: c17\nоптимизация: -O0\nотладка: да\nпредупреждения: -Wall -Wextra\nмакросы: DEBUG\nзаголовки: include\nбиблиотеки: m\nфайлы: main.c util.c\nрезультат: app\n"
+      },
+      {
+        "input": "clang main.c\n",
+        "output": "компилятор: clang\nстандарт: gnu17\nоптимизация: -O0\nотладка: нет\nпредупреждения: -\nмакросы: -\nзаголовки: -\nбиблиотеки: -\nфайлы: main.c\nрезультат: a.out\n"
+      }
+    ],
+    "constraints": ["В команде от 2 до 30 слов, каждое — не длиннее 60 символов."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Сравнение начала слова: strncmp(word, \"-std=\", 5) == 0. Значение — word + 5.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Списки удобно копить в строках: напишите функцию append(char *list, const char *item), которая дописывает пробел и элемент через strcat.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Проверку -O ставьте после проверки -o: это разные флаги, и регистр важен.",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "gcc -std=c17 -Wall -Wextra -g -O0 -Iinclude -DDEBUG main.c util.c -o app -lm\n",
+        "expected": "компилятор: gcc\nстандарт: c17\nоптимизация: -O0\nотладка: да\nпредупреждения: -Wall -Wextra\nмакросы: DEBUG\nзаголовки: include\nбиблиотеки: m\nфайлы: main.c util.c\nрезультат: app\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "clang main.c\n",
+        "expected": "компилятор: clang\nстандарт: gnu17\nоптимизация: -O0\nотладка: нет\nпредупреждения: -\nмакросы: -\nзаголовки: -\nбиблиотеки: -\nфайлы: main.c\nрезультат: a.out\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Последний -O",
+        "stdin": "gcc -O1 -O3 -O2 main.c\n",
+        "expected": "компилятор: gcc\nстандарт: gnu17\nоптимизация: -O2\nотладка: нет\nпредупреждения: -\nмакросы: -\nзаголовки: -\nбиблиотеки: -\nфайлы: main.c\nрезультат: a.out\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Одиночный -O",
+        "stdin": "gcc -O main.c -o fast\n",
+        "expected": "компилятор: gcc\nстандарт: gnu17\nоптимизация: -O1\nотладка: нет\nпредупреждения: -\nмакросы: -\nзаголовки: -\nбиблиотеки: -\nфайлы: main.c\nрезультат: fast\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Последний -std",
+        "stdin": "gcc -std=c99 -std=c11 -Os prog.c\n",
+        "expected": "компилятор: gcc\nстандарт: c11\nоптимизация: -Os\nотладка: нет\nпредупреждения: -\nмакросы: -\nзаголовки: -\nбиблиотеки: -\nфайлы: prog.c\nрезультат: a.out\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Отладочные флаги",
+        "stdin": "gcc -ggdb -Og -Wshadow -Wno-unused-parameter debug.c\n",
+        "expected": "компилятор: gcc\nстандарт: gnu17\nоптимизация: -Og\nотладка: да\nпредупреждения: -Wshadow -Wno-unused-parameter\nмакросы: -\nзаголовки: -\nбиблиотеки: -\nфайлы: debug.c\nрезультат: a.out\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Макросы со значениями",
+        "stdin": "gcc -DLIMIT=5 -DNDEBUG -DNAME=calc main.c\n",
+        "expected": "компилятор: gcc\nстандарт: gnu17\nоптимизация: -O0\nотладка: нет\nпредупреждения: -\nмакросы: LIMIT=5 NDEBUG NAME=calc\nзаголовки: -\nбиблиотеки: -\nфайлы: main.c\nрезультат: a.out\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Линковка",
+        "stdin": "gcc main.o net.o -L/opt/lib -lssl -lcrypto -lpthread -o server\n",
+        "expected": "компилятор: gcc\nстандарт: gnu17\nоптимизация: -O0\nотладка: нет\nпредупреждения: -\nмакросы: -\nзаголовки: -\nбиблиотеки: ssl crypto pthread\nфайлы: main.o net.o\nрезультат: server\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Каталоги заголовков",
+        "stdin": "gcc -Iinclude -Ithird_party/json -c src/main.c\n",
+        "expected": "компилятор: gcc\nстандарт: gnu17\nоптимизация: -O0\nотладка: нет\nпредупреждения: -\nмакросы: -\nзаголовки: include third_party/json\nбиблиотеки: -\nфайлы: src/main.c\nрезультат: a.out\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Строгие предупреждения",
+        "stdin": "gcc-14 -Werror -Wall -Wextra -Wpedantic -Wconversion -fPIC lib.c\n",
+        "expected": "компилятор: gcc-14\nстандарт: gnu17\nоптимизация: -O0\nотладка: нет\nпредупреждения: -Werror -Wall -Wextra -Wpedantic -Wconversion\nмакросы: -\nзаголовки: -\nбиблиотеки: -\nфайлы: lib.c\nрезультат: a.out\n"
+      },
+      {
+        "id": "hidden-9",
+        "name": "-o без имени",
+        "stdin": "gcc -o\n",
+        "expected": "компилятор: gcc\nстандарт: gnu17\nоптимизация: -O0\nотладка: нет\nпредупреждения: -\nмакросы: -\nзаголовки: -\nбиблиотеки: -\nфайлы: -\nрезультат: a.out\n"
+      },
+      {
+        "id": "hidden-10",
+        "name": "Всё вместе",
+        "stdin": "clang -std=c17 -O3 -g3 -march=native -DUSE_SIMD a.c b.c c.c -o bench -lm\n",
+        "expected": "компилятор: clang\nстандарт: c17\nоптимизация: -O3\nотладка: да\nпредупреждения: -\nмакросы: USE_SIMD\nзаголовки: -\nбиблиотеки: m\nфайлы: a.c b.c c.c\nрезультат: bench\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define LIST 2048\n\nstatic void append(char *list, const char *item) {\n    if (list[0] != '\\0') {\n        strcat(list, \" \");\n    }\n    strcat(list, item);\n}\n\nstatic void print_list(const char *title, const char *list) {\n    printf(\"%s: %s\\n\", title, list[0] != '\\0' ? list : \"-\");\n}\n\nint main(void) {\n    char word[64];\n    char compiler[64] = \"\";\n    char standard[64] = \"gnu17\";\n    char optimization[64] = \"-O0\";\n    char output[64] = \"a.out\";\n    int debug = 0;\n    static char warnings[LIST];\n    static char macros[LIST];\n    static char includes[LIST];\n    static char libraries[LIST];\n    static char files[LIST];\n    if (scanf(\"%63s\", compiler) != 1) {\n        return 0;\n    }\n    while (scanf(\"%63s\", word) == 1) {\n        if (strncmp(word, \"-std=\", 5) == 0) {\n            strcpy(standard, word + 5);\n        } else if (strcmp(word, \"-o\") == 0) {\n            if (scanf(\"%63s\", output) != 1) {\n                strcpy(output, \"a.out\");\n            }\n        } else if (strcmp(word, \"-O\") == 0) {\n            strcpy(optimization, \"-O1\");\n        } else if (strncmp(word, \"-O\", 2) == 0) {\n            strcpy(optimization, word);\n        } else if (strncmp(word, \"-g\", 2) == 0) {\n            debug = 1;\n        } else if (strncmp(word, \"-W\", 2) == 0) {\n            append(warnings, word);\n        } else if (strncmp(word, \"-D\", 2) == 0) {\n            append(macros, word + 2);\n        } else if (strncmp(word, \"-I\", 2) == 0) {\n            append(includes, word + 2);\n        } else if (strncmp(word, \"-l\", 2) == 0) {\n            append(libraries, word + 2);\n        } else if (word[0] != '-') {\n            append(files, word);\n        }\n    }\n    printf(\"компилятор: %s\\n\", compiler);\n    printf(\"стандарт: %s\\n\", standard);\n    printf(\"оптимизация: %s\\n\", optimization);\n    printf(\"отладка: %s\\n\", debug ? \"да\" : \"нет\");\n    print_list(\"предупреждения\", warnings);\n    print_list(\"макросы\", macros);\n    print_list(\"заголовки\", includes);\n    print_list(\"библиотеки\", libraries);\n    print_list(\"файлы\", files);\n    printf(\"результат: %s\\n\", output);\n    return 0;\n}\n",
+    "solutionExplanation": "Такой разбор — первое, что нужно сделать с чужой командой сборки из `Makefile` или журнала CI: понять, каким стандартом, с какими проверками и оптимизациями собирается код и что передаётся линковщику.\n\nПорядок проверок важен: `-o` и `-O` различаются только регистром, а `-O` без цифры — отдельный случай. Флаги со значением в том же слове (`-Iinclude`, `-DDEBUG`, `-lm`) отличаются от `-o`, у которого значение — следующее слово.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "gcc-and-clang-task-2",
+      "title": "Какие предупреждения включены",
+      "description": "Смоделируйте, как GCC решает, включено ли предупреждение. В первой строке — флаги через пробел, во второй — число запросов `q`, далее `q` имён предупреждений (без `-W`). Для каждого напечатайте `имя: выкл`, `имя: вкл` или `имя: ошибка`.\n\nГруппы:\n\n| Флаг | Включает |\n| --- | --- |\n| `-Wall` | `parentheses`, `format`, `unused-variable`, `return-type`, `misleading-indentation` |\n| `-Wextra` | `sign-compare`, `unused-parameter`, `missing-field-initializers` |\n\nПравила:\n1. `-w` отключает все предупреждения — ответ `выкл`.\n2. Явный флаг `-Wимя` или `-Wno-имя` важнее групп **независимо от порядка**; из явных флагов для одного имени действует последний.\n3. Без явного флага предупреждение включено, если указана его группа.\n4. Включённое предупреждение становится ошибкой, если есть `-Werror` или `-Werror=имя`. Флаг `-Werror=имя` ещё и работает как явный `-Wимя`.\n\nОстальные флаги на ответ не влияют.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "-Wall -Wno-format\n3\nparentheses\nformat\nsign-compare\n",
+          "output": "parentheses: вкл\nformat: выкл\nsign-compare: выкл\n"
+        },
+        {
+          "input": "-Wall -Wextra -Werror\n2\nsign-compare\nshadow\n",
+          "output": "sign-compare: ошибка\nshadow: выкл\n"
+        }
+      ],
+      "constraints": ["Не больше 30 флагов и 20 запросов; имена не длиннее 40 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Явные флаги храните в таблице «имя → 1 или 0»: при повторе перезаписывайте значение. Для -Werror=имя запишите 1 и отметьте имя как ошибку.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Принадлежность группе удобно проверять функцией in_list(name, list, count) над массивами строк.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Сначала прочитайте строку флагов через fgets, а слова из неё выделите через strtok(line, \" \\n\").",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "-Wall -Wno-format\n3\nparentheses\nformat\nsign-compare\n",
+          "expected": "parentheses: вкл\nformat: выкл\nsign-compare: выкл\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "-Wall -Wextra -Werror\n2\nsign-compare\nshadow\n",
+          "expected": "sign-compare: ошибка\nshadow: выкл\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Явный флаг до группы",
+          "stdin": "-Wno-unused-parameter -Wextra\n2\nunused-parameter\nsign-compare\n",
+          "expected": "unused-parameter: выкл\nsign-compare: вкл\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Последний явный",
+          "stdin": "-Wshadow -Wno-shadow -Wshadow\n1\nshadow\n",
+          "expected": "shadow: вкл\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "-w отключает всё",
+          "stdin": "-Wall -w\n2\nformat\nparentheses\n",
+          "expected": "format: выкл\nparentheses: выкл\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "-Werror= включает",
+          "stdin": "-Werror=return-type\n2\nreturn-type\nformat\n",
+          "expected": "return-type: ошибка\nformat: выкл\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Отключено после -Werror=",
+          "stdin": "-Wall -Werror=format -Wno-format\n1\nformat\n",
+          "expected": "format: выкл\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Без предупреждений",
+          "stdin": "-O2 -g\n2\nformat\nconversion\n",
+          "expected": "format: выкл\nconversion: выкл\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Отдельный флаг",
+          "stdin": "-Wconversion -Wall\n3\nconversion\nunused-variable\nmissing-field-initializers\n",
+          "expected": "conversion: вкл\nunused-variable: вкл\nmissing-field-initializers: выкл\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Смешанные правила",
+          "stdin": "-Wall -Wextra -Wno-sign-compare -Werror=parentheses\n4\nparentheses\nsign-compare\nformat\nunused-parameter\n",
+          "expected": "parentheses: ошибка\nsign-compare: выкл\nformat: вкл\nunused-parameter: вкл\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "-Werror без групп",
+          "stdin": "-Werror\n1\nformat\n",
+          "expected": "format: выкл\n"
+        },
+        {
+          "id": "hidden-10",
+          "name": "Явное из чужой группы",
+          "stdin": "-Wextra -Wmisleading-indentation -Werror\n2\nmisleading-indentation\nreturn-type\n",
+          "expected": "misleading-indentation: ошибка\nreturn-type: выкл\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define MAX 40\n#define NAME 64\n\nstatic const char *all_group[] = {\"parentheses\", \"format\", \"unused-variable\", \"return-type\",\n                                  \"misleading-indentation\"};\nstatic const char *extra_group[] = {\"sign-compare\", \"unused-parameter\",\n                                    \"missing-field-initializers\"};\n\nstatic char explicit_names[MAX][NAME];\nstatic int explicit_values[MAX];\nstatic int explicit_count;\nstatic char error_names[MAX][NAME];\nstatic int error_count;\n\nstatic int in_list(const char *name, const char *const *list, int count) {\n    for (int i = 0; i < count; i++) {\n        if (strcmp(list[i], name) == 0) {\n            return 1;\n        }\n    }\n    return 0;\n}\n\nstatic int find_explicit(const char *name) {\n    for (int i = 0; i < explicit_count; i++) {\n        if (strcmp(explicit_names[i], name) == 0) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nstatic void set_explicit(const char *name, int value) {\n    int index = find_explicit(name);\n    if (index < 0 && explicit_count < MAX) {\n        index = explicit_count++;\n        strcpy(explicit_names[index], name);\n    }\n    if (index >= 0) {\n        explicit_values[index] = value;\n    }\n}\n\nint main(void) {\n    char line[2048];\n    int wall = 0;\n    int wextra = 0;\n    int silent = 0;\n    int werror = 0;\n    if (fgets(line, sizeof line, stdin) == NULL) {\n        return 0;\n    }\n    for (char *flag = strtok(line, \" \\r\\n\"); flag != NULL; flag = strtok(NULL, \" \\r\\n\")) {\n        if (strlen(flag) >= NAME) {\n            continue;\n        }\n        if (strcmp(flag, \"-w\") == 0) {\n            silent = 1;\n        } else if (strcmp(flag, \"-Wall\") == 0) {\n            wall = 1;\n        } else if (strcmp(flag, \"-Wextra\") == 0) {\n            wextra = 1;\n        } else if (strcmp(flag, \"-Werror\") == 0) {\n            werror = 1;\n        } else if (strncmp(flag, \"-Werror=\", 8) == 0) {\n            set_explicit(flag + 8, 1);\n            if (error_count < MAX) {\n                strcpy(error_names[error_count++], flag + 8);\n            }\n        } else if (strncmp(flag, \"-Wno-\", 5) == 0) {\n            set_explicit(flag + 5, 0);\n        } else if (strncmp(flag, \"-W\", 2) == 0) {\n            set_explicit(flag + 2, 1);\n        }\n    }\n    int q;\n    if (scanf(\"%d\", &q) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < q; i++) {\n        char name[NAME];\n        if (scanf(\"%63s\", name) != 1) {\n            break;\n        }\n        int index = find_explicit(name);\n        int on;\n        if (index >= 0) {\n            on = explicit_values[index];\n        } else {\n            on = (wall && in_list(name, all_group, 5)) || (wextra && in_list(name, extra_group, 3));\n        }\n        if (silent || !on) {\n            printf(\"%s: выкл\\n\", name);\n            continue;\n        }\n        int is_error = werror;\n        for (int j = 0; j < error_count && !is_error; j++) {\n            is_error = strcmp(error_names[j], name) == 0;\n        }\n        printf(\"%s: %s\\n\", name, is_error ? \"ошибка\" : \"вкл\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "В GCC группа (`-Wall`, `-Wextra`) задаёт только **значение по умолчанию** для своих предупреждений. Явный флаг для конкретного имени перекрывает его, где бы ни стоял: `-Wno-unused-parameter -Wextra` оставляет `unused-parameter` выключенным. Поэтому решение хранит явные флаги отдельно от групп и обращается к группам, только если явного флага нет.\n\nПрактический вывод: включайте широкие группы и точечно отключайте конкретные ложные срабатывания — `-Wall -Wextra -Wno-unused-parameter`. А `-Werror=return-type` делает обязательным одно важное предупреждение, не превращая в ошибки все остальные.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "gcc-and-clang-task-3",
+      "title": "Найди ошибку: сравнение со знаком",
+      "description": "Датчик передаёт `n` показаний — целые числа, в том числе отрицательные. Показания строго меньше порога `min` отбраковываются. Программа читает `min` и `n`, затем показания, и печатает `отбраковано: K`.\n\nНа положительных числах всё работает, но отрицательные показания почему-то не отбраковываются. Соберите программу с `-Wall -Wextra` — компилятор укажет на проблемную строку. Исправьте ошибку, не меняя формат ввода и вывода.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    unsigned int min_level;\n    int n;\n    scanf(\"%u %d\", &min_level, &n);\n    int rejected = 0;\n    for (int i = 0; i < n; i++) {\n        int value;\n        scanf(\"%d\", &value);\n        if (value < min_level) {\n            rejected++;\n        }\n    }\n    printf(\"отбраковано: %d\\n\", rejected);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "10 4\n5 12 10 3\n",
+          "output": "отбраковано: 2\n"
+        },
+        {
+          "input": "0 3\n-1 0 1\n",
+          "output": "отбраковано: 1\n"
+        }
+      ],
+      "constraints": ["0 ≤ min ≤ 10⁹.", "1 ≤ n ≤ 1000; показания от −10⁹ до 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Предупреждение -Wextra: comparison of integer expressions of different signedness: 'int' and 'unsigned int'. Во что превращается -5 при сравнении с unsigned int?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Отрицательное показание всегда меньше неотрицательного порога: проверьте value < 0 отдельно, а затем сравнивайте (unsigned int)value < min_level.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "10 4\n5 12 10 3\n",
+          "expected": "отбраковано: 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0 3\n-1 0 1\n",
+          "expected": "отбраковано: 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одно отрицательное",
+          "stdin": "5 1\n-5\n",
+          "expected": "отбраковано: 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Нулевой порог",
+          "stdin": "0 4\n0 0 0 0\n",
+          "expected": "отбраковано: 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Вокруг порога",
+          "stdin": "100 5\n-100 -1 99 100 101\n",
+          "expected": "отбраковано: 3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Крайние значения",
+          "stdin": "1000000000 3\n-1000000000 999999999 1000000000\n",
+          "expected": "отбраковано: 2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Все меньше",
+          "stdin": "7 6\n1 2 3 4 5 6\n",
+          "expected": "отбраковано: 6\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Ни одного",
+          "stdin": "3 4\n3 4 5 6\n",
+          "expected": "отбраковано: 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Вперемешку",
+          "stdin": "50 8\n-3 60 -70 40 0 51 -1 49\n",
+          "expected": "отбраковано: 6\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Ноль меньше единицы",
+          "stdin": "1 1\n0\n",
+          "expected": "отбраковано: 1\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Отрицательные разной величины",
+          "stdin": "20 5\n-2147483 -20 20 -19 19\n",
+          "expected": "отбраковано: 4\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    unsigned int min_level;\n    int n;\n    scanf(\"%u %d\", &min_level, &n);\n    int rejected = 0;\n    for (int i = 0; i < n; i++) {\n        int value;\n        scanf(\"%d\", &value);\n        if (value < 0 || (unsigned int)value < min_level) {\n            rejected++;\n        }\n    }\n    printf(\"отбраковано: %d\\n\", rejected);\n    return 0;\n}\n",
+      "solutionExplanation": "В выражении `value < min_level` у операндов разные типы: `int` и `unsigned int`. По правилам C знаковый операнд преобразуется в беззнаковый, и `-5` становится `4 294 967 291` — огромным числом, которое не меньше порога.\n\nИсправление делает сравнение корректным для всех значений: отрицательное показание заведомо меньше неотрицательного порога, а неотрицательное можно безопасно привести к `unsigned int`. Другой вариант — хранить порог в `long long` и сравнивать в этом типе.\n\nБез `-Wextra` компилятор промолчит: `-Wsign-compare` в C входит именно в этот набор.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "gcc-and-clang-task-4",
+      "title": "Найди ошибку: = вместо ==",
+      "description": "Журнал содержит `n` измерений. Значение `0` означает пропуск: прибор ничего не измерил. Программа должна напечатать `пропусков: Z, сумма: S`, где `S` — сумма всех измерений.\n\nПрограмма всегда печатает нули. Соберите её с `-Wall`, прочитайте предупреждение и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int missing = 0;\n    long long sum = 0;\n    for (int i = 0; i < n; i++) {\n        int value;\n        scanf(\"%d\", &value);\n        if (value = 0) {\n            missing++;\n        }\n        sum += value;\n    }\n    printf(\"пропусков: %d, сумма: %lld\\n\", missing, sum);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "5\n3 0 4 0 5\n",
+          "output": "пропусков: 2, сумма: 12\n"
+        },
+        {
+          "input": "1\n7\n",
+          "output": "пропусков: 0, сумма: 7\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; измерения от −10⁶ до 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Предупреждение -Wall: suggest parentheses around assignment used as truth value. Что делает value = 0 внутри if?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Присваивание не только даёт ложное условие, но и затирает прочитанное значение — поэтому и сумма всегда 0.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5\n3 0 4 0 5\n",
+          "expected": "пропусков: 2, сумма: 12\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n7\n",
+          "expected": "пропусков: 0, сумма: 7\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Один пропуск",
+          "stdin": "1\n0\n",
+          "expected": "пропусков: 1, сумма: 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Все пропуски",
+          "stdin": "4\n0 0 0 0\n",
+          "expected": "пропусков: 4, сумма: 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Сумма ноль",
+          "stdin": "3\n-5 0 5\n",
+          "expected": "пропусков: 1, сумма: 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Большие значения",
+          "stdin": "3\n1000000 1000000 1000000\n",
+          "expected": "пропусков: 0, сумма: 3000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Отрицательные",
+          "stdin": "6\n-1 -2 -3 0 -4 0\n",
+          "expected": "пропусков: 2, сумма: -10\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Пропуск первым",
+          "stdin": "2\n0 9\n",
+          "expected": "пропусков: 1, сумма: 9\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Пропуск последним",
+          "stdin": "2\n9 0\n",
+          "expected": "пропусков: 1, сумма: 9\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Без пропусков",
+          "stdin": "8\n1 2 3 4 5 6 7 8\n",
+          "expected": "пропусков: 0, сумма: 36\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Крайние значения",
+          "stdin": "5\n-1000000 0 1000000 0 -1000000\n",
+          "expected": "пропусков: 2, сумма: -1000000\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int missing = 0;\n    long long sum = 0;\n    for (int i = 0; i < n; i++) {\n        int value;\n        scanf(\"%d\", &value);\n        if (value == 0) {\n            missing++;\n        }\n        sum += value;\n    }\n    printf(\"пропусков: %d, сумма: %lld\\n\", missing, sum);\n    return 0;\n}\n",
+      "solutionExplanation": "`value = 0` — присваивание. Оно записывает в `value` ноль, а значением всего выражения становится `0`, то есть «ложь». Ошибка двойная: условие никогда не выполняется, а прочитанное значение потеряно, поэтому и сумма всегда равна нулю.\n\nЯзык это разрешает — присваивание в условии бывает нужно, например `while ((c = getchar()) != EOF)`. Поэтому компилятор не выдаёт ошибку, а только предупреждает и предлагает взять намеренное присваивание в дополнительные скобки. Это одна из причин всегда собирать с `-Wall`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "gcc-and-clang-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что делает флаг -Wall?",
+        "explanation": "Название историческое. Многие полезные проверки включаются отдельно: -Wextra, -Wconversion, -Wshadow. В ошибки предупреждения превращает -Werror.",
+        "options": [
+          "Включает основной набор предупреждений — но не все существующие",
+          "Включает абсолютно все предупреждения компилятора",
+          "Превращает предупреждения в ошибки",
+          "Отключает все предупреждения"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int i = -1;\n    unsigned int n = 3;\n    printf(i < n ? \"да\\n\" : \"нет\\n\");\n    return 0;\n}",
+        "explanation": "При сравнении int с unsigned int значение -1 преобразуется в беззнаковое 4294967295, и оно не меньше 3. -Wextra предупреждает именно об этом.",
+        "type": "text",
+        "answers": ["нет"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int count = 5;\n    if (count = 0) {\n        printf(\"A\\n\");\n    } else {\n        printf(\"B %d\\n\", count);\n    }\n    return 0;\n}",
+        "explanation": "count = 0 — присваивание: count становится 0, а значение выражения 0 означает ложь. -Wall предупреждает о таком условии.",
+        "type": "text",
+        "answers": ["B 0"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Какие флаги относятся к стадии линковки? Выберите все.",
+        "explanation": "-l подключает библиотеку, -L добавляет каталог поиска библиотек. -I и -D настраивают препроцессор, -O2 — компиляцию.",
+        "type": "multiple",
+        "options": ["-lm", "-L/usr/local/lib", "-Iinclude", "-DNDEBUG", "-O2"],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q5",
+        "question": "Какой уровень оптимизации действует в команде gcc -O1 -O3 -O2 main.c?",
+        "explanation": "Если флаг повторяется с разными значениями, действует последний.",
+        "type": "text",
+        "answers": ["-O2", "O2"],
+        "placeholder": "Флаг"
+      },
+      {
+        "id": "q6",
+        "question": "Зачем в командных проектах добавляют -Werror?",
+        "explanation": "-Werror не добавляет новых проверок — он делает уже включённые обязательными. Десятки «привычных» предупреждений прячут то единственное, которое важно.",
+        "options": [
+          "Чтобы код с предупреждениями нельзя было собрать и предупреждения не копились",
+          "Чтобы компилятор находил больше видов ошибок",
+          "Чтобы ускорить сборку",
+          "Чтобы ошибки печатались подробнее"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Какая пара флагов подходит для отладки в GDB?",
+        "explanation": "-g добавляет связь машинного кода со строками и переменными, а -O0 сохраняет код близким к исходнику. -DNDEBUG отключает assert, -s удаляет символы.",
+        "options": ["-g -O0", "-O3", "-O2 -DNDEBUG", "-Os -s"],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Чем -std=c17 отличается от поведения GCC по умолчанию?",
+        "explanation": "Режим gnu17 разрешает расширения, которых нет в стандарте. -std=c17 вместе с -Wpedantic помогает писать переносимый код.",
+        "options": [
+          "По умолчанию GCC использует gnu17 — C17 с расширениями GNU",
+          "По умолчанию GCC компилирует C89",
+          "Ничем",
+          "-std=c17 включает все предупреждения"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q9",
+        "question": "Вы набрали gcc --version на Mac и увидели Apple clang version 15. Почему?",
+        "explanation": "Apple поставляет Clang и оставила имя gcc для совместимости. Настоящий GCC устанавливают отдельно.",
+        "options": [
+          "На macOS команда gcc по умолчанию вызывает Clang",
+          "Clang — новая версия GCC",
+          "GCC установлен неправильно",
+          "Так выглядит любой GCC на процессорах Apple"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

@@ -1,0 +1,170 @@
+[
+  {
+    "id": "oop-struct-example",
+    "lessonId": "oop-struct",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nstruct Point { int x{}; int y{}; int sum() const { return x + y; } };\nint main() { const Point p{3, 8}; auto copy = p; copy.x = 1; std::cout << p.sum() << ' ' << copy.sum() << '\\n'; }\n",
+    "stdout": "11 9\n"
+  },
+  {
+    "id": "oop-class-example",
+    "lessonId": "oop-class",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nclass Counter { int count_{}; public: void increment() { ++count_; } int value() const { return count_; } };\nint main() { Counter c; c.increment(); c.increment(); std::cout << c.value() << '\\n'; }\n",
+    "stdout": "2\n"
+  },
+  {
+    "id": "oop-public-example",
+    "lessonId": "oop-public",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nclass Status { bool ready_{true}; public: bool ready() const { return ready_; } void stop() { ready_ = false; } };\nint main() { Status s; std::cout << s.ready() << ' '; s.stop(); std::cout << s.ready() << '\\n'; }\n",
+    "stdout": "1 0\n"
+  },
+  {
+    "id": "oop-private-example",
+    "lessonId": "oop-private",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nclass Level { int value_{5}; public: bool try_set(int x) { if (x < 0 || x > 10) return false; value_ = x; return true; } int value() const { return value_; } };\nint main() { Level x; std::cout << x.try_set(11) << ' ' << x.value() << '\\n'; }\n",
+    "stdout": "0 5\n"
+  },
+  {
+    "id": "oop-protected-example",
+    "lessonId": "oop-protected",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nclass Offset { int offset_{2}; protected: int adjust(int x) const { return x + offset_; } };\nclass Probe : public Offset { public: int read() const { return adjust(5); } };\nint main() { Probe p; std::cout << p.read() << '\\n'; }\n",
+    "stdout": "7\n"
+  },
+  {
+    "id": "oop-constructors-example",
+    "lessonId": "oop-constructors",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nclass Gain { const int factor_; public: explicit Gain(int factor) : factor_(factor) {} int apply(int x) const { return factor_ * x; } };\nint main() { Gain g{3}; std::cout << g.apply(4) << '\\n'; }\n",
+    "stdout": "12\n"
+  },
+  {
+    "id": "oop-destructor-example",
+    "lessonId": "oop-destructor",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nclass Guard { int& x_; int old_; public: explicit Guard(int& x) : x_(x), old_(x) { x_ = 9; } Guard(const Guard&) = delete; Guard& operator=(const Guard&) = delete; ~Guard() { x_ = old_; } };\nint main() { int x = 4; { Guard g{x}; std::cout << x << ' '; } std::cout << x << '\\n'; }\n",
+    "stdout": "9 4\n"
+  },
+  {
+    "id": "oop-this-example",
+    "lessonId": "oop-this",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nclass Setting { int value{}; public: Setting& set(int value) { this->value = value; return *this; } int get() const { return value; } };\nint main() { Setting s; auto& same = s.set(2).set(8); std::cout << (&same == &s) << ' ' << s.get() << '\\n'; }\n",
+    "stdout": "1 8\n"
+  },
+  {
+    "id": "oop-encapsulation-example",
+    "lessonId": "oop-encapsulation",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nclass Range { int low_{0}, high_{10}; public: bool configure(int l,int h) { if (l > h) return false; low_=l; high_=h; return true; } bool contains(int x) const { return low_ <= x && x <= high_; } };\nint main() { Range r; std::cout << r.configure(9,2) << ' ' << r.contains(5) << '\\n'; }\n",
+    "stdout": "0 1\n"
+  },
+  {
+    "id": "oop-composition-example",
+    "lessonId": "oop-composition",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nstruct Scale { int factor; int apply(int x) const { return factor*x; } };\nclass Meter { Scale scale_{3}; public: int read(int raw) const { return scale_.apply(raw); } };\nint main() { Meter m; std::cout << m.read(7) << '\\n'; }\n",
+    "stdout": "21\n"
+  },
+  {
+    "id": "oop-aggregation-example",
+    "lessonId": "oop-aggregation",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nstruct Source { int value{2}; };\nclass View { const Source& source_; public: explicit View(const Source& s) : source_(s) {} int read() const { return source_.value; } };\nint main() { Source s; View v{s}; s.value=9; std::cout << v.read() << '\\n'; }\n",
+    "stdout": "9\n"
+  },
+  {
+    "id": "oop-inheritance-example",
+    "lessonId": "oop-inheritance",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nclass Identified { int id_; public: explicit Identified(int id) : id_(id) {} int id() const { return id_; } };\nclass Channel : public Identified { int port_; public: Channel(int id,int port) : Identified(id), port_(port) {} int port() const { return port_; } };\nint main() { Channel c{4,7}; std::cout << c.id() << ' ' << c.port() << '\\n'; }\n",
+    "stdout": "4 7\n"
+  },
+  {
+    "id": "oop-public-inheritance-example",
+    "lessonId": "oop-public-inheritance",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nstruct Device { int id{6}; };\nstruct Probe : public Device { int channel{3}; };\nint inspect(const Device& d) { return d.id; }\nint main() { Probe p; std::cout << inspect(p) << '\\n'; }\n",
+    "stdout": "6\n"
+  },
+  {
+    "id": "oop-virtual-example",
+    "lessonId": "oop-virtual",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nstruct Base { virtual int read() const { return 1; } virtual ~Base() = default; };\nstruct Fast : Base { int read() const override { return 9; } };\nint main() { Fast f; const Base& b=f; std::cout << b.read() << ' ' << b.Base::read() << '\\n'; }\n",
+    "stdout": "9 1\n"
+  },
+  {
+    "id": "oop-override-example",
+    "lessonId": "oop-override",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nstruct Base { virtual int read() const { return 2; } virtual ~Base() = default; };\nstruct Probe : Base { int read() const override { return 7; } };\nint main() { const Probe p; const Base& b=p; std::cout << b.read() << '\\n'; }\n",
+    "stdout": "7\n"
+  },
+  {
+    "id": "oop-final-example",
+    "lessonId": "oop-final",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nstruct Base { virtual int read() const = 0; virtual ~Base() = default; };\nstruct Fixed final : Base { int read() const override { return 12; } };\nint main() { Fixed f; const Base& b=f; std::cout << b.read() << '\\n'; }\n",
+    "stdout": "12\n"
+  },
+  {
+    "id": "oop-pure-virtual-example",
+    "lessonId": "oop-pure-virtual",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nstruct Source { virtual int read() const = 0; virtual ~Source() = default; };\nstruct Constant : Source { int read() const override { return 14; } };\nint main() { Constant c; const Source& s=c; std::cout << s.read() << '\\n'; }\n",
+    "stdout": "14\n"
+  },
+  {
+    "id": "oop-abstract-classes-example",
+    "lessonId": "oop-abstract-classes",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nclass Source { int id_; public: explicit Source(int id) : id_(id) {} int id() const { return id_; } virtual int read() const = 0; virtual ~Source() = default; };\nclass TestSource : public Source { public: TestSource() : Source(3) {} int read() const override { return 8; } };\nint main() { TestSource s; std::cout << s.id() << ' ' << s.read() << '\\n'; }\n",
+    "stdout": "3 8\n"
+  },
+  {
+    "id": "oop-runtime-polymorphism-example",
+    "lessonId": "oop-runtime-polymorphism",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nstruct Source { virtual int read() const = 0; virtual ~Source() = default; };\nstruct A : Source { int read() const override { return 3; } }; struct B : Source { int read() const override { return 8; } };\nint main() { std::vector<std::unique_ptr<Source>> v; v.push_back(std::make_unique<A>()); v.push_back(std::make_unique<B>()); int total=0; for(const auto& s:v) total+=s->read(); std::cout << total << '\\n'; }\n",
+    "stdout": "11\n"
+  },
+  {
+    "id": "oop-virtual-destructor-example",
+    "lessonId": "oop-virtual-destructor",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nstruct Base { virtual ~Base() = default; };\nstruct Probe : Base { int& count; explicit Probe(int& c) : count(c) {} ~Probe() override { ++count; } };\nint main() { int count=0; { std::unique_ptr<Base> p=std::make_unique<Probe>(count); } std::cout << count << '\\n'; }\n",
+    "stdout": "1\n"
+  },
+  {
+    "id": "oop-interfaces-example",
+    "lessonId": "oop-interfaces",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nstruct Reader { virtual int read() const = 0; virtual ~Reader() = default; };\nstruct TestReader : Reader { int read() const override { return 6; } };\nint collect(const Reader& r) { return r.read()+r.read(); }\nint main() { TestReader r; std::cout << collect(r) << '\\n'; }\n",
+    "stdout": "12\n"
+  },
+  {
+    "id": "oop-slicing-example",
+    "lessonId": "oop-slicing",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nstruct Base { virtual int read() const { return 1; } virtual ~Base() = default; };\nstruct Derived : Base { int read() const override { return 9; } };\nint main() { Derived d; Base copy=d; const Base& ref=d; std::cout << copy.read() << ' ' << ref.read() << '\\n'; }\n",
+    "stdout": "1 9\n"
+  },
+  {
+    "id": "oop-solid-example",
+    "lessonId": "oop-solid",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nstruct Filter { virtual bool accept(int x) const = 0; virtual ~Filter() = default; };\nstruct Positive : Filter { bool accept(int x) const override { return x > 0; } };\nint select(int x,const Filter& f) { return f.accept(x) ? x : 0; }\nint main() { Positive f; std::cout << select(-3,f) << ' ' << select(4,f) << '\\n'; }\n",
+    "stdout": "0 4\n"
+  },
+  {
+    "id": "oop-composition-vs-inheritance-example",
+    "lessonId": "oop-composition-vs-inheritance",
+    "standard": "c++20",
+    "source": "#include <iostream>\n#include <memory>\n#include <vector>\n\nstruct Offset { int value; int apply(int x) const { return x+value; } };\nstruct Limit { int high; int apply(int x) const { return x>high ? high : x; } };\nclass Pipeline { Offset offset_{2}; Limit limit_{10}; public: int run(int x) const { return limit_.apply(offset_.apply(x)); } };\nint main() { Pipeline p; std::cout << p.run(4) << ' ' << p.run(20) << '\\n'; }\n",
+    "stdout": "6 10\n"
+  }
+]

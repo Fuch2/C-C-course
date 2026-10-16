@@ -1,0 +1,614 @@
+{
+  "id": "c17-parameters",
+  "title": "Параметры функций",
+  "description": "Передача аргументов по значению, почему функция не меняет переменную вызывающего кода, порядок аргументов, преобразование типов, const и вызовы функций из функций.",
+  "moduleId": "c-fundamentals",
+  "order": 24,
+  "difficulty": "beginner",
+  "estimatedMinutes": 40,
+  "prerequisites": ["c17-functions"],
+  "objectives": [
+    "Объяснять передачу аргументов по значению",
+    "Возвращать новое значение вместо попытки изменить аргумент",
+    "Следить за порядком и типами аргументов",
+    "Строить функции из вызовов других функций"
+  ],
+  "tags": ["C17", "Функции", "Параметры", "Передача по значению"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-parameters-task-1",
+    "title": "Степень",
+    "description": "Напишите функцию `long long power(long long base, int exponent)`, возвращающую `base` в степени `exponent`. По определению любое число в нулевой степени равно 1.",
+    "difficulty": "beginner",
+    "starterCode": "long long power(long long base, int exponent) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "2 10",
+        "output": "1024\n"
+      },
+      {
+        "input": "-3 3",
+        "output": "-27\n"
+      }
+    ],
+    "constraints": [
+      "−100 ≤ base ≤ 100, 0 ≤ exponent ≤ 60; гарантируется, что результат по модулю не больше 10¹⁸."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Аккумулятор result = 1 и цикл на exponent итераций с result *= base.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "При exponent = 0 цикл не выполнится — ответ 1 получится сам.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "arguments": [2, 10],
+        "expected": "1024\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "arguments": [-3, 3],
+        "expected": "-27\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "arguments": [5, 0],
+        "expected": "1\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "arguments": [0, 0],
+        "expected": "1\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "arguments": [0, 5],
+        "expected": "0\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "arguments": [3, 37],
+        "expected": "450283905890997363\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "arguments": [-2, 59],
+        "expected": "-576460752303423488\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "arguments": [100, 9],
+        "expected": "1000000000000000000\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "arguments": [1, 60],
+        "expected": "1\n"
+      }
+    ],
+    "referenceSolution": "long long power(long long base, int exponent) {\n    long long result = 1;\n    for (int i = 0; i < exponent; i++) {\n        result *= base;\n    }\n    return result;\n}\n",
+    "solutionExplanation": "Возведение в степень — накопление произведения, начинающегося с 1. Нулевая степень обрабатывается автоматически.\n\nПочему не `pow` из `<math.h>`? `pow` работает с `double`, и для больших целых степеней результат может оказаться приближённым: `double` хранит только около 15–16 значащих цифр, а `3³⁷` содержит 18.",
+    "checking": {
+      "type": "function",
+      "functionName": "power",
+      "returnType": "long_long",
+      "parameters": [
+        {
+          "name": "base",
+          "type": "long_long"
+        },
+        {
+          "name": "exponent",
+          "type": "int"
+        }
+      ]
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-parameters-task-2",
+      "title": "НОД как функция",
+      "description": "Напишите функцию `long long gcd(long long a, long long b)`, возвращающую наибольший общий делитель двух неотрицательных чисел (не обоих нулевых). Используйте алгоритм Евклида. НОД(a, 0) = a.",
+      "difficulty": "beginner",
+      "starterCode": "long long gcd(long long a, long long b) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "48 18",
+          "output": "6\n"
+        },
+        {
+          "input": "7 0",
+          "output": "7\n"
+        }
+      ],
+      "constraints": ["0 ≤ a, b ≤ 10¹⁸, a + b > 0."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "while (b != 0) { long long r = a % b; a = b; b = r; } return a;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Изменять a и b внутри функции безопасно — это копии.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "arguments": [48, 18],
+          "expected": "6\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "arguments": [7, 0],
+          "expected": "7\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "arguments": [0, 9],
+          "expected": "9\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "arguments": [1, 1],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "arguments": ["1000000000000000000", "999999999999999999"],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "arguments": ["1000000000000000000", 500000000],
+          "expected": "500000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "arguments": [17, 51],
+          "expected": "17\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "arguments": [1071, 462],
+          "expected": "21\n"
+        }
+      ],
+      "referenceSolution": "long long gcd(long long a, long long b) {\n    while (b != 0) {\n        long long r = a % b;\n        a = b;\n        b = r;\n    }\n    return a;\n}\n",
+      "solutionExplanation": "В практикуме по циклам алгоритм Евклида портил исходные `a` и `b`, и для НОК приходилось делать копии. В функции копии создаются автоматически: параметры — это копии аргументов, и вызывающий код получает только результат.\n\nЕсли `a < b`, первая итерация просто меняет их местами: `a % b == a`.",
+      "checking": {
+        "type": "function",
+        "functionName": "gcd",
+        "returnType": "long_long",
+        "parameters": [
+          {
+            "name": "a",
+            "type": "long_long"
+          },
+          {
+            "name": "b",
+            "type": "long_long"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c17-parameters-task-3",
+      "title": "Ограничение диапазоном",
+      "description": "Напишите функцию `int clamp(int value, int low, int high)`: если `value` меньше `low`, она возвращает `low`; если больше `high` — `high`; иначе само `value`. Так, например, ограничивают громкость или яркость допустимыми пределами.",
+      "difficulty": "beginner",
+      "starterCode": "int clamp(int value, int low, int high) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "15 0 10",
+          "output": "10\n"
+        },
+        {
+          "input": "-3 0 10",
+          "output": "0\n"
+        }
+      ],
+      "constraints": ["−10⁹ ≤ value ≤ 10⁹; −10⁹ ≤ low ≤ high ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Две проверки с ранним return: if (value < low) return low; if (value > high) return high;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Если ни одна не сработала — return value;",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "arguments": [15, 0, 10],
+          "expected": "10\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "arguments": [-3, 0, 10],
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "arguments": [4, 0, 10],
+          "expected": "4\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "arguments": [0, 0, 10],
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "arguments": [10, 0, 10],
+          "expected": "10\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "arguments": [5, 7, 7],
+          "expected": "7\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "arguments": [-1000000000, -5, 5],
+          "expected": "-5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "arguments": [1000000000, -1000000000, 999999999],
+          "expected": "999999999\n"
+        }
+      ],
+      "referenceSolution": "int clamp(int value, int low, int high) {\n    if (value < low) {\n        return low;\n    }\n    if (value > high) {\n        return high;\n    }\n    return value;\n}\n",
+      "solutionExplanation": "Ранний `return` избавляет от `else`: если первая проверка сработала, функция уже вернула ответ. Порядок параметров «значение, нижняя граница, верхняя граница» — общепринятый; в C++ есть стандартная функция `std::clamp` с тем же порядком.\n\nТесты проверяют значения ниже, выше, внутри и ровно на границах, а также вырожденный диапазон `low == high`.",
+      "checking": {
+        "type": "function",
+        "functionName": "clamp",
+        "returnType": "int",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "int"
+          },
+          {
+            "name": "low",
+            "type": "int"
+          },
+          {
+            "name": "high",
+            "type": "int"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c17-parameters-task-4",
+      "title": "Кратные на отрезке",
+      "description": "Напишите функцию `long long count_multiples(long long a, long long b, long long k)`, которая возвращает количество чисел на отрезке `[a, b]`, делящихся на `k`.\n\nЧисла могут быть до 10¹⁸, поэтому перебор не успеет — нужна формула.",
+      "difficulty": "beginner",
+      "starterCode": "long long count_multiples(long long a, long long b, long long k) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "1 10 3",
+          "output": "3\n"
+        },
+        {
+          "input": "10 20 5",
+          "output": "3\n"
+        }
+      ],
+      "constraints": ["1 ≤ a ≤ b ≤ 10¹⁸, 1 ≤ k ≤ 10¹⁸."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сколько чисел от 1 до b делится на k? Ровно b / k (целочисленное деление).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Ответ для [a, b] — разность: «от 1 до b» минус «от 1 до a − 1».",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "arguments": [1, 10, 3],
+          "expected": "3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "arguments": [10, 20, 5],
+          "expected": "3\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "arguments": [1, 1, 1],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "arguments": [7, 7, 7],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "arguments": [8, 13, 7],
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "arguments": [1, "1000000000000000000", 1],
+          "expected": "1000000000000000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "arguments": [1, "1000000000000000000", "1000000000000000000"],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "arguments": [999, 1001, 1000],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "arguments": [2, 3, 5],
+          "expected": "0\n"
+        }
+      ],
+      "referenceSolution": "long long count_multiples(long long a, long long b, long long k) {\n    return b / k - (a - 1) / k;\n}\n",
+      "solutionExplanation": "Кратные `k` среди чисел `1..b` — это `k, 2k, 3k, …`, и их ровно `b / k`. Числа отрезка `[a, b]` — это `1..b` без `1..a−1`, поэтому ответ — разность двух таких количеств.\n\nЦикл от `a` до `b` для отрезка длиной 10¹⁸ работал бы тысячи лет. Умение заменить перебор формулой — важный навык; в модуле об алгоритмах он называется оптимизацией по сложности.",
+      "checking": {
+        "type": "function",
+        "functionName": "count_multiples",
+        "returnType": "long_long",
+        "parameters": [
+          {
+            "name": "a",
+            "type": "long_long"
+          },
+          {
+            "name": "b",
+            "type": "long_long"
+          },
+          {
+            "name": "k",
+            "type": "long_long"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c17-parameters-task-5",
+      "title": "Бонус к счёту",
+      "description": "Программа должна прочитать счёт игрока и количество пройденных уровней, начислить бонус `100 × уровни` и напечатать новый счёт. Но функция `add_bonus` в заготовке «ничего не меняет»: счёт печатается прежним.\n\nПерепишите функцию так, чтобы она **возвращала** новый счёт, и измените вызов в `main`, чтобы результат присваивался переменной `score`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nvoid add_bonus(long long score, int levels) {\n    score = score + 100LL * levels;\n}\n\nint main(void) {\n    long long score;\n    int levels;\n    scanf(\"%lld %d\", &score, &levels);\n    add_bonus(score, levels);\n    printf(\"%lld\\n\", score);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "500 3",
+          "output": "800\n"
+        },
+        {
+          "input": "0 0",
+          "output": "0\n"
+        }
+      ],
+      "constraints": ["0 ≤ счёт ≤ 10⁹, 0 ≤ уровни ≤ 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Тип результата функции — long long, в теле — return score + 100LL * levels;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "В main: score = add_bonus(score, levels);",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "500 3",
+          "expected": "800\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0 0",
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1000000000 1000000",
+          "expected": "1100000000\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1 1",
+          "expected": "101\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "123456 7",
+          "expected": "124156\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "0 1000000",
+          "expected": "100000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "999 0",
+          "expected": "999\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "1000000000 0",
+          "expected": "1000000000\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "5 999999",
+          "expected": "99999905\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nlong long add_bonus(long long score, int levels) {\n    return score + 100LL * levels;\n}\n\nint main(void) {\n    long long score;\n    int levels;\n    scanf(\"%lld %d\", &score, &levels);\n    score = add_bonus(score, levels);\n    printf(\"%lld\\n\", score);\n    return 0;\n}\n",
+      "solutionExplanation": "В заготовке функция изменяла свой параметр — копию. После возврата копия исчезала вместе с бонусом. Исправление — передать результат наружу через `return` и сохранить его.\n\nСуффикс `LL` у константы делает умножение `100LL * levels` 64-битным: при 10⁶ уровней бонус равен 10⁸, а вместе со счётом — до 1,1 · 10⁹, что уже близко к пределу `int`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-parameters-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nvoid inc(int x) {\n    x++;\n}\n\nint main(void) {\n    int a = 5;\n    inc(a);\n    inc(a);\n    printf(\"%d\\n\", a);\n    return 0;\n}",
+        "explanation": "Функция увеличивает свою копию. Переменная a в main не меняется.",
+        "type": "text",
+        "answers": ["5"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint inc(int x) {\n    return x + 1;\n}\n\nint main(void) {\n    int a = 5;\n    a = inc(a);\n    a = inc(a);\n    printf(\"%d\\n\", a);\n    return 0;\n}",
+        "explanation": "Новое значение возвращается и присваивается a — дважды.",
+        "type": "text",
+        "answers": ["7"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint sub(int a, int b) {\n    return a - b;\n}\n\nint main(void) {\n    int a = 10, b = 3;\n    printf(\"%d\\n\", sub(b, a));\n    return 0;\n}",
+        "explanation": "Аргументы сопоставляются по позиции: параметр a получает 3, b — 10. 3 − 10 = −7.",
+        "type": "text",
+        "answers": ["-7"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Функция объявлена как int square(int x). Что вернёт square(2.9)?",
+        "explanation": "Аргумент 2.9 преобразуется в int 2 (дробная часть отбрасывается), 2 · 2 = 4.",
+        "options": ["4", "8", "8.41", "Ошибка компиляции"],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Почему вызов f(i++, i++) — плохая идея?",
+        "explanation": "Стандарт C не задаёт, какой аргумент вычисляется первым. Изменение одной переменной в двух аргументах делает поведение неопределённым.",
+        "options": [
+          "Порядок вычисления аргументов не определён — результат зависит от компилятора",
+          "Аргументы нельзя увеличивать",
+          "Функция получит одинаковые значения",
+          "Это ошибка компиляции"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Какие утверждения о параметрах верны? Выберите все.",
+        "explanation": "Параметр — копия аргумента, живущая внутри функции. Имена параметров и аргументов никак не связаны.",
+        "type": "multiple",
+        "options": [
+          "Параметр — локальная переменная функции",
+          "Изменение параметра меняет аргумент вызывающего кода",
+          "Параметр получает начальное значение из аргумента",
+          "Имена параметров должны совпадать с именами аргументов"
+        ],
+        "correct": [0, 2]
+      }
+    ]
+  }
+}

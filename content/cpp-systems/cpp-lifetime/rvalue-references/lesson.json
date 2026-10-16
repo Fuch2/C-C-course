@@ -1,0 +1,147 @@
+{
+  "id": "lifetime-rvalue-references",
+  "title": "Rvalue-ссылки — Rvalue references",
+  "description": "Категория значения принадлежит выражению, а не переменной навсегда.",
+  "moduleId": "cpp-lifetime",
+  "order": 12,
+  "difficulty": "advanced",
+  "estimatedMinutes": 55,
+  "prerequisites": ["lifetime-move-semantics"],
+  "objectives": [
+    "Классифицировать выражения по категориям lvalue, prvalue и xvalue.",
+    "Проследить на MemoryDiagram, почему именованная rvalue-ссылка сама является lvalue.",
+    "Реализовать перегрузки route и предсказать выбор компилятора для каждого вызова."
+  ],
+  "tags": ["C++20", "время жизни", "управление ресурсами", "Rvalue-ссылки — Rvalue references"],
+  "published": true,
+  "standard": "c++20",
+  "completion": "practice",
+  "exercise": {
+    "id": "lifetime-rvalue-references-exercise",
+    "title": "Практика: Rvalue-ссылки — Rvalue references",
+    "description": "Реализуйте route(const int&) с результатом 1 и route(int&&) с результатом 2. solve(a,b) связывает int&& ref со std::move(a) и возвращает 10 * route(ref) + route(std::move(b)). Не изменяйте a и b.",
+    "difficulty": "advanced",
+    "language": "cpp",
+    "standard": "c++20",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "solve(3, 7)",
+        "output": "12\n",
+        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+      },
+      {
+        "input": "solve(0, 0)",
+        "output": "12\n",
+        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+      }
+    ],
+    "constraints": [
+      "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
+      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
+      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
+    ],
+    "hints": [
+      {
+        "id": "owners",
+        "order": 1,
+        "text": "Для каждого вызова выпишите категорию аргумента: имя переменной — lvalue, std::move(...) — xvalue, литерал — prvalue. Выбор перегрузки следует из категории."
+      },
+      {
+        "id": "boundary",
+        "order": 2,
+        "text": "Именованный параметр T&& внутри функции — lvalue-выражение: у него есть имя, и его можно использовать несколько раз. Чтобы передать разрешение на перемещение дальше, нужен явный std::move; само связывание ссылки ничего не переносит. const T& принимает и lvalue, и rvalue для чтения. Не смешивайте rvalue-ссылку конкретного типа с forwarding reference T&& в шаблоне с выводимым T: там действуют вывод типа и схлопывание ссылок — это отдельная тема perfect forwarding.\n\nТип int&& не делает каждое использование имени перемещением: иначе повторное чтение параметра молча опустошало бы объект. Категорию задаёт форма выражения, а не объявленный тип.\n\nЗамените route(std::move(ref)) на route(ref) и предскажите выбранную перегрузку. Затем добавьте const int и объясните, почему int&& не связывается с const xvalue."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "arguments": [3, 7],
+        "expected": "12\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "arguments": [0, 0],
+        "expected": "12\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный случай 1",
+        "arguments": [-8, 3],
+        "expected": "12\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный случай 2",
+        "arguments": [5, -9],
+        "expected": "12\n"
+      },
+      {
+        "id": "case-5",
+        "name": "Граничный случай 3",
+        "arguments": [-1000, 1000],
+        "expected": "12\n"
+      },
+      {
+        "id": "case-6",
+        "name": "Граничный случай 4",
+        "arguments": [1000, -1000],
+        "expected": "12\n"
+      },
+      {
+        "id": "case-7",
+        "name": "Граничный случай 5",
+        "arguments": [4, 4],
+        "expected": "12\n"
+      }
+    ],
+    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint route(const int&) { return 1; } int route(int&&) { return 2; }\nint solve(int a, int b) { int&& ref = std::move(a); return 10 * route(ref) + route(std::move(b)); }",
+    "solutionExplanation": "Именованный параметр T&& внутри функции — lvalue-выражение: у него есть имя, и его можно использовать несколько раз. Чтобы передать разрешение на перемещение дальше, нужен явный std::move; само связывание ссылки ничего не переносит. const T& принимает и lvalue, и rvalue для чтения. Не смешивайте rvalue-ссылку конкретного типа с forwarding reference T&& в шаблоне с выводимым T: там действуют вывод типа и схлопывание ссылок — это отдельная тема perfect forwarding.\n\nТип int&& не делает каждое использование имени перемещением: иначе повторное чтение параметра молча опустошало бы объект. Категорию задаёт форма выражения, а не объявленный тип.\n\nЗамените route(std::move(ref)) на route(ref) и предскажите выбранную перегрузку. Затем добавьте const int и объясните, почему int&& не связывается с const xvalue.",
+    "checking": {
+      "type": "function",
+      "functionName": "solve",
+      "returnType": "int",
+      "parameters": [
+        { "name": "a", "type": "int" },
+        { "name": "b", "type": "int" }
+      ]
+    }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "lifetime-rvalue-references-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "concept",
+        "question": "Какова категория выражения ref, объявленного как int&& ref?",
+        "options": ["Всегда rvalue: это следует из типа int&&", "lvalue: у выражения есть имя"],
+        "correct": 1,
+        "explanation": "Именованный параметр T&& внутри функции — lvalue-выражение: у него есть имя, и его можно использовать несколько раз. Чтобы передать разрешение на перемещение дальше, нужен явный std::move; само связывание ссылки ничего не переносит. const T& принимает и lvalue, и rvalue для чтения. Не смешивайте rvalue-ссылку конкретного типа с forwarding reference T&& в шаблоне с выводимым T: там действуют вывод типа и схлопывание ссылок — это отдельная тема perfect forwarding."
+      },
+      {
+        "id": "trace",
+        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
+        "options": ["1 2 2", "Ошибка компиляции", "Неопределённое поведение"],
+        "correct": 0,
+        "explanation": "int value = 9           → выражение value: lvalue\nstd::move(value)         → xvalue; объект тот же\nint&& ref = ...          → ref обозначает value\nВыражение ref            → lvalue, несмотря на тип int&&"
+      },
+      {
+        "id": "review",
+        "question": "Какое утверждение соответствует контракту урока?",
+        "options": [
+          "Если stdout совпал, любые операции со сроком жизни корректны.",
+          "Тип int&& не делает каждое использование имени перемещением: иначе повторное чтение параметра молча опустошало бы объект. Категорию задаёт форма выражения, а не объявленный тип."
+        ],
+        "correct": 1,
+        "explanation": "Замените route(std::move(ref)) на route(ref) и предскажите выбранную перегрузку. Затем добавьте const int и объясните, почему int&& не связывается с const xvalue."
+      }
+    ]
+  }
+}

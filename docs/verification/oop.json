@@ -1,0 +1,553 @@
+{
+  "verifiedAt": "2026-09-10T19:43:40.338Z",
+  "complete": true,
+  "diagnostics": "ASan/UBSan",
+  "checks": [
+    {
+      "id": "oop-struct-exercise",
+      "compiler": "gcc",
+      "fingerprint": "b85747c2f6644f74e5db84ceb98b25aa2496d19095c931b448acc277886e3ab6",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-struct-exercise",
+      "compiler": "clang",
+      "fingerprint": "9d7faec6d5c1e80816a867837afa818b4139e46e4ba2d27dbac7bdf90b4e8dd9",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-class-exercise",
+      "compiler": "gcc",
+      "fingerprint": "a7906099ad2ec8cdea079874b8611476241eecb38f255e878a319deb4267cadd",
+      "ok": true,
+      "tests": 5
+    },
+    {
+      "id": "oop-class-exercise",
+      "compiler": "clang",
+      "fingerprint": "341db851125b2ab6222a778179086dbff10c4fd1ecc880d71ce5a05cf33b77ca",
+      "ok": true,
+      "tests": 5
+    },
+    {
+      "id": "oop-public-exercise",
+      "compiler": "gcc",
+      "fingerprint": "afd23a8c3317d129961f1e71c41389b08de09c4b208a65d4cc72417aad3d36ac",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-public-exercise",
+      "compiler": "clang",
+      "fingerprint": "e84de02a9709372a0c1a7fdf596ab883a999ae136c2547faedbd126f67a6d723",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-private-exercise",
+      "compiler": "gcc",
+      "fingerprint": "eee07530cdc90acff1bc769fa7c8befca1f3cb1885840667bce3618dbef026fc",
+      "ok": true,
+      "tests": 5
+    },
+    {
+      "id": "oop-private-exercise",
+      "compiler": "clang",
+      "fingerprint": "4179194f74bf1116e3b0a05f28246fb7b307dd951952a38b0eefe07b512cabde",
+      "ok": true,
+      "tests": 5
+    },
+    {
+      "id": "oop-protected-exercise",
+      "compiler": "gcc",
+      "fingerprint": "899b4d1816298c01b3eb636c3eef8dd603d13468e909ba66972f9cc4e2a055b0",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-protected-exercise",
+      "compiler": "clang",
+      "fingerprint": "3f3273d988bf1edfa1b8ed7e486274d842a4f4fea0853a9b12f0a7291d858765",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-constructors-exercise",
+      "compiler": "gcc",
+      "fingerprint": "a3c6e876f81b373e01e39eb048afff82581598c135eed6a9612aa130bced923c",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-constructors-exercise",
+      "compiler": "clang",
+      "fingerprint": "5a896fc38c4c3806ba3f97b9ec9287486a7f95e32ec6d8bcaa7e6f47e0d0a045",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-destructor-exercise",
+      "compiler": "gcc",
+      "fingerprint": "70af0d5722f34f607ba690b2b96ec4371c90e0f18676b5ee36b4f2bab9af08c0",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-destructor-exercise",
+      "compiler": "clang",
+      "fingerprint": "d622324b94d972d29d33d1fe69de47f5df5fff27427f52c92a574ca4c778552a",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-this-exercise",
+      "compiler": "gcc",
+      "fingerprint": "3fb77ee389811b170584364458832fcd92ceb64bdaa787fbdb63a90bf9f34351",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-this-exercise",
+      "compiler": "clang",
+      "fingerprint": "5ec7f88e9b3531cfa204fdd7f95271c0948edf0884debec8832a31120819509d",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-encapsulation-exercise",
+      "compiler": "gcc",
+      "fingerprint": "89aa501eedd4e13ea7f99c79cfc68ff046d2927796f108e4278a6a3401f2a707",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-encapsulation-exercise",
+      "compiler": "clang",
+      "fingerprint": "ffac60f4287e060721e3e509f919ec9230c5e583c4e45222b9c44da40a2e1354",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-composition-exercise",
+      "compiler": "gcc",
+      "fingerprint": "1c70de9c9ab5d01cff2f1ff6c7f5f5f02c24786ab6fbefa1ae82c589f7459dc5",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-composition-exercise",
+      "compiler": "clang",
+      "fingerprint": "d933b516b6a38592a097cc6313eb8e7fa1aaa2555ec11411eaac560edcda6b9b",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-aggregation-exercise",
+      "compiler": "gcc",
+      "fingerprint": "784604563fd9d5ec93571d5679b22debac8d6b696956b6e9314ad63175cd219a",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-aggregation-exercise",
+      "compiler": "clang",
+      "fingerprint": "6b1d3bafbfd6b216c07d9bc987ad2d42c96c2a6abe7317089af6f94837307dd6",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-inheritance-exercise",
+      "compiler": "gcc",
+      "fingerprint": "cc1cb4dafcec7c7a0e8688a948041e5bf16b3c096216932886f41eea78f48539",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-inheritance-exercise",
+      "compiler": "clang",
+      "fingerprint": "b28e69bb2ca01b453927dad4b25f77d6b300bbb585ebc8cf41ee60a877d1610b",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-public-inheritance-exercise",
+      "compiler": "gcc",
+      "fingerprint": "07ea2f09d2e230be5f8270787e2d1e4d3882fd86b75021bb4681a8b0acaf4f53",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-public-inheritance-exercise",
+      "compiler": "clang",
+      "fingerprint": "b4223f3ca348d89d66a706d2336eedb8ce09e4d3226ccb375cdf964df6e3353a",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-virtual-exercise",
+      "compiler": "gcc",
+      "fingerprint": "f2b6120af76627ab7478edf3974bb1e70c134c67ee9977d78637eff4e834308b",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-virtual-exercise",
+      "compiler": "clang",
+      "fingerprint": "4da461cef49931e2579b4a86adbb885a410726b81c769f516508d17f29513fda",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-override-exercise",
+      "compiler": "gcc",
+      "fingerprint": "be47b82dc3862289372f0d21095b1a217ad31e0ca1658077373df8063f6eda42",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-override-exercise",
+      "compiler": "clang",
+      "fingerprint": "a61b7391b7bcbba6b5074453f35c11b4655c9b87cabac92022013bd2a1c55172",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-final-exercise",
+      "compiler": "gcc",
+      "fingerprint": "4ba3b832bfddbf938197d5e001a618ca79662a5b0e903d0661e50966ba5b62bf",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-final-exercise",
+      "compiler": "clang",
+      "fingerprint": "719b35fa86179295ffb193cd712235f2e147f219aafb02723d204346f7f72986",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-pure-virtual-exercise",
+      "compiler": "gcc",
+      "fingerprint": "05487818373d6aaefc9e49d0a0ecad33f1cb86e9d11f3c421fb729527a7feeb9",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-pure-virtual-exercise",
+      "compiler": "clang",
+      "fingerprint": "4d0743cd76c73589a8bdd94beee9af3ce97a9a2547c980c9b033f6c94371fe05",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-project-sensors",
+      "compiler": "gcc",
+      "fingerprint": "3d405af2bd94d88b07195f6302a81070c9a5a3d453d67d99f98a7b022a6cca6b",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-project-sensors",
+      "compiler": "clang",
+      "fingerprint": "60ea2fae9c415b582f9a40fc8b8524337c89d2358990a4828f2a301ceb00f1bc",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-abstract-classes-exercise",
+      "compiler": "gcc",
+      "fingerprint": "5da85a15aeb542378acf532b09d143de0429df2af5998333f424624e6bd4f955",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-abstract-classes-exercise",
+      "compiler": "clang",
+      "fingerprint": "0a250f66c556e99920df4545eda9acca8c07f23c32e8a06c6db6cee76a585650",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-runtime-polymorphism-exercise",
+      "compiler": "gcc",
+      "fingerprint": "6f99c396177def5d3d19c3d2e5c9a2af8eaa9e07c2bbe2afbdcf2eb7d2874bc2",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-runtime-polymorphism-exercise",
+      "compiler": "clang",
+      "fingerprint": "8933b329c2fdc1ce7822f3e7b02d6b7a229978c1058999d21467147e8da29d1b",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-virtual-destructor-exercise",
+      "compiler": "gcc",
+      "fingerprint": "16fbbb7603d916aa2564b7820e85e08faf6d224596346f2c9f8bf7b48e393bc1",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-virtual-destructor-exercise",
+      "compiler": "clang",
+      "fingerprint": "b332ea6f0f2c14285b30380c8a723af51ecd198a5dddb557e29447586807a434",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-interfaces-exercise",
+      "compiler": "gcc",
+      "fingerprint": "134e5b2dfdb0ac69122f0f5e796659b9e7c87f4f136fb83c09a548bdc7c8928c",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-interfaces-exercise",
+      "compiler": "clang",
+      "fingerprint": "ac3a7cbec322bd9448b277a965119be1b1bdd48449c2a40e335772300213f85b",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-project-filter",
+      "compiler": "gcc",
+      "fingerprint": "5714a391f71045d3836169d2090bbafc39da6132451c9812a1c4108bf6af84c8",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "oop-project-filter",
+      "compiler": "clang",
+      "fingerprint": "b4438cbc78da3607e1f34d9976d4f352c1e33477a08818c533129787080b734d",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "oop-slicing-exercise",
+      "compiler": "gcc",
+      "fingerprint": "c1eab22c55b85cb394cae2cd866d6884b5fb52697cc0186c1f365c0c3bee20e4",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-slicing-exercise",
+      "compiler": "clang",
+      "fingerprint": "994bcc819bc71828a9aeb2f5395468f1d6e95871e52256f7a0d8354bca1bcfb5",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-solid-exercise",
+      "compiler": "gcc",
+      "fingerprint": "70f12902fecce73eccefb6d077c7e691c0f07eb82c4baf99335dc2f21984dac3",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-solid-exercise",
+      "compiler": "clang",
+      "fingerprint": "3b8795f68bfc8774d0607225de7802320bfc54e8ad3882a63b2c7dde3dd0badf",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-composition-vs-inheritance-exercise",
+      "compiler": "gcc",
+      "fingerprint": "39dc35894464e2c3c5c4a5008986d1faef1e80fec8b3b1b42829a9cece57e417",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-composition-vs-inheritance-exercise",
+      "compiler": "clang",
+      "fingerprint": "fd3487eb19175dea4489688af629506120765a9a7efaf1ad80da16fc781fca35",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "oop-project-telemetry",
+      "compiler": "gcc",
+      "fingerprint": "c0533c3312c5139cad998ded7ae5424a8c64aa0db22e78e47d2213d2d8413c25",
+      "ok": true,
+      "tests": 9
+    },
+    {
+      "id": "oop-project-telemetry",
+      "compiler": "clang",
+      "fingerprint": "18d8b4fed13a9f296a255dcbffed5e2cf231ed6bcca0a752b0a6cb9bd7f2bfc6",
+      "ok": true,
+      "tests": 9
+    },
+    {
+      "id": "oop-struct-example",
+      "compiler": "clang",
+      "fingerprint": "377e5f1d6208d6df72c344c834295384db540e96419e68cbcce22395ac83c8be",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-class-example",
+      "compiler": "clang",
+      "fingerprint": "3416262763567ab8430ac97e0ad348a9308a6dc42b5241b5bce5300b4cf6556b",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-public-example",
+      "compiler": "clang",
+      "fingerprint": "453a14b2f3a7703ae2fafaa373e0f018c9c9ae9cec4aeffeda2450680d217263",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-private-example",
+      "compiler": "clang",
+      "fingerprint": "732a343589728fd7578becf52680e9b68f58e32e0c5acfee747284f6a50b2510",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-protected-example",
+      "compiler": "clang",
+      "fingerprint": "9eebf46abc811c2af2154c33923e8b6d0b53ef4d8656f671d4da2f58e02d893e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-constructors-example",
+      "compiler": "clang",
+      "fingerprint": "425b667751a9b076ee04731739288edc3a2c10ac2cfd9bf1d3a83089c176e81a",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-destructor-example",
+      "compiler": "clang",
+      "fingerprint": "4281cb45d29292deb0b4d3378544062920eed570c5a9dcf21168911ec5aeaa1d",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-this-example",
+      "compiler": "clang",
+      "fingerprint": "1f0544e77f840f51ac9998e807c771eaf6cbfd12e3f55eb8e8f5fb8346fe7000",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-encapsulation-example",
+      "compiler": "clang",
+      "fingerprint": "cbc6a62b3b58be678209fd00879e100d9ae1d43a1c7c5b89da6d2c8a05dfe17b",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-composition-example",
+      "compiler": "clang",
+      "fingerprint": "fc581fd39a9d8662c7dd14e29f4af7c6071d195ca38683d6b985c0b04ff39ef8",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-aggregation-example",
+      "compiler": "clang",
+      "fingerprint": "d79ef823b77366f03b87ef20ca20f4c54b2f8051acb9a4d41d084b2f9a29105d",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-inheritance-example",
+      "compiler": "clang",
+      "fingerprint": "3c8eb8846fac0b06897637d28820eb83bf016bb9600a5fc73adb6e92d9b5a674",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-public-inheritance-example",
+      "compiler": "clang",
+      "fingerprint": "7dd0d3005871fd2152587e7fb16bed2c30eeb433105f8f960316ed557328595c",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-virtual-example",
+      "compiler": "clang",
+      "fingerprint": "41b9cc1a9aaecab42bc128f16560eafe2b6c15156220f2aac4f3c410b626533e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-override-example",
+      "compiler": "clang",
+      "fingerprint": "81f757525e687c2bcfe1d6141c24b9f458b615ddd972c105f9cfc5e412d79ba7",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-final-example",
+      "compiler": "clang",
+      "fingerprint": "22cd271020e076859ce7d131cfcb1ad2eb3abf94f7b602a5aec2a2bdc0c1f4d4",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-pure-virtual-example",
+      "compiler": "clang",
+      "fingerprint": "189ff550b042317252ca2257a1aed050f879ca0720d45e7979333f8a9454726e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-abstract-classes-example",
+      "compiler": "clang",
+      "fingerprint": "7493c67e025cf69779fcecfaf1a475f54a6b79662d090fa7630187e95818c153",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-runtime-polymorphism-example",
+      "compiler": "clang",
+      "fingerprint": "3e9b8d12f775fc559c7c56f804b1f7ad0365671c27cd13c585012d8e7686c36b",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-virtual-destructor-example",
+      "compiler": "clang",
+      "fingerprint": "5be90905f69074bf640716a45a4091abe24e2653b8845c760bd2d0f2264f7557",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-interfaces-example",
+      "compiler": "clang",
+      "fingerprint": "cb5aa7565d580639ee64b08d1f7a4c6b73ae1a378b61e9dc11684b3c7ceaea85",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-slicing-example",
+      "compiler": "clang",
+      "fingerprint": "5460612241f27e9248c87c1ad7080450e750083b12bae6182e341da4a2ae2095",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-solid-example",
+      "compiler": "clang",
+      "fingerprint": "41126749dfd6860546b9fc6a0c69c765cebca880091cd7f62f5b3cfd99c28f13",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "oop-composition-vs-inheritance-example",
+      "compiler": "clang",
+      "fingerprint": "c010cc2172d84e6544ef288bd2068f16b0b744f44dff12d0bac07ecd4f41dd60",
+      "ok": true,
+      "tests": 1
+    }
+  ]
+}

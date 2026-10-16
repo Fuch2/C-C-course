@@ -1,0 +1,118 @@
+{
+  "id": "advanced-header-guards",
+  "title": "Header guards",
+  "description": "Повторное текстовое включение заголовка может повторно определить struct или enum.",
+  "moduleId": "advanced-c",
+  "order": 3,
+  "difficulty": "advanced",
+  "estimatedMinutes": 40,
+  "prerequisites": ["advanced-headers"],
+  "objectives": [
+    "Объяснить: Header guards",
+    "Различать корректный контракт и ошибку: Скопированный guard с тем же именем может молча скрыть другой заголовок.",
+    "Реализовать и проверить практику на обычном и граничном вводе"
+  ],
+  "tags": ["C17", "углублённый C", "Header guards"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "advanced-header-guards-exercise",
+    "title": "Практика: Header guards",
+    "description": "Защитите определение enum Channel guard-макросом SENSOR_CHANNEL_H. Прочитайте канал 0…2 и выведите размер пакета: 2, 4 или 8 байт.",
+    "difficulty": "advanced",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "0",
+        "output": "2\n",
+        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+      },
+      {
+        "input": "1",
+        "output": "4\n",
+        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
+      "В stdout только требуемый результат.",
+      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "На каждой сборочной площадке стоит свой штамп «уже прочитано»; штамп не является общим для всего проекта."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Скопированный guard с тем же именем может молча скрыть другой заголовок."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "test-1",
+        "name": "Основной сценарий",
+        "stdin": "0",
+        "expected": "2\n"
+      },
+      {
+        "id": "test-2",
+        "name": "Граничный сценарий 1",
+        "stdin": "1",
+        "expected": "4\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "test-3",
+        "name": "Граничный сценарий 2",
+        "stdin": "2",
+        "expected": "8\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#ifndef SENSOR_CHANNEL_H\n#define SENSOR_CHANNEL_H\nenum Channel { TEMPERATURE, PRESSURE, POSITION };\n#endif\nint main(void) {\n    int channel;\n    if (scanf(\"%d\", &channel) != 1 || channel < 0 || channel > 2) return 1;\n    const int sizes[] = {2,4,8};\n    printf(\"%d\\n\", sizes[channel]);\n    return 0;\n}\n",
+    "solutionExplanation": "На каждой сборочной площадке стоит свой штамп «уже прочитано»; штамп не является общим для всего проекта.\n\nСкопированный guard с тем же именем может молча скрыть другой заголовок.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '0' → '2\\n'; '1' → '4\\n'; '2' → '8\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "advanced-header-guards-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "concept",
+        "question": "Где действует состояние guard?",
+        "options": ["В одной единице трансляции", "Сразу во всех объектных файлах"],
+        "correct": 0,
+        "explanation": "Повторное текстовое включение заголовка может повторно определить struct или enum. Guard использует уникальный макрос: при первом включении #ifndef пропускает тело и #define отмечает его; следующие включения в той же единице трансляции пропускают тело. Между разными компиляциями состояние макроса не сохраняется."
+      },
+      {
+        "id": "mistake",
+        "question": "Какое утверждение корректно?",
+        "options": [
+          "Успешный вывод одного примера доказывает корректность на всех входах.",
+          "Скопированный guard с тем же именем может молча скрыть другой заголовок."
+        ],
+        "correct": 1,
+        "explanation": "На каждой сборочной площадке стоит свой штамп «уже прочитано»; штамп не является общим для всего проекта."
+      },
+      {
+        "id": "trace",
+        "question": "Какой stdout выдаст запускаемый пример урока?",
+        "options": ["7", "Ошибка компиляции при корректном C17", "Никакого вывода"],
+        "correct": 0,
+        "explanation": "Проследите значения последовательно: Reading r={7};printf(\"%d\\n\",r.raw); Ожидаемый результат: 7"
+      }
+    ]
+  }
+}

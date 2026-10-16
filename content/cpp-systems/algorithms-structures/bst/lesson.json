@@ -1,0 +1,138 @@
+{
+  "id": "algo-bst",
+  "title": "Дерево двоичного поиска — Binary search tree",
+  "description": "BST добавляет инвариант: все ключи левого поддерева меньше ключа узла, правого — больше.",
+  "moduleId": "algorithms-structures",
+  "order": 24,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 60,
+  "prerequisites": ["algo-tree"],
+  "objectives": [
+    "Объяснить инвариант: Каждое сравнение выбирает ветвь по диапазону допустимых значений.",
+    "Обосновать время: Поиск/вставка O(h), худший O(n); inorder O(n).",
+    "Оценить память и компромиссы: Поддержание порядка и диапазонных запросов против стоимости ссылок и необходимости балансировки."
+  ],
+  "tags": [
+    "алгоритмы",
+    "C17",
+    "Дерево двоичного поиска — Binary search tree",
+    "структуры данных",
+    "cache locality"
+  ],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "algo-bst-exercise",
+    "title": "Упорядоченный справочник",
+    "description": "Ввод n (0…128), n int −1000…1000 и target. Вставьте ключи в несбалансированное BST, игнорируя дубликаты. Выведите уникальные ключи по возрастанию на первой строке и ДА/НЕТ для наличия target на второй. Освободите дерево.",
+    "difficulty": "intermediate",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "5 4 2 6 2 5 5",
+        "output": "2 4 5 6\nДА\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      },
+      {
+        "input": "0 7",
+        "output": "\nНЕТ\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Используйте C17 и диапазоны входа из условия.",
+      "Выводите только требуемый результат.",
+      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Каждое сравнение выбирает ветвь по диапазону допустимых значений."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Случайная форма хорошего дерева в примере не является гарантией балансировки."
+      },
+      {
+        "id": "hint-3",
+        "order": 3,
+        "text": "Вставка 4,2,6 даёт высоту 2; вставка 2,4,6 даёт цепочку высоты 3. Одинаковый набор не гарантирует одинаковую форму."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "5 4 2 6 2 5 5",
+        "expected": "2 4 5 6\nДА\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "0 7",
+        "expected": "\nНЕТ\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "stdin": "4 1 2 3 4 9",
+        "expected": "1 2 3 4\nНЕТ\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "stdin": "3 -1 -1 -1 -1",
+        "expected": "-1\nДА\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\ntypedef struct Node { int key; struct Node *left,*right; } Node;\nstatic int insert(Node **root,int key){\n    while(*root){\n        if(key==(*root)->key)return 1;\n        root=key<(*root)->key?&(*root)->left:&(*root)->right;\n    }\n    *root=malloc(sizeof **root);if(!*root)return 0;\n    **root=(Node){key,NULL,NULL};return 1;\n}\nstatic int contains(const Node *root,int key){\n    while(root){if(root->key==key)return 1;root=key<root->key?root->left:root->right;}return 0;\n}\nstatic void inorder(const Node *root,int *first){\n    if(!root)return;inorder(root->left,first);\n    printf(\"%s%d\",*first?\"\":\" \",root->key);*first=0;inorder(root->right,first);\n}\nstatic void destroy(Node *root){if(root){destroy(root->left);destroy(root->right);free(root);}}\nint main(void) {\nint a[256]; int n;\nif (scanf(\"%d\", &n)!=1 || n<0 || n>256) return 1;\nfor(int i=0;i<n;++i) if(scanf(\"%d\", &a[i])!=1) return 1;\nif(n>128)return 1;int target;if(scanf(\"%d\",&target)!=1)return 1;Node *root=NULL;for(int i=0;i<n;++i)if(!insert(&root,a[i])){destroy(root);return 1;}int first=1;inorder(root,&first);puts(\"\");puts(contains(root,target)?\"ДА\":\"НЕТ\");destroy(root);\nreturn 0;\n}\n",
+    "solutionExplanation": "Инвариант: Каждое сравнение выбирает ветвь по диапазону допустимых значений.\n\nВставка 4,2,6 даёт высоту 2; вставка 2,4,6 даёт цепочку высоты 3. Одинаковый набор не гарантирует одинаковую форму.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. Случайная форма хорошего дерева в примере не является гарантией балансировки.\n\nВремя: Поиск/вставка O(h), худший O(n); inorder O(n).\nПамять: O(n) узлов; рекурсивный обход O(h).\nКомпромисс: Поддержание порядка и диапазонных запросов против стоимости ссылок и необходимости балансировки.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
+    "checking": { "type": "stdout", "comparison": "exact" }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "algo-bst-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "invariant",
+        "question": "Что произойдёт при последовательной вставке возрастающих ключей?",
+        "options": [
+          "Несбалансированное BST может выродиться в цепочку",
+          "Оно автоматически перестроится в сбалансированное"
+        ],
+        "correct": 0,
+        "explanation": "Каждое сравнение выбирает ветвь по диапазону допустимых значений. Вставка 4,2,6 даёт высоту 2; вставка 2,4,6 даёт цепочку высоты 3. Одинаковый набор не гарантирует одинаковую форму."
+      },
+      {
+        "id": "complexity",
+        "question": "Какая оценка соответствует рассмотренной реализации?",
+        "options": [
+          "Всегда O(1), потому что все тесты ограничены по размеру.",
+          "Поиск/вставка O(h), худший O(n); inorder O(n)."
+        ],
+        "correct": 1,
+        "explanation": "Поддержание порядка и диапазонных запросов против стоимости ссылок и необходимости балансировки."
+      },
+      {
+        "id": "engineering",
+        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "options": [
+          "Случайная форма хорошего дерева в примере не является гарантией балансировки.",
+          "Совпадение Big O гарантирует одинаковое время на любой машине."
+        ],
+        "correct": 0,
+        "explanation": "Последовательные логические ключи могут находиться в разных участках памяти. O(n) узлов; рекурсивный обход O(h)."
+      }
+    ]
+  }
+}

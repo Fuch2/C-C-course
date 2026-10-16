@@ -1,0 +1,118 @@
+{
+  "id": "advanced-file-stream",
+  "title": "FILE*",
+  "description": "FILE * — указатель на библиотечный поток, содержащий состояние буферизации, позицию и индикаторы конца/ошибки.",
+  "moduleId": "advanced-c",
+  "order": 24,
+  "difficulty": "advanced",
+  "estimatedMinutes": 40,
+  "prerequisites": ["advanced-binary-files"],
+  "objectives": [
+    "Объяснить: FILE*",
+    "Различать корректный контракт и ошибку: while (!feof(file)) проверяет прошлое состояние: конец становится известен после попытки чтения.",
+    "Реализовать и проверить практику на обычном и граничном вводе"
+  ],
+  "tags": ["C17", "углублённый C", "FILE*"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "advanced-file-stream-exercise",
+    "title": "Практика: FILE*",
+    "description": "Прочитайте строку до 100 символов через fgets, запишите её в tmpfile, переместитесь к началу и сосчитайте байты до EOF, включая перевод строки, если он был во вводе. Выведите количество.",
+    "difficulty": "advanced",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "abc\n",
+        "output": "4\n",
+        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+      },
+      {
+        "input": "\n",
+        "output": "1\n",
+        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
+      "В stdout только требуемый результат.",
+      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Поток — курсор плюс буфер и состояние; указатель является дескриптором владения этим ресурсом."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "while (!feof(file)) проверяет прошлое состояние: конец становится известен после попытки чтения."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "test-1",
+        "name": "Основной сценарий",
+        "stdin": "abc\n",
+        "expected": "4\n"
+      },
+      {
+        "id": "test-2",
+        "name": "Граничный сценарий 1",
+        "stdin": "\n",
+        "expected": "1\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "test-3",
+        "name": "Граничный сценарий 2",
+        "stdin": "sensor",
+        "expected": "6\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    char text[102];if(!fgets(text,sizeof text,stdin))return 1;\n    FILE *file=tmpfile();if(!file)return 1;\n    if(fputs(text,file)==EOF || fseek(file,0,SEEK_SET)!=0){fclose(file);return 1;}\n    size_t count=0;while(fgetc(file)!=EOF)++count;\n    int failed=ferror(file);if(fclose(file)!=0)failed=1;\n    if(failed)return 1;printf(\"%zu\\n\",count);\n    return 0;\n}\n",
+    "solutionExplanation": "Поток — курсор плюс буфер и состояние; указатель является дескриптором владения этим ресурсом.\n\nwhile (!feof(file)) проверяет прошлое состояние: конец становится известен после попытки чтения.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: 'abc\\n' → '4\\n'; '\\n' → '1\\n'; 'sensor' → '6\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "advanced-file-stream-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "concept",
+        "question": "Когда feof становится истинным?",
+        "options": ["После чтения, обнаружившего конец", "Перед последним успешным чтением"],
+        "correct": 0,
+        "explanation": "FILE * — указатель на библиотечный поток, содержащий состояние буферизации, позицию и индикаторы конца/ошибки. Это не номер файлового дескриптора. fopen может вернуть NULL; каждый успешно открытый поток должен закрываться ровно один раз. Ошибка записи иногда обнаруживается только при fflush или fclose из-за буферизации."
+      },
+      {
+        "id": "mistake",
+        "question": "Какое утверждение корректно?",
+        "options": [
+          "Успешный вывод одного примера доказывает корректность на всех входах.",
+          "while (!feof(file)) проверяет прошлое состояние: конец становится известен после попытки чтения."
+        ],
+        "correct": 1,
+        "explanation": "Поток — курсор плюс буфер и состояние; указатель является дескриптором владения этим ресурсом."
+      },
+      {
+        "id": "trace",
+        "question": "Какой stdout выдаст запускаемый пример урока?",
+        "options": ["A", "Ошибка компиляции при корректном C17", "Никакого вывода"],
+        "correct": 0,
+        "explanation": "Проследите значения последовательно: FILE *f=tmpfile();if(!f)return 1;if(fputs(\"AB\",f)==EOF || fseek(f,0,SEEK_SET)!=0){fclose(f);return 1;}int c=fgetc(f);if(fclose(f)!=0 || c==EOF)return 1;printf(\"%c\\n\",c); Ожидаемый результат: A"
+      }
+    ]
+  }
+}

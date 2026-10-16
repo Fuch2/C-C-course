@@ -1,0 +1,135 @@
+{
+  "id": "algo-doubly",
+  "title": "Двусвязный список — Doubly linked list",
+  "description": "У каждого узла есть prev и next, а контейнер хранит head и tail.",
+  "moduleId": "algorithms-structures",
+  "order": 18,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 60,
+  "prerequisites": ["algo-list"],
+  "objectives": [
+    "Объяснить инвариант: Каждый вагон связан с соседом спереди и сзади; нужно поддерживать обе сцепки.",
+    "Обосновать время: Добавление/удаление на концах O(1), поиск O(n).",
+    "Оценить память и компромиссы: Дешёвое удаление известного узла против памяти и медленного случайного доступа."
+  ],
+  "tags": [
+    "алгоритмы",
+    "C17",
+    "Двусвязный список — Doubly linked list",
+    "структуры данных",
+    "cache locality"
+  ],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "algo-doubly-exercise",
+    "title": "Два конца списка",
+    "description": "Ввод q (0…128), затем команды L x/R x — добавить слева/справа без вывода; l/r — удалить слева/справа и вывести значение или ПУСТО. x — int −1000…1000. После всех команд выведите список вперёд и назад на двух строках, затем освободите узлы.",
+    "difficulty": "intermediate",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "4 L 1 R 2 L 3 r",
+        "output": "2\n3 1\n1 3\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      },
+      {
+        "input": "3 L 9 r l",
+        "output": "9\nПУСТО\n\n\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Используйте C17 и диапазоны входа из условия.",
+      "Выводите только требуемый результат.",
+      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Каждый вагон связан с соседом спереди и сзади; нужно поддерживать обе сцепки."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "После удаления единственного узла нельзя оставлять tail на освобождённой памяти."
+      },
+      {
+        "id": "hint-3",
+        "order": 3,
+        "text": "После L 1 и R 2: NULL ← 1 ⇄ 2 → NULL. Удаление слева оставляет head=tail=узел 2 с двумя NULL-ссылками."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "4 L 1 R 2 L 3 r",
+        "expected": "2\n3 1\n1 3\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "3 L 9 r l",
+        "expected": "9\nПУСТО\n\n\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "stdin": "0",
+        "expected": "\n\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "stdin": "4 R 1 l R 2 L 3",
+        "expected": "1\n3 2\n2 3\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\ntypedef struct Node { int value; struct Node *prev,*next; } Node;\ntypedef struct { Node *head,*tail; } List;\nstatic int push(List *list,int value,int left){\n    Node *node=malloc(sizeof *node);if(!node)return 0;\n    *node=(Node){value,NULL,NULL};\n    if(!list->head)list->head=list->tail=node;\n    else if(left){node->next=list->head;list->head->prev=node;list->head=node;}\n    else {node->prev=list->tail;list->tail->next=node;list->tail=node;}\n    return 1;\n}\nstatic int pop(List *list,int left,int *out){\n    Node *node=left?list->head:list->tail;if(!node)return 0;\n    *out=node->value;\n    if(node->prev)node->prev->next=node->next;else list->head=node->next;\n    if(node->next)node->next->prev=node->prev;else list->tail=node->prev;\n    free(node);return 1;\n}\nstatic void destroy(List *list){int value;while(pop(list,1,&value)){} }\nint main(void) {\nList list={0};int q,failed=0;if(scanf(\"%d\",&q)!=1 || q<0 || q>128)return 1;\nfor(int i=0;i<q;++i){char c;if(scanf(\" %c\",&c)!=1){failed=1;break;}int x;\n if(c=='L'||c=='R'){if(scanf(\"%d\",&x)!=1 || !push(&list,x,c=='L')){failed=1;break;}}\n else if(c=='l'||c=='r'){if(pop(&list,c=='l',&x))printf(\"%d\\n\",x);else puts(\"ПУСТО\");}else{failed=1;break;}}\nif(!failed){int first=1;for(Node *p=list.head;p;p=p->next){printf(\"%s%d\",first?\"\":\" \",p->value);first=0;}puts(\"\");first=1;for(Node *p=list.tail;p;p=p->prev){printf(\"%s%d\",first?\"\":\" \",p->value);first=0;}puts(\"\");}destroy(&list);if(failed)return 1;\nreturn 0;\n}\n",
+    "solutionExplanation": "Инвариант: Каждый вагон связан с соседом спереди и сзади; нужно поддерживать обе сцепки.\n\nПосле L 1 и R 2: NULL ← 1 ⇄ 2 → NULL. Удаление слева оставляет head=tail=узел 2 с двумя NULL-ссылками.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. После удаления единственного узла нельзя оставлять tail на освобождённой памяти.\n\nВремя: Добавление/удаление на концах O(1), поиск O(n).\nПамять: O(n), два указателя на узел плюс overhead allocator.\nКомпромисс: Дешёвое удаление известного узла против памяти и медленного случайного доступа.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
+    "checking": { "type": "stdout", "comparison": "exact" }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "algo-doubly-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "invariant",
+        "question": "Что должно быть после удаления последнего узла?",
+        "options": ["head и tail равны NULL", "Только head равен NULL"],
+        "correct": 0,
+        "explanation": "Каждый вагон связан с соседом спереди и сзади; нужно поддерживать обе сцепки. После L 1 и R 2: NULL ← 1 ⇄ 2 → NULL. Удаление слева оставляет head=tail=узел 2 с двумя NULL-ссылками."
+      },
+      {
+        "id": "complexity",
+        "question": "Какая оценка соответствует рассмотренной реализации?",
+        "options": [
+          "Всегда O(1), потому что все тесты ограничены по размеру.",
+          "Добавление/удаление на концах O(1), поиск O(n)."
+        ],
+        "correct": 1,
+        "explanation": "Дешёвое удаление известного узла против памяти и медленного случайного доступа."
+      },
+      {
+        "id": "engineering",
+        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "options": [
+          "После удаления единственного узла нельзя оставлять tail на освобождённой памяти.",
+          "Совпадение Big O гарантирует одинаковое время на любой машине."
+        ],
+        "correct": 0,
+        "explanation": "Последовательность логическая, а не физическая: обратные ссылки не делают память непрерывной. O(n), два указателя на узел плюс overhead allocator."
+      }
+    ]
+  }
+}

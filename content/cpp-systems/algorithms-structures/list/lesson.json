@@ -1,0 +1,141 @@
+{
+  "id": "algo-list",
+  "title": "Односвязный список — Linked list",
+  "description": "Узел хранит значение и ссылку next.",
+  "moduleId": "algorithms-structures",
+  "order": 17,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 60,
+  "prerequisites": ["algo-vector"],
+  "objectives": [
+    "Объяснить инвариант: Цепочка вагонов: каждый знает только следующий, а head — точка входа.",
+    "Обосновать время: Вставка в голову O(1), поиск и удаление всех совпадений O(n).",
+    "Оценить память и компромиссы: Стабильность адресов живых узлов и дешёвые локальные перестановки против дорогого обхода и отсутствия индексации."
+  ],
+  "tags": [
+    "алгоритмы",
+    "C17",
+    "Односвязный список — Linked list",
+    "структуры данных",
+    "cache locality"
+  ],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "algo-list-exercise",
+    "title": "Удаление всех совпадений из цепочки",
+    "description": "Ввод n (0…256), n int −1000…1000 и target. Постройте односвязный список в порядке ввода и удалите все узлы с target, освободив их. Выведите оставшиеся значения через пробел и перевод строки. Освободите оставшийся список. Допускается временный входной массив для построения с головы в обратном порядке.",
+    "difficulty": "intermediate",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "5 3 3 5 3 7 3",
+        "output": "5 7\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      },
+      {
+        "input": "3 2 2 2 2",
+        "output": "\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Используйте C17 и диапазоны входа из условия.",
+      "Выводите только требуемый результат.",
+      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Цепочка вагонов: каждый знает только следующий, а head — точка входа."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Операция O(1) изменения ссылок не включает поиск позиции."
+      },
+      {
+        "id": "hint-3",
+        "order": 3,
+        "text": "3 → 3 → 5 → NULL, удаление 3 сначала меняет head на вторую 3, затем на 5. Нельзя пропускать второй совпавший узел."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "5 3 3 5 3 7 3",
+        "expected": "5 7\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "3 2 2 2 2",
+        "expected": "\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "stdin": "0 0",
+        "expected": "\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "stdin": "3 1 2 3 9",
+        "expected": "1 2 3\n"
+      },
+      {
+        "id": "case-5",
+        "name": "Граничный сценарий 3",
+        "stdin": "4 4 5 6 4 4",
+        "expected": "5 6\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\ntypedef struct Node { int value; struct Node *next; } Node;\nstatic int prepend(Node **head,int value){\n    Node *node=malloc(sizeof *node);if(!node)return 0;\n    *node=(Node){value,*head};*head=node;return 1;\n}\nstatic void remove_value(Node **head,int target){\n    /* link указывает на поле, которое владеет ссылкой на текущий узел. */\n    Node **link=head;\n    while(*link){\n        if((*link)->value==target){Node *old=*link;*link=old->next;free(old);}\n        else link=&(*link)->next;\n    }\n}\nstatic void destroy(Node **head){\n    while(*head){Node *old=*head;*head=old->next;free(old);}\n}\nint main(void) {\nint a[256]; int n;\nif (scanf(\"%d\", &n)!=1 || n<0 || n>256) return 1;\nfor(int i=0;i<n;++i) if(scanf(\"%d\", &a[i])!=1) return 1;\nint target;if(scanf(\"%d\",&target)!=1)return 1;Node *head=NULL;for(int i=n;i>0;--i)if(!prepend(&head,a[i-1])){destroy(&head);return 1;}remove_value(&head,target);int first=1;for(Node *node=head;node;node=node->next){printf(\"%s%d\",first?\"\":\" \",node->value);first=0;}puts(\"\");destroy(&head);\nreturn 0;\n}\n",
+    "solutionExplanation": "Инвариант: Цепочка вагонов: каждый знает только следующий, а head — точка входа.\n\n3 → 3 → 5 → NULL, удаление 3 сначала меняет head на вторую 3, затем на 5. Нельзя пропускать второй совпавший узел.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. Операция O(1) изменения ссылок не включает поиск позиции.\n\nВремя: Вставка в голову O(1), поиск и удаление всех совпадений O(n).\nПамять: O(n) значений и указателей плюс накладные расходы отдельных аллокаций.\nКомпромисс: Стабильность адресов живых узлов и дешёвые локальные перестановки против дорогого обхода и отсутствия индексации.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
+    "checking": { "type": "stdout", "comparison": "exact" }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "algo-list-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "invariant",
+        "question": "Сколько стоит удалить узел по неизвестному заранее значению?",
+        "options": ["O(n) с учётом поиска", "Всегда O(1)"],
+        "correct": 0,
+        "explanation": "Цепочка вагонов: каждый знает только следующий, а head — точка входа. 3 → 3 → 5 → NULL, удаление 3 сначала меняет head на вторую 3, затем на 5. Нельзя пропускать второй совпавший узел."
+      },
+      {
+        "id": "complexity",
+        "question": "Какая оценка соответствует рассмотренной реализации?",
+        "options": [
+          "Всегда O(1), потому что все тесты ограничены по размеру.",
+          "Вставка в голову O(1), поиск и удаление всех совпадений O(n)."
+        ],
+        "correct": 1,
+        "explanation": "Стабильность адресов живых узлов и дешёвые локальные перестановки против дорогого обхода и отсутствия индексации."
+      },
+      {
+        "id": "engineering",
+        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "options": [
+          "Операция O(1) изменения ссылок не включает поиск позиции.",
+          "Совпадение Big O гарантирует одинаковое время на любой машине."
+        ],
+        "correct": 0,
+        "explanation": "Узлы могут лежать далеко друг от друга; pointer chasing мешает предвыборке следующего адреса. O(n) значений и указателей плюс накладные расходы отдельных аллокаций."
+      }
+    ]
+  }
+}

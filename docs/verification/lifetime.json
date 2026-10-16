@@ -1,0 +1,673 @@
+{
+  "verifiedAt": "2026-09-17T10:58:53.760Z",
+  "complete": true,
+  "diagnostics": "ASan/UBSan",
+  "checks": [
+    {
+      "id": "lifetime-object-lifetime-exercise",
+      "compiler": "gcc",
+      "fingerprint": "3b65c5404f392cdaa336cabdc6d730918f082999042d6e82414b7a425f67845c",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-object-lifetime-exercise",
+      "compiler": "clang",
+      "fingerprint": "3bcf39a19c654ab2de0c9de7b030aabd3ee040fd8d8bde8b22f00d0097fd6858",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-scope-lifetime-diagnose",
+      "compiler": "gcc",
+      "fingerprint": "ddea8702e5ba6f6d4dbc18ef5d02cb8f0ac39dc2095b1ce316584f1b3e7d53fe",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "lifetime-scope-lifetime-diagnose",
+      "compiler": "clang",
+      "fingerprint": "8f7e383a55a659a7659fafd4431f920360d83597b69b1494cc172c7c25223136",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "lifetime-scope-lifetime-exercise",
+      "compiler": "gcc",
+      "fingerprint": "6d9c7b99262da4a28bf16abef912810bcbab5ab2f4194cb19538df6dcacd0b6e",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-scope-lifetime-exercise",
+      "compiler": "clang",
+      "fingerprint": "8ab310fc49de5d42f4edee2e39bbf04ae6dcd0800a66f21cf7fbf928e4596ff9",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-construction-destruction-exercise",
+      "compiler": "gcc",
+      "fingerprint": "ce9e1a61526745fdd74fc30b8dedf1f46ec7795848a00a8de6ee3b8444379e85",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-construction-destruction-exercise",
+      "compiler": "clang",
+      "fingerprint": "8e120005ea4709756ec2444725bef10b4b9ebd025b6fd34f612887b6cc1672e4",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-raii-exercise",
+      "compiler": "gcc",
+      "fingerprint": "1d4eeff33c1d4d95e54b780d68deb733ab44662538f42bfa793934bbe52ef8c8",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-raii-exercise",
+      "compiler": "clang",
+      "fingerprint": "32a55edaa29556c123fb4be18d95e3cf0115c948747ce86ff4d8ade0a0515b24",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-ownership-diagnose",
+      "compiler": "gcc",
+      "fingerprint": "29cffaada56caa942279b017f4af963e688f18671d2c4376447da33ebc32a435",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "lifetime-ownership-diagnose",
+      "compiler": "clang",
+      "fingerprint": "6ea488b527044ec217c5adf3c8c600ddc1b19ba47936d4f4d112405996203dcf",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "lifetime-ownership-exercise",
+      "compiler": "gcc",
+      "fingerprint": "3951ae65fc85ded5fd91899134be2e698faa0413cd1f045a5b7115609a201653",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-ownership-exercise",
+      "compiler": "clang",
+      "fingerprint": "09e413a688d76ae08b65dd579d6d9384934ea449ab0a790ee3e3601c97ca3d64",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-copy-constructor-exercise",
+      "compiler": "gcc",
+      "fingerprint": "3c96287a72ce6042837ab34a29f6395d411ee2c860cbf8d21b7935b4dfeba6b6",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-copy-constructor-exercise",
+      "compiler": "clang",
+      "fingerprint": "b3bf29bd42e7aa4079d4fe877890edf987ec85187a68263ac173c8b17c8ab5b8",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-copy-assignment-exercise",
+      "compiler": "gcc",
+      "fingerprint": "fc6d81f87c8befaf5ef059baaea0bbc23b8c3c2b8ab280a3691cdeac1020281d",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-copy-assignment-exercise",
+      "compiler": "clang",
+      "fingerprint": "f951ea84eb316b6b7faf4a0004ca96e79810edaa6a0fadd4535e1ee3925ede1e",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-shallow-copy-diagnose",
+      "compiler": "gcc",
+      "fingerprint": "a92ca5f5297e03a0d09cb42a343f69a8735cd0037033ca648ad74b2938a08c32",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "lifetime-shallow-copy-diagnose",
+      "compiler": "clang",
+      "fingerprint": "ebb6e6a6b1296fafb0432958f2b0fc953967070d7b87fb2ab5139319c4b495c0",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "lifetime-shallow-copy-exercise",
+      "compiler": "gcc",
+      "fingerprint": "d6acc5a158e096a7aeb94d870d7be1aa2ca7023d5d97d06eb82932332228903e",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-shallow-copy-exercise",
+      "compiler": "clang",
+      "fingerprint": "ac65c556300014834a9eaf6b95a615417e0266f87a3da124202e1e8e52204201",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-deep-copy-exercise",
+      "compiler": "gcc",
+      "fingerprint": "613ac92054259ed4261cd921882f04724ab370638b0b4b83a169f52bb3f73050",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-deep-copy-exercise",
+      "compiler": "clang",
+      "fingerprint": "db756941f827848e3d6afcd39d36ebd7dba25055d0c457af10dc88b2a158d6cb",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-rule-of-three-exercise",
+      "compiler": "gcc",
+      "fingerprint": "1a20d11f87d30ea8d74828b0844510e48f5e49e8b39e1838723d0f12aa7baa80",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-rule-of-three-exercise",
+      "compiler": "clang",
+      "fingerprint": "c72d9a4783484d955daa1d7abc990e6fe9b44f24ae9bcfbeb201d1126ecea2be",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-move-semantics-exercise",
+      "compiler": "gcc",
+      "fingerprint": "c21c3fabf905928b34673acd469c8d8ccf87ed2a82d112c6f736ff8a626c21ab",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-move-semantics-exercise",
+      "compiler": "clang",
+      "fingerprint": "a5dfbac52db522f4ce78110d63b3c85ea28960ea3e2e4afb56796865d9193775",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-rvalue-references-exercise",
+      "compiler": "gcc",
+      "fingerprint": "c2bd7527448bbc77cc2491be435431d3e4b0fdb1e78f7fd0f545adad4cd55c8b",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-rvalue-references-exercise",
+      "compiler": "clang",
+      "fingerprint": "81b3604888090518bcbb3f16e6f05445fc928679127be844401166275411e08f",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-std-move-exercise",
+      "compiler": "gcc",
+      "fingerprint": "5fe531148fc4cee1f192eed0312f879e1ed0f8d13617311b187c5da1e6e3f314",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-std-move-exercise",
+      "compiler": "clang",
+      "fingerprint": "ddfb85d267a072952f9badc7e3f656f12c4485713f04941d3d1fe5241e2828bc",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-move-constructor-diagnose",
+      "compiler": "gcc",
+      "fingerprint": "a5cb71d34dbed01cf44a80d9ec5a54cc85cba29e7e202e0ce4799b46d6469c7b",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "lifetime-move-constructor-diagnose",
+      "compiler": "clang",
+      "fingerprint": "31dc80dbf822e6b1376736e0aa325e23cebdc7e5db3b376e7c8de654116474d2",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "lifetime-move-constructor-exercise",
+      "compiler": "gcc",
+      "fingerprint": "1e845660877e34434304de99c5d7720b8e1420a6d3f1c371b2e1805807ba8a7d",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-move-constructor-exercise",
+      "compiler": "clang",
+      "fingerprint": "3cf6805c716dde578f05c5aa8cb9fc6a3fb2de4040f6e6fd42a421c8a8cf485c",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-move-assignment-exercise",
+      "compiler": "gcc",
+      "fingerprint": "b352649fce50a979149d06d09d477a19f2d94dbe9d7797d21e429f006867b65d",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-move-assignment-exercise",
+      "compiler": "clang",
+      "fingerprint": "f1d7ece6029796fe0e6a5307b25102b9369f2de9dd3d6f9747823e2d437e673c",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-rule-of-five-exercise",
+      "compiler": "gcc",
+      "fingerprint": "ee97dcda6d47e3d74d529b30b0c192419b5a043d6738edf40c70d66c9a88bff3",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-rule-of-five-exercise",
+      "compiler": "clang",
+      "fingerprint": "1cfba943f032ed0f39419a0d4a445a1d3e47aa8719b0794d787fcb9b77174547",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-rule-of-zero-exercise",
+      "compiler": "gcc",
+      "fingerprint": "e4e1311587907a9e0a2dc143882767d1bc009f34f1f7515bd3cbe71875bde1b4",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-rule-of-zero-exercise",
+      "compiler": "clang",
+      "fingerprint": "39f8eec59a3bb9b0782d97aced5aaff46a1411ec4626ee924da8fe15e31ed535",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-unique-ptr-diagnose",
+      "compiler": "gcc",
+      "fingerprint": "e39692fe9ceceb5fd1bd5e675534fd365ee2c0eb48f00deb8730198812a7f061",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "lifetime-unique-ptr-diagnose",
+      "compiler": "clang",
+      "fingerprint": "1cd44f9d81b0433821e67f778a67c8355b8cfe6f36d877f690cef9b878df2857",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "lifetime-unique-ptr-exercise",
+      "compiler": "gcc",
+      "fingerprint": "6166cfffc9e0536e67301fcdea7f46b4836b2643122bf640c21c1d92fb07cfc0",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-unique-ptr-exercise",
+      "compiler": "clang",
+      "fingerprint": "e29b762ed9782742557257ec3686003cd95e3450145b42462956f186714f7f0c",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-make-unique-exercise",
+      "compiler": "gcc",
+      "fingerprint": "820579cfe291a63e5331bb21cb6009b415bf929ea43856fbd368cdc98f9faa6b",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-make-unique-exercise",
+      "compiler": "clang",
+      "fingerprint": "53ac95b9064e7397a6505f87bcca6a4281574aca4b69038b7c94648ae01708bd",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-shared-ptr-exercise",
+      "compiler": "gcc",
+      "fingerprint": "7c2e2a005490f0c32ce79853dd2ad881127aff9b5dc4dc4e26d873bc34c5cb11",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-shared-ptr-exercise",
+      "compiler": "clang",
+      "fingerprint": "9acdc30fb77f20d4bd6cfd40691e949a65711f79ea313b5eb39c7bb51729c33e",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-reference-counting-exercise",
+      "compiler": "gcc",
+      "fingerprint": "df9ac2b97fd524c2492c2f54e0fcdd4323627b42e9b6d1c16275eebb18e664a3",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-reference-counting-exercise",
+      "compiler": "clang",
+      "fingerprint": "2253276650e360ef67770ff15ca0e72c575c81e46d9ae2b83c61e78560b55332",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-weak-ptr-exercise",
+      "compiler": "gcc",
+      "fingerprint": "9da71c3093f6ab928cfcb8a1a6b82da609413390bb28aaa62225c09c1f52fa1c",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-weak-ptr-exercise",
+      "compiler": "clang",
+      "fingerprint": "38254529fbd1fca0591e9b09afe04eb945d435ed587b87a0f1f78251844b34b0",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-cyclic-references-diagnose",
+      "compiler": "gcc",
+      "fingerprint": "735b3745d8c8120bbf222a6eb093eb157981630a46bf1b160fe99d717d1617b1",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "lifetime-cyclic-references-diagnose",
+      "compiler": "clang",
+      "fingerprint": "2175f096805979543fbff34849b1b5de36d6d841d988c1ad5e12e9a6f82f21da",
+      "ok": true,
+      "tests": 4
+    },
+    {
+      "id": "lifetime-cyclic-references-exercise",
+      "compiler": "gcc",
+      "fingerprint": "e7c42b855575b20991e47a1d72e08dfe1d819be9d302f47be788f5be24a12e85",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-cyclic-references-exercise",
+      "compiler": "clang",
+      "fingerprint": "01bab58cea7aeb94e84724e79c3f6cd385f280d2fe78952f8a96a0f65fb94b19",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-custom-deleters-exercise",
+      "compiler": "gcc",
+      "fingerprint": "5163691962168231fa3052ac3b733ec67525dd04e5ca399d3bab7c6e9bbc68c7",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-custom-deleters-exercise",
+      "compiler": "clang",
+      "fingerprint": "ae8eb16f3e6f2de845e9192e21da18d0276d065cbdc0ec3ee3cd4b062ed12047",
+      "ok": true,
+      "tests": 7
+    },
+    {
+      "id": "lifetime-scope-lifetime-example",
+      "compiler": "clang",
+      "fingerprint": "e086e8ac285514b22f3ae46b28d7406c3926de4a1bc86767ee56f89632431dc8",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-object-lifetime-example",
+      "compiler": "clang",
+      "fingerprint": "239a0e78431bf4476ae151098ec78e42ae19421e354105279e98368d0c7ea621",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-construction-destruction-example",
+      "compiler": "clang",
+      "fingerprint": "4c3f2c4244c2057dcfb508aa1f345125a5a6db9931c45feeff2e6c54babc510b",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-raii-example",
+      "compiler": "clang",
+      "fingerprint": "17fe7ead52daf53d39a3401ed10a44ba19eccd03600cf9cbdd7356724c510510",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-copy-constructor-example",
+      "compiler": "clang",
+      "fingerprint": "6178abf5bc7110e9f42280f902fcf653452a1bd8edadba3c62b0fefbbb048d40",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-ownership-example",
+      "compiler": "clang",
+      "fingerprint": "538f60a9ecb4c0145813d7ba3f308f1b57e54ccb444af60aa4b58464cc4ac372",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-shallow-copy-example",
+      "compiler": "clang",
+      "fingerprint": "81477c7a013668a8027b3f00932028afdc9045dd4a8b87c56517f70a271795db",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-copy-assignment-example",
+      "compiler": "clang",
+      "fingerprint": "22d442e9050d272d5000ca08930f5b03885ff0afb6d92f84deb9ebb7aa487fb6",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-rule-of-three-example",
+      "compiler": "clang",
+      "fingerprint": "17c7ebd365137eb4f30cd6eb46073fdb0534c7b16004ef525bdcd7896d96cee5",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-deep-copy-example",
+      "compiler": "clang",
+      "fingerprint": "ea6d47bdb7f68d08a1632ae5a74710dae7dd0c9b2ba12b4f0003ed4eb9a88318",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-rvalue-references-example",
+      "compiler": "clang",
+      "fingerprint": "25ecc70e667079f56c20ce2de7bf52ab4e1f403cb29373a85343aa357fd63431",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-move-semantics-example",
+      "compiler": "clang",
+      "fingerprint": "df19830c451ad201144568599f6a6388aefd2f6d3ac34d090786ef493ca0cc40",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-std-move-example",
+      "compiler": "clang",
+      "fingerprint": "f646c96c4e35dbf9b4d39282b48bb3972543e46c15228a1113a3ce18e56ffb63",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-move-constructor-example",
+      "compiler": "clang",
+      "fingerprint": "eb4f1d51b467afe2d4c1ae8fe182c18b736ae2bb9fdbdf4b233bfa657894cea1",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-move-assignment-example",
+      "compiler": "clang",
+      "fingerprint": "103e56d5591d99a0ee775f3e674f99ae00537e7831355499302f1f1f89839d43",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-rule-of-five-example",
+      "compiler": "clang",
+      "fingerprint": "437180cba4bb975850d60f969b990e90df45d336e32d76105e9793fdae1e1f77",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-unique-ptr-example",
+      "compiler": "clang",
+      "fingerprint": "f564ea1d5faa801e16d3d9f6b13b86453ebe71c6e8490a807e49456717ab5714",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-rule-of-zero-example",
+      "compiler": "clang",
+      "fingerprint": "c960a650d661cc9f69463beecd940a1bd8b276ee482aefebe6963612db183183",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-make-unique-example",
+      "compiler": "clang",
+      "fingerprint": "bb867e02d192f9aa19fa5bf1c148d7e32332aebe582f179e9b4526b7e0b414b9",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-shared-ptr-example",
+      "compiler": "clang",
+      "fingerprint": "b4a1eb3bf4c5c4b34b141eab945bb2075e4943c619ea7dfb7d77dcaa6eb3be48",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-reference-counting-example",
+      "compiler": "clang",
+      "fingerprint": "9b0796b5a5d5e93f6aa8fc96b5e38ce47721e238f605a155384fff9464ef196e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-weak-ptr-example",
+      "compiler": "clang",
+      "fingerprint": "68c81e3c666f2ea89c4c95e7615bdffbab9da5cfd05967e1082f3efdde31e7c1",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-custom-deleters-example",
+      "compiler": "clang",
+      "fingerprint": "873cd34c1fd99812d51ac6e4237bbab30f218858ccd7cc68a06f050f4093ef25",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-cyclic-references-example",
+      "compiler": "clang",
+      "fingerprint": "780f1a57d7987c66bf668bdcf9aa019f1a13f0c836981247afe5f967fb8dab66",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-scope-lifetime-negative",
+      "compiler": "clang",
+      "fingerprint": "59ac5203b90d2448fde0fa16bcb80eb6be7183662e223bde48450266e3fffff2",
+      "ok": false,
+      "failure": {
+        "compilation": {
+          "stdout": "",
+          "stderr": "main.cpp:7:54: warning: reference to stack memory associated with local variable 'value' returned [-Wreturn-stack-address]\nconst int& factory(int a,int b){int value=a+b;return value;}\n                                                     ^~~~~\n1 warning generated.\n",
+          "exitCode": 0,
+          "durationMs": 1680,
+          "status": "ok"
+        },
+        "runs": [
+          {
+            "stdout": "10\n",
+            "stderr": "",
+            "exitCode": 0,
+            "durationMs": 117,
+            "status": "ok"
+          }
+        ]
+      },
+      "tests": 1
+    },
+    {
+      "id": "lifetime-ownership-negative",
+      "compiler": "clang",
+      "fingerprint": "15691236496e0cf0b4053afd819502da8a567f162c030066ad96ac1b8d125dca",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-shallow-copy-negative",
+      "compiler": "clang",
+      "fingerprint": "38b0399751b28fd683f4f9d4f3d81e674a3c99b7cdf86b326a91758e25b23a9e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-move-constructor-negative",
+      "compiler": "clang",
+      "fingerprint": "baad8b0ff80ace38f791d2a58e7c867c88392152fb5ae3025f3f84c0b0a45d0c",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-unique-ptr-negative",
+      "compiler": "clang",
+      "fingerprint": "96c19317149dd2863a2c72623484d8d86d3e1f3fc86e8e586aae9878c0469b8d",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "lifetime-cyclic-references-negative",
+      "compiler": "clang",
+      "fingerprint": "2cc82bc4d309225930d43733a69f600f558ccfd43ca32542308598da018aeba9",
+      "ok": false,
+      "failure": {
+        "compilation": {
+          "stdout": "",
+          "stderr": "",
+          "exitCode": 0,
+          "durationMs": 1987,
+          "status": "ok"
+        },
+        "runs": [
+          {
+            "stdout": "-9999\n",
+            "stderr": "",
+            "exitCode": 0,
+            "durationMs": 119,
+            "status": "ok"
+          }
+        ]
+      },
+      "tests": 1
+    }
+  ]
+}

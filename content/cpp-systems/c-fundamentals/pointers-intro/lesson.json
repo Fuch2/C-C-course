@@ -1,0 +1,363 @@
+{
+  "id": "c17-pointers-intro",
+  "title": "Указатели: адрес и значение",
+  "description": "Память как последовательность байтов с адресами, оператор &, печать адресов, переменная-указатель, разыменование и зачем нужны указатели.",
+  "moduleId": "c-fundamentals",
+  "order": 35,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["c17-practice-arrays"],
+  "objectives": [
+    "Объяснять, что такое адрес переменной и указатель",
+    "Получать адрес оператором & и печатать его через %p",
+    "Объявлять указатель и читать или изменять переменную через него",
+    "Различать звёздочку в объявлении и в выражении"
+  ],
+  "tags": ["C17", "Указатели", "Адреса", "Разыменование"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-pointers-intro-task-1",
+    "title": "Изменить через указатель",
+    "description": "Заготовка читает число `x` и создаёт указатель `p` на него. Используя **только** `p` (не обращаясь к `x` напрямую), умножьте значение на 3 и прибавьте 1. Затем напечатайте `x`.",
+    "difficulty": "intermediate",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int x;\n    scanf(\"%d\", &x);\n    int *p = &x;\n    // Измените значение через p.\n\n    printf(\"%d\\n\", x);\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "4",
+        "output": "13\n"
+      },
+      {
+        "input": "-2",
+        "output": "-5\n"
+      }
+    ],
+    "constraints": ["|x| ≤ 10⁸."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Запись по адресу: *p = *p * 3 + 1;",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Выражение *p справа читает значение по адресу, слева — записывает: в одной строке *p используется в обеих ролях.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "4",
+        "expected": "13\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "-2",
+        "expected": "-5\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "0",
+        "expected": "1\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "100000000",
+        "expected": "300000001\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "-100000000",
+        "expected": "-299999999\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "1",
+        "expected": "4\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "7",
+        "expected": "22\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "-1",
+        "expected": "-2\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int x;\n    scanf(\"%d\", &x);\n    int *p = &x;\n    *p = *p * 3 + 1;\n    printf(\"%d\\n\", x);\n    return 0;\n}\n",
+    "solutionExplanation": "`*p` и `x` — два имени одной и той же ячейки памяти. Запись `*p = …` меняет `x`, поэтому `printf` печатает новое значение, хотя к `x` напрямую мы не обращались.\n\nИменно это происходит внутри `scanf(\"%d\", &x)`: функция получает адрес и записывает значение через него.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-pointers-intro-task-2",
+      "title": "Указатель на большее",
+      "description": "Прочитайте два числа `a` и `b`. Направьте указатель на **большее** из них (если равны — на `a`) и через указатель уменьшите это число на 100. Напечатайте `a` и `b`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "300 200",
+          "output": "200 200\n"
+        },
+        {
+          "input": "5 9",
+          "output": "5 -91\n"
+        }
+      ],
+      "constraints": ["|a|, |b| ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "int *big = a >= b ? &a : &b;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Затем *big -= 100;",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "300 200",
+          "expected": "200 200\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5 9",
+          "expected": "5 -91\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "7 7",
+          "expected": "-93 7\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "-1000000000 1000000000",
+          "expected": "-1000000000 999999900\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1000000000 -1000000000",
+          "expected": "999999900 -1000000000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "0 -1",
+          "expected": "-100 -1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "-5 -3",
+          "expected": "-5 -103\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "1000000000 1000000000",
+          "expected": "999999900 1000000000\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf(\"%d %d\", &a, &b);\n    int *big = a >= b ? &a : &b;\n    *big -= 100;\n    printf(\"%d %d\\n\", a, b);\n    return 0;\n}\n",
+      "solutionExplanation": "Указатель позволяет сначала **выбрать**, с какой переменной работать, а потом действовать, не повторяя ветвление. Тернарный оператор выбирает адрес, а одна инструкция `*big -= 100` меняет нужную переменную.\n\nВ больших программах так выбирают, например, какой из игроков сейчас ходит: `player *current = turn % 2 ? &second : &first;`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-pointers-intro-task-3",
+      "title": "Обмен через указатели",
+      "description": "Прочитайте два числа в переменные `a` и `b`. Создайте указатели `pa` и `pb` на них и поменяйте значения переменных местами, обращаясь к ним **только через указатели**. Напечатайте `a` и `b`.\n\nВ следующих уроках этот же код окажется внутри функции `swap` — и это единственный способ написать её в C.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf(\"%d %d\", &a, &b);\n    int *pa = &a;\n    int *pb = &b;\n    // Поменяйте значения местами через pa и pb.\n\n    printf(\"%d %d\\n\", a, b);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "3 8",
+          "output": "8 3\n"
+        },
+        {
+          "input": "-1 1",
+          "output": "1 -1\n"
+        }
+      ],
+      "constraints": ["|a|, |b| ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "int tmp = *pa; *pa = *pb; *pb = tmp;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Без временной переменной не обойтись: после *pa = *pb старое значение a потеряно.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 8",
+          "expected": "8 3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "-1 1",
+          "expected": "1 -1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0 0",
+          "expected": "0 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1000000000 -1000000000",
+          "expected": "-1000000000 1000000000\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "5 5",
+          "expected": "5 5\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "7 -7",
+          "expected": "-7 7\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "-1000000000 -999999999",
+          "expected": "-999999999 -1000000000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "42 0",
+          "expected": "0 42\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf(\"%d %d\", &a, &b);\n    int *pa = &a;\n    int *pb = &b;\n    int tmp = *pa;\n    *pa = *pb;\n    *pb = tmp;\n    printf(\"%d %d\\n\", a, b);\n    return 0;\n}\n",
+      "solutionExplanation": "Алгоритм обмена тот же, что в уроке о переменных, только вместо имён — разыменованные указатели. Временная переменная хранит **значение** (`int tmp`), а не адрес.\n\nРаспространённая ошибка — обменять сами указатели: `int *t = pa; pa = pb; pb = t;`. Тогда меняются местами «стрелки», а значения `a` и `b` остаются прежними.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-pointers-intro-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int x = 5;\n    int *p = &x;\n    *p = *p + 10;\n    printf(\"%d %d\\n\", x, *p);\n    return 0;\n}",
+        "explanation": "p указывает на x, поэтому *p — это x. Запись в *p меняет x.",
+        "type": "text",
+        "answers": ["15 15"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int a = 1, b = 2;\n    int *p = &a;\n    *p = 10;\n    p = &b;\n    *p = 20;\n    printf(\"%d %d\\n\", a, b);\n    return 0;\n}",
+        "explanation": "Сначала p указывает на a — запись 10 идёт в a. Затем p перенаправлен на b — запись 20 идёт в b.",
+        "type": "text",
+        "answers": ["10 20"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Какие переменные объявлены как указатели в строке int *a, b, *c; ? Выберите все.",
+        "explanation": "Звёздочка относится к каждому имени отдельно. b — обычный int.",
+        "type": "multiple",
+        "options": ["a", "b", "c"],
+        "correct": [0, 2]
+      },
+      {
+        "id": "q4",
+        "question": "Что означает звёздочка в выражении *p = 7; ?",
+        "explanation": "В выражении * — разыменование: работа со значением по адресу. В объявлении * говорит, что переменная — указатель.",
+        "options": [
+          "Записать 7 по адресу, хранящемуся в p",
+          "Объявить указатель p",
+          "Умножить p на 7",
+          "Записать 7 в сам указатель p"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Почему адреса, напечатанные через %p, отличаются при разных запусках программы?",
+        "explanation": "Рандомизация размещения в памяти (ASLR) затрудняет атаки. Поэтому конкретные адреса нельзя использовать как данные.",
+        "options": [
+          "Операционная система каждый раз размещает программу в памяти по-разному",
+          "Переменные двигаются во время работы",
+          "Это ошибка компилятора",
+          "printf печатает случайные числа"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Чем опасен код int *p; *p = 5; ?",
+        "explanation": "Локальный указатель без инициализации содержит мусор. Разыменовывать его нельзя.",
+        "options": [
+          "p не инициализирован: запись идёт по случайному адресу — неопределённое поведение",
+          "Ничем",
+          "Ошибка компиляции",
+          "p станет равен 5"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

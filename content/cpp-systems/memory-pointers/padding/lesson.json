@@ -1,0 +1,518 @@
+{
+  "id": "memory-padding",
+  "title": "Заполнители в структурах",
+  "description": "Как компилятор раскладывает поля структуры: заполнители между полями и хвостовой padding, offsetof, выбор порядка полей, мусор в заполнителях, memcmp и запись структур в файл, упакованные структуры.",
+  "moduleId": "memory-pointers",
+  "order": 24,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["memory-alignment"],
+  "objectives": [
+    "Вычислять смещения полей и размер структуры по правилам выравнивания",
+    "Уменьшать размер структуры перестановкой полей",
+    "Объяснять, почему заполнители содержат мусор и чем это опасно",
+    "Сравнивать структуры по полям и обнулять их перед выводом байтами"
+  ],
+  "tags": ["C17", "Память", "Padding", "Структуры", "offsetof"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "memory-padding-task-1",
+    "title": "Раскладка структуры",
+    "description": "Структура описана списком полей. Каждое поле — тип и количество элементов (массив из одного элемента — просто поле). Типы и их размеры/выравнивания на 64-битном Linux:\n\n| Тип | char | short | int | float | long | double | ptr |\n| --- | ---- | ----- | --- | ----- | ---- | ------ | --- |\n| Размер и выравнивание | 1 | 2 | 4 | 4 | 8 | 8 | 8 |\n\nМассив `T[k]` занимает `k · size` байтов и имеет выравнивание `T`. Напечатайте смещение каждого поля (через пробел), а на второй строке — размер структуры.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n#include <string.h>\n\nstruct Type {\n    const char *name;\n    size_t size;\n    size_t align;\n};\n\nstatic const struct Type TYPES[] = {\n    {\"char\", 1, 1}, {\"short\", 2, 2}, {\"int\", 4, 4}, {\"float\", 4, 4},\n    {\"long\", 8, 8}, {\"double\", 8, 8}, {\"ptr\", 8, 8},\n};\n\nconst struct Type *find_type(const char *name) {\n    for (size_t i = 0; i < sizeof TYPES / sizeof TYPES[0]; i++) {\n        if (strcmp(TYPES[i].name, name) == 0) {\n            return &TYPES[i];\n        }\n    }\n    return NULL;\n}\n\nsize_t align_up(size_t x, size_t a) {\n    return (x + a - 1) / a * a;\n}\n\nint main(void) {\n    // Прочитайте поля и вычислите раскладку.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "3\nchar 1\ndouble 1\nshort 1\n",
+        "output": "0 8 16\n24\n"
+      },
+      {
+        "input": "2\nchar 3\nint 1\n",
+        "output": "0 4\n8\n"
+      }
+    ],
+    "constraints": ["1 ≤ n ≤ 20.", "1 ≤ k ≤ 100."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Позиция pos начинается с 0. Для каждого поля: pos = align_up(pos, align); печать pos; pos += k * size; максимум выравнивания запоминается.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Размер структуры: align_up(pos, max_align) — хвостовой заполнитель.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "3\nchar 1\ndouble 1\nshort 1\n",
+        "expected": "0 8 16\n24\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "2\nchar 3\nint 1\n",
+        "expected": "0 4\n8\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Один char",
+        "stdin": "1\nchar 1\n",
+        "expected": "0\n1\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Массив double",
+        "stdin": "1\ndouble 3\n",
+        "expected": "0\n24\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "int char int",
+        "stdin": "3\nint 1\nchar 1\nint 1\n",
+        "expected": "0 4 8\n12\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Убывающий порядок",
+        "stdin": "4\ndouble 1\nint 1\nshort 1\nchar 1\n",
+        "expected": "0 8 12 14\n16\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Возрастающий порядок",
+        "stdin": "4\nchar 1\nshort 1\nint 1\ndouble 1\n",
+        "expected": "0 2 4 8\n16\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Строка и указатель",
+        "stdin": "3\nchar 17\nptr 1\nchar 1\n",
+        "expected": "0 24 32\n40\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Только короткие",
+        "stdin": "2\nshort 3\nchar 1\n",
+        "expected": "0 6\n8\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Пять полей",
+        "stdin": "5\nfloat 1\nlong 1\nchar 2\nshort 1\nint 2\n",
+        "expected": "0 8 16 18 20\n32\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstruct Type {\n    const char *name;\n    size_t size;\n    size_t align;\n};\n\nstatic const struct Type TYPES[] = {\n    {\"char\", 1, 1}, {\"short\", 2, 2}, {\"int\", 4, 4}, {\"float\", 4, 4},\n    {\"long\", 8, 8}, {\"double\", 8, 8}, {\"ptr\", 8, 8},\n};\n\nconst struct Type *find_type(const char *name) {\n    for (size_t i = 0; i < sizeof TYPES / sizeof TYPES[0]; i++) {\n        if (strcmp(TYPES[i].name, name) == 0) {\n            return &TYPES[i];\n        }\n    }\n    return NULL;\n}\n\nsize_t align_up(size_t x, size_t a) {\n    return (x + a - 1) / a * a;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    size_t pos = 0, max_align = 1;\n    for (int i = 0; i < n; i++) {\n        char name[8];\n        size_t count;\n        scanf(\"%7s %zu\", name, &count);\n        const struct Type *t = find_type(name);\n        if (t == NULL) {\n            return 1;\n        }\n        pos = align_up(pos, t->align);\n        printf(i + 1 < n ? \"%zu \" : \"%zu\\n\", pos);\n        pos += count * t->size;\n        if (t->align > max_align) {\n            max_align = t->align;\n        }\n    }\n    printf(\"%zu\\n\", align_up(pos, max_align));\n    return 0;\n}\n",
+    "solutionExplanation": "Программа воспроизводит работу компилятора: перед каждым полем позиция округляется до его выравнивания (заполнитель между полями), а в конце размер округляется до самого строгого выравнивания (хвост). Массив внутри структуры не меняет правил: его выравнивание — выравнивание элемента, а размер — сумма элементов.\n\nПроверить себя можно на настоящей структуре: `offsetof` и `sizeof` дадут те же числа.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "memory-padding-task-2",
+      "title": "Лучший порядок полей",
+      "description": "Для того же описания полей, что в предыдущей задаче, напечатайте два числа: размер структуры в исходном порядке и наименьший размер, которого можно добиться **перестановкой** полей (поля-массивы переставляются целиком).",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <string.h>\n\nstruct Type {\n    const char *name;\n    size_t size;\n    size_t align;\n};\n\nstatic const struct Type TYPES[] = {\n    {\"char\", 1, 1}, {\"short\", 2, 2}, {\"int\", 4, 4}, {\"float\", 4, 4},\n    {\"long\", 8, 8}, {\"double\", 8, 8}, {\"ptr\", 8, 8},\n};\n\nconst struct Type *find_type(const char *name) {\n    for (size_t i = 0; i < sizeof TYPES / sizeof TYPES[0]; i++) {\n        if (strcmp(TYPES[i].name, name) == 0) {\n            return &TYPES[i];\n        }\n    }\n    return NULL;\n}\n\nsize_t align_up(size_t x, size_t a) {\n    return (x + a - 1) / a * a;\n}\n\nint main(void) {\n    // Посчитайте исходный и наименьший размеры.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\nchar 1\ndouble 1\nshort 1\n",
+          "output": "24 16\n"
+        },
+        {
+          "input": "2\ndouble 1\nchar 1\n",
+          "output": "16 16\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 20.", "1 ≤ k ≤ 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Наименьший размер получается, если упорядочить поля по убыванию выравнивания: тогда между полями нет заполнителей.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Напишите функцию layout_size(поля, n), считающую размер для заданного порядка, и вызовите её для исходного и отсортированного массива.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Сортировку по выравниванию удобно сделать qsort с функцией сравнения по полю align.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\nchar 1\ndouble 1\nshort 1\n",
+          "expected": "24 16\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\ndouble 1\nchar 1\n",
+          "expected": "16 16\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одно поле",
+          "stdin": "1\nint 1\n",
+          "expected": "4 4\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Чередование",
+          "stdin": "4\nchar 1\ndouble 1\nchar 1\ndouble 1\n",
+          "expected": "32 24\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "char int char",
+          "stdin": "3\nchar 1\nint 1\nchar 1\n",
+          "expected": "12 8\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Мелкие поля",
+          "stdin": "5\nchar 1\nshort 1\nchar 1\nint 1\nchar 1\n",
+          "expected": "16 12\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Массивы char",
+          "stdin": "3\nchar 5\nlong 1\nchar 3\n",
+          "expected": "24 16\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Указатели",
+          "stdin": "4\nshort 1\nptr 1\nshort 1\nptr 1\n",
+          "expected": "32 24\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Шесть полей",
+          "stdin": "6\nchar 1\ndouble 1\nchar 1\nint 1\nchar 1\nshort 1\n",
+          "expected": "32 24\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Массив float",
+          "stdin": "2\nfloat 3\ndouble 1\n",
+          "expected": "24 24\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstruct Type {\n    const char *name;\n    size_t size;\n    size_t align;\n};\n\nstatic const struct Type TYPES[] = {\n    {\"char\", 1, 1}, {\"short\", 2, 2}, {\"int\", 4, 4}, {\"float\", 4, 4},\n    {\"long\", 8, 8}, {\"double\", 8, 8}, {\"ptr\", 8, 8},\n};\n\nconst struct Type *find_type(const char *name) {\n    for (size_t i = 0; i < sizeof TYPES / sizeof TYPES[0]; i++) {\n        if (strcmp(TYPES[i].name, name) == 0) {\n            return &TYPES[i];\n        }\n    }\n    return NULL;\n}\n\nsize_t align_up(size_t x, size_t a) {\n    return (x + a - 1) / a * a;\n}\n\n#include <stdlib.h>\n\nstruct Field {\n    size_t size;\n    size_t align;\n};\n\nsize_t layout_size(const struct Field *fields, int n) {\n    size_t pos = 0, max_align = 1;\n    for (int i = 0; i < n; i++) {\n        pos = align_up(pos, fields[i].align) + fields[i].size;\n        if (fields[i].align > max_align) {\n            max_align = fields[i].align;\n        }\n    }\n    return align_up(pos, max_align);\n}\n\nint by_align_desc(const void *pa, const void *pb) {\n    const struct Field *a = pa, *b = pb;\n    return (b->align > a->align) - (b->align < a->align);\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    struct Field fields[20];\n    for (int i = 0; i < n; i++) {\n        char name[8];\n        size_t count;\n        scanf(\"%7s %zu\", name, &count);\n        const struct Type *t = find_type(name);\n        if (t == NULL) {\n            return 1;\n        }\n        fields[i].size = count * t->size;\n        fields[i].align = t->align;\n    }\n    size_t original = layout_size(fields, n);\n    qsort(fields, (size_t)n, sizeof fields[0], by_align_desc);\n    printf(\"%zu %zu\\n\", original, layout_size(fields, n));\n    return 0;\n}\n",
+      "solutionExplanation": "Если поля идут по убыванию выравнивания, каждое следующее поле начинается с позиции, уже кратной его выравниванию: размер каждого предыдущего поля кратен выравниванию его типа, а оно не меньше текущего. Заполнители между полями исчезают, остаётся только хвост — его не убрать никакой перестановкой.\n\nФункция `layout_size` используется дважды: для исходного порядка и для отсортированного. Это и есть способ, которым программисты проверяют «плотность» своих структур.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-padding-task-3",
+      "title": "Найди ошибку: мусор в заполнителях",
+      "description": "Программа заполняет структуры `struct Reading` (`char sensor`, `int value`, `short flags`) и печатает их байтовое представление — так данные готовятся к записи в файл. Заполнители в выводе должны быть нулями.\n\nЭта задача проверяется **Valgrind**: он сообщает о печати неинициализированных байтов. Исправьте программу.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <string.h>\n\nstruct Reading {\n    char sensor;\n    int value;\n    short flags;\n};\n\nvoid dump(const void *data, size_t size) {\n    const unsigned char *bytes = data;\n    for (size_t i = 0; i < size; i++) {\n        printf(i + 1 < size ? \"%02x \" : \"%02x\\n\", bytes[i]);\n    }\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        char sensor;\n        int value, flags;\n        scanf(\" %c %d %d\", &sensor, &value, &flags);\n        struct Reading r;\n        r.sensor = sensor;\n        r.value = value;\n        r.flags = (short)flags;\n        dump(&r, sizeof r);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "valgrind",
+      "examples": [
+        {
+          "input": "1\nT 21 1\n",
+          "output": "54 00 00 00 15 00 00 00 01 00 00 00\n"
+        },
+        {
+          "input": "1\nA -1 0\n",
+          "output": "41 00 00 00 ff ff ff ff 00 00 00 00\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 10.", "|value| ≤ 10⁹, 0 ≤ flags ≤ 32767."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какие байты структуры не задаются присваиваниями полям?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Обнулите структуру целиком перед заполнением: memset(&r, 0, sizeof r);",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1\nT 21 1\n",
+          "expected": "54 00 00 00 15 00 00 00 01 00 00 00\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nA -1 0\n",
+          "expected": "41 00 00 00 ff ff ff ff 00 00 00 00\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Две записи",
+          "stdin": "2\nx 0 0\ny 1 1\n",
+          "expected": "78 00 00 00 00 00 00 00 00 00 00 00\n79 00 00 00 01 00 00 00 01 00 00 00\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Большие значения",
+          "stdin": "1\nZ 1000000000 32767\n",
+          "expected": "5a 00 00 00 00 ca 9a 3b ff 7f 00 00\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Отрицательное значение",
+          "stdin": "1\na -1000000000 255\n",
+          "expected": "61 00 00 00 00 36 65 c4 ff 00 00 00\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Цифры как метки",
+          "stdin": "3\n1 1 1\n2 2 2\n3 3 3\n",
+          "expected": "31 00 00 00 01 00 00 00 01 00 00 00\n32 00 00 00 02 00 00 00 02 00 00 00\n33 00 00 00 03 00 00 00 03 00 00 00\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Перенос в старший байт",
+          "stdin": "1\n# 256 256\n",
+          "expected": "23 00 00 00 00 01 00 00 00 01 00 00\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Третий байт",
+          "stdin": "1\nq 65536 16\n",
+          "expected": "71 00 00 00 00 00 01 00 10 00 00 00\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Одинаковые записи",
+          "stdin": "2\nm 7 7\nm 7 7\n",
+          "expected": "6d 00 00 00 07 00 00 00 07 00 00 00\n6d 00 00 00 07 00 00 00 07 00 00 00\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Шестнадцатеричные узоры",
+          "stdin": "1\n~ 305419896 4660\n",
+          "expected": "7e 00 00 00 78 56 34 12 34 12 00 00\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstruct Reading {\n    char sensor;\n    int value;\n    short flags;\n};\n\nvoid dump(const void *data, size_t size) {\n    const unsigned char *bytes = data;\n    for (size_t i = 0; i < size; i++) {\n        printf(i + 1 < size ? \"%02x \" : \"%02x\\n\", bytes[i]);\n    }\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        char sensor;\n        int value, flags;\n        scanf(\" %c %d %d\", &sensor, &value, &flags);\n        struct Reading r;\n        memset(&r, 0, sizeof r);\n        r.sensor = sensor;\n        r.value = value;\n        r.flags = (short)flags;\n        dump(&r, sizeof r);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Раскладка `struct Reading`: `sensor` — байт 0, заполнитель 1–3, `value` — 4–7, `flags` — 8–9, хвост 10–11. Присваивания полям не трогают шесть байтов заполнителей, и в них остаётся содержимое стека. Valgrind видит, что `printf` получает неинициализированные значения, и тест не проходит; без инструментов в «файл» утекли бы случайные данные программы.\n\n`memset` перед заполнением делает все 12 байтов определёнными, и представление становится воспроизводимым.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-padding-task-4",
+      "title": "Сравнение записей",
+      "description": "Реализуйте функцию сравнения\n\n```c\nstruct Point {\n    char tag;\n    double x;\n    short id;\n};\n\nint same_point(const struct Point *a, const struct Point *b);\n```\n\nЗаписи равны, если у них совпадают `tag` и `id`, а значения `x` равны **как числа** (`0` и `-0` равны). Не используйте `memcmp`. Функция `main` дана: для каждой пары печатает `equal` или `different`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nstruct Point {\n    char tag;\n    double x;\n    short id;\n};\n\nint same_point(const struct Point *a, const struct Point *b) {\n    return 0;\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        struct Point a, b;\n        scanf(\" %c %lf %hd\", &a.tag, &a.x, &a.id);\n        scanf(\" %c %lf %hd\", &b.tag, &b.x, &b.id);\n        printf(\"%s\\n\", same_point(&a, &b) ? \"equal\" : \"different\");\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\nA 1.5 3\nA 1.5 3\nA 0 1\nA -0 1\n",
+          "output": "equal\nequal\n"
+        },
+        {
+          "input": "1\nA 1 1\nB 1 1\n",
+          "output": "different\n"
+        }
+      ],
+      "constraints": ["1 ≤ q ≤ 20.", "|x| ≤ 10⁹ (не NaN).", "|id| ≤ 32767."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сравнивайте поле за полем: a->tag == b->tag && a->x == b->x && a->id == b->id.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Почему не memcmp: у структуры 13 заполняющих байтов с мусором, а 0.0 и -0.0 различаются битом знака.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\nA 1.5 3\nA 1.5 3\nA 0 1\nA -0 1\n",
+          "expected": "equal\nequal\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nA 1 1\nB 1 1\n",
+          "expected": "different\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Разные id",
+          "stdin": "1\nx 2.5 7\nx 2.5 8\n",
+          "expected": "different\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Почти равные x",
+          "stdin": "1\nx 2.5 7\nx 2.50000001 7\n",
+          "expected": "different\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Крайние значения",
+          "stdin": "1\nq -1000000000 -32768\nq -1000000000 -32768\n",
+          "expected": "equal\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Нули разного знака",
+          "stdin": "1\nz 0 0\nz -0 0\n",
+          "expected": "equal\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Три пары",
+          "stdin": "3\na 1 1\na 1 1\nb 2 2\nb 2 3\nc 3 3\nd 3 3\n",
+          "expected": "equal\ndifferent\ndifferent\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Дробное",
+          "stdin": "1\nm 0.1 5\nm 0.1 5\n",
+          "expected": "equal\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Разная запись числа",
+          "stdin": "1\nk 1e9 32767\nk 1000000000 32767\n",
+          "expected": "equal\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Знак id",
+          "stdin": "1\nr 3 -1\nr 3 1\n",
+          "expected": "different\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstruct Point {\n    char tag;\n    double x;\n    short id;\n};\n\nint same_point(const struct Point *a, const struct Point *b) {\n    return a->tag == b->tag && a->x == b->x && a->id == b->id;\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        struct Point a, b;\n        scanf(\" %c %lf %hd\", &a.tag, &a.x, &a.id);\n        scanf(\" %c %lf %hd\", &b.tag, &b.x, &b.id);\n        printf(\"%s\\n\", same_point(&a, &b) ? \"equal\" : \"different\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Сравнение по полям использует семантику каждого типа: символы и целые сравниваются как числа, `double` — по правилам IEEE 754, где `0.0 == -0.0`. Заполнители (7 байтов после `tag` и 6 в хвосте) в сравнении не участвуют вовсе.\n\n`memcmp` дал бы ответ, зависящий от мусора в заполнителях, и ошибался бы на нулях разного знака. Для структур с указателями на строки побайтовое сравнение тоже неверно: равные строки могут лежать по разным адресам.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "memory-padding-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Чему равен sizeof(struct { char a; int b; char c; }) на x86-64?",
+        "explanation": "a — 0, заполнитель 1–3, b — 4–7, c — 8, хвост до кратного 4 — 9–11. Итого 12.",
+        "type": "text",
+        "answers": ["12"],
+        "placeholder": "Байтов"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stddef.h>\n#include <stdio.h>\n\nstruct Row {\n    short id;\n    double score;\n    char grade;\n};\n\nint main(void) {\n    printf(\"%zu %zu %zu\\n\", offsetof(struct Row, score), offsetof(struct Row, grade), sizeof(struct Row));\n    return 0;\n}",
+        "explanation": "score выравнивается до 8, grade — сразу за ним на 16, размер округляется до кратного 8 — 24.",
+        "type": "text",
+        "answers": ["8 16 24"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Зачем нужен хвостовой заполнитель в конце структуры?",
+        "explanation": "Элемент arr[1] начинается через sizeof(struct) байтов от arr[0]; размер, кратный выравниванию, сохраняет выравнивание полей.",
+        "options": [
+          "Чтобы в массиве структур каждый элемент и его поля оставались выровненными",
+          "Чтобы хранить длину структуры",
+          "Чтобы защититься от переполнения буфера",
+          "Он не нужен, его добавляют по историческим причинам"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Какой порядок полей char, double, int, short даёт минимальный размер структуры?",
+        "explanation": "По убыванию выравнивания: 8 + 4 + 2 + 1 = 15, хвост до 16. В порядке char, double, short, int получилось бы 24.",
+        "options": [
+          "double, int, short, char",
+          "char, short, int, double",
+          "char, double, short, int",
+          "Порядок не влияет на размер"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Почему memcmp(&a, &b, sizeof a) — ненадёжный способ сравнить две структуры? Выберите все.",
+        "explanation": "memcmp сравнивает представление, а не значение. Для указателей на строки важно содержимое строк, а не совпадение адресов.",
+        "type": "multiple",
+        "options": [
+          "Заполнители могут содержать разный мусор",
+          "Для double одинаковые значения 0.0 и -0.0 имеют разные байты",
+          "memcmp не умеет сравнивать больше 8 байтов",
+          "Поля-указатели на одинаковые строки имеют разные адреса"
+        ],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q6",
+        "question": "Какой инструмент обнаружит печать байтов неинициализированного заполнителя?",
+        "explanation": "Memcheck отслеживает инициализированность каждого байта. ASan следит только за границами и временем жизни.",
+        "options": ["Valgrind (Memcheck)", "AddressSanitizer", "Компилятор при -O0", "Никакой"],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Сколько байтов сэкономит перестановка полей для массива из 1000 структур struct { char c; double d; char e; }?",
+        "explanation": "В исходном порядке размер 24 (c, 7 заполнителей, d, e, 7 хвоста), после перестановки d, c, e — 16. Экономия 8 · 1000.",
+        "type": "text",
+        "answers": ["8000"],
+        "placeholder": "Байтов"
+      }
+    ]
+  }
+}

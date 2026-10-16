@@ -1,0 +1,373 @@
+{
+  "id": "c17-dereference",
+  "title": "Разыменование, псевдонимы и const",
+  "description": "Чтение и запись через указатель, псевдонимы, приоритет (*p)++ и *p++, const-указатели и указатели на константы, опасность адреса локальной переменной.",
+  "moduleId": "c-fundamentals",
+  "order": 37,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
+  "prerequisites": ["c17-address-of"],
+  "objectives": [
+    "Использовать разыменованный указатель в выражениях и присваиваниях",
+    "Отслеживать псевдонимы — несколько имён одной ячейки памяти",
+    "Различать (*p)++ и *p++",
+    "Читать объявления const-указателей и применять указатели только для чтения",
+    "Объяснять, почему нельзя возвращать адрес локальной переменной"
+  ],
+  "tags": ["C17", "Указатели", "const", "Разыменование"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-dereference-task-1",
+    "title": "Регистры",
+    "description": "У программы два «регистра» — переменные `r0` и `r1`, вначале равные нулю, — и указатель `cur`, который сначала указывает на `r0`. Выполните команды до конца ввода:\n\n| Команда   | Действие                                      |\n| --------- | --------------------------------------------- |\n| `sel 0`   | `cur` указывает на `r0`                       |\n| `sel 1`   | `cur` указывает на `r1`                       |\n| `add k`   | прибавить `k` к регистру, на который указывает `cur` |\n| `mul k`   | умножить этот регистр на `k`                  |\n| `show`    | напечатать `r0` и `r1` через пробел           |",
+    "difficulty": "intermediate",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "add 5\nsel 1\nadd 3\nmul 4\nshow\nsel 0\nmul -2\nshow",
+        "output": "5 12\n-10 12\n"
+      },
+      {
+        "input": "show",
+        "output": "0 0\n"
+      }
+    ],
+    "constraints": [
+      "Команд не больше 1000; |k| ≤ 1000; значения регистров по модулю не превышают 10¹⁸."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Читайте имя команды через scanf(\"%9s\", cmd) в цикле до конца ввода и сравнивайте через strcmp.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "После sel, add и mul читайте число ещё одним scanf.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Все изменения — через *cur.",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "add 5\nsel 1\nadd 3\nmul 4\nshow\nsel 0\nmul -2\nshow",
+        "expected": "5 12\n-10 12\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "show",
+        "expected": "0 0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "sel 1\nadd 1000\nmul 1000\nmul 1000\nshow",
+        "expected": "0 1000000000\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "add -1\nsel 0\nadd -1\nshow\nsel 1\nshow",
+        "expected": "-2 0\n-2 0\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "mul 5\nadd 2\nmul 0\nshow",
+        "expected": "0 0\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "sel 1\nsel 0\nsel 1\nadd 7\nshow\nshow",
+        "expected": "0 7\n0 7\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "sel 1\nadd -1000\nmul -1000\nsel 0\nadd 999\nshow",
+        "expected": "999 1000000\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "add 1\nmul 2\nmul 2\nmul 2\nsel 1\nadd 1\nshow",
+        "expected": "8 1\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    long long r0 = 0, r1 = 0;\n    long long *cur = &r0;\n    char cmd[10];\n    while (scanf(\"%9s\", cmd) == 1) {\n        if (strcmp(cmd, \"show\") == 0) {\n            printf(\"%lld %lld\\n\", r0, r1);\n            continue;\n        }\n        long long k;\n        scanf(\"%lld\", &k);\n        if (strcmp(cmd, \"sel\") == 0) {\n            cur = k == 0 ? &r0 : &r1;\n        } else if (strcmp(cmd, \"add\") == 0) {\n            *cur += k;\n        } else if (strcmp(cmd, \"mul\") == 0) {\n            *cur *= k;\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Указатель `cur` выбирает, с какой переменной работают команды. Команды `add` и `mul` написаны один раз и не знают, какой регистр сейчас выбран, — это и есть смысл указателя: отделить «что делать» от «с чем делать».\n\nТак устроены настоящие процессоры: команды работают с регистрами, номер которых указан в инструкции.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-dereference-task-2",
+      "title": "Курсор",
+      "description": "Дан массив из `n` чисел и указатель-курсор, который сначала указывает на первый элемент. Выполните команды до конца ввода и в конце напечатайте массив.\n\n| Команда | Действие                                                         |\n| ------- | ---------------------------------------------------------------- |\n| `L`     | сдвинуть курсор на элемент влево (если он уже первый — остаётся) |\n| `R`     | сдвинуть курсор вправо (если уже последний — остаётся)           |\n| `+ k`   | прибавить `k` к элементу под курсором                            |\n| `= k`   | записать `k` в элемент под курсором                              |",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "5\n1 2 3 4 5\nR R + 10 L = 0 L L + 1",
+          "output": "2 0 13 4 5\n"
+        },
+        {
+          "input": "1\n7\nL R + 3",
+          "output": "10\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 1000; команд не больше 10 000; числа по модулю не больше 10⁶, итоговые значения помещаются в int."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Храните индекс курсора pos и указатель cur = &a[pos]; после каждого сдвига обновляйте cur.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Команду читайте через scanf(\" %c\", &cmd); для + и = — ещё число.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5\n1 2 3 4 5\nR R + 10 L = 0 L L + 1",
+          "expected": "2 0 13 4 5\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n7\nL R + 3",
+          "expected": "10\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "3\n0 0 0\nR R R R + 1 L L L L + 2",
+          "expected": "2 0 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "2\n5 5\n= 1 R = 2",
+          "expected": "1 2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "4\n1 1 1 1\n+ 1 R + 2 R + 3 R + 4",
+          "expected": "2 3 4 5\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "3\n1 2 3\nL L L",
+          "expected": "1 2 3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1\n0\n+ 1000000 = -1000000 + 5",
+          "expected": "-999995\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "5\n1 2 3 4 5\nR R R R R R = 9 L L L L L L = 8",
+          "expected": "8 2 3 4 9\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int a[1000];\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    int pos = 0;\n    int *cur = &a[pos];\n    char cmd;\n    while (scanf(\" %c\", &cmd) == 1) {\n        if (cmd == 'L' && pos > 0) {\n            pos--;\n            cur = &a[pos];\n        } else if (cmd == 'R' && pos < n - 1) {\n            pos++;\n            cur = &a[pos];\n        } else if (cmd == '+' || cmd == '=') {\n            int k;\n            scanf(\"%d\", &k);\n            if (cmd == '+') {\n                *cur += k;\n            } else {\n                *cur = k;\n            }\n        }\n    }\n    for (int i = 0; i < n; i++) {\n        if (i > 0) {\n            printf(\" \");\n        }\n        printf(\"%d\", a[i]);\n    }\n    printf(\"\\n\");\n    return 0;\n}\n",
+      "solutionExplanation": "Указатель на элемент массива — то, чем пользуются текстовые редакторы (курсор в тексте), интерпретаторы (указатель на текущую команду) и проигрыватели (позиция в файле). Индекс `pos` нужен, чтобы проверять границы; в уроке «Арифметика указателей» вы научитесь сдвигать сам указатель: `cur++`.\n\nГраничные проверки `pos > 0` и `pos < n - 1` не дают курсору выйти за массив.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-dereference-task-3",
+      "title": "Только для чтения",
+      "description": "Программа должна прочитать число, удвоить его через указатель и напечатать результат. Но она не компилируется: указатель объявлен «только для чтения». Исправьте объявление указателя.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int x;\n    scanf(\"%d\", &x);\n    const int *p = &x;\n    *p = *p * 2;\n    printf(\"%d\\n\", x);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "21",
+          "output": "42\n"
+        },
+        {
+          "input": "-5",
+          "output": "-10\n"
+        }
+      ],
+      "constraints": ["|x| ≤ 10⁸."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сообщение компилятора: assignment of read-only location. Какое слово в объявлении указателя запрещает запись?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Уберите const: указатель должен разрешать изменение данных.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "21",
+          "expected": "42\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "-5",
+          "expected": "-10\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "100000000",
+          "expected": "200000000\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "-100000000",
+          "expected": "-200000000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1",
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "7",
+          "expected": "14\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "-1",
+          "expected": "-2\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int x;\n    scanf(\"%d\", &x);\n    int *p = &x;\n    *p = *p * 2;\n    printf(\"%d\\n\", x);\n    return 0;\n}\n",
+      "solutionExplanation": "`const int *p` — обещание не изменять данные через `p`. Компилятор следит за обещанием и отказывается собирать запись `*p = …`. Если запись нужна, обещание нужно убрать.\n\nОбратная ситуация важнее на практике: если функции **не нужно** менять данные, объявляйте параметр как `const int *`. Компилятор тогда поймает случайную запись.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-dereference-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int x = 4;\n    int *p = &x, *q = p;\n    *q = *p * *q;\n    (*p)++;\n    printf(\"%d\\n\", x);\n    return 0;\n}",
+        "explanation": "p и q указывают на x. x = 4 · 4 = 16, затем (*p)++ даёт 17.",
+        "type": "text",
+        "answers": ["17"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int a[3] = {5, 6, 7};\n    int *p = &a[0];\n    int v = *p++;\n    printf(\"%d %d %d\\n\", v, *p, a[0]);\n    return 0;\n}",
+        "explanation": "*p++ читает a[0] = 5 и сдвигает указатель на a[1]. Сам a[0] не меняется.",
+        "type": "text",
+        "answers": ["5 6 5"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Что запрещает объявление const int *p?",
+        "explanation": "Читаем справа налево: p — указатель на константный int. Сам указатель можно перенаправить.",
+        "options": [
+          "Изменять данные через p: *p = …",
+          "Перенаправлять p на другой адрес",
+          "Читать *p",
+          "Всё сразу"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Какие операции допустимы для int *const p = &x;? Выберите все.",
+        "explanation": "Константен сам указатель — его нельзя перенаправить. Данные по нему менять можно.",
+        "type": "multiple",
+        "options": ["*p = 5;", "p = &y;", "printf(\"%d\", *p);", "(*p)++;"],
+        "correct": [0, 2, 3]
+      },
+      {
+        "id": "q5",
+        "question": "Что не так с функцией int *make(void) { int v = 1; return &v; }?",
+        "explanation": "После return локальная переменная перестаёт существовать. Указатель на неё — висячий.",
+        "options": [
+          "Она возвращает адрес переменной, которая исчезнет после выхода из функции",
+          "Функции не могут возвращать указатели",
+          "Нужно писать return *v",
+          "Ничего"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "int n; int *p = &n; Какой вызов прочитает число в n?",
+        "explanation": "p уже содержит адрес n. &p — адрес самого указателя, *p — значение n, а не адрес.",
+        "options": [
+          "scanf(\"%d\", p);",
+          "scanf(\"%d\", &p);",
+          "scanf(\"%d\", *p);",
+          "scanf(\"%d\", &*&p);"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

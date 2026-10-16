@@ -1,0 +1,118 @@
+{
+  "id": "advanced-binary-files",
+  "title": "Binary files",
+  "description": "Бинарный формат задаёт байты, их порядок и смысл независимо от представления структур компилятора.",
+  "moduleId": "advanced-c",
+  "order": 23,
+  "difficulty": "advanced",
+  "estimatedMinutes": 40,
+  "prerequisites": ["advanced-registers"],
+  "objectives": [
+    "Объяснить: Binary files",
+    "Различать корректный контракт и ошибку: fwrite(&record, sizeof record, 1, file) не определяет переносимый формат.",
+    "Реализовать и проверить практику на обычном и граничном вводе"
+  ],
+  "tags": ["C17", "углублённый C", "Binary files"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "advanced-binary-files-exercise",
+    "title": "Практика: Binary files",
+    "description": "Ввод два десятичных октета lo и hi 0…255. Декодируйте little-endian unsigned 16-bit число без чтения через приведённый указатель.",
+    "difficulty": "advanced",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "52 18",
+        "output": "4660\n",
+        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+      },
+      {
+        "input": "0 0",
+        "output": "0\n",
+        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
+      "В stdout только требуемый результат.",
+      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Файл — договор о последовательности байтов, а не фотография struct в памяти."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "fwrite(&record, sizeof record, 1, file) не определяет переносимый формат."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "test-1",
+        "name": "Основной сценарий",
+        "stdin": "52 18",
+        "expected": "4660\n"
+      },
+      {
+        "id": "test-2",
+        "name": "Граничный сценарий 1",
+        "stdin": "0 0",
+        "expected": "0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "test-3",
+        "name": "Граничный сценарий 2",
+        "stdin": "255 255",
+        "expected": "65535\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    unsigned lo,hi;if(scanf(\"%u%u\",&lo,&hi)!=2 || lo>255 || hi>255)return 1;\n    printf(\"%u\\n\",lo | (hi << 8));\n    return 0;\n}\n",
+    "solutionExplanation": "Файл — договор о последовательности байтов, а не фотография struct в памяти.\n\nfwrite(&record, sizeof record, 1, file) не определяет переносимый формат.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '52 18' → '4660\\n'; '0 0' → '0\\n'; '255 255' → '65535\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "advanced-binary-files-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "concept",
+        "question": "Что нужно фиксировать в формате?",
+        "options": ["Размеры полей и порядок байтов", "Только имя C-структуры"],
+        "correct": 0,
+        "explanation": "Бинарный формат задаёт байты, их порядок и смысл независимо от представления структур компилятора. Запись struct целиком переносит padding, размер типов и порядок байтов машины; такой файл не становится переносимым протоколом. Задайте сигнатуру, версию, длины и способ кодирования чисел явно."
+      },
+      {
+        "id": "mistake",
+        "question": "Какое утверждение корректно?",
+        "options": [
+          "Успешный вывод одного примера доказывает корректность на всех входах.",
+          "fwrite(&record, sizeof record, 1, file) не определяет переносимый формат."
+        ],
+        "correct": 1,
+        "explanation": "Файл — договор о последовательности байтов, а не фотография struct в памяти."
+      },
+      {
+        "id": "trace",
+        "question": "Какой stdout выдаст запускаемый пример урока?",
+        "options": ["2 1", "Ошибка компиляции при корректном C17", "Никакого вывода"],
+        "correct": 0,
+        "explanation": "Проследите значения последовательно: unsigned value=258;printf(\"%u %u\\n\",value & 255u,(value >> 8) & 255u); Ожидаемый результат: 2 1"
+      }
+    ]
+  }
+}

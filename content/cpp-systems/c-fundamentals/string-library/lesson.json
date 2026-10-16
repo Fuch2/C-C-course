@@ -1,0 +1,539 @@
+{
+  "id": "c17-string-library",
+  "title": "Функции для строк: string.h",
+  "description": "strlen, strcpy, strcat, безопасная сборка строк через snprintf, сравнение strcmp, поиск strchr и strstr, типичные ошибки работы со строками.",
+  "moduleId": "c-fundamentals",
+  "order": 33,
+  "difficulty": "beginner",
+  "estimatedMinutes": 50,
+  "prerequisites": ["c17-c-strings"],
+  "objectives": [
+    "Отличать длину строки от размера массива",
+    "Копировать и склеивать строки, проверяя размер буфера",
+    "Собирать строки безопасно с помощью snprintf",
+    "Сравнивать строки через strcmp и искать в них через strchr и strstr"
+  ],
+  "tags": ["C17", "Строки", "string.h", "strcmp"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-string-library-task-1",
+    "title": "Какое слово раньше",
+    "description": "Прочитайте два слова и напечатайте `<`, если первое идёт раньше второго при сравнении по кодам символов, `>` — если позже, и `=` — если слова одинаковые.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "apple banana",
+        "output": "<\n"
+      },
+      {
+        "input": "abc abc",
+        "output": "=\n"
+      }
+    ],
+    "constraints": ["Слова из латинских букв и цифр, длина каждого от 1 до 100."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "int r = strcmp(a, b); и три ветки по знаку r.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "strcmp возвращает отрицательное число, ноль или положительное число — не обязательно −1, 0 и 1. Сравнивайте результат с нулём.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "apple banana",
+        "expected": "<\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "abc abc",
+        "expected": "=\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "banana apple",
+        "expected": ">\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "abc abcd",
+        "expected": "<\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "abcd abc",
+        "expected": ">\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "Zoo apple",
+        "expected": "<\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "a1 a2",
+        "expected": "<\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "x x",
+        "expected": "=\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char a[101], b[101];\n    scanf(\"%100s %100s\", a, b);\n    int r = strcmp(a, b);\n    if (r < 0) {\n        printf(\"<\\n\");\n    } else if (r > 0) {\n        printf(\">\\n\");\n    } else {\n        printf(\"=\\n\");\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Результат `strcmp` сохраняется в переменную и сравнивается с нулём — конкретные значения вроде −1 или −17 стандарт не гарантирует.\n\nТесты включают префиксы (`abc` и `abcd`) и разный регистр: заглавные буквы имеют меньшие коды, поэтому `Zoo < apple`.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-string-library-task-2",
+      "title": "Самое длинное слово",
+      "description": "Во вводе — слова до конца ввода. Напечатайте самое длинное слово и его длину через пробел. Если таких несколько, напечатайте то, что встретилось первым.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "C is a powerful language",
+          "output": "powerful 8\n",
+          "explanation": "powerful и language одной длины — выбирается первое."
+        },
+        {
+          "input": "one two six",
+          "output": "one 3\n"
+        }
+      ],
+      "constraints": ["От 1 до 1000 слов, каждое от 1 до 100 латинских букв."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Читайте слова в цикле while (scanf(\"%100s\", word) == 1).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Новое лучшее — только при строго большей длине. Копируйте его в отдельный массив через strcpy.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "C is a powerful language",
+          "expected": "powerful 8\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "one two six",
+          "expected": "one 3\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "x",
+          "expected": "x 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "aa bb cc ddd ee fff",
+          "expected": "ddd 3\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "supercalifragilisticexpialidocious\nshort",
+          "expected": "supercalifragilisticexpialidocious 34\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "a\nab\nabc\nabcd",
+          "expected": "abcd 4\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "abc abd abe",
+          "expected": "abc 3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "expected": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa 100\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char word[101], best[101] = \"\";\n    size_t best_length = 0;\n    while (scanf(\"%100s\", word) == 1) {\n        size_t length = strlen(word);\n        if (length > best_length) {\n            best_length = length;\n            strcpy(best, word);\n        }\n    }\n    printf(\"%s %zu\\n\", best, best_length);\n    return 0;\n}\n",
+      "solutionExplanation": "Шаблон «лучший на данный момент» работает и для строк, только вместо присваивания — `strcpy`: массив `word` перезаписывается при каждом чтении, и лучшее слово нужно сохранить в отдельном месте.\n\nСтрогое `>` оставляет первое из слов одинаковой длины. `strcpy` здесь безопасен: оба массива по 101 байту, а прочитанное слово не длиннее 100 символов.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-string-library-task-3",
+      "title": "Сколько раз встречается",
+      "description": "В первой строке — текст, во второй — образец (одно слово). Напечатайте, сколько раз образец встречается в тексте как подстрока. Вхождения могут перекрываться: в `aaaa` образец `aa` встречается 3 раза.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "the cat and the hat\nthe",
+          "output": "2\n"
+        },
+        {
+          "input": "aaaa\naa",
+          "output": "3\n"
+        }
+      ],
+      "constraints": ["Длина текста до 1000 символов, образца — от 1 до 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Текст читайте через fgets, образец — через scanf(\"%100s\").",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Ищите strstr, начиная с позиции после начала предыдущей находки: p = strstr(p + 1, pattern).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "the cat and the hat\nthe",
+          "expected": "2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "aaaa\naa",
+          "expected": "3\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "hello\nworld",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "abababab\naba",
+          "expected": "3\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "x\nx",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "mississippi\nissi",
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "aaa\naaaa",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "ab ab ab\nab b",
+          "expected": "3\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char text[1002], pattern[101];\n    if (fgets(text, sizeof(text), stdin) == NULL) {\n        return 0;\n    }\n    scanf(\"%100s\", pattern);\n    int count = 0;\n    char *p = strstr(text, pattern);\n    while (p != NULL) {\n        count++;\n        p = strstr(p + 1, pattern);\n    }\n    printf(\"%d\\n\", count);\n    return 0;\n}\n",
+      "solutionExplanation": "`strstr` возвращает место первой находки. Следующий поиск начинается на один символ дальше — так находятся и перекрывающиеся вхождения. Если сдвигаться на длину образца, считались бы только неперекрывающиеся.\n\nПеревод строки, оставшийся в `text` после `fgets`, здесь не мешает: образец из букв с ним не совпадёт.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-string-library-task-4",
+      "title": "Склейка через дефис",
+      "description": "Во вводе — число `n`, затем `n` слов. Склейте их в одну строку через дефис и напечатайте результат и его длину через пробел.\n\n**Пример:** `3 low level code` → `low-level-code 14`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "3\nlow level code",
+          "output": "low-level-code 14\n"
+        },
+        {
+          "input": "1\nsingle",
+          "output": "single 6\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 50; слова из 1–20 латинских букв."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Наибольший результат — 50 · 20 + 49 дефисов = 1049 символов. Буфер на 1100 байт хватит.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Начните с пустой строки result[0] = '\\0'. Перед каждым словом, кроме первого, — strcat(result, \"-\").",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\nlow level code",
+          "expected": "low-level-code 14\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nsingle",
+          "expected": "single 6\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "2\na b",
+          "expected": "a-b 3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "5\nthe quick brown fox jumps",
+          "expected": "the-quick-brown-fox-jumps 25\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "4\nx y z w",
+          "expected": "x-y-z-w 7\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "2\nabcdefghijklmnopqrst abcdefghijklmnopqrst",
+          "expected": "abcdefghijklmnopqrst-abcdefghijklmnopqrst 41\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "3\nC is fun",
+          "expected": "C-is-fun 8\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "50\na ab abc abcd abcde abcdef abcdefg abcdefgh abcdefghi abcdefghij abcdefghijk abcdefghijkl abcdefghijklm abcdefghijklmn abcdefghijklmno abcdefghijklmnop abcdefghijklmnopq abcdefghijklmnopqr abcdefghijklmnopqrs abcdefghijklmnopqrst a ab abc abcd abcde abcdef abcdefg abcdefgh abcdefghi abcdefghij abcdefghijk abcdefghijkl abcdefghijklm abcdefghijklmn abcdefghijklmno abcdefghijklmnop abcdefghijklmnopq abcdefghijklmnopqr abcdefghijklmnopqrs abcdefghijklmnopqrst a ab abc abcd abcde abcdef abcdefg abcdefgh abcdefghi abcdefghij",
+          "expected": "a-ab-abc-abcd-abcde-abcdef-abcdefg-abcdefgh-abcdefghi-abcdefghij-abcdefghijk-abcdefghijkl-abcdefghijklm-abcdefghijklmn-abcdefghijklmno-abcdefghijklmnop-abcdefghijklmnopq-abcdefghijklmnopqr-abcdefghijklmnopqrs-abcdefghijklmnopqrst-a-ab-abc-abcd-abcde-abcdef-abcdefg-abcdefgh-abcdefghi-abcdefghij-abcdefghijk-abcdefghijkl-abcdefghijklm-abcdefghijklmn-abcdefghijklmno-abcdefghijklmnop-abcdefghijklmnopq-abcdefghijklmnopqr-abcdefghijklmnopqrs-abcdefghijklmnopqrst-a-ab-abc-abcd-abcde-abcdef-abcdefg-abcdefgh-abcdefghi-abcdefghij 524\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char result[1100];\n    result[0] = '\\0';\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        char word[21];\n        scanf(\"%20s\", word);\n        if (i > 0) {\n            strcat(result, \"-\");\n        }\n        strcat(result, word);\n    }\n    printf(\"%s %zu\\n\", result, strlen(result));\n    return 0;\n}\n",
+      "solutionExplanation": "`strcat` ищет конец существующей строки, поэтому `result` обязательно начинается как пустая строка — с `'\\0'` в первом байте. Размер буфера рассчитан заранее по ограничениям: худший случай — 1049 символов плюс `'\\0'`.\n\nКаждый `strcat` проходит строку с начала, чтобы найти её конец, — для 50 слов это неважно, но для тысяч частей лучше хранить текущую длину и дописывать сразу в конец.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-string-library-task-5",
+      "title": "Три слова по порядку",
+      "description": "Прочитайте три слова и напечатайте их в порядке возрастания по `strcmp`, каждое на отдельной строке.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "pear apple fig",
+          "output": "apple\nfig\npear\n"
+        },
+        {
+          "input": "b a a",
+          "output": "a\na\nb\n"
+        }
+      ],
+      "constraints": ["Слова из 1–50 латинских букв."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Тот же алгоритм, что для трёх чисел в уроке if: три сравнения с обменом.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Обмен строк — через временный массив и три strcpy.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "pear apple fig",
+          "expected": "apple\nfig\npear\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "b a a",
+          "expected": "a\na\nb\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "a b c",
+          "expected": "a\nb\nc\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "c b a",
+          "expected": "a\nb\nc\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "Banana apple Cherry",
+          "expected": "Banana\nCherry\napple\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "same same same",
+          "expected": "same\nsame\nsame\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "ab a abc",
+          "expected": "a\nab\nabc\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "zz z zzz",
+          "expected": "z\nzz\nzzz\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nvoid swap_words(char a[], char b[]) {\n    char tmp[51];\n    strcpy(tmp, a);\n    strcpy(a, b);\n    strcpy(b, tmp);\n}\n\nint main(void) {\n    char a[51], b[51], c[51];\n    scanf(\"%50s %50s %50s\", a, b, c);\n    if (strcmp(a, b) > 0) {\n        swap_words(a, b);\n    }\n    if (strcmp(b, c) > 0) {\n        swap_words(b, c);\n    }\n    if (strcmp(a, b) > 0) {\n        swap_words(a, b);\n    }\n    printf(\"%s\\n%s\\n%s\\n\", a, b, c);\n    return 0;\n}\n",
+      "solutionExplanation": "Алгоритм тот же, что для чисел, но строки нельзя обменять присваиванием — только копированием содержимого. Функция `swap_words` меняет массивы вызывающего кода: массивы передаются без копирования.\n\nВсе массивы одного размера, поэтому `strcpy` между ними безопасен.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-string-library-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char s[20] = \"abc\";\n    strcat(s, \"de\");\n    printf(\"%zu %zu\\n\", strlen(s), sizeof(s));\n    return 0;\n}",
+        "explanation": "После склеивания строка «abcde» длиной 5. Размер массива не меняется — 20 байт.",
+        "type": "text",
+        "answers": ["5 20"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    printf(\"%d %d %d\\n\", strcmp(\"cat\", \"car\") > 0, strcmp(\"dog\", \"dogs\") < 0, strcmp(\"B\", \"a\") < 0);\n    return 0;\n}",
+        "explanation": "'t' > 'r', поэтому cat > car. Префикс dog короче dogs — идёт раньше. 'B' (66) < 'a' (97).",
+        "type": "text",
+        "answers": ["1 1 1"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Когда условие if (strcmp(a, b)) истинно?",
+        "explanation": "strcmp возвращает 0 для равных строк, а 0 — это «ложь». Ненулевой результат означает различие.",
+        "options": ["Когда строки различаются", "Когда строки равны", "Всегда", "Никогда"],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что вернёт snprintf(buf, 8, \"%d\", 123456789)?",
+        "explanation": "snprintf возвращает длину полной строки — 9 символов, хотя в буфер записаны только 7 символов и \\0. Сравнение 9 >= 8 показывает, что произошла обрезка.",
+        "type": "text",
+        "answers": ["9"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q5",
+        "question": "Какие вызовы опасны для массива char buf[8]? Выберите все.",
+        "explanation": "strcpy длинной строки переполнит массив. strcat в неинициализированный массив ищет конец строки в мусоре. snprintf с размером безопасен, короткая строка помещается.",
+        "type": "multiple",
+        "options": [
+          "strcpy(buf, \"overflowing\");",
+          "snprintf(buf, sizeof(buf), \"%s\", \"overflowing\");",
+          "char t[8]; strcat(t, \"x\");",
+          "strcpy(buf, \"ok\");"
+        ],
+        "correct": [0, 2]
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char s[] = \"banana\";\n    char *p = strchr(s, 'n');\n    printf(\"%td %s\\n\", p - s, p);\n    return 0;\n}",
+        "explanation": "Первая буква n стоит на позиции 2. %s печатает строку, начиная с найденного места: nana.",
+        "type": "text",
+        "answers": ["2 nana"],
+        "placeholder": "Вывод программы"
+      }
+    ]
+  }
+}

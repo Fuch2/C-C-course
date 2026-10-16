@@ -1,0 +1,122 @@
+{
+  "id": "cpp20-range-for",
+  "title": "range-based for",
+  "description": "Цикл по диапазону выражает обход контейнера и уменьшает ошибки индексов. Нужна ссылка для изменения и const-ссылка для чтения без копирования.",
+  "moduleId": "cpp-fundamentals",
+  "order": 9,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["cpp20-auto"],
+  "objectives": [
+    "Объяснить, зачем появился range-based for и какую проблему он решает.",
+    "Сравнить стоимость и ограничения с аналогом в C.",
+    "Применить инструмент в задаче обработки данных."
+  ],
+  "tags": ["C++20", "основы C++", "range-based for"],
+  "published": true,
+  "standard": "c++20",
+  "completion": "practice",
+  "exercise": {
+    "id": "cpp20-range-for-exercise",
+    "title": "Преобразование ASCII-команды",
+    "description": "Прочитайте ASCII-строку длиной до 200. В range-based for через char& замените a…z на соответствующие заглавные. Остальные ASCII-символы сохраните. Выведите результат. Не используйте индексы и locale-зависимое преобразование.",
+    "difficulty": "intermediate",
+    "language": "cpp",
+    "standard": "c++20",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
+    "examples": [
+      {
+        "input": "start x1",
+        "output": "START X1\n",
+        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+      },
+      {
+        "input": "",
+        "output": "\n",
+        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Используйте C++20 и стандартную библиотеку.",
+      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
+      "Выводите только требуемый результат."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "start x1",
+        "expected": "START X1\n"
+      },
+      { "id": "case-2", "name": "Пример 2", "stdin": "", "expected": "\n" }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "stdin": "aZ09_!",
+        "expected": "AZ09_!\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "stdin": "  ab  ",
+        "expected": "  AB  \n"
+      }
+    ],
+    "referenceSolution": "#include <iostream>\n#include <string>\n\nvoid uppercase_ascii(std::string& text) {\n    for (char& ch : text) {\n        if (ch >= 'a' && ch <= 'z') ch = static_cast<char>(ch - 'a' + 'A');\n    }\n}\nint main() {\n    std::string text;\n    std::getline(std::cin, text);\n    uppercase_ascii(text);\n    std::cout << text << '\\n';\n}\n",
+    "solutionExplanation": "char& привязывается к элементу; char ch изменял бы копию. Длина строки не меняется, итераторы остаются действительными. Алгоритм рассчитан на ASCII, а не Unicode. Один проход — O(n) времени и O(1) рабочей памяти.",
+    "checking": { "type": "stdout", "comparison": "exact" }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "cpp20-range-for-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "purpose",
+        "question": "Что важно помнить в теме «range-based for»?",
+        "options": [
+          "Выбирать инструмент по контракту, времени, памяти и владению",
+          "Всегда переписывать решение через указатели C"
+        ],
+        "correct": 0,
+        "explanation": "Цикл по диапазону выражает обход контейнера и уменьшает ошибки индексов. Нужна ссылка для изменения и const-ссылка для чтения без копирования."
+      },
+      {
+        "id": "cost",
+        "question": "Что нужно учитывать при выборе инструмента?",
+        "options": [
+          "Только длину исходного кода",
+          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
+        ],
+        "correct": 1,
+        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+      },
+      {
+        "id": "mistake",
+        "question": "Как избежать типичной ошибки?",
+        "options": [
+          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
+          "Считать C-подход рекомендуемым стилем в любой задаче"
+        ],
+        "correct": 0,
+        "explanation": "Используйте range-based for как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+      }
+    ]
+  }
+}

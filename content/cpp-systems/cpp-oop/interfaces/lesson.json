@@ -1,0 +1,227 @@
+{
+  "id": "oop-interfaces",
+  "title": "Интерфейсы: минимальные зависимости",
+  "description": "В C++ нет отдельного ключевого слова interface. Интерфейс обычно выражают абстрактным классом с небольшим набором чисто виртуальных операций и подходящим деструктором. Он описывает не только сигнатуру, но и смысл: единицы, допустимые аргументы, состояние после вызова, возможные ошибки. Два метода с одинаковыми типами ещё не означают одинаковый контракт.",
+  "moduleId": "cpp-oop",
+  "order": 21,
+  "difficulty": "advanced",
+  "estimatedMinutes": 60,
+  "prerequisites": ["oop-virtual-destructor"],
+  "objectives": [
+    "Применить Интерфейсы: минимальные зависимости в работающем C++20 коде.",
+    "Проследить состояние и время жизни объектов в примере.",
+    "Реализовать контракт практики и проверить граничные случаи."
+  ],
+  "tags": ["C++20", "ООП", "Интерфейсы: минимальные зависимости", "датчики", "проект"],
+  "published": true,
+  "standard": "c++20",
+  "completion": "practice",
+  "exercise": {
+    "id": "oop-interfaces-exercise",
+    "title": "Практика: Интерфейсы: минимальные зависимости",
+    "description": "Создайте Reader с pure virtual int read() const и виртуальным деструктором. ConstantReader(int) реализует его. int difference(const Reader& left,const Reader& right) возвращает left.read()-right.read(). solve(a,b) передаёт два ConstantReader в difference. Функция difference не должна зависеть от ConstantReader. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
+    "difficulty": "advanced",
+    "language": "cpp",
+    "standard": "c++20",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "solve(8, 3)",
+        "output": "5\n",
+        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+      },
+      {
+        "input": "solve(0, 0)",
+        "output": "0\n",
+        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+      }
+    ],
+    "constraints": [
+      "Аргументы a, b — целые от −1000 до 1000 включительно.",
+      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
+      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "arguments": [8, 3],
+        "expected": "5\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "arguments": [0, 0],
+        "expected": "0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "arguments": [-2, 5],
+        "expected": "-7\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "arguments": [1000, -1000],
+        "expected": "2000\n"
+      }
+    ],
+    "referenceSolution": "struct Reader { virtual int read() const = 0; virtual ~Reader() = default; };\nclass ConstantReader : public Reader { int value_; public: explicit ConstantReader(int x) : value_(x) {} int read() const override { return value_; } };\nint difference(const Reader& left,const Reader& right) { return left.read()-right.read(); }\nint solve(int a,int b) { ConstantReader x{a},y{b}; return difference(x,y); }",
+    "solutionExplanation": "Создайте Reader с pure virtual int read() const и виртуальным деструктором. ConstantReader(int) реализует его. int difference(const Reader& left,const Reader& right) возвращает left.read()-right.read(). solve(a,b) передаёт два ConstantReader в difference. Функция difference не должна зависеть от ConstantReader. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не добавляйте в Sensor метод сохранения отчёта: он принадлежит потребителю телеметрии. Не заставляйте фильтр знать конкретный класс датчика. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "checking": {
+      "type": "function",
+      "functionName": "solve",
+      "returnType": "int",
+      "parameters": [
+        { "name": "a", "type": "int" },
+        { "name": "b", "type": "int" }
+      ]
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "oop-project-filter",
+      "title": "Проект, этап 2: инвариант фильтра",
+      "description": "Реализуйте Measurement{int sensorId,int value} и Filter(int low,int high). Границы private, конструктор бросает std::invalid_argument при low>high. bool accepts(const Measurement&) const использует замкнутый диапазон. solve(a,b) создаёт Filter{a,b} и возвращает количество принятых измерений с value −100, 0, 100 (id=1,2,3 соответственно); при std::invalid_argument возвращает −1. Аргументы целые −1000…1000. Без main. Не перехватывайте другие исключения.",
+      "difficulty": "advanced",
+      "language": "cpp",
+      "standard": "c++20",
+      "compiler": "clang",
+      "diagnostics": "sanitizers",
+      "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <stdexcept>\n#include <utility>\nstruct Measurement { int sensorId; int value; };\nclass Filter {\n    int low_; int high_;\npublic:\n    Filter(int low, int high) : low_(low), high_(high) {\n        // Добавьте проверку инварианта границ.\n    }\n    bool accepts(const Measurement& m) const {\n        (void)m; (void)low_; (void)high_;\n        throw std::logic_error(\"Реализуйте проверку диапазона\");\n    }\n};\nint solve(int a,int b) { (void)a; (void)b; throw std::logic_error(\"Проверьте три измерения и обработайте отказ конструктора\"); }",
+      "examples": [
+        {
+          "input": "solve(-100, 100)",
+          "output": "3\n",
+          "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        },
+        {
+          "input": "solve(0, 0)",
+          "output": "1\n",
+          "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        }
+      ],
+      "constraints": [
+        "Аргументы a, b — целые от −1000 до 1000 включительно.",
+        "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
+        "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "order": 1,
+          "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        },
+        {
+          "id": "hint-2",
+          "order": 2,
+          "text": "Проверка в конструкторе исключает существование ошибочного фильтра. accepts не зависит от вида датчика и не меняет измерение. Обе границы включены; точечный диапазон допустим. Один вызов O(1), тестовый обход трёх значений O(1)."
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "arguments": [-100, 100],
+          "expected": "3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "arguments": [0, 0],
+          "expected": "1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "case-3",
+          "name": "Граничный сценарий 1",
+          "arguments": [1, -1],
+          "expected": "-1\n"
+        },
+        {
+          "id": "case-4",
+          "name": "Граничный сценарий 2",
+          "arguments": [-99, 99],
+          "expected": "1\n"
+        },
+        {
+          "id": "case-5",
+          "name": "Граничный сценарий 3",
+          "arguments": [101, 1000],
+          "expected": "0\n"
+        },
+        {
+          "id": "case-6",
+          "name": "Граничный сценарий 4",
+          "arguments": [-100, -100],
+          "expected": "1\n"
+        },
+        {
+          "id": "case-7",
+          "name": "Граничный сценарий 5",
+          "arguments": [100, 100],
+          "expected": "1\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <stdexcept>\n#include <utility>\nstruct Measurement { int sensorId; int value; };\nclass Filter {\n    int low_;\n    int high_;\npublic:\n    Filter(int low, int high) : low_(low), high_(high) {\n        if (low > high) throw std::invalid_argument(\"Некорректный диапазон\");\n    }\n    bool accepts(const Measurement& m) const {\n        return low_ <= m.value && m.value <= high_;\n    }\n};\nint solve(int a,int b) { try { Filter f{a,b}; int count=0; for (const auto& m : std::vector<Measurement>{{1,-100},{2,0},{3,100}}) if(f.accepts(m)) ++count; return count; } catch(const std::invalid_argument&) { return -1; } }",
+      "solutionExplanation": "Проверка в конструкторе исключает существование ошибочного фильтра. accepts не зависит от вида датчика и не меняет измерение. Обе границы включены; точечный диапазон допустим. Один вызов O(1), тестовый обход трёх значений O(1).",
+      "checking": {
+        "type": "function",
+        "functionName": "solve",
+        "returnType": "int",
+        "parameters": [
+          { "name": "a", "type": "int" },
+          { "name": "b", "type": "int" }
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "oop-interfaces-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "contract",
+        "question": "От какого типа должен зависеть алгоритм difference?",
+        "options": ["От минимального Reader", "От каждого конкретного датчика отдельно"],
+        "correct": 0,
+        "explanation": "Отделите чтение от настройки. Источник, который умеет только читать, не должен притворяться настраиваемым и выбрасывать исключение из обязательного configure. Для тестирования алгоритма реализуйте TestSource с заранее известными показаниями. Это настоящий объект с тем же контрактом, а не подмена выполнения интерфейса пользователю. Производственная реализация в проекте обрабатывает детерминированные сырые данные; подключение реального оборудования осталось бы задачей отдельного адаптера."
+      },
+      {
+        "id": "trace",
+        "question": "Какой вывод даёт запускаемый пример этого урока?",
+        "options": ["Ошибка компиляции", "12", "Программа ничего не выводит"],
+        "correct": 1,
+        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 12. В C++ нет отдельного ключевого слова interface. Интерфейс обычно выражают абстрактным классом с небольшим набором чисто виртуальных операций и подходящим деструктором. Он описывает не только сигнатуру, но и смысл: единицы, допустимые аргументы, состояние после вызова, возможные ошибки. Два метода с одинаковыми типами ещё не означают одинаковый контракт."
+      },
+      {
+        "id": "review",
+        "question": "Какое замечание нужно учесть при ревью решения?",
+        "options": [
+          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
+          "Не добавляйте в Sensor метод сохранения отчёта: он принадлежит потребителю телеметрии. Не заставляйте фильтр знать конкретный класс датчика."
+        ],
+        "correct": 1,
+        "explanation": "Добавьте датчик, не поддерживающий настройку. Он по-прежнему должен удовлетворять Reader. Если пришлось добавить пустой configure, интерфейс слишком широк. Для теста алгоритма используйте источник со счётчиком чтений: так обнаруживается лишний read с побочным эффектом."
+      }
+    ]
+  }
+}

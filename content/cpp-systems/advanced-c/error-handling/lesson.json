@@ -1,0 +1,234 @@
+{
+  "id": "advanced-error-handling",
+  "title": "Error handling в C",
+  "description": "В C ошибки обычно представлены статусом возврата и отдельным выходным параметром.",
+  "moduleId": "advanced-c",
+  "order": 26,
+  "difficulty": "advanced",
+  "estimatedMinutes": 100,
+  "prerequisites": ["advanced-fread-fwrite"],
+  "objectives": [
+    "Объяснить: Error handling в C",
+    "Различать корректный контракт и ошибку: Ноль бывает корректным результатом; его нельзя одновременно использовать как единственный признак ошибки.",
+    "Реализовать и проверить практику на обычном и граничном вводе"
+  ],
+  "tags": ["C17", "углублённый C", "Error handling в C"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "advanced-error-handling-exercise",
+    "title": "Практика: Error handling в C",
+    "description": "Реализуйте divide(a,b,out): при b=0 ошибка и out не меняется. Ввод a,b −1000…1000; выведите целочисленное частное либо ОШИБКА.",
+    "difficulty": "advanced",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "9 2",
+        "output": "4\n",
+        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+      },
+      {
+        "input": "0 2",
+        "output": "0\n",
+        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
+      "В stdout только требуемый результат.",
+      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Функция возвращает два канала: статус операции и данные, действительные только при успехе."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Ноль бывает корректным результатом; его нельзя одновременно использовать как единственный признак ошибки."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "test-1",
+        "name": "Основной сценарий",
+        "stdin": "9 2",
+        "expected": "4\n"
+      },
+      {
+        "id": "test-2",
+        "name": "Граничный сценарий 1",
+        "stdin": "0 2",
+        "expected": "0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "test-3",
+        "name": "Граничный сценарий 2",
+        "stdin": "1 0",
+        "expected": "ОШИБКА\n"
+      },
+      {
+        "id": "test-4",
+        "name": "Граничный сценарий 3",
+        "stdin": "-9 2",
+        "expected": "-4\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\nstatic int divide(int a,int b,int *out){if(b==0)return -1;*out=a/b;return 0;}\nint main(void) {\n    int a,b,result=0;if(scanf(\"%d%d\",&a,&b)!=2)return 1;\n    if(divide(a,b,&result)!=0)puts(\"ОШИБКА\");else printf(\"%d\\n\",result);\n    return 0;\n}\n",
+    "solutionExplanation": "Функция возвращает два канала: статус операции и данные, действительные только при успехе.\n\nНоль бывает корректным результатом; его нельзя одновременно использовать как единственный признак ошибки.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '9 2' → '4\\n'; '0 2' → '0\\n'; '1 0' → 'ОШИБКА\\n'; '-9 2' → '-4\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "advanced-project-measurement-log",
+      "title": "Анализатор журнала измерений",
+      "description": "Прочитайте файл с показаниями датчиков и вычислите min, max, average, число измерений и число ошибочных строк. Формат каждой строки: timestamp,value. timestamp — десятичное целое 0…1000000; value — конечное число −1000…1000, распознаваемое strtod в стандартной C locale. Допускаются пробелы вокруг чисел и в конце строки. После значения других символов быть не должно. Дубликаты timestamp допустимы. Пустая строка, неверный разделитель, NaN/Inf, переполнение и строка длиннее 127 байтов считаются одной ошибкой каждая. Вход содержит не более 200 строк. Последняя строка может не иметь перевода строки.\n\nПри наличии измерений выведите: count min max average errors; числа с двумя знаками после точки. Без корректных измерений выведите НЕТ ДАННЫХ errors. Нулевой результат форматируйте без минуса. Ошибка чтения/создания файла завершает программу ненулевым кодом, а не увеличивает errors.\n\nАдаптер копирует stdin в tmpfile и перемещается к началу; функция analyze(FILE*) читает именно этот файл. Файл в браузерном тесте передаётся своим текстовым содержимым. Не загружайте весь журнал в массив измерений: достаточно текущей строки и накопителей.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "clang",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "1,10\n2,20\n3,-3\n",
+          "output": "3 -3.00 20.00 9.00 0\n",
+          "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        },
+        {
+          "input": "bad\n1,5\n2,nan\n",
+          "output": "1 5.00 5.00 5.00 2\n",
+          "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        }
+      ],
+      "constraints": [
+        "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
+        "В stdout только требуемый результат.",
+        "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "order": 1,
+          "text": "Инициализируйте min и max первым корректным измерением; не начинайте с нуля."
+        },
+        {
+          "id": "hint-2",
+          "order": 2,
+          "text": "После strtod проверьте end, errno, isfinite и оставшийся хвост."
+        },
+        {
+          "id": "hint-3",
+          "order": 3,
+          "text": "Переполненную строку дочитайте до newline, начислив одну ошибку."
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "test-1",
+          "name": "Основной сценарий",
+          "stdin": "1,10\n2,20\n3,-3\n",
+          "expected": "3 -3.00 20.00 9.00 0\n"
+        },
+        {
+          "id": "test-2",
+          "name": "Граничный сценарий 1",
+          "stdin": "bad\n1,5\n2,nan\n",
+          "expected": "1 5.00 5.00 5.00 2\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "test-3",
+          "name": "Граничный сценарий 2",
+          "stdin": "",
+          "expected": "НЕТ ДАННЫХ 0\n"
+        },
+        {
+          "id": "test-4",
+          "name": "Граничный сценарий 3",
+          "stdin": "\nabc\n",
+          "expected": "НЕТ ДАННЫХ 2\n"
+        },
+        {
+          "id": "test-5",
+          "name": "Граничный сценарий 4",
+          "stdin": "0,-10\n1,-20",
+          "expected": "2 -20.00 -10.00 -15.00 0\n"
+        },
+        {
+          "id": "test-6",
+          "name": "Граничный сценарий 5",
+          "stdin": "1,inf\n2,1x\n3,1e999\n4,0\n",
+          "expected": "1 0.00 0.00 0.00 3\n"
+        },
+        {
+          "id": "test-7",
+          "name": "Граничный сценарий 6",
+          "stdin": " 1 , 2.5 \r\n1000001,0\n2;-1\n",
+          "expected": "1 2.50 2.50 2.50 2\n"
+        },
+        {
+          "id": "test-8",
+          "name": "Граничный сценарий 7",
+          "stdin": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n1,3\n",
+          "expected": "1 3.00 3.00 3.00 1\n"
+        },
+        {
+          "id": "test-9",
+          "name": "Граничный сценарий 8",
+          "stdin": "1,-0\n2,0\n",
+          "expected": "2 0.00 0.00 0.00 0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <errno.h>\n#include <ctype.h>\n#include <math.h>\ntypedef struct { unsigned count, errors; double min, max, sum; } Stats;\nstatic void consume(char *line, int too_long, Stats *stats) {\n    if(too_long){++stats->errors;return;}\n    char *end;errno=0;\n    long timestamp=strtol(line,&end,10);\n    if(end==line || errno==ERANGE || timestamp<0 || timestamp>1000000){++stats->errors;return;}\n    while(isspace((unsigned char)*end))++end;\n    if(*end!=','){++stats->errors;return;}\n    char *start=end+1;errno=0;double value=strtod(start,&end);\n    if(end==start || errno==ERANGE || !isfinite(value) || value < -1000 || value > 1000){++stats->errors;return;}\n    while(isspace((unsigned char)*end))++end;\n    if(*end){++stats->errors;return;}\n    if(!stats->count || value<stats->min)stats->min=value;\n    if(!stats->count || value>stats->max)stats->max=value;\n    stats->sum+=value;++stats->count;\n}\nstatic int analyze(FILE *file, Stats *stats) {\n    char line[128];size_t length=0;int overflow=0,ch;\n    while((ch=fgetc(file))!=EOF){\n        if(ch=='\\n'){line[length]='\\0';consume(line,overflow,stats);length=0;overflow=0;}\n        else if(ch=='\\0')overflow=1;\n        else if(length<sizeof line-1)line[length++]=(char)ch;\n        else overflow=1;\n    }\n    if(ferror(file))return 0;\n    if(length || overflow){line[length]='\\0';consume(line,overflow,stats);}\n    return 1;\n}\nstatic double normalized(double value){return value==0.0 ? 0.0 : value;}\nint main(void) {\n    FILE *file=tmpfile();if(!file)return 1;\n    int ch,ok=1;while((ch=fgetc(stdin))!=EOF)if(fputc(ch,file)==EOF){ok=0;break;}\n    if(ferror(stdin))ok=0;\n    Stats stats={0};\n    if(ok && fseek(file,0,SEEK_SET)==0)ok=analyze(file,&stats);else ok=0;\n    if(fclose(file)!=0)ok=0;\n    if(!ok)return 1;\n    if(!stats.count)printf(\"НЕТ ДАННЫХ %u\\n\",stats.errors);\n    else printf(\"%u %.2f %.2f %.2f %u\\n\",stats.count,normalized(stats.min),normalized(stats.max),normalized(stats.sum/stats.count),stats.errors);\n    return 0;\n}\n",
+      "solutionExplanation": "analyze читает поток по символам, поэтому длинная строка не превращается в несколько независимых ошибок: overflow остаётся установленным до её конца. consume разбирает два поля, проверяет диапазоны, остаток строки и конечность числа. min и max инициализируются первым корректным измерением, что работает и для полностью отрицательного журнала. average вычисляется только при ненулевом count. При данных ограничениях сумма по модулю не превосходит 200000.\n\nПамять O(1) относительно длины файла: буфер строки фиксирован, измерения не сохраняются. Время O(B), где B — число прочитанных байтов. Отказ ввода/вывода отделён от брака конкретной строки. Последняя строка без newline обрабатывается после EOF. Разделение адаптера и analyze позволяет впоследствии заменить tmpfile на fopen без изменения статистического алгоритма.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "advanced-error-handling-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "concept",
+        "question": "Когда читать выходной параметр функции?",
+        "options": ["После проверки успешного статуса", "Всегда, независимо от контракта"],
+        "correct": 0,
+        "explanation": "В C ошибки обычно представлены статусом возврата и отдельным выходным параметром. Успешное значение не должно пересекаться с кодом ошибки. Хороший контракт определяет, изменяется ли выходной параметр при отказе и кто освобождает ресурсы. Это позволяет вызывающему коду безопасно повторить операцию или откатиться."
+      },
+      {
+        "id": "mistake",
+        "question": "Какое утверждение корректно?",
+        "options": [
+          "Успешный вывод одного примера доказывает корректность на всех входах.",
+          "Ноль бывает корректным результатом; его нельзя одновременно использовать как единственный признак ошибки."
+        ],
+        "correct": 1,
+        "explanation": "Функция возвращает два канала: статус операции и данные, действительные только при успехе."
+      },
+      {
+        "id": "trace",
+        "question": "Какой stdout выдаст запускаемый пример урока?",
+        "options": ["0 7", "Ошибка компиляции при корректном C17", "Никакого вывода"],
+        "correct": 0,
+        "explanation": "Проследите значения последовательно: int value=7;int ok=read_value(0,&value);printf(\"%d %d\\n\",ok,value); Ожидаемый результат: 0 7"
+      }
+    ]
+  }
+}

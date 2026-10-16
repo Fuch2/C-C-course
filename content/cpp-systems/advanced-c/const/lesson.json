@@ -1,0 +1,118 @@
+{
+  "id": "advanced-const",
+  "title": "const",
+  "description": "const ограничивает изменение через квалифицированное выражение.",
+  "moduleId": "advanced-c",
+  "order": 12,
+  "difficulty": "advanced",
+  "estimatedMinutes": 40,
+  "prerequisites": ["advanced-linkage"],
+  "objectives": [
+    "Объяснить: const",
+    "Различать корректный контракт и ошибку: Приведение типа не делает законной запись в объект, который был определён const.",
+    "Реализовать и проверить практику на обычном и граничном вводе"
+  ],
+  "tags": ["C17", "углублённый C", "const"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "advanced-const-exercise",
+    "title": "Практика: const",
+    "description": "Напишите sum(const int *values, size_t count). Ввод n 0…20 и n целых −1000…1000. Выведите сумму без изменения массива.",
+    "difficulty": "advanced",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "3 1 -2 5",
+        "output": "4\n",
+        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+      },
+      {
+        "input": "0",
+        "output": "0\n",
+        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
+      "В stdout только требуемый результат.",
+      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "const — разрешение на конкретном пути доступа, а не универсальная заморозка всех путей."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Приведение типа не делает законной запись в объект, который был определён const."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "test-1",
+        "name": "Основной сценарий",
+        "stdin": "3 1 -2 5",
+        "expected": "4\n"
+      },
+      {
+        "id": "test-2",
+        "name": "Граничный сценарий 1",
+        "stdin": "0",
+        "expected": "0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "test-3",
+        "name": "Граничный сценарий 2",
+        "stdin": "1 -1000",
+        "expected": "-1000\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\nstatic int sum(const int *values, size_t count) { int result=0; for(size_t i=0;i<count;++i) result+=values[i]; return result; }\nint main(void) {\n    int data[20]; size_t n;\n    if(scanf(\"%zu\", &n)!=1 || n>20) return 1;\n    for(size_t i=0;i<n;++i) if(scanf(\"%d\", &data[i])!=1) return 1;\n    printf(\"%d\\n\", sum(data,n));\n    return 0;\n}\n",
+    "solutionExplanation": "const — разрешение на конкретном пути доступа, а не универсальная заморозка всех путей.\n\nПриведение типа не делает законной запись в объект, который был определён const.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '3 1 -2 5' → '4\\n'; '0' → '0\\n'; '1 -1000' → '-1000\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "advanced-const-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "concept",
+        "question": "Что запрещает const int *p?",
+        "options": ["Изменение int через p", "Присваивание другого адреса самому p"],
+        "correct": 0,
+        "explanation": "const ограничивает изменение через квалифицированное выражение. const int *p запрещает запись в int через p, но разрешает менять сам указатель; int *const p фиксирует указатель. Интерфейс чтения массива должен принимать const int *, чтобы компилятор обнаруживал случайную запись."
+      },
+      {
+        "id": "mistake",
+        "question": "Какое утверждение корректно?",
+        "options": [
+          "Успешный вывод одного примера доказывает корректность на всех входах.",
+          "Приведение типа не делает законной запись в объект, который был определён const."
+        ],
+        "correct": 1,
+        "explanation": "const — разрешение на конкретном пути доступа, а не универсальная заморозка всех путей."
+      },
+      {
+        "id": "trace",
+        "question": "Какой stdout выдаст запускаемый пример урока?",
+        "options": ["6", "Ошибка компиляции при корректном C17", "Никакого вывода"],
+        "correct": 0,
+        "explanation": "Проследите значения последовательно: int sample=5;const int *view=&sample;sample=6;printf(\"%d\\n\",*view); Ожидаемый результат: 6"
+      }
+    ]
+  }
+}

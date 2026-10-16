@@ -1,0 +1,586 @@
+{
+  "id": "c17-arithmetic",
+  "title": "Арифметика: деление, остаток и приоритет",
+  "description": "Пять арифметических операторов, целочисленное деление и остаток, разбор числа на цифры, перевод единиц, приоритет операций и округление вверх.",
+  "moduleId": "c-fundamentals",
+  "order": 4,
+  "difficulty": "beginner",
+  "estimatedMinutes": 45,
+  "prerequisites": ["c17-variables"],
+  "objectives": [
+    "Предсказывать результат целочисленного деления и остатка, в том числе для отрицательных чисел",
+    "Разбирать число на цифры с помощью / 10 и % 10",
+    "Переводить единицы измерения: секунды в часы, минуты и секунды",
+    "Учитывать приоритет и порядок вычисления операторов",
+    "Округлять результат деления вверх"
+  ],
+  "tags": ["C17", "Арифметика", "Деление", "Остаток"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-arithmetic-task-1",
+    "title": "Цифры числа",
+    "description": "Прочитайте трёхзначное положительное число и напечатайте его цифры через пробел — сотни, десятки, единицы.\n\n**Пример:** `472` → `4 7 2`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "472",
+        "output": "4 7 2\n"
+      },
+      {
+        "input": "105",
+        "output": "1 0 5\n"
+      }
+    ],
+    "constraints": ["100 ≤ n ≤ 999."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Единицы — n % 10, сотни — n / 100.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Десятки: отрежьте последнюю цифру и возьмите новую последнюю: n / 10 % 10.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "472",
+        "expected": "4 7 2\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "105",
+        "expected": "1 0 5\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "100",
+        "expected": "1 0 0\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "999",
+        "expected": "9 9 9\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "900",
+        "expected": "9 0 0\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "111",
+        "expected": "1 1 1\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "560",
+        "expected": "5 6 0\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "987",
+        "expected": "9 8 7\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "303",
+        "expected": "3 0 3\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int hundreds = n / 100;\n    int tens = n / 10 % 10;\n    int units = n % 10;\n    printf(\"%d %d %d\\n\", hundreds, tens, units);\n    return 0;\n}\n",
+    "solutionExplanation": "- `n / 100` отбрасывает две последние цифры и оставляет сотни: 472 / 100 = 4.\n- `n / 10 % 10`: 472 / 10 = 47, 47 % 10 = 7.\n- `n % 10` — последняя цифра: 2.\n\nНули внутри числа обрабатываются без особых случаев: для 105 получится `1 0 5`.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-arithmetic-task-2",
+      "title": "Секундомер",
+      "description": "Прочитайте число секунд `t` и напечатайте его в формате `Ч:ММ:СС`: часы без ведущих нулей, минуты и секунды — ровно двумя цифрами.\n\n**Пример:** `7384` → `2:03:04`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "7384",
+          "output": "2:03:04\n"
+        },
+        {
+          "input": "59",
+          "output": "0:00:59\n"
+        }
+      ],
+      "constraints": ["0 ≤ t ≤ 1 000 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Часы — t / 3600. Секунды — t % 60.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Минуты — сколько полных минут в остатке после часов: t % 3600 / 60.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Формат: printf(\"%d:%02d:%02d\\n\", h, m, s);",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "7384",
+          "expected": "2:03:04\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "59",
+          "expected": "0:00:59\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0",
+          "expected": "0:00:00\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "60",
+          "expected": "0:01:00\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "3600",
+          "expected": "1:00:00\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "3599",
+          "expected": "0:59:59\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "86399",
+          "expected": "23:59:59\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "1000000",
+          "expected": "277:46:40\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "3661",
+          "expected": "1:01:01\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int t;\n    scanf(\"%d\", &t);\n    int hours = t / 3600;\n    int minutes = t % 3600 / 60;\n    int seconds = t % 60;\n    printf(\"%d:%02d:%02d\\n\", hours, minutes, seconds);\n    return 0;\n}\n",
+      "solutionExplanation": "В часе 3600 секунд, поэтому `t / 3600` — полные часы. `t % 3600` — секунды, которые не вошли в полные часы; делением на 60 из них получаются минуты. Секунды — остаток от деления на 60.\n\nЧасов может быть больше 24 — формат этого не запрещает: 1 000 000 секунд — это `277:46:40`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-arithmetic-task-3",
+      "title": "Сумма цифр",
+      "description": "Прочитайте четырёхзначное число и напечатайте сумму его цифр.\n\n**Пример:** `2026` → `2 + 0 + 2 + 6 = 10`, вывод `10`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "2026",
+          "output": "10\n"
+        },
+        {
+          "input": "9999",
+          "output": "36\n"
+        }
+      ],
+      "constraints": ["1000 ≤ n ≤ 9999."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Цифры: n / 1000, n / 100 % 10, n / 10 % 10, n % 10.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сложите четыре выражения и напечатайте сумму.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2026",
+          "expected": "10\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "9999",
+          "expected": "36\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1000",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1234",
+          "expected": "10\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "5050",
+          "expected": "10\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "9000",
+          "expected": "9\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1111",
+          "expected": "4\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "8765",
+          "expected": "26\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "1009",
+          "expected": "10\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int sum = n / 1000 + n / 100 % 10 + n / 10 % 10 + n % 10;\n    printf(\"%d\\n\", sum);\n    return 0;\n}\n",
+      "solutionExplanation": "Каждая цифра получается по формуле «отрезать младшие цифры делением, взять последнюю остатком». Для тысяч остаток не нужен: у четырёхзначного числа `n / 1000` уже однозначное.\n\nВ уроке о цикле `while` вы научитесь считать сумму цифр числа любой длины тем же приёмом, повторяя `% 10` и `/ 10`, пока число не станет нулём.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-arithmetic-task-4",
+      "title": "Число задом наперёд",
+      "description": "Прочитайте трёхзначное число и напечатайте число, записанное теми же цифрами в обратном порядке. Ведущие нули у результата не печатаются, как у обычного числа.\n\n**Примеры:** `123` → `321`, `120` → `21`, `100` → `1`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "123",
+          "output": "321\n"
+        },
+        {
+          "input": "120",
+          "output": "21\n",
+          "explanation": "Ноль оказался старшей цифрой и не печатается."
+        }
+      ],
+      "constraints": ["100 ≤ n ≤ 999."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Получите три цифры a, b, c — сотни, десятки, единицы.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Перевёрнутое число — c * 100 + b * 10 + a. printf с %d сам не напечатает ведущие нули.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "123",
+          "expected": "321\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "120",
+          "expected": "21\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "100",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "999",
+          "expected": "999\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "101",
+          "expected": "101\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "210",
+          "expected": "12\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "908",
+          "expected": "809\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "555",
+          "expected": "555\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "700",
+          "expected": "7\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int a = n / 100;\n    int b = n / 10 % 10;\n    int c = n % 10;\n    int reversed = c * 100 + b * 10 + a;\n    printf(\"%d\\n\", reversed);\n    return 0;\n}\n",
+      "solutionExplanation": "Число собирается из цифр так же, как разбирается: старшая цифра умножается на 100, средняя — на 10. Перевёрнутое число — `c * 100 + b * 10 + a`.\n\nДля 120 получается `0 * 100 + 2 * 10 + 1 = 21`: ведущий ноль пропадает сам, потому что результат — число, а не строка цифр. Если бы задача требовала печатать `021`, подошли бы три отдельных `%d` подряд.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-arithmetic-task-5",
+      "title": "Автобусы",
+      "description": "На экскурсию едут `n` человек, в автобус помещается `k` пассажиров. Напечатайте, сколько нужно автобусов, и сколько свободных мест останется в последнем автобусе — два числа через пробел.\n\n**Пример:** 23 человека, автобусы по 10 мест: нужно 3 автобуса, в последнем 7 свободных мест (там едут 3 человека).",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "23 10",
+          "output": "3 7\n"
+        },
+        {
+          "input": "20 10",
+          "output": "2 0\n",
+          "explanation": "Все автобусы заполнены полностью."
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1 000 000, 1 ≤ k ≤ 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Число автобусов — деление с округлением вверх: (n + k - 1) / k.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Свободные места: всего мест buses * k, занято n.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "23 10",
+          "expected": "3 7\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "20 10",
+          "expected": "2 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 1",
+          "expected": "1 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1 1000",
+          "expected": "1 999\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1000000 1",
+          "expected": "1000000 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1000000 1000",
+          "expected": "1000 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "999999 1000",
+          "expected": "1000 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "11 10",
+          "expected": "2 9\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "7 3",
+          "expected": "3 2\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n, k;\n    scanf(\"%d %d\", &n, &k);\n    int buses = (n + k - 1) / k;\n    int free_seats = buses * k - n;\n    printf(\"%d %d\\n\", buses, free_seats);\n    return 0;\n}\n",
+      "solutionExplanation": "`(n + k - 1) / k` округляет вверх: любой ненулевой остаток от деления «дотягивает» результат до следующего целого, а при делении без остатка лишний автобус не появляется — проверьте на `20 10`.\n\nСвободные места проще всего найти как разность всех мест и пассажиров. Альтернатива через остаток `(k - n % k) % k` тоже верна, но её труднее прочитать.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-arithmetic-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%d %d\\n\", 29 / 10, 29 % 10);\n    return 0;\n}",
+        "explanation": "29 / 10 = 2 (дробная часть отброшена), остаток 29 − 20 = 9.",
+        "type": "text",
+        "answers": ["2 9"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%d %d\\n\", -9 / 4, -9 % 4);\n    return 0;\n}",
+        "explanation": "Деление отбрасывает дробную часть в сторону нуля: −2,25 → −2. Остаток: −9 − (−2 · 4) = −1.",
+        "type": "text",
+        "answers": ["-2 -1"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%d\\n\", 20 - 8 / 2 * 3);\n    return 0;\n}",
+        "explanation": "8 / 2 = 4, 4 · 3 = 12 (слева направо), затем 20 − 12 = 8.",
+        "type": "text",
+        "answers": ["8"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Чему равно 7 / 10 * 100 в C?",
+        "explanation": "Сначала 7 / 10 = 0 (целочисленное деление), затем 0 · 100 = 0. Чтобы получить 70, умножайте раньше: 7 * 100 / 10.",
+        "options": ["70", "0", "7", "0.7"],
+        "correct": 1
+      },
+      {
+        "id": "q5",
+        "question": "Как получить вторую цифру справа (цифру десятков) числа n?",
+        "explanation": "n / 10 отрезает последнюю цифру, после этого % 10 берёт новую последнюю — это и есть десятки.",
+        "options": ["n % 10", "n / 10 % 10", "n % 100", "n / 100"],
+        "correct": 1
+      },
+      {
+        "id": "q6",
+        "question": "Какие выражения верно проверяют, что n чётное, для любых целых n, включая отрицательные? Выберите все.",
+        "explanation": "Для отрицательных нечётных n остаток равен −1, поэтому n % 2 != 1 ошибочно сочтёт −3 чётным, а n % 2 == 1 вообще проверяет нечётность. n / 2 * 2 == n верно: деление отбрасывает остаток.",
+        "type": "multiple",
+        "options": ["n % 2 == 0", "n % 2 == 1", "n / 2 * 2 == n", "n % 2 != 1"],
+        "correct": [0, 2]
+      },
+      {
+        "id": "q7",
+        "question": "Сколько коробок по 12 штук нужно для 50 яиц? Какое выражение даёт правильный ответ?",
+        "explanation": "50 / 12 = 4, но четырёх коробок мало. (50 + 11) / 12 = 61 / 12 = 5 — округление вверх.",
+        "options": ["50 / 12", "50 % 12", "(50 + 12 - 1) / 12", "50 / 12 + 12"],
+        "correct": 2
+      },
+      {
+        "id": "q8",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int n = 3725;\n    printf(\"%d\\n\", n % 100 / 10 + n / 1000);\n    return 0;\n}",
+        "explanation": "n % 100 = 25, 25 / 10 = 2; n / 1000 = 3; 2 + 3 = 5.",
+        "type": "text",
+        "answers": ["5"],
+        "placeholder": "Вывод программы"
+      }
+    ]
+  }
+}

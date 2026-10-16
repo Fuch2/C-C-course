@@ -1,0 +1,129 @@
+{
+  "id": "algo-stack",
+  "title": "Стек — Stack",
+  "description": "Стек задаёт дисциплину LIFO: последним добавлен — первым извлечён.",
+  "moduleId": "algorithms-structures",
+  "order": 19,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 60,
+  "prerequisites": ["algo-doubly"],
+  "objectives": [
+    "Объяснить инвариант: Стопка подносов: доступен только верхний, а глубина не даёт права брать середину.",
+    "Обосновать время: O(1) на push/pop/top в фиксированном массиве.",
+    "Оценить память и компромиссы: Предсказуемость и простота против доступа только к верхушке."
+  ],
+  "tags": ["алгоритмы", "C17", "Стек — Stack", "структуры данных", "cache locality"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "algo-stack-exercise",
+    "title": "История операций LIFO",
+    "description": "Ввод q (0…128), затем команды P x — положить int −1000…1000; O — извлечь; T — посмотреть верхний. O/T выводят значение или ПУСТО. Вместимость стека 128; q гарантирует, что число добавлений не превышает её.",
+    "difficulty": "intermediate",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "6 P 4 P 9 T O O O",
+        "output": "9\n9\n4\nПУСТО\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      },
+      {
+        "input": "2 T O",
+        "output": "ПУСТО\nПУСТО\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Используйте C17 и диапазоны входа из условия.",
+      "Выводите только требуемый результат.",
+      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Стопка подносов: доступен только верхний, а глубина не даёт права брать середину."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Вычитание 1 из нулевого size_t даёт огромное значение; сначала проверяется пустота."
+      },
+      {
+        "id": "hint-3",
+        "order": 3,
+        "text": "P 4, P 9, T, O, O дают наблюдения 9,9,4. Следующий O сообщает ПУСТО."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "6 P 4 P 9 T O O O",
+        "expected": "9\n9\n4\nПУСТО\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "2 T O",
+        "expected": "ПУСТО\nПУСТО\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "stdin": "4 P -1 T T O",
+        "expected": "-1\n-1\n-1\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "stdin": "0",
+        "expected": ""
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\ntypedef struct { int data[128]; size_t size; } Stack;\nstatic int push(Stack *stack,int value){\n    if(stack->size==128)return 0;stack->data[stack->size++]=value;return 1;\n}\nstatic int pop(Stack *stack,int *out){\n    if(!stack->size)return 0;*out=stack->data[--stack->size];return 1;\n}\nstatic int top(const Stack *stack,int *out){\n    if(!stack->size)return 0;*out=stack->data[stack->size-1];return 1;\n}\nint main(void) {\nStack stack={0};int q;if(scanf(\"%d\",&q)!=1 || q<0 || q>128)return 1;for(int i=0;i<q;++i){char c;int x;if(scanf(\" %c\",&c)!=1)return 1;if(c=='P'){if(scanf(\"%d\",&x)!=1||!push(&stack,x))return 1;}else if(c=='O'||c=='T'){int ok=c=='O'?pop(&stack,&x):top(&stack,&x);if(ok)printf(\"%d\\n\",x);else puts(\"ПУСТО\");}else return 1;}\nreturn 0;\n}\n",
+    "solutionExplanation": "Инвариант: Стопка подносов: доступен только верхний, а глубина не даёт права брать середину.\n\nP 4, P 9, T, O, O дают наблюдения 9,9,4. Следующий O сообщает ПУСТО.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. Вычитание 1 из нулевого size_t даёт огромное значение; сначала проверяется пустота.\n\nВремя: O(1) на push/pop/top в фиксированном массиве.\nПамять: O(capacity); в реализации capacity=128 задаёт конечный ресурс.\nКомпромисс: Предсказуемость и простота против доступа только к верхушке.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
+    "checking": { "type": "stdout", "comparison": "exact" }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "algo-stack-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "invariant",
+        "question": "Какой элемент извлекается первым?",
+        "options": ["Последний добавленный", "Первый добавленный"],
+        "correct": 0,
+        "explanation": "Стопка подносов: доступен только верхний, а глубина не даёт права брать середину. P 4, P 9, T, O, O дают наблюдения 9,9,4. Следующий O сообщает ПУСТО."
+      },
+      {
+        "id": "complexity",
+        "question": "Какая оценка соответствует рассмотренной реализации?",
+        "options": [
+          "Всегда O(1), потому что все тесты ограничены по размеру.",
+          "O(1) на push/pop/top в фиксированном массиве."
+        ],
+        "correct": 1,
+        "explanation": "Предсказуемость и простота против доступа только к верхушке."
+      },
+      {
+        "id": "engineering",
+        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "options": [
+          "Вычитание 1 из нулевого size_t даёт огромное значение; сначала проверяется пустота.",
+          "Совпадение Big O гарантирует одинаковое время на любой машине."
+        ],
+        "correct": 0,
+        "explanation": "Верхушка расположена рядом с недавно использованными элементами и обычно остаётся горячей. O(capacity); в реализации capacity=128 задаёт конечный ресурс."
+      }
+    ]
+  }
+}

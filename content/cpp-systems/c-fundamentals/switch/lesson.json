@@ -1,0 +1,511 @@
+{
+  "id": "c17-switch",
+  "title": "Выбор по значению: switch",
+  "description": "Оператор switch, метки case и default, break и проваливание, группировка меток, выбор по символу и ограничения switch.",
+  "moduleId": "c-fundamentals",
+  "order": 15,
+  "difficulty": "beginner",
+  "estimatedMinutes": 35,
+  "prerequisites": ["c17-if-else"],
+  "objectives": [
+    "Выбирать ветку программы по значению с помощью switch",
+    "Объяснять роль break и последствия его отсутствия",
+    "Группировать несколько значений в одну ветку",
+    "Использовать switch для символов и знать его ограничения"
+  ],
+  "tags": ["C17", "switch", "case", "Ветвления"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-switch-task-1",
+    "title": "День недели",
+    "description": "Прочитайте номер дня недели и напечатайте его название строчными буквами: 1 — `понедельник`, 2 — `вторник`, 3 — `среда`, 4 — `четверг`, 5 — `пятница`, 6 — `суббота`, 7 — `воскресенье`. Для любого другого числа напечатайте `ошибка`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "3",
+        "output": "среда\n"
+      },
+      {
+        "input": "8",
+        "output": "ошибка\n"
+      }
+    ],
+    "constraints": ["−1000 ≤ n ≤ 1000."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Семь меток case и default для остальных значений.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Не забудьте break в каждой ветке.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "3",
+        "expected": "среда\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "8",
+        "expected": "ошибка\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "1",
+        "expected": "понедельник\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "2",
+        "expected": "вторник\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "4",
+        "expected": "четверг\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "5",
+        "expected": "пятница\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "6",
+        "expected": "суббота\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "7",
+        "expected": "воскресенье\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "0",
+        "expected": "ошибка\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "-1",
+        "expected": "ошибка\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    switch (n) {\n    case 1:\n        printf(\"понедельник\\n\");\n        break;\n    case 2:\n        printf(\"вторник\\n\");\n        break;\n    case 3:\n        printf(\"среда\\n\");\n        break;\n    case 4:\n        printf(\"четверг\\n\");\n        break;\n    case 5:\n        printf(\"пятница\\n\");\n        break;\n    case 6:\n        printf(\"суббота\\n\");\n        break;\n    case 7:\n        printf(\"воскресенье\\n\");\n        break;\n    default:\n        printf(\"ошибка\\n\");\n        break;\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Каждому значению соответствует своя метка, а `default` обрабатывает все неверные номера: 0, 8, отрицательные. Без `default` программа на таких данных не напечатала бы ничего.\n\nВ разделе о массивах и строках вы увидите более короткое решение: названия хранятся в массиве, а номер дня служит индексом.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-switch-task-2",
+      "title": "Калькулятор",
+      "description": "Во вводе — выражение вида `a op b`, где `a` и `b` — целые числа, `op` — один из символов `+`, `-`, `*`, `/`, `%`. Вычислите и напечатайте результат по правилам целочисленной арифметики C.\n\n- Если операция `/` или `%` и `b` равно нулю — напечатайте `ошибка`.\n- Если символ операции другой — напечатайте `неизвестная операция`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "6 * 7",
+          "output": "42\n"
+        },
+        {
+          "input": "5 / 0",
+          "output": "ошибка\n"
+        },
+        {
+          "input": "2 ^ 3",
+          "output": "неизвестная операция\n"
+        }
+      ],
+      "constraints": ["−10⁹ ≤ a, b ≤ 10⁹; результат умножения может не поместиться в int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Чтение: scanf(\"%d %c %d\", &a, &op, &b) — пробел перед %c пропускает пробелы.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Произведение до 10¹⁸ — считайте в long long: (long long)a * b.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Внутри веток / и % добавьте if (b == 0).",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "6 * 7",
+          "expected": "42\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5 / 0",
+          "expected": "ошибка\n"
+        },
+        {
+          "id": "case-3",
+          "name": "Пример 3",
+          "stdin": "2 ^ 3",
+          "expected": "неизвестная операция\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1000000000 * 1000000000",
+          "expected": "1000000000000000000\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "-7 / 2",
+          "expected": "-3\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "-7 % 2",
+          "expected": "-1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "0 % 0",
+          "expected": "ошибка\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "10 - 20",
+          "expected": "-10\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "-1000000000 + -1000000000",
+          "expected": "-2000000000\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "9 % 4",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "8 / -3",
+          "expected": "-2\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long a, b;\n    char op;\n    scanf(\"%lld %c %lld\", &a, &op, &b);\n    switch (op) {\n    case '+':\n        printf(\"%lld\\n\", a + b);\n        break;\n    case '-':\n        printf(\"%lld\\n\", a - b);\n        break;\n    case '*':\n        printf(\"%lld\\n\", a * b);\n        break;\n    case '/':\n        if (b == 0) {\n            printf(\"ошибка\\n\");\n        } else {\n            printf(\"%lld\\n\", a / b);\n        }\n        break;\n    case '%':\n        if (b == 0) {\n            printf(\"ошибка\\n\");\n        } else {\n            printf(\"%lld\\n\", a % b);\n        }\n        break;\n    default:\n        printf(\"неизвестная операция\\n\");\n        break;\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`switch` выбирает операцию по символу, а внутри веток деления стоит обычный `if` для проверки нуля. Комбинировать эти конструкции — нормальная практика.\n\nЧтение сразу в `long long` снимает вопрос о переполнении при умножении. Деление и остаток работают по правилам C: `-7 / 2 == -3`, `-7 % 2 == -1`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-switch-task-3",
+      "title": "Дни в месяце",
+      "description": "Прочитайте номер месяца и год. Напечатайте количество дней в этом месяце с учётом високосных лет (правило — как в уроке «Логические операторы»).",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "2 2024",
+          "output": "29\n"
+        },
+        {
+          "input": "4 2026",
+          "output": "30\n"
+        }
+      ],
+      "constraints": ["1 ≤ месяц ≤ 12, 1 ≤ год ≤ 1 000 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сгруппируйте месяцы по 31 дню (1, 3, 5, 7, 8, 10, 12) и по 30 дней (4, 6, 9, 11).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Для февраля внутри ветки проверьте високосность: (y % 4 == 0 && y % 100 != 0) || y % 400 == 0.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2 2024",
+          "expected": "29\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "4 2026",
+          "expected": "30\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 2026",
+          "expected": "31\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "2 2023",
+          "expected": "28\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "2 1900",
+          "expected": "28\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "2 2000",
+          "expected": "29\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "12 1",
+          "expected": "31\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "9 1000000",
+          "expected": "30\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "7 7",
+          "expected": "31\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "11 2011",
+          "expected": "30\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int month, year;\n    scanf(\"%d %d\", &month, &year);\n    int days = 0;\n    switch (month) {\n    case 1:\n    case 3:\n    case 5:\n    case 7:\n    case 8:\n    case 10:\n    case 12:\n        days = 31;\n        break;\n    case 4:\n    case 6:\n    case 9:\n    case 11:\n        days = 30;\n        break;\n    case 2:\n        if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0) {\n            days = 29;\n        } else {\n            days = 28;\n        }\n        break;\n    }\n    printf(\"%d\\n\", days);\n    return 0;\n}\n",
+      "solutionExplanation": "Группировка меток превращает двенадцать вариантов в три ветки. Ветки не печатают сразу, а записывают результат в переменную `days` — печать одна, в конце. Так проще проверить, что вывод одинаков во всех случаях.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-switch-task-4",
+      "title": "Робот",
+      "description": "Робот стоит в точке `(x, y)`. Он получает команду — букву направления и число шагов: `N` — север (y увеличивается), `S` — юг (y уменьшается), `E` — восток (x увеличивается), `W` — запад (x уменьшается). Буква может быть заглавной или строчной.\n\n**Ввод:** `x y команда шаги`, например `0 0 N 5`.\n\n**Вывод:** новые координаты через пробел. Если буква не обозначает направление, робот остаётся на месте.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "0 0 N 5",
+          "output": "0 5\n"
+        },
+        {
+          "input": "3 -2 w 10",
+          "output": "-7 -2\n"
+        }
+      ],
+      "constraints": ["|x|, |y| ≤ 10⁹, 0 ≤ шаги ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Группируйте заглавную и строчную букву: case 'N': case 'n':.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Координата может выйти за пределы int: 10⁹ + 10⁹. Используйте long long.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "0 0 N 5",
+          "expected": "0 5\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3 -2 w 10",
+          "expected": "-7 -2\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0 0 S 1",
+          "expected": "0 -1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "0 0 e 1000000000",
+          "expected": "1000000000 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1000000000 1000000000 E 1000000000",
+          "expected": "2000000000 1000000000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "-1000000000 -1000000000 s 1000000000",
+          "expected": "-1000000000 -2000000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "5 5 Q 100",
+          "expected": "5 5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "1 2 n 0",
+          "expected": "1 2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "7 7 W 7",
+          "expected": "0 7\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long x, y, steps;\n    char cmd;\n    scanf(\"%lld %lld %c %lld\", &x, &y, &cmd, &steps);\n    switch (cmd) {\n    case 'N':\n    case 'n':\n        y += steps;\n        break;\n    case 'S':\n    case 's':\n        y -= steps;\n        break;\n    case 'E':\n    case 'e':\n        x += steps;\n        break;\n    case 'W':\n    case 'w':\n        x -= steps;\n        break;\n    default:\n        break;\n    }\n    printf(\"%lld %lld\\n\", x, y);\n    return 0;\n}\n",
+      "solutionExplanation": "Каждая пара меток обрабатывает оба регистра буквы. `default` с пустой веткой явно показывает, что неизвестная команда игнорируется сознательно, а не забыта.\n\nПробел перед `%c` в формате пропускает пробел после `y`, иначе в `cmd` попал бы сам пробел.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-switch-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int n = 1;\n    switch (n) {\n    case 1:\n        printf(\"A\\n\");\n    case 2:\n        printf(\"B\\n\");\n        break;\n    case 3:\n        printf(\"C\\n\");\n        break;\n    }\n    return 0;\n}",
+        "explanation": "После case 1 нет break, поэтому выполнение проваливается в case 2 и останавливается на его break.",
+        "type": "text",
+        "answers": ["A\nB"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    char c = 'e';\n    switch (c) {\n    case 'a':\n    case 'e':\n    case 'o':\n        printf(\"гласная\\n\");\n        break;\n    default:\n        printf(\"другая\\n\");\n        break;\n    }\n    return 0;\n}",
+        "explanation": "Метки 'a', 'e', 'o' сгруппированы: при c == 'e' выполнение входит в общий код ветки.",
+        "type": "text",
+        "answers": ["гласная"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int x = 9;\n    switch (x) {\n    case 1:\n        printf(\"один\\n\");\n        break;\n    case 2:\n        printf(\"два\\n\");\n        break;\n    }\n    printf(\"конец\\n\");\n    return 0;\n}",
+        "explanation": "Ни одна метка не совпала, а default нет — switch ничего не делает.",
+        "type": "text",
+        "answers": ["конец"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Какие метки case допустимы в C? Выберите все.",
+        "explanation": "Метки должны быть целочисленными константами. Символ и константное выражение подходят; дробное число, строка и переменная — нет.",
+        "type": "multiple",
+        "options": [
+          "case 'q':",
+          "case 2 * 5:",
+          "case 1.5:",
+          "case \"yes\":",
+          "case limit: (limit — обычная переменная)"
+        ],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q5",
+        "question": "В каком случае лучше подходит цепочка if, а не switch?",
+        "explanation": "switch сравнивает с конкретными значениями. Диапазоны и сложные условия удобнее записывать через if.",
+        "options": [
+          "Проверка, в каком диапазоне лежит температура",
+          "Выбор действия по символу команды",
+          "Название месяца по его номеру",
+          "Обработка кода ошибки из небольшого набора значений"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int score = 0;\n    int code = 2;\n    switch (code) {\n    case 1:\n        score += 1;\n    case 2:\n        score += 10;\n    case 3:\n        score += 100;\n        break;\n    default:\n        score += 1000;\n        break;\n    }\n    printf(\"%d\\n\", score);\n    return 0;\n}",
+        "explanation": "Вход на case 2: +10, затем провал в case 3: +100, затем break. Итого 110.",
+        "type": "text",
+        "answers": ["110"],
+        "placeholder": "Вывод программы"
+      }
+    ]
+  }
+}

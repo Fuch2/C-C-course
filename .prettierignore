@@ -1,0 +1,9 @@
+node_modules
+.next
+.next-integration*
+dist
+package-lock.json
+apps/web/public/monaco
+*.tsbuildinfo
+apps/web/next-env.d.ts
+content/**/*.md

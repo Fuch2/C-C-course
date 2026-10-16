@@ -1,0 +1,127 @@
+{
+  "id": "cpp20-default-arguments",
+  "title": "Default arguments",
+  "description": "Значение по умолчанию сокращает повторяющиеся вызовы. Оно подставляется в месте компиляции, поэтому меняйте декларации осторожно в публичных заголовках.",
+  "moduleId": "cpp-fundamentals",
+  "order": 11,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["cpp20-overload"],
+  "objectives": [
+    "Объяснить, зачем появился Default arguments и какую проблему он решает.",
+    "Сравнить стоимость и ограничения с аналогом в C.",
+    "Применить инструмент в задаче обработки данных."
+  ],
+  "tags": ["C++20", "основы C++", "Default arguments"],
+  "published": true,
+  "standard": "c++20",
+  "completion": "practice",
+  "exercise": {
+    "id": "cpp20-default-arguments-exercise",
+    "title": "Настраиваемый порог тревоги",
+    "description": "Ввод: value и threshold, целые −1000…1000. above(int value, int threshold = 80) возвращает value > threshold. Выведите above(value) и above(value, threshold) как 0 или 1 через пробел.",
+    "difficulty": "intermediate",
+    "language": "cpp",
+    "standard": "c++20",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
+    "examples": [
+      {
+        "input": "90 100",
+        "output": "1 0\n",
+        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+      },
+      {
+        "input": "80 70",
+        "output": "0 1\n",
+        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Используйте C++20 и стандартную библиотеку.",
+      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
+      "Выводите только требуемый результат."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "90 100",
+        "expected": "1 0\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "80 70",
+        "expected": "0 1\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "stdin": "-5 -10",
+        "expected": "0 1\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "stdin": "80 80",
+        "expected": "0 0\n"
+      }
+    ],
+    "referenceSolution": "#include <iostream>\n\nbool above(int value, int threshold = 80) { return value > threshold; }\nint main() {\n    int value{}, threshold{};\n    if (!(std::cin >> value >> threshold)) return 1;\n    std::cout << above(value) << ' ' << above(value, threshold) << '\\n';\n}\n",
+    "solutionExplanation": "Пропущенный аргумент подставляется из видимого объявления. Равенство не вызывает тревогу. Default argument не создаёт вторую функцию. Два сравнения стоят O(1); сложное выражение по умолчанию могло бы требовать отдельного вычисления при вызове.",
+    "checking": { "type": "stdout", "comparison": "exact" }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "cpp20-default-arguments-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "purpose",
+        "question": "Что важно помнить в теме «Default arguments»?",
+        "options": [
+          "Выбирать инструмент по контракту, времени, памяти и владению",
+          "Всегда переписывать решение через указатели C"
+        ],
+        "correct": 0,
+        "explanation": "Значение по умолчанию сокращает повторяющиеся вызовы. Оно подставляется в месте компиляции, поэтому меняйте декларации осторожно в публичных заголовках."
+      },
+      {
+        "id": "cost",
+        "question": "Что нужно учитывать при выборе инструмента?",
+        "options": [
+          "Только длину исходного кода",
+          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
+        ],
+        "correct": 1,
+        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+      },
+      {
+        "id": "mistake",
+        "question": "Как избежать типичной ошибки?",
+        "options": [
+          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
+          "Считать C-подход рекомендуемым стилем в любой задаче"
+        ],
+        "correct": 0,
+        "explanation": "Используйте Default arguments как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+      }
+    ]
+  }
+}

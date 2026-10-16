@@ -1,0 +1,476 @@
+{
+  "id": "advanced-makefile",
+  "title": "Make и Makefile",
+  "description": "Правила Makefile, граф зависимостей и решение о пересборке по времени файлов, переменные CC и CFLAGS, автоматические переменные $@, $< и $^, шаблонные правила, зависимости от заголовков через -MMD, фиктивные цели и ключи make.",
+  "moduleId": "developer-tools",
+  "order": 7,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 55,
+  "prerequisites": ["project-structure"],
+  "objectives": [
+    "Писать правила Makefile с целями, зависимостями и рецептами",
+    "Предсказывать, какие файлы пересоберёт make после изменений",
+    "Сокращать Makefile переменными, автоматическими переменными и шаблонными правилами",
+    "Поддерживать зависимости от заголовков автоматически"
+  ],
+  "tags": ["Make", "Makefile", "Сборка", "Зависимости", "Автоматизация"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "advanced-makefile-task-1",
+    "title": "Что пересоберёт make",
+    "description": "Смоделируйте решение Make. Ввод:\n- число `n` и `n` строк `файл время` — существующие файлы и время их изменения (целые числа ≥ 1); файлов, которых нет в списке, не существует;\n- число `r` и `r` правил `цель k зав₁ … завₖ`;\n- имя цели, которую нужно собрать.\n\nОбработка цели:\n1. Сначала обработайте каждую зависимость по порядку. Зависимость без правила должна существовать; иначе напечатайте `make: *** No rule to make target 'X', needed by 'Y'.  Stop.` (перед `Stop` два пробела) и завершите работу. Если такой файл — сама цель из командной строки, напечатайте `make: *** No rule to make target 'X'.  Stop.`\n2. Затем выполните рецепт, если файла цели нет или хотя бы одна зависимость **строго новее** цели. Выполнение рецепта — строка `собрать ЦЕЛЬ`; после него файл существует, а его время — текущие часы.\n\nЧасы начинаются со значения «наибольшее время из списка + 1» и увеличиваются на 1 после каждого рецепта. Каждая цель обрабатывается один раз. Если ни один рецепт не выполнен, напечатайте `make: 'ЦЕЛЬ' is up to date.`",
+    "difficulty": "intermediate",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "7\nmain.c 1\nlexer.c 1\nlexer.h 1\nmain.o 2\nlexer.o 2\ncalc 3\nparser.c 5\n4\ncalc 3 main.o lexer.o parser.o\nmain.o 2 main.c lexer.h\nlexer.o 2 lexer.c lexer.h\nparser.o 2 parser.c lexer.h\ncalc\n",
+        "output": "собрать parser.o\nсобрать calc\n"
+      },
+      {
+        "input": "3\na.c 1\na.o 2\napp 3\n2\napp 1 a.o\na.o 1 a.c\napp\n",
+        "output": "make: 'app' is up to date.\n"
+      }
+    ],
+    "constraints": [
+      "0 ≤ n ≤ 50; 1 ≤ r ≤ 30; 0 ≤ k ≤ 10; имена не длиннее 40 символов; граф без циклов."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Храните для каждого имени время (0 — файла нет) и признак «уже обработан». Поиск по имени — перебор массива.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Рекурсивная функция update(name, parent): обработать зависимости, затем сравнить времена. Время зависимости смотрите после её обработки — она могла пересобраться.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Для остановки при ошибке удобно вызвать exit(0) из stdlib.h сразу после печати сообщения.",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "7\nmain.c 1\nlexer.c 1\nlexer.h 1\nmain.o 2\nlexer.o 2\ncalc 3\nparser.c 5\n4\ncalc 3 main.o lexer.o parser.o\nmain.o 2 main.c lexer.h\nlexer.o 2 lexer.c lexer.h\nparser.o 2 parser.c lexer.h\ncalc\n",
+        "expected": "собрать parser.o\nсобрать calc\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "3\na.c 1\na.o 2\napp 3\n2\napp 1 a.o\na.o 1 a.c\napp\n",
+        "expected": "make: 'app' is up to date.\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Чистая сборка",
+        "stdin": "2\nmain.c 1\nlexer.c 1\n3\ncalc 2 main.o lexer.o\nmain.o 1 main.c\nlexer.o 1 lexer.c\ncalc\n",
+        "expected": "собрать main.o\nсобрать lexer.o\nсобрать calc\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Изменён заголовок",
+        "stdin": "6\nmain.c 1\nutil.c 1\ncalc.h 9\nmain.o 5\nutil.o 5\ncalc 6\n3\ncalc 2 main.o util.o\nmain.o 2 main.c calc.h\nutil.o 1 util.c\ncalc\n",
+        "expected": "собрать main.o\nсобрать calc\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Остановка на середине",
+        "stdin": "4\nmain.c 1\ncalc.h 9\nmain.o 5\ncalc 6\n3\ncalc 2 main.o util.o\nmain.o 2 main.c calc.h\nutil.o 1 util.c\ncalc\n",
+        "expected": "собрать main.o\nmake: *** No rule to make target 'util.c', needed by 'util.o'.  Stop.\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Равные времена",
+        "stdin": "2\na.c 4\na.o 4\n1\na.o 1 a.c\na.o\n",
+        "expected": "make: 'a.o' is up to date.\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Нет заголовка",
+        "stdin": "1\nmain.c 1\n1\nmain.o 2 main.c config.h\nmain.o\n",
+        "expected": "make: *** No rule to make target 'config.h', needed by 'main.o'.  Stop.\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Цель без файла",
+        "stdin": "3\nclean_marker 1\nx.c 2\nx.o 3\n2\nall 1 x.o\nx.o 1 x.c\nall\n",
+        "expected": "собрать all\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Общий заголовок",
+        "stdin": "4\ncommon.h 10\na.c 1\nb.c 1\napp 5\n4\napp 2 a.o b.o\na.o 2 a.c common.h\nb.o 2 b.c common.h\nunused 1 a.c\napp\n",
+        "expected": "собрать a.o\nсобрать b.o\nсобрать app\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Сгенерированный файл актуален",
+        "stdin": "4\ngen.py 1\ntable.c 2\ntable.o 3\nprog 4\n3\nprog 1 table.o\ntable.o 1 table.c\ntable.c 1 gen.py\nprog\n",
+        "expected": "make: 'prog' is up to date.\n"
+      },
+      {
+        "id": "hidden-9",
+        "name": "Цепочка пересборки",
+        "stdin": "4\ngen.py 7\ntable.c 2\ntable.o 3\nprog 4\n3\nprog 1 table.o\ntable.o 1 table.c\ntable.c 1 gen.py\nprog\n",
+        "expected": "собрать table.c\nсобрать table.o\nсобрать prog\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n#define MAX 100\n#define NAME 48\n\nstatic char files[MAX][NAME];\nstatic long times[MAX];\nstatic int done[MAX];\nstatic int file_count;\nstatic char targets[30][NAME];\nstatic char prereqs[30][10][NAME];\nstatic int prereq_count[30];\nstatic int rule_count;\nstatic long clock_now;\nstatic int built;\n\nstatic int file_index(const char *name) {\n    for (int i = 0; i < file_count; i++) {\n        if (strcmp(files[i], name) == 0) {\n            return i;\n        }\n    }\n    strcpy(files[file_count], name);\n    times[file_count] = 0;\n    return file_count++;\n}\n\nstatic int rule_index(const char *name) {\n    for (int i = 0; i < rule_count; i++) {\n        if (strcmp(targets[i], name) == 0) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nstatic void update(const char *name, const char *parent) {\n    int file = file_index(name);\n    if (done[file]) {\n        return;\n    }\n    int rule = rule_index(name);\n    if (rule < 0) {\n        if (times[file] == 0) {\n            if (parent != NULL) {\n                printf(\"make: *** No rule to make target '%s', needed by '%s'.  Stop.\\n\", name,\n                       parent);\n            } else {\n                printf(\"make: *** No rule to make target '%s'.  Stop.\\n\", name);\n            }\n            exit(0);\n        }\n        done[file] = 1;\n        return;\n    }\n    int need = times[file] == 0;\n    for (int i = 0; i < prereq_count[rule]; i++) {\n        update(prereqs[rule][i], name);\n        if (times[file_index(prereqs[rule][i])] > times[file]) {\n            need = 1;\n        }\n    }\n    if (need) {\n        printf(\"собрать %s\\n\", name);\n        times[file] = clock_now++;\n        built++;\n    }\n    done[file] = 1;\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < n; i++) {\n        char name[NAME];\n        long time;\n        if (scanf(\"%47s %ld\", name, &time) != 2) {\n            return 0;\n        }\n        times[file_index(name)] = time;\n        if (time >= clock_now) {\n            clock_now = time + 1;\n        }\n    }\n    if (clock_now == 0) {\n        clock_now = 1;\n    }\n    if (scanf(\"%d\", &rule_count) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < rule_count; i++) {\n        if (scanf(\"%47s %d\", targets[i], &prereq_count[i]) != 2) {\n            return 0;\n        }\n        for (int j = 0; j < prereq_count[i]; j++) {\n            if (scanf(\"%47s\", prereqs[i][j]) != 1) {\n                return 0;\n            }\n        }\n    }\n    char goal[NAME];\n    if (scanf(\"%47s\", goal) != 1) {\n        return 0;\n    }\n    update(goal, NULL);\n    if (built == 0) {\n        printf(\"make: '%s' is up to date.\\n\", goal);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Решение Make — обход графа в глубину с одним сравнением в каждой вершине: «есть ли зависимость новее меня». Сначала обновляются зависимости, и только потом проверяется цель: пересобранный `parser.o` получает свежее время и тем самым делает устаревшей программу `calc`.\n\nРавные времена не вызывают пересборку — нужна строго более новая зависимость. Отметка «обработан» гарантирует, что общий заголовок или объектный файл не будет собран дважды, даже если от него зависят несколько целей.\n\nОбратите внимание, чего Make **не** проверяет: содержимое файлов и текст рецептов. Он доверяет времени изменения — поэтому `touch` вызывает пересборку, а смена флагов в Makefile — нет.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "advanced-makefile-task-2",
+      "title": "Раскрытие переменных",
+      "description": "Смоделируйте, как Make раскрывает рецепт. Ввод:\n- число `m` и `m` строк `ИМЯ = значение` (значение может быть пустым и может ссылаться на другие переменные);\n- строка правила `цель: зав₁ зав₂ …`;\n- число `c` и `c` строк рецепта (в начале строки может стоять табуляция — она не печатается).\n\nВ каждой строке рецепта замените:\n- `$(ИМЯ)` и `${ИМЯ}` — значением переменной, **раскрытым** по тем же правилам (неизвестная переменная — пустая строка);\n- `$@` — целью, `$<` — первой зависимостью, `$^` — всеми зависимостями через пробел без повторов;\n- `$$` — одним символом `$`.\n\nНапечатайте раскрытые строки так, как их показал бы Make: строки, начинающиеся с `@`, выполняются молча и **не печатаются**.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "3\nCC = gcc\nWARN = -Wall -Wextra\nCFLAGS = -std=c17 $(WARN) -g\nbuild/lexer.o: src/lexer.c include/lexer.h\n1\n\t$(CC) $(CFLAGS) -c $< -o $@\n",
+          "output": "gcc -std=c17 -Wall -Wextra -g -c src/lexer.c -o build/lexer.o\n"
+        },
+        {
+          "input": "1\nCC = clang\ncalc: main.o lexer.o main.o\n2\n\t@mkdir -p build\n\t$(CC) $^ -o $@ $(LDLIBS)\n",
+          "output": "clang main.o lexer.o -o calc \n"
+        }
+      ],
+      "constraints": [
+        "0 ≤ m ≤ 20; 1 ≤ c ≤ 10; строки не длиннее 200 символов, раскрытые — не длиннее 1000.",
+        "Переменные не ссылаются сами на себя ни прямо, ни через другие."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Напишите рекурсивную функцию expand(const char *text, char *out), которая дописывает результат в out. Для $(ИМЯ) она находит значение и вызывает себя для него.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Строку переменной разделите по первому =: имя — часть до него без пробелов по краям, значение — часть после без ведущих пробелов.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Для $^ перед добавлением зависимости проверяйте, не встречалась ли она раньше в списке.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\nCC = gcc\nWARN = -Wall -Wextra\nCFLAGS = -std=c17 $(WARN) -g\nbuild/lexer.o: src/lexer.c include/lexer.h\n1\n\t$(CC) $(CFLAGS) -c $< -o $@\n",
+          "expected": "gcc -std=c17 -Wall -Wextra -g -c src/lexer.c -o build/lexer.o\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nCC = clang\ncalc: main.o lexer.o main.o\n2\n\t@mkdir -p build\n\t$(CC) $^ -o $@ $(LDLIBS)\n",
+          "expected": "clang main.o lexer.o -o calc \n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Только автоматические",
+          "stdin": "0\nall: a b\n1\n\techo $@ $< $^\n",
+          "expected": "echo all a a b\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Доллар и скобки",
+          "stdin": "1\nX = 1\nt: p\n1\n\techo $$X $(X) ${X}\n",
+          "expected": "echo $X 1 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Ссылка вперёд",
+          "stdin": "2\nA = $(B) $(B)\nB = hi\nt:\n1\n\techo $(A) [$<]\n",
+          "expected": "echo hi hi []\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Пустые значения",
+          "stdin": "1\nEMPTY =\nx.o: x.c\n1\n\tgcc $(EMPTY)-c $(MISSING)$<\n",
+          "expected": "gcc -c x.c\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытые команды",
+          "stdin": "0\nt: p\n3\n\t@echo скрыто\n\techo видно\n\t@true\n",
+          "expected": "echo видно\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Шаблонное правило",
+          "stdin": "4\nCC = gcc\nCPPFLAGS = -Iinclude\nOPT = -O2\nCFLAGS = $(OPT) -DNDEBUG\nbuild/net.o: src/net.c include/net.h include/util.h\n1\n\t$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@\n",
+          "expected": "gcc -Iinclude -O2 -DNDEBUG -MMD -MP -c src/net.c -o build/net.o\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Правило без зависимостей",
+          "stdin": "1\nRM = rm -rf\nclean:\n1\n\t$(RM) build $@.log\n",
+          "expected": "rm -rf build clean.log\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Однобуквенная переменная",
+          "stdin": "1\nO = obj\nt: a\n1\n\techo $O-$@\n",
+          "expected": "echo obj-t\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Доллар внутри значения",
+          "stdin": "2\nSHELL_HOME = $$HOME\nDIR = ${SHELL_HOME}/bin\ninstall: app\n1\n\tcp $< $(DIR)/$<\n",
+          "expected": "cp app $HOME/bin/app\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define LINE 256\n#define OUT 2048\n\nstatic char var_names[20][LINE];\nstatic char var_values[20][LINE];\nstatic int var_count;\nstatic char target[LINE];\nstatic char prereqs[20][LINE];\nstatic int prereq_count;\n\nstatic void trim_right(char *text) {\n    size_t length = strlen(text);\n    while (length > 0 && (text[length - 1] == ' ' || text[length - 1] == '\\n' ||\n                          text[length - 1] == '\\r' || text[length - 1] == '\\t')) {\n        text[--length] = '\\0';\n    }\n}\n\nstatic const char *lookup(const char *name) {\n    for (int i = 0; i < var_count; i++) {\n        if (strcmp(var_names[i], name) == 0) {\n            return var_values[i];\n        }\n    }\n    return \"\";\n}\n\nstatic void expand(const char *text, char *out) {\n    for (const char *p = text; *p != '\\0'; p++) {\n        if (*p != '$' || p[1] == '\\0') {\n            strncat(out, p, 1);\n            continue;\n        }\n        p++;\n        if (*p == '$') {\n            strcat(out, \"$\");\n        } else if (*p == '@') {\n            strcat(out, target);\n        } else if (*p == '<') {\n            if (prereq_count > 0) {\n                strcat(out, prereqs[0]);\n            }\n        } else if (*p == '^') {\n            for (int i = 0; i < prereq_count; i++) {\n                int repeated = 0;\n                for (int j = 0; j < i && !repeated; j++) {\n                    repeated = strcmp(prereqs[i], prereqs[j]) == 0;\n                }\n                if (!repeated) {\n                    if (i > 0) {\n                        strcat(out, \" \");\n                    }\n                    strcat(out, prereqs[i]);\n                }\n            }\n        } else if (*p == '(' || *p == '{') {\n            char close = *p == '(' ? ')' : '}';\n            const char *end = strchr(p + 1, close);\n            if (end == NULL) {\n                return;\n            }\n            char name[LINE];\n            size_t length = (size_t)(end - p - 1);\n            memcpy(name, p + 1, length);\n            name[length] = '\\0';\n            expand(lookup(name), out);\n            p = end;\n        } else {\n            char name[2] = {*p, '\\0'};\n            expand(lookup(name), out);\n        }\n    }\n}\n\nint main(void) {\n    char line[LINE];\n    if (fgets(line, sizeof line, stdin) == NULL || sscanf(line, \"%d\", &var_count) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < var_count && fgets(line, sizeof line, stdin) != NULL; i++) {\n        trim_right(line);\n        char *equals = strchr(line, '=');\n        if (equals == NULL) {\n            continue;\n        }\n        *equals = '\\0';\n        trim_right(line);\n        const char *name = line;\n        while (*name == ' ') {\n            name++;\n        }\n        const char *value = equals + 1;\n        while (*value == ' ') {\n            value++;\n        }\n        strcpy(var_names[i], name);\n        strcpy(var_values[i], value);\n    }\n    if (fgets(line, sizeof line, stdin) == NULL) {\n        return 0;\n    }\n    trim_right(line);\n    char *colon = strchr(line, ':');\n    if (colon == NULL) {\n        return 0;\n    }\n    *colon = '\\0';\n    strcpy(target, line);\n    for (char *word = strtok(colon + 1, \" \"); word != NULL; word = strtok(NULL, \" \")) {\n        strcpy(prereqs[prereq_count++], word);\n    }\n    int count = 0;\n    if (fgets(line, sizeof line, stdin) == NULL || sscanf(line, \"%d\", &count) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < count && fgets(line, sizeof line, stdin) != NULL; i++) {\n        trim_right(line);\n        const char *command = line;\n        while (*command == '\\t' || *command == ' ') {\n            command++;\n        }\n        if (*command == '@') {\n            continue;\n        }\n        char out[OUT] = \"\";\n        expand(command, out);\n        puts(out);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Переменные, заданные через `=`, в Make **рекурсивные**: значение хранится как текст и раскрывается в момент использования. Поэтому `CFLAGS = $(WARN) -g` работает, даже если `WARN` определена ниже, — к моменту выполнения рецепта известны все переменные. Рекурсивный вызов `expand` для значения повторяет это правило.\n\nАвтоматические переменные вычисляются для конкретного правила: в шаблонном `build/%.o: src/%.c` одна строка рецепта `$(CC) -c $< -o $@` превращается в разные команды для каждого файла. `$$` нужен, когда в команде оболочки нужен настоящий `$`, например `echo $$HOME`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-makefile-task-3",
+      "title": "Шаблонные правила",
+      "description": "Смоделируйте выбор шаблонного правила. В первой строке — число правил `p`, далее `p` строк `шаблон_цели шаблон_зависимости`, в каждом шаблоне ровно один символ `%`. Затем число целей `q` и `q` имён.\n\nШаблон цели совпадает с именем, если имя начинается с части шаблона до `%`, заканчивается частью после `%`, а между ними остаётся хотя бы один символ — **основа** (stem). Например, `build/%.o` совпадает с `build/main.o` с основой `main`.\n\nЕсли подходит несколько правил, выбирается правило с **самой короткой** основой, при равенстве — объявленное раньше (так поступает GNU Make). Для каждой цели напечатайте `цель <- зависимость`, где в шаблоне зависимости `%` заменён основой, или `цель: нет правила`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "2\n%.o %.c\nbuild/%.o src/%.c\n3\nlexer.o\nbuild/main.o\nREADME.md\n",
+          "output": "lexer.o <- lexer.c\nbuild/main.o <- src/main.c\nREADME.md: нет правила\n"
+        },
+        {
+          "input": "1\nlib%.a %.list\n1\nlibmath.a\n",
+          "output": "libmath.a <- math.list\n"
+        }
+      ],
+      "constraints": ["1 ≤ p ≤ 10; 1 ≤ q ≤ 20; строки не длиннее 100 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Разделите шаблон на префикс и суффикс: char *percent = strchr(pattern, '%'). Длины частей — percent - pattern и strlen(percent + 1).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Имя подходит, если strlen(name) > len(prefix) + len(suffix), strncmp с префиксом в начале и strcmp с суффиксом в конце равны нулю. Длина основы — разность длин.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Перебирайте правила и запоминайте лучшее: меньшая длина основы побеждает, равная — нет (так сохраняется более раннее правило).",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\n%.o %.c\nbuild/%.o src/%.c\n3\nlexer.o\nbuild/main.o\nREADME.md\n",
+          "expected": "lexer.o <- lexer.c\nbuild/main.o <- src/main.c\nREADME.md: нет правила\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nlib%.a %.list\n1\nlibmath.a\n",
+          "expected": "libmath.a <- math.list\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустая основа",
+          "stdin": "1\n%.o %.c\n1\n.o\n",
+          "expected": ".o: нет правила\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Порядок не важен",
+          "stdin": "2\nbuild/%.o src/%.c\n%.o %.c\n1\nbuild/x.o\n",
+          "expected": "build/x.o <- src/x.c\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Равные основы — первое правило",
+          "stdin": "2\n%.o %.c\n%.o %.cpp\n1\nmain.o\n",
+          "expected": "main.o <- main.c\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Самое конкретное правило",
+          "stdin": "3\n%.o %.c\nbuild/%.o src/%.c\nbuild/test_%.o tests/%.c\n3\nbuild/test_list.o\nbuild/list.o\nother/list.o\n",
+          "expected": "build/test_list.o <- tests/list.c\nbuild/list.o <- src/list.c\nother/list.o <- other/list.c\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Суффикс цели",
+          "stdin": "1\n%_test %_test.c\n2\nlist_test\ntest\n",
+          "expected": "list_test <- list_test.c\ntest: нет правила\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Основа с каталогом",
+          "stdin": "1\ndocs/%.html docs/%.md\n2\ndocs/a/b.html\ndocs.html\n",
+          "expected": "docs/a/b.html <- docs/a/b.md\ndocs.html: нет правила\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Шаблон из одного %",
+          "stdin": "1\n% %.c\n2\napp\nx\n",
+          "expected": "app <- app.c\nx <- x.c\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Повтор суффикса",
+          "stdin": "1\n%.o %.c\n3\na.o.o\na.c\nab.o\n",
+          "expected": "a.o.o <- a.o.c\na.c: нет правила\nab.o <- ab.c\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Похожие суффиксы",
+          "stdin": "2\nout/%.txt in/%.txt\nout/%.txt.gz out/%.txt\n2\nout/r.txt.gz\nout/r.txt\n",
+          "expected": "out/r.txt.gz <- out/r.txt\nout/r.txt <- in/r.txt\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define LINE 128\n\nstatic char target_patterns[10][LINE];\nstatic char prereq_patterns[10][LINE];\n\n/* Возвращает длину основы или -1, если шаблон не совпадает с именем. */\nstatic int match(const char *pattern, const char *name) {\n    const char *percent = strchr(pattern, '%');\n    size_t prefix = (size_t)(percent - pattern);\n    size_t suffix = strlen(percent + 1);\n    size_t length = strlen(name);\n    if (length <= prefix + suffix) {\n        return -1;\n    }\n    if (strncmp(name, pattern, prefix) != 0 || strcmp(name + length - suffix, percent + 1) != 0) {\n        return -1;\n    }\n    return (int)(length - prefix - suffix);\n}\n\nint main(void) {\n    int p;\n    if (scanf(\"%d\", &p) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < p; i++) {\n        if (scanf(\"%127s %127s\", target_patterns[i], prereq_patterns[i]) != 2) {\n            return 0;\n        }\n    }\n    int q;\n    if (scanf(\"%d\", &q) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < q; i++) {\n        char name[LINE];\n        if (scanf(\"%127s\", name) != 1) {\n            break;\n        }\n        int best = -1;\n        int best_stem = 0;\n        for (int r = 0; r < p; r++) {\n            int stem = match(target_patterns[r], name);\n            if (stem > 0 && (best < 0 || stem < best_stem)) {\n                best = r;\n                best_stem = stem;\n            }\n        }\n        if (best < 0) {\n            printf(\"%s: нет правила\\n\", name);\n            continue;\n        }\n        const char *percent = strchr(target_patterns[best], '%');\n        const char *stem = name + (percent - target_patterns[best]);\n        const char *prereq = prereq_patterns[best];\n        const char *slot = strchr(prereq, '%');\n        printf(\"%s <- %.*s%.*s%s\\n\", name, (int)(slot - prereq), prereq, best_stem, stem, slot + 1);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Шаблонное правило — это функция «имя цели → имя исходника». Основа переносит изменяемую часть имени из цели в зависимость: `build/net.o` с основой `net` превращается в `src/net.c`.\n\nПравило самой короткой основы выбирает **самый конкретный** шаблон. Для `build/main.o` подходят и `%.o` (основа `build/main`), и `build/%.o` (основа `main`) — побеждает второй, потому что он точнее описывает файл. Так в одном Makefile уживаются общее правило и частные исключения, и порядок их записи почти не важен.\n\nОснова не может быть пустой: шаблон `%.o` не совпадает с именем `.o`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "advanced-makefile-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "make сообщает Makefile:5: *** missing separator.  Stop. Что, скорее всего, не так в строке 5?",
+        "explanation": "Make различает рецепт и остальное только по символу табуляции в начале строки.",
+        "options": [
+          "Строка рецепта начинается с пробелов вместо табуляции",
+          "В правиле нет зависимостей",
+          "Файл в зависимостях не существует",
+          "Не объявлена цель .PHONY"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Правило — main.o: main.c calc.h. Файл calc.h изменён позже, чем создан main.o. Пересоберёт ли make файл main.o? Ответьте «да» или «нет».",
+        "explanation": "Зависимость новее цели — значит, цель устарела, и рецепт выполняется.",
+        "type": "text",
+        "answers": ["да"],
+        "placeholder": "да или нет"
+      },
+      {
+        "id": "q3",
+        "question": "Что подставит $@ в рецепте правила build/main.o: src/main.c include/calc.h?",
+        "explanation": "$@ — цель правила, $< — первая зависимость, $^ — все зависимости.",
+        "options": ["build/main.o", "src/main.c", "src/main.c include/calc.h", "main"],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Чем $< отличается от $^?",
+        "explanation": "Компиляции нужен один исходник ($<), а линковке — все объектные файлы ($^).",
+        "options": [
+          "$< — первая зависимость, $^ — все зависимости без повторов",
+          "$< — все зависимости, $^ — последняя",
+          "$< — цель, $^ — зависимости",
+          "Ничем"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Зачем писать .PHONY: clean?",
+        "explanation": "Фиктивная цель не соответствует файлу. Иначе существующий файл clean сделал бы цель «актуальной».",
+        "options": [
+          "Чтобы рецепт clean выполнялся, даже если в каталоге окажется файл с именем clean",
+          "Чтобы clean выполнялся первым",
+          "Чтобы make не печатал команды clean",
+          "Без этого цель clean нельзя вызвать"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Какую цель собирает команда make без аргументов?",
+        "explanation": "Поэтому первой обычно пишут цель программы или all, которая зависит от всего, что нужно собрать.",
+        "options": [
+          "Первую цель в Makefile",
+          "Цель all, где бы она ни стояла",
+          "Последнюю цель",
+          "Все цели по очереди"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "В каких случаях make выполнит рецепт цели? Выберите все.",
+        "explanation": "Make сравнивает только время файлов. Изменение рецепта или флагов он не замечает — после такой правки нужен make clean или make -B.",
+        "type": "multiple",
+        "options": [
+          "Файла цели не существует",
+          "Одна из зависимостей новее цели",
+          "Зависимость только что была пересобрана",
+          "В рецепте поменяли флаги компиляции",
+          "Цель и все зависимости имеют одинаковое время изменения"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q8",
+        "question": "Что дают флаги -MMD -MP в рецепте компиляции?",
+        "explanation": "Файлы .d подключаются через -include, и правка любого заголовка пересобирает именно те файлы, которые его читают.",
+        "options": [
+          "Компилятор записывает файл .d с зависимостями объектного файла от заголовков",
+          "Компиляция идёт в несколько потоков",
+          "Включаются дополнительные предупреждения",
+          "Make перестаёт печатать команды"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q9",
+        "question": "Что делает make -n?",
+        "explanation": "Сухой прогон удобен, чтобы проверить новый Makefile или понять, что make собирается пересобрать.",
+        "options": [
+          "Печатает команды, которые были бы выполнены, но не выполняет их",
+          "Собирает без предупреждений",
+          "Пересобирает всё заново",
+          "Собирает n целей параллельно"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

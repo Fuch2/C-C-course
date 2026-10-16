@@ -1,0 +1,485 @@
+{
+  "id": "c17-integer-types",
+  "title": "Целые типы и переполнение",
+  "description": "Размеры и диапазоны целых типов, переполнение int, тип long long, приведение типа до вычисления и выбор типа по ограничениям задачи.",
+  "moduleId": "c-fundamentals",
+  "order": 6,
+  "difficulty": "beginner",
+  "estimatedMinutes": 40,
+  "prerequisites": ["c17-scanf"],
+  "objectives": [
+    "Называть диапазоны int и long long и брать границы из limits.h",
+    "Распознавать переполнение и понимать, почему оно опасно",
+    "Использовать long long и спецификатор %lld",
+    "Приводить тип операнда до вычисления: (long long)a * b",
+    "Выбирать тип, оценивая промежуточные результаты"
+  ],
+  "tags": ["C17", "int", "long long", "Переполнение"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-integer-types-task-1",
+    "title": "Большое произведение",
+    "description": "Прочитайте два целых числа `a` и `b` и напечатайте их произведение.\n\nЧисла могут быть до миллиарда по модулю, поэтому результат не помещается в `int`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "1000000000 1000000000",
+        "output": "1000000000000000000\n"
+      },
+      {
+        "input": "-123456 789012",
+        "output": "-97408265472\n"
+      }
+    ],
+    "constraints": ["−10⁹ ≤ a, b ≤ 10⁹."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Произведение может достигать 10¹⁸ — нужен long long.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Читайте сразу в long long через %lld или приводите тип до умножения: (long long)a * b.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "1000000000 1000000000",
+        "expected": "1000000000000000000\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "-123456 789012",
+        "expected": "-97408265472\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "0 1000000000",
+        "expected": "0\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "-1000000000 1000000000",
+        "expected": "-1000000000000000000\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "-1000000000 -1000000000",
+        "expected": "1000000000000000000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "1 1",
+        "expected": "1\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "46341 46341",
+        "expected": "2147488281\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "99999 100001",
+        "expected": "9999999999\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "2 -3",
+        "expected": "-6\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long a, b;\n    scanf(\"%lld %lld\", &a, &b);\n    printf(\"%lld\\n\", a * b);\n    return 0;\n}\n",
+    "solutionExplanation": "`|a · b| ≤ 10¹⁸`, а `LLONG_MAX ≈ 9,2 · 10¹⁸` — результат помещается в `long long` с запасом. Если `a` и `b` прочитаны как `long long`, умножение сразу выполняется в 64 битах.\n\nЕсли читать в `int` (значения до 10⁹ туда помещаются), обязательно привести тип перед умножением: `(long long)a * b`. Иначе произведение переполнится ещё в `int`.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-integer-types-task-2",
+      "title": "Секунды за годы",
+      "description": "Сколько секунд в `n` годах? Считайте, что в году 365 дней, в сутках 24 часа, в часе 3600 секунд.\n\n**Ввод:** целое число `n`.\n\n**Вывод:** количество секунд.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "1",
+          "output": "31536000\n"
+        },
+        {
+          "input": "100",
+          "output": "3153600000\n",
+          "explanation": "Больше INT_MAX — без long long получилось бы неверное число."
+        }
+      ],
+      "constraints": ["0 ≤ n ≤ 1 000 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Для n = 100 ответ уже больше 3 миллиардов — используйте long long.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Выражение n * 365 * 24 * 3600 вычисляется слева направо. Сделайте первый операнд long long, тогда и всё выражение будет 64-битным.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1",
+          "expected": "31536000\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "100",
+          "expected": "3153600000\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "68",
+          "expected": "2144448000\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "69",
+          "expected": "2175984000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1000000",
+          "expected": "31536000000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "2026",
+          "expected": "63891936000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "12345",
+          "expected": "389311920000\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long n;\n    scanf(\"%lld\", &n);\n    long long seconds = n * 365 * 24 * 3600;\n    printf(\"%lld\\n\", seconds);\n    return 0;\n}\n",
+      "solutionExplanation": "В году 31 536 000 секунд. Уже для 69 лет результат превышает `INT_MAX`, а для миллиона лет — около 3,2 · 10¹³. Поэтому `n` читается как `long long`.\n\nУмножение выполняется слева направо: `n * 365` — `long long`, потому что `n` типа `long long`; дальше каждое умножение тоже 64-битное. Если бы `n` было `int`, а выражение записано как `365 * 24 * 3600 * n`, первые три множителя перемножились бы в `int` (31 536 000 — это ещё помещается), но окончательное умножение на `int n` переполнилось бы.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-integer-types-task-3",
+      "title": "Сумма от 1 до n",
+      "description": "По легенде, маленький Гаусс сосчитал сумму чисел от 1 до 100 за минуту: `1 + 2 + … + n = n · (n + 1) / 2`. Напечатайте эту сумму для данного `n`.\n\nЦиклов пока не нужно — используйте формулу. Но будьте внимательны с размером чисел.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "100",
+          "output": "5050\n"
+        },
+        {
+          "input": "1",
+          "output": "1\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 2 · 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "n может быть 2 миллиарда, а n · (n + 1) — около 4 · 10¹⁸. Нужен long long.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Делить на 2 нужно после умножения: одно из чисел n и n + 1 всегда чётное, поэтому деление точное.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "100",
+          "expected": "5050\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1",
+          "expected": "1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "2",
+          "expected": "3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "3",
+          "expected": "6\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "65536",
+          "expected": "2147516416\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "2000000000",
+          "expected": "2000000001000000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1999999999",
+          "expected": "1999999999000000000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "100000",
+          "expected": "5000050000\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "7",
+          "expected": "28\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long n;\n    scanf(\"%lld\", &n);\n    printf(\"%lld\\n\", n * (n + 1) / 2);\n    return 0;\n}\n",
+      "solutionExplanation": "Даже само `n` может не поместиться в `int` (2 · 10⁹ > `INT_MAX`), поэтому читаем сразу `long long`. Произведение `n · (n + 1)` для максимального `n` равно примерно 4 · 10¹⁸ — меньше `LLONG_MAX`.\n\nДеление на 2 выполняется последним и всегда точное: из двух соседних чисел одно чётное. Если разделить раньше — `n / 2 * (n + 1)` — при нечётном `n` потеряется половина.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-integer-types-task-4",
+      "title": "На границе int",
+      "description": "Прочитайте два числа типа `int` и напечатайте их сумму. Каждое число помещается в `int`, но сумма — не обязательно.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "2147483647 1",
+          "output": "2147483648\n"
+        },
+        {
+          "input": "-2147483648 -2147483648",
+          "output": "-4294967296\n"
+        }
+      ],
+      "constraints": ["−2 147 483 648 ≤ a, b ≤ 2 147 483 647."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сумма двух чисел около INT_MAX выходит за пределы int.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Читайте в long long или приведите один операнд: (long long)a + b.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2147483647 1",
+          "expected": "2147483648\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "-2147483648 -2147483648",
+          "expected": "-4294967296\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "2147483647 2147483647",
+          "expected": "4294967294\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "0 0",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "-2147483648 2147483647",
+          "expected": "-1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1000000000 1500000000",
+          "expected": "2500000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "-1 -2147483648",
+          "expected": "-2147483649\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "123 -456",
+          "expected": "-333\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long a, b;\n    scanf(\"%lld %lld\", &a, &b);\n    printf(\"%lld\\n\", a + b);\n    return 0;\n}\n",
+      "solutionExplanation": "Наибольшая сумма `2 · INT_MAX = 4 294 967 294`, наименьшая `2 · INT_MIN = −4 294 967 296` — обе далеко за пределами `int`. Сложение в `long long` решает проблему.\n\nЭта задача показывает, почему ограничения нужно оценивать для **результата**, а не только для входных данных.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-integer-types-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Какое наибольшее значение может хранить int на сервере проверки курса (32 бита)?",
+        "explanation": "32-битный int хранит значения от −2 147 483 648 до 2 147 483 647 (INT_MAX).",
+        "options": ["32 767", "2 147 483 647", "4 294 967 295", "9 223 372 036 854 775 807"],
+        "correct": 1
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int a = 50000;\n    long long r = (long long)a * a;\n    printf(\"%lld\\n\", r);\n    return 0;\n}",
+        "explanation": "Приведение (long long)a делает умножение 64-битным: 2,5 миллиарда не помещается в int, но помещается в long long.",
+        "type": "text",
+        "answers": ["2500000000"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Почему long long r = a * b; при int a = b = 100000 даёт неверный результат?",
+        "explanation": "Тип выражения a * b определяется операндами (int), а не переменной слева. Переполнение происходит при умножении.",
+        "options": [
+          "Умножение выполняется в int и переполняется до присваивания",
+          "long long не может хранить 10¹⁰",
+          "Нужно писать %d вместо %lld",
+          "Результат верный, проблемы нет"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Какой спецификатор нужен для long long в printf и scanf?",
+        "explanation": "%lld — long long decimal. %ld предназначен для long, %d — для int.",
+        "options": ["%d", "%ld", "%lld", "%ll"],
+        "correct": 2
+      },
+      {
+        "id": "q5",
+        "question": "Какие выражения вычисляют произведение int a и int b без переполнения при a, b ≤ 10⁹? Выберите все.",
+        "explanation": "В первых двух вариантах один из операндов становится long long до умножения. В (long long)(a * b) сначала переполняется a * b в int, и только потом испорченный результат приводится.",
+        "type": "multiple",
+        "options": ["(long long)a * b", "a * 1LL * b", "(long long)(a * b)", "a * b"],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q6",
+        "question": "Что такое неопределённое поведение (undefined behavior)?",
+        "explanation": "Переполнение знакового целого — пример UB. Нельзя полагаться ни на какой конкретный результат.",
+        "options": [
+          "Ситуация, для которой стандарт C не задаёт результат: программа может вести себя как угодно",
+          "Ошибка компиляции",
+          "Предупреждение компилятора",
+          "Всегда ноль в результате"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Числа a и b не больше 10⁹ по модулю. Какой тип нужен, чтобы хранить a + b без переполнения?",
+        "explanation": "|a + b| ≤ 2 · 10⁹, а INT_MAX ≈ 2,147 · 10⁹ — помещается, хотя и с небольшим запасом. Для a * b уже нужен long long.",
+        "options": [
+          "Хватит int: 2 · 10⁹ < 2 147 483 647",
+          "Нужен long long",
+          "Нужен short",
+          "Нужен char"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Почему в курсе не рекомендуют тип long?",
+        "explanation": "Программа с long может работать в Linux и переполняться в Windows. long long гарантированно не меньше 64 бит везде.",
+        "options": [
+          "Его размер зависит от системы: 64 бита в Linux и 32 бита в Windows",
+          "Он медленнее int",
+          "Он не поддерживает отрицательные числа",
+          "Он устарел и удалён из C17"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

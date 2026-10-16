@@ -1,0 +1,526 @@
+{
+  "id": "memory-const-pointers",
+  "title": "const в интерфейсах функций",
+  "description": "const как проверяемый договор в сигнатурах: входные и выходные параметры, передача структур через const-указатель, возврат указателя внутрь константных данных, таблицы констант и почему нельзя снимать const.",
+  "moduleId": "memory-pointers",
+  "order": 9,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
+  "prerequisites": ["memory-pointer-to-pointer"],
+  "objectives": [
+    "Читать сигнатуры функций и определять, какие данные функция может изменить",
+    "Объявлять входные параметры-указатели как const и передавать структуры через const-указатель",
+    "Возвращать const-указатель на найденное место во входных данных",
+    "Объяснять, почему снятие const и запись в литерал — неопределённое поведение"
+  ],
+  "tags": ["C17", "Память", "const", "Интерфейсы", "Указатели"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "memory-const-pointers-task-1",
+    "title": "Подсчёт без изменения",
+    "description": "Реализуйте две функции, которые только читают строку:\n\n```c\nsize_t count_char(const char *s, char c);   // сколько раз встречается символ c\nsize_t count_words(const char *s);          // сколько слов (групп непробельных символов)\n```\n\nФункция `main` дана: читает строку и символ на следующей строке, печатает `chars=N words=W`. Пробельными считаются пробел, табуляция и перевод строки.",
+    "difficulty": "beginner",
+    "starterCode": "#include <ctype.h>\n#include <stdio.h>\n\nsize_t count_char(const char *s, char c) {\n    return 0;\n}\n\nsize_t count_words(const char *s) {\n    return 0;\n}\n\nint main(void) {\n    char line[256];\n    char symbol[8];\n    if (fgets(line, sizeof line, stdin) == NULL || fgets(symbol, sizeof symbol, stdin) == NULL) {\n        return 1;\n    }\n    printf(\"chars=%zu words=%zu\\n\", count_char(line, symbol[0]), count_words(line));\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "the cat sat on the mat\nt\n",
+        "output": "chars=5 words=6\n"
+      },
+      {
+        "input": "   \n \n",
+        "output": "chars=3 words=0\n",
+        "explanation": "Ищется пробел: в строке их три, а слов нет."
+      }
+    ],
+    "constraints": ["Длина строки — до 200 символов."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Обход: for (; *s != '\\0'; s++) — двигается копия указателя, это допустимо для const char *.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Слово начинается там, где непробельный символ идёт после пробельного или в самом начале строки. isspace((unsigned char)ch) из <ctype.h> проверяет пробельные символы.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "the cat sat on the mat\nt\n",
+        "expected": "chars=5 words=6\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "   \n \n",
+        "expected": "chars=3 words=0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Один символ",
+        "stdin": "a\na\n",
+        "expected": "chars=1 words=1\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Символа нет",
+        "stdin": "hello\nz\n",
+        "expected": "chars=0 words=1\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Много пробелов",
+        "stdin": "  many   spaces   here  \ne\n",
+        "expected": "chars=3 words=3\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Повторяющиеся буквы",
+        "stdin": "aaaa aaaa\na\n",
+        "expected": "chars=8 words=2\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Табуляции",
+        "stdin": "tab\tseparated\twords\nt\n",
+        "expected": "chars=2 words=3\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Запятые без пробелов",
+        "stdin": "x,y,z\n,\n",
+        "expected": "chars=2 words=1\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Регистр",
+        "stdin": "Mixed CASE case\nc\n",
+        "expected": "chars=1 words=3\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Одно слово",
+        "stdin": "one\nn\n",
+        "expected": "chars=1 words=1\n"
+      }
+    ],
+    "referenceSolution": "#include <ctype.h>\n#include <stdio.h>\n\nsize_t count_char(const char *s, char c) {\n    size_t count = 0;\n    for (; *s != '\\0'; s++) {\n        if (*s == c) {\n            count++;\n        }\n    }\n    return count;\n}\n\nsize_t count_words(const char *s) {\n    size_t count = 0;\n    int inside = 0;\n    for (; *s != '\\0'; s++) {\n        if (isspace((unsigned char)*s)) {\n            inside = 0;\n        } else if (!inside) {\n            inside = 1;\n            count++;\n        }\n    }\n    return count;\n}\n\nint main(void) {\n    char line[256];\n    char symbol[8];\n    if (fgets(line, sizeof line, stdin) == NULL || fgets(symbol, sizeof symbol, stdin) == NULL) {\n        return 1;\n    }\n    printf(\"chars=%zu words=%zu\\n\", count_char(line, symbol[0]), count_words(line));\n    return 0;\n}\n",
+    "solutionExplanation": "Обе функции принимают `const char *`: по сигнатуре видно, что строка не изменится, и их можно вызывать и для литералов, и для массивов. Внутри двигается копия указателя `s` — `const` относится к символам, а не к самому указателю.\n\nПодсчёт слов — автомат с двумя состояниями: «внутри слова» и «между словами». Счётчик растёт на переходе из второго состояния в первое, поэтому несколько пробелов подряд не создают пустых слов.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "memory-const-pointers-task-2",
+      "title": "Последнее вхождение",
+      "description": "Реализуйте функцию\n\n```c\nconst char *last_occurrence(const char *text, const char *word);\n```\n\nОна возвращает указатель на начало **последнего** вхождения строки `word` в `text` или `NULL`, если вхождений нет. Вхождения могут перекрываться.\n\nФункция `main` дана: читает две строки (текст и образец), печатает позицию последнего вхождения и хвост текста начиная с неё, либо `not found`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <string.h>\n\nconst char *last_occurrence(const char *text, const char *word) {\n    return NULL;\n}\n\nint main(void) {\n    char text[256], word[64];\n    if (scanf(\"%255s %63s\", text, word) != 2) {\n        return 1;\n    }\n    const char *found = last_occurrence(text, word);\n    if (found == NULL) {\n        printf(\"not found\\n\");\n    } else {\n        printf(\"%td %s\\n\", found - text, found);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "abcabcabc\nbc\n",
+          "output": "7 bc\n"
+        },
+        {
+          "input": "hello\nxyz\n",
+          "output": "not found\n"
+        }
+      ],
+      "constraints": [
+        "Длина текста — до 200 символов, образца — от 1 до 50.",
+        "Строки не содержат пробелов."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Перебирайте позиции p от text: если strncmp(p, word, len) == 0, запомните p в переменной const char *last.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "strncmp сравнивает не больше len символов и останавливается на конце любой из строк, поэтому выхода за границу текста нет.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Можно использовать и strstr: ищите снова с позиции found + 1, пока находится.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "abcabcabc\nbc\n",
+          "expected": "7 bc\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "hello\nxyz\n",
+          "expected": "not found\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Перекрывающиеся вхождения",
+          "stdin": "aaaa\naa\n",
+          "expected": "2 aa\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Совпадает целиком",
+          "stdin": "abc\nabc\n",
+          "expected": "0 abc\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Образец длиннее текста",
+          "stdin": "abc\nabcd\n",
+          "expected": "not found\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Один символ",
+          "stdin": "xyzxyz\nx\n",
+          "expected": "3 xyz\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Перекрытие с шагом 2",
+          "stdin": "abababab\naba\n",
+          "expected": "4 abab\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Только в начале",
+          "stdin": "start-middle-end\nstart\n",
+          "expected": "0 start-middle-end\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "mississippi",
+          "stdin": "mississippi\nissi\n",
+          "expected": "4 issippi\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Нет совпадений",
+          "stdin": "a\nb\n",
+          "expected": "not found\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nconst char *last_occurrence(const char *text, const char *word) {\n    size_t len = strlen(word);\n    const char *last = NULL;\n    for (const char *p = text; *p != '\\0'; p++) {\n        if (strncmp(p, word, len) == 0) {\n            last = p;\n        }\n    }\n    return last;\n}\n\nint main(void) {\n    char text[256], word[64];\n    if (scanf(\"%255s %63s\", text, word) != 2) {\n        return 1;\n    }\n    const char *found = last_occurrence(text, word);\n    if (found == NULL) {\n        printf(\"not found\\n\");\n    } else {\n        printf(\"%td %s\\n\", found - text, found);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Результат указывает внутрь `text`, поэтому его тип — `const char *`, как у входа: через него нельзя изменить текст, даже если вызывающий код передал неконстантный массив.\n\nФункция не копирует данные — она возвращает адрес. Вызывающий код получает и позицию (`found − text`), и строку-хвост без лишних выделений памяти. Указатель действителен, пока жив `text`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-const-pointers-task-3",
+      "title": "Лучшая запись",
+      "description": "Даны `n` записей об участниках: имя, баллы и время в секундах. Лучший — участник с наибольшими баллами; при равных баллах — с меньшим временем; при равенстве и времени — с меньшим по алфавиту именем.\n\nРеализуйте функции:\n\n```c\nint better(const struct Entry *a, const struct Entry *b);         // 1, если a лучше b\nconst struct Entry *best_entry(const struct Entry *list, int n);  // указатель на лучшего\n```\n\nФункция `main` дана: печатает имя, баллы, время лучшего участника и его номер в списке (с нуля).",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <string.h>\n\nstruct Entry {\n    char name[21];\n    int score;\n    int time;\n};\n\nint better(const struct Entry *a, const struct Entry *b) {\n    return 0;\n}\n\nconst struct Entry *best_entry(const struct Entry *list, int n) {\n    return list;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    struct Entry list[100];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%20s %d %d\", list[i].name, &list[i].score, &list[i].time);\n    }\n    const struct Entry *best = best_entry(list, n);\n    printf(\"%s %d %d #%td\\n\", best->name, best->score, best->time, best - list);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\nann 90 300\nbob 95 400\ncid 95 350\n",
+          "output": "cid 95 350 #2\n"
+        },
+        {
+          "input": "1\nsolo 0 1\n",
+          "output": "solo 0 1 #0\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 100.",
+        "Имя — до 20 латинских букв.",
+        "0 ≤ баллы ≤ 1000, 1 ≤ время ≤ 10⁶."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "better: сравните score; если равны — time (меньше лучше); если равны — strcmp(a->name, b->name) < 0.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "best_entry: начните с const struct Entry *best = &list[0]; и обновляйте, если better(&list[i], best).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\nann 90 300\nbob 95 400\ncid 95 350\n",
+          "expected": "cid 95 350 #2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nsolo 0 1\n",
+          "expected": "solo 0 1 #0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Равенство до имени",
+          "stdin": "2\nzed 50 100\namy 50 100\n",
+          "expected": "amy 50 100 #1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Полное равенство, кроме имени",
+          "stdin": "3\na 10 5\nb 10 5\nc 10 5\n",
+          "expected": "a 10 5 #0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Баллы важнее времени",
+          "stdin": "3\nfast 1 1\nslow 2 1000000\nmid 1 2\n",
+          "expected": "slow 2 1000000 #1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Время решает",
+          "stdin": "4\nx 1000 10\ny 1000 9\nz 999 1\nw 1000 9\n",
+          "expected": "w 1000 9 #3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Нулевые баллы",
+          "stdin": "2\nfirst 0 1000000\nsecond 0 999999\n",
+          "expected": "second 0 999999 #1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Лучший последний",
+          "stdin": "5\ne 1 1\nd 2 2\nc 3 3\nb 4 4\na 5 5\n",
+          "expected": "a 5 5 #4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Длинное имя",
+          "stdin": "3\nabcdefghijklmnopqrst 7 7\nabc 7 7\nabd 7 7\n",
+          "expected": "abc 7 7 #1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Полные дубликаты",
+          "stdin": "2\nsame 5 5\nsame 5 5\n",
+          "expected": "same 5 5 #0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstruct Entry {\n    char name[21];\n    int score;\n    int time;\n};\n\nint better(const struct Entry *a, const struct Entry *b) {\n    if (a->score != b->score) {\n        return a->score > b->score;\n    }\n    if (a->time != b->time) {\n        return a->time < b->time;\n    }\n    return strcmp(a->name, b->name) < 0;\n}\n\nconst struct Entry *best_entry(const struct Entry *list, int n) {\n    const struct Entry *best = &list[0];\n    for (int i = 1; i < n; i++) {\n        if (better(&list[i], best)) {\n            best = &list[i];\n        }\n    }\n    return best;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    struct Entry list[100];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%20s %d %d\", list[i].name, &list[i].score, &list[i].time);\n    }\n    const struct Entry *best = best_entry(list, n);\n    printf(\"%s %d %d #%td\\n\", best->name, best->score, best->time, best - list);\n    return 0;\n}\n",
+      "solutionExplanation": "Каждая запись занимает 32 байта; передача `const struct Entry *` копирует только адрес и при этом гарантирует, что сравнение не испортит данные. По сигнатурам сразу видно: обе функции только читают.\n\n`best_entry` возвращает указатель на элемент исходного массива, а не копию. Поэтому `main` может вычислить номер записи как `best − list`. Тип результата — `const struct Entry *`, ведь он указывает внутрь данных, полученных только для чтения.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-const-pointers-task-4",
+      "title": "Найди ошибку: изменение литерала",
+      "description": "Программа хранит таблицу команд. Для каждого из `q` запросов она получает номер команды и печатает её название, сделав первую букву заглавной. Программа аварийно завершается на первом же запросе.\n\nНайдите ошибку и исправьте её так, чтобы таблица оставалась изменяемой (функция `capitalize` должна менять строку на месте).",
+      "difficulty": "intermediate",
+      "starterCode": "#include <ctype.h>\n#include <stdio.h>\n\nvoid capitalize(char *word) {\n    word[0] = (char)toupper((unsigned char)word[0]);\n}\n\nint main(void) {\n    char *commands[] = {\"start\", \"stop\", \"pause\", \"resume\"};\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        int id;\n        scanf(\"%d\", &id);\n        capitalize(commands[id]);\n        printf(\"%s\\n\", commands[id]);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\n0\n3\n",
+          "output": "Start\nResume\n"
+        },
+        {
+          "input": "1\n1\n",
+          "output": "Stop\n"
+        }
+      ],
+      "constraints": ["1 ≤ q ≤ 10.", "0 ≤ номер ≤ 3."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Куда указывают элементы массива commands? Можно ли менять эти байты?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Нужны собственные изменяемые массивы символов: char commands[][8] = {\"start\", \"stop\", \"pause\", \"resume\"}; — литералы скопируются в массив.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\n0\n3\n",
+          "expected": "Start\nResume\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n1\n",
+          "expected": "Stop\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "pause",
+          "stdin": "1\n2\n",
+          "expected": "Pause\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "resume",
+          "stdin": "1\n3\n",
+          "expected": "Resume\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Все команды",
+          "stdin": "4\n0\n1\n2\n3\n",
+          "expected": "Start\nStop\nPause\nResume\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Повторный запрос",
+          "stdin": "2\n1\n1\n",
+          "expected": "Stop\nStop\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Обратный порядок",
+          "stdin": "3\n3\n2\n1\n",
+          "expected": "Resume\nPause\nStop\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "start",
+          "stdin": "1\n0\n",
+          "expected": "Start\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Пять раз start",
+          "stdin": "5\n0\n0\n0\n0\n0\n",
+          "expected": "Start\nStart\nStart\nStart\nStart\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Десять запросов",
+          "stdin": "10\n0\n1\n2\n3\n0\n1\n2\n3\n0\n1\n",
+          "expected": "Start\nStop\nPause\nResume\nStart\nStop\nPause\nResume\nStart\nStop\n"
+        }
+      ],
+      "referenceSolution": "#include <ctype.h>\n#include <stdio.h>\n\nvoid capitalize(char *word) {\n    word[0] = (char)toupper((unsigned char)word[0]);\n}\n\nint main(void) {\n    char commands[][8] = {\"start\", \"stop\", \"pause\", \"resume\"};\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        int id;\n        scanf(\"%d\", &id);\n        capitalize(commands[id]);\n        printf(\"%s\\n\", commands[id]);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`char *commands[]` — массив указателей на **строковые литералы**, а литералы лежат в памяти только для чтения. Запись `word[0] = …` вызывает ошибку сегментации. Компилятор C не предупреждает, потому что тип литерала исторически `char[N]`, а не `const char[N]`.\n\n`char commands[][8]` — двумерный массив символов в кадре `main`: литералы **копируются** в него при инициализации, и копии можно изменять. Если бы таблицу менять было не нужно, правильным объявлением было бы `const char *commands[]` — тогда ошибка стала бы видна ещё при компиляции.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "memory-const-pointers-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Какие параметры функции void *memcpy(void *dst, const void *src, size_t n) функция может изменить через указатель?",
+        "explanation": "src помечен const — данные только читаются. dst без const — туда идёт запись.",
+        "options": [
+          "Только память по адресу dst",
+          "Только память по адресу src",
+          "Обе области",
+          "Ни одну"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Какие операции допустимы, если параметр объявлен как const int *p ? Выберите все.",
+        "explanation": "const относится к данным: читать и двигать сам указатель можно, записывать через него — нет.",
+        "type": "multiple",
+        "options": ["x = *p;", "p++;", "*p = 5;", "p = NULL;", "p[1] = 0;"],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nconst char *skip_spaces(const char *s) {\n    while (*s == ' ') {\n        s++;\n    }\n    return s;\n}\n\nint main(void) {\n    const char *text = \"   hello\";\n    const char *start = skip_spaces(text);\n    printf(\"%td %s\\n\", start - text, start);\n    return 0;\n}",
+        "explanation": "Функция двигает свою копию указателя и возвращает адрес первого непробельного символа — смещение 3 от начала.",
+        "type": "text",
+        "answers": ["3 hello"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Какое объявление позволяет менять данные, но не позволяет перенаправить указатель?",
+        "explanation": "const справа от звёздочки относится к самому указателю. const int * и int const * — одно и то же.",
+        "options": ["int *const p", "const int *p", "int const *p", "const int *const p"],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Чем плох код const char *s = \"abc\"; char *w = (char *)s; w[0] = 'X'; ?",
+        "explanation": "Приведение лишь заставляет компилятор замолчать. Литерал по-прежнему лежит в памяти только для чтения.",
+        "options": [
+          "Запись в строковый литерал — неопределённое поведение, обычно аварийное завершение",
+          "Это ошибка компиляции",
+          "Ничем: приведение снимает ограничение",
+          "Изменится копия строки"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nstruct Box {\n    int w, h;\n};\n\nint area(const struct Box *b) {\n    return b->w * b->h;\n}\n\nvoid grow(struct Box *b) {\n    b->w++;\n    b->h++;\n}\n\nint main(void) {\n    struct Box box = {2, 3};\n    grow(&box);\n    printf(\"%d\\n\", area(&box));\n    return 0;\n}",
+        "explanation": "grow меняет коробку до 3×4 через неконстантный указатель, area только читает: 12.",
+        "type": "text",
+        "answers": ["12"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Почему функцию, которая только читает массив, лучше объявить как int sum(const int *a, int n), а не int sum(int *a, int n)?",
+        "explanation": "int * не принимает const int * без приведения. const в сигнатуре — документация, которую проверяет компилятор.",
+        "options": [
+          "Её можно вызвать и для const-массива, а читатель видит, что массив не изменится",
+          "Она будет работать быстрее",
+          "Иначе массив скопируется",
+          "Без const нельзя читать элементы"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

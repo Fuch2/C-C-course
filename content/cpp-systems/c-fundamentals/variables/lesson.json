@@ -1,0 +1,469 @@
+{
+  "id": "c17-variables",
+  "title": "Переменные и присваивание",
+  "description": "Объявление, инициализация и присваивание, мусор в неинициализированных переменных, копирование значений, обмен и составное присваивание.",
+  "moduleId": "c-fundamentals",
+  "order": 3,
+  "difficulty": "beginner",
+  "estimatedMinutes": 40,
+  "prerequisites": ["c17-printf"],
+  "objectives": [
+    "Объявлять и инициализировать переменные типа int",
+    "Объяснять, почему присваивание — это запись, а не равенство",
+    "Менять значения двух переменных через временную переменную",
+    "Использовать +=, -=, *=, /=, ++ и --",
+    "Выбирать понятные имена переменных"
+  ],
+  "tags": ["C17", "Переменные", "Присваивание", "int"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-variables-task-1",
+    "title": "Обмен",
+    "description": "Прочитайте два целых числа `a` и `b`. Поменяйте значения переменных местами **через временную переменную** и напечатайте `a` и `b` через пробел.\n\nПечатать `b` и `a` в обратном порядке, не меняя переменные, — не то упражнение: его смысл именно в обмене значений.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf(\"%d %d\", &a, &b);\n    // Поменяйте значения a и b местами.\n\n    printf(\"%d %d\\n\", a, b);\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "3 8",
+        "output": "8 3\n"
+      },
+      {
+        "input": "-5 9",
+        "output": "9 -5\n"
+      }
+    ],
+    "constraints": ["−1 000 000 ≤ a, b ≤ 1 000 000.", "Вывод: «a b» после обмена."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Сохраните a во временную переменную tmp до того, как перезапишете a.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Порядок: tmp = a; a = b; b = tmp;",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "3 8",
+        "expected": "8 3\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "-5 9",
+        "expected": "9 -5\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "0 0",
+        "expected": "0 0\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "1 2",
+        "expected": "2 1\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "1000000 -1000000",
+        "expected": "-1000000 1000000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "7 7",
+        "expected": "7 7\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "-1 -2",
+        "expected": "-2 -1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "0 5",
+        "expected": "5 0\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf(\"%d %d\", &a, &b);\n    int tmp = a;\n    a = b;\n    b = tmp;\n    printf(\"%d %d\\n\", a, b);\n    return 0;\n}\n",
+    "solutionExplanation": "Временная переменная хранит старое значение `a`, которое иначе было бы потеряно при `a = b`. После трёх присваиваний значения переставлены.\n\nПроверьте случай равных чисел: обмен ничего не меняет, и программа печатает их же. Тесты проверяют поведение (вывод), но смысл задачи — потренировать шаблон обмена: он понадобится в сортировках.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-variables-task-2",
+      "title": "Три стакана",
+      "description": "Прочитайте три целых числа в переменные `a`, `b`, `c`. Сдвиньте значения по кругу влево: `a` получает значение `b`, `b` — значение `c`, `c` — старое значение `a`. Напечатайте `a b c` через пробел.\n\n**Пример:** `1 2 3` → `2 3 1`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int a, b, c;\n    scanf(\"%d %d %d\", &a, &b, &c);\n    // Сдвиньте значения по кругу.\n\n    printf(\"%d %d %d\\n\", a, b, c);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "1 2 3",
+          "output": "2 3 1\n"
+        },
+        {
+          "input": "5 5 0",
+          "output": "5 0 5\n"
+        }
+      ],
+      "constraints": ["−1000 ≤ a, b, c ≤ 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Достаточно одной временной переменной: сохраните в неё то значение, которое будет перезаписано первым.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "tmp = a; a = b; b = c; c = tmp;",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1 2 3",
+          "expected": "2 3 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5 5 0",
+          "expected": "5 0 5\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0 0 0",
+          "expected": "0 0 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "-1 -2 -3",
+          "expected": "-2 -3 -1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1000 -1000 0",
+          "expected": "-1000 0 1000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "3 2 1",
+          "expected": "2 1 3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "7 8 7",
+          "expected": "8 7 7\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "10 20 30",
+          "expected": "20 30 10\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int a, b, c;\n    scanf(\"%d %d %d\", &a, &b, &c);\n    int tmp = a;\n    a = b;\n    b = c;\n    c = tmp;\n    printf(\"%d %d %d\\n\", a, b, c);\n    return 0;\n}\n",
+      "solutionExplanation": "Первым перезаписывается `a`, поэтому её старое значение сохраняется в `tmp`. Дальше каждое присваивание берёт значение, которое ещё не испорчено: `b` и `c` к моменту чтения не изменены. Последним `c` получает сохранённое `a`.\n\nТрассировка для `1 2 3`: tmp=1; a=2; b=3; c=1 → `2 3 1`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-variables-task-3",
+      "title": "Снимок",
+      "description": "Прочитайте число `balance` — баланс счёта — и число `fee` — комиссию. Сохраните исходный баланс в переменную `before`, затем уменьшите `balance` на комиссию с помощью `-=`. Напечатайте строку:\n\n```text\nБыло: 100, стало: 85\n```",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int balance, fee;\n    scanf(\"%d %d\", &balance, &fee);\n    // Сохраните исходный баланс, спишите комиссию и напечатайте результат.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "100 15",
+          "output": "Было: 100, стало: 85\n"
+        },
+        {
+          "input": "50 0",
+          "output": "Было: 50, стало: 50\n"
+        }
+      ],
+      "constraints": ["0 ≤ fee ≤ balance ≤ 1 000 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Копию нужно сделать до изменения balance.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "printf(\"Было: %d, стало: %d\\n\", before, balance);",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "100 15",
+          "expected": "Было: 100, стало: 85\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "50 0",
+          "expected": "Было: 50, стало: 50\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0 0",
+          "expected": "Было: 0, стало: 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1000000 1000000",
+          "expected": "Было: 1000000, стало: 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1000000 1",
+          "expected": "Было: 1000000, стало: 999999\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "7 7",
+          "expected": "Было: 7, стало: 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "999 333",
+          "expected": "Было: 999, стало: 666\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "12 5",
+          "expected": "Было: 12, стало: 7\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int balance, fee;\n    scanf(\"%d %d\", &balance, &fee);\n    int before = balance;\n    balance -= fee;\n    printf(\"Было: %d, стало: %d\\n\", before, balance);\n    return 0;\n}\n",
+      "solutionExplanation": "Присваивание `before = balance` копирует значение на текущий момент. Когда потом `balance -= fee` меняет баланс, копия остаётся прежней — именно это и нужно.\n\nЕсли сохранить копию после списания, обе переменные будут равны новому балансу. Порядок инструкций определяет результат.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-variables-task-4",
+      "title": "Счёт в игре",
+      "description": "Игрок начинает со счётом `s`. Затем последовательно происходят события:\n\n1. игрок получает `bonus` очков;\n2. теряет `penalty` очков;\n3. счёт удваивается;\n4. счёт увеличивается на 1 за прохождение уровня.\n\nНапечатайте счёт после каждого события через пробел — четыре числа в одной строке. Используйте составное присваивание: `+=`, `-=`, `*=`, `++`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int s, bonus, penalty;\n    scanf(\"%d %d %d\", &s, &bonus, &penalty);\n    // Примените четыре события и напечатайте счёт после каждого.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "10 5 3",
+          "output": "15 12 24 25\n"
+        },
+        {
+          "input": "0 0 4",
+          "output": "0 -4 -8 -7\n",
+          "explanation": "Счёт может уйти в минус."
+        }
+      ],
+      "constraints": ["0 ≤ s, bonus, penalty ≤ 10 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Нужны четыре изменения переменной и четыре значения в выводе. Сохраните промежуточные значения в отдельные переменные или печатайте по одному числу.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Если печатать числа по одному, между ними нужен пробел, а после последнего — перевод строки.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "10 5 3",
+          "expected": "15 12 24 25\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0 0 4",
+          "expected": "0 -4 -8 -7\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0 0 0",
+          "expected": "0 0 0 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "10000 10000 0",
+          "expected": "20000 20000 40000 40001\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1 0 10000",
+          "expected": "1 -9999 -19998 -19997\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "100 1 1",
+          "expected": "101 100 200 201\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "7 3 9",
+          "expected": "10 1 2 3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "5000 2500 1000",
+          "expected": "7500 6500 13000 13001\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int s, bonus, penalty;\n    scanf(\"%d %d %d\", &s, &bonus, &penalty);\n    s += bonus;\n    printf(\"%d \", s);\n    s -= penalty;\n    printf(\"%d \", s);\n    s *= 2;\n    printf(\"%d \", s);\n    s++;\n    printf(\"%d\\n\", s);\n    return 0;\n}\n",
+      "solutionExplanation": "После каждого события печатается текущее значение `s`. Пробел ставится после первых трёх чисел, а после последнего — перевод строки, чтобы в конце строки не было лишнего пробела.\n\nТрассировка для `10 5 3`: 10 → 15 → 12 → 24 → 25.\n\nСчёт может стать отрицательным, если штраф больше накопленного, — `int` хранит и отрицательные числа, удвоение работает по обычным правилам: −4 · 2 = −8.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-variables-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int x = 4;\n    int y = x;\n    x = x * 10;\n    printf(\"%d %d\\n\", x, y);\n    return 0;\n}",
+        "explanation": "y получает копию значения 4. Последующее изменение x не затрагивает y.",
+        "type": "text",
+        "answers": ["40 4"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int n = 7;\n    n += 3;\n    n *= 2;\n    n--;\n    printf(\"%d\\n\", n);\n    return 0;\n}",
+        "explanation": "7 + 3 = 10, затем 10 · 2 = 20, затем 20 − 1 = 19.",
+        "type": "text",
+        "answers": ["19"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int a = 1, b = 2;\n    a = b;\n    b = a;\n    printf(\"%d %d\\n\", a, b);\n    return 0;\n}",
+        "explanation": "После a = b обе переменные равны 2, исходное значение a потеряно. Для обмена нужна временная переменная.",
+        "type": "text",
+        "answers": ["2 2"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int x = 3;\n    x *= 2 + 1;\n    printf(\"%d\\n\", x);\n    return 0;\n}",
+        "explanation": "x *= 2 + 1 означает x = x * (2 + 1): сначала вычисляется вся правая часть. 3 · 3 = 9.",
+        "type": "text",
+        "answers": ["9"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Чему равна локальная переменная int count; сразу после объявления?",
+        "explanation": "Локальные переменные в C не обнуляются. До первой записи в них лежит случайное значение, читать его нельзя.",
+        "options": [
+          "Нулю",
+          "Неопределённому значению — в ней мусор",
+          "Единице",
+          "Программа не скомпилируется"
+        ],
+        "correct": 1
+      },
+      {
+        "id": "q6",
+        "question": "Что означает строка x = x + 1; ?",
+        "explanation": "= — это присваивание: правая часть вычисляется из текущих значений и записывается в левую.",
+        "options": [
+          "Уравнение, у которого нет решений",
+          "Сравнение x с x + 1",
+          "Взять текущее x, прибавить 1 и записать результат в x",
+          "Ошибку компиляции"
+        ],
+        "correct": 2
+      },
+      {
+        "id": "q7",
+        "question": "Какие инструкции увеличивают переменную x на 1? Выберите все.",
+        "explanation": "x + 1; вычисляет значение и выбрасывает его, x не меняется. x == x + 1 — сравнение, тоже ничего не записывает.",
+        "type": "multiple",
+        "options": ["x++;", "x += 1;", "x = x + 1;", "x + 1;", "x == x + 1;"],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q8",
+        "question": "Какое имя лучше для переменной, хранящей температуру в градусах Цельсия?",
+        "explanation": "Хорошее имя отвечает, что хранится и в каких единицах.",
+        "options": ["t", "temperature_c", "data", "x1"],
+        "correct": 1
+      }
+    ]
+  }
+}

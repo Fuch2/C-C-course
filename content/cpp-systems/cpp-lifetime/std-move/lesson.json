@@ -1,0 +1,150 @@
+{
+  "id": "lifetime-std-move",
+  "title": "std::move — разрешение на перемещение",
+  "description": "std::move — это приведение категории выражения к xvalue с сохранением cv-квалификаторов.",
+  "moduleId": "cpp-lifetime",
+  "order": 13,
+  "difficulty": "advanced",
+  "estimatedMinutes": 55,
+  "prerequisites": ["lifetime-rvalue-references"],
+  "objectives": [
+    "Объяснить std::move как приведение категории, а не как операцию переноса.",
+    "Проследить на MemoryDiagram, почему move от const выбирает копирующую перегрузку.",
+    "Реализовать Probe, фиксирующий выбор перегрузки значением поля kind."
+  ],
+  "tags": ["C++20", "время жизни", "управление ресурсами", "std::move — разрешение на перемещение"],
+  "published": true,
+  "standard": "c++20",
+  "completion": "practice",
+  "exercise": {
+    "id": "lifetime-std-move-exercise",
+    "title": "Практика: std::move — разрешение на перемещение",
+    "description": "Создайте Probe с полем kind: конструктор по умолчанию ставит 0, копирующий — 1, перемещающий noexcept — 2. solve создаёт обычный и const Probe, конструирует новый объект из std::move каждого и возвращает 10 * kind первого + kind второго. Аргументы a и b не используются.",
+    "difficulty": "advanced",
+    "language": "cpp",
+    "standard": "c++20",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "solve(3, 7)",
+        "output": "21\n",
+        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+      },
+      {
+        "input": "solve(0, 0)",
+        "output": "21\n",
+        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+      }
+    ],
+    "constraints": [
+      "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
+      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
+      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
+    ],
+    "hints": [
+      {
+        "id": "owners",
+        "order": 1,
+        "text": "Для каждого вызова определите, какая перегрузка будет выбрана: тип аргумента после std::move решает всё. const блокирует перемещение."
+      },
+      {
+        "id": "boundary",
+        "order": 2,
+        "text": "Если x — const T, результат имеет тип const T&&: типичный move-конструктор T(T&&) не может принять его, потому что изменение источника запрещено, — и доступный T(const T&) молча выполнит копирование. У unique_ptr копирование удалено, поэтому move от const даст честную ошибку компиляции. Для возврата локального значения пишите return result: применяются правила elision; return std::move(result) способно помешать NRVO. Не разбрасывайте move ради скорости — сначала установите, где прежнее состояние больше не нужно.\n\nНе объявляйте объект const, если собираетесь передать изменяемое владение. Наличие std::move в вызове не является доказательством, что выбрана move-перегрузка.\n\nProbe в примере печатает выбранную перегрузку. Сначала предскажите обе строки без запуска, затем удалите move-конструктор: оба случая будут копировать через const&."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "arguments": [3, 7],
+        "expected": "21\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "arguments": [0, 0],
+        "expected": "21\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный случай 1",
+        "arguments": [-8, 3],
+        "expected": "21\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный случай 2",
+        "arguments": [5, -9],
+        "expected": "21\n"
+      },
+      {
+        "id": "case-5",
+        "name": "Граничный случай 3",
+        "arguments": [-1000, 1000],
+        "expected": "21\n"
+      },
+      {
+        "id": "case-6",
+        "name": "Граничный случай 4",
+        "arguments": [1000, -1000],
+        "expected": "21\n"
+      },
+      {
+        "id": "case-7",
+        "name": "Граничный случай 5",
+        "arguments": [4, 4],
+        "expected": "21\n"
+      }
+    ],
+    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct Probe { int kind = 0; Probe() = default; Probe(const Probe&): kind(1) {} Probe(Probe&&) noexcept: kind(2) {} };\nint solve(int a, int b) { (void)a; (void)b; Probe x; const Probe y; Probe first(std::move(x)), second(std::move(y)); return 10 * first.kind + second.kind; }",
+    "solutionExplanation": "Если x — const T, результат имеет тип const T&&: типичный move-конструктор T(T&&) не может принять его, потому что изменение источника запрещено, — и доступный T(const T&) молча выполнит копирование. У unique_ptr копирование удалено, поэтому move от const даст честную ошибку компиляции. Для возврата локального значения пишите return result: применяются правила elision; return std::move(result) способно помешать NRVO. Не разбрасывайте move ради скорости — сначала установите, где прежнее состояние больше не нужно.\n\nНе объявляйте объект const, если собираетесь передать изменяемое владение. Наличие std::move в вызове не является доказательством, что выбрана move-перегрузка.\n\nProbe в примере печатает выбранную перегрузку. Сначала предскажите обе строки без запуска, затем удалите move-конструктор: оба случая будут копировать через const&.",
+    "checking": {
+      "type": "function",
+      "functionName": "solve",
+      "returnType": "int",
+      "parameters": [
+        { "name": "a", "type": "int" },
+        { "name": "b", "type": "int" }
+      ]
+    }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "lifetime-std-move-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "concept",
+        "question": "Что непосредственно делает std::move?",
+        "options": [
+          "Переносит ресурс и обнуляет источник",
+          "Преобразует категорию выражения, сохраняя cv-квалификаторы"
+        ],
+        "correct": 1,
+        "explanation": "Если x — const T, результат имеет тип const T&&: типичный move-конструктор T(T&&) не может принять его, потому что изменение источника запрещено, — и доступный T(const T&) молча выполнит копирование. У unique_ptr копирование удалено, поэтому move от const даст честную ошибку компиляции. Для возврата локального значения пишите return result: применяются правила elision; return std::move(result) способно помешать NRVO. Не разбрасывайте move ради скорости — сначала установите, где прежнее состояние больше не нужно."
+      },
+      {
+        "id": "trace",
+        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
+        "options": ["move copy", "Ошибка компиляции", "Неопределённое поведение"],
+        "correct": 0,
+        "explanation": "std::move(x)            → только новая категория выражения\nT y(std::move(x))      → выбор конструктора → возможная передача\nconst T c; move(c)     → const T&&; T(T&&) не подходит\nКопирующая перегрузка принимает const T&& через const T&"
+      },
+      {
+        "id": "review",
+        "question": "Какое утверждение соответствует контракту урока?",
+        "options": [
+          "Если stdout совпал, любые операции со сроком жизни корректны.",
+          "Не объявляйте объект const, если собираетесь передать изменяемое владение. Наличие std::move в вызове не является доказательством, что выбрана move-перегрузка."
+        ],
+        "correct": 1,
+        "explanation": "Probe в примере печатает выбранную перегрузку. Сначала предскажите обе строки без запуска, затем удалите move-конструктор: оба случая будут копировать через const&."
+      }
+    ]
+  }
+}

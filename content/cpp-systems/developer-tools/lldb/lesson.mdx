@@ -1,0 +1,179 @@
+## LLDB — отладчик проекта LLVM
+
+LLDB — отладчик из того же проекта, что и Clang. На macOS он единственный штатный: ставится вместе с Xcode Command Line Tools (`xcode-select --install`), и именно его вызывают Xcode, CLion и расширение CodeLLDB для VS Code. На Linux LLDB тоже доступен (`sudo apt install lldb`).
+
+Всё, что вы узнали о GDB, переносится сюда целиком: точки останова, шаги, стек вызовов, точки наблюдения. Отличается только язык команд. Как и раньше, программу собирают с `-g -O0`:
+
+```text
+$ clang -std=c17 -Wall -Wextra -g -O0 search.c -o search
+$ lldb ./search
+(lldb) target create "./search"
+Current executable set to '/Users/u/search' (arm64).
+(lldb)
+```
+
+## Устройство команд: существительное и глагол
+
+Команды GDB — отдельные слова: `break`, `watch`, `info locals`. Команды LLDB построены по схеме **объект → действие → параметры**:
+
+```text
+breakpoint set --file search.c --line 12
+│          │   └── параметры
+│          └── действие
+└── объект
+```
+
+Объекты — `breakpoint`, `watchpoint`, `process`, `thread`, `frame`, `target`, `expression`. Схема многословная, но предсказуемая: `breakpoint list`, `breakpoint delete 2`, `watchpoint list`. Любое слово можно сократить до однозначного префикса (`br s -f search.c -l 12`), а для частых команд есть короткие псевдонимы в стиле GDB: `b`, `r`, `n`, `s`, `c`, `bt`, `p`.
+
+## Таблица соответствий
+
+| Действие                   | GDB                            | LLDB полностью                                  | LLDB коротко             |
+| -------------------------- | ------------------------------ | ----------------------------------------------- | ------------------------ |
+| точка останова на функцию  | `break sum`                    | `breakpoint set --name sum`                     | `b sum`                  |
+| точка останова на строку   | `break search.c:12`            | `breakpoint set --file search.c --line 12`      | `b search.c:12`          |
+| условная точка             | `break 12 if i == 3`           | `breakpoint set --line 12 --condition 'i == 3'` | `br s -l 12 -c 'i == 3'` |
+| список и удаление          | `info breakpoints`, `delete 1` | `breakpoint list`, `breakpoint delete 1`        | `br l`, `br del 1`       |
+| запуск                     | `run`                          | `process launch`                                | `r`                      |
+| запуск с вводом из файла   | `run < in.txt`                 | `process launch -i in.txt`                      |                          |
+| шаг без захода / с заходом | `next` / `step`                | `thread step-over` / `thread step-in`           | `n` / `s`                |
+| выйти из функции           | `finish`                       | `thread step-out`                               | `finish`                 |
+| продолжить                 | `continue`                     | `process continue`                              | `c`                      |
+| стек вызовов               | `bt`                           | `thread backtrace`                              | `bt`                     |
+| выбрать кадр               | `frame 1`                      | `frame select 1`                                | `f 1`, `up`              |
+| локальные переменные       | `info locals`                  | `frame variable`                                | `v`                      |
+| вычислить выражение        | `print x * 2`                  | `expression -- x * 2`                           | `p x * 2`                |
+| точка наблюдения           | `watch total`                  | `watchpoint set variable total`                 | `w s v total`            |
+
+`--` в `expression --` отделяет параметры команды от выражения C, которое может само начинаться с минуса.
+
+## Сеанс отладки
+
+Отладим двоичный поиск. Правильная версия:
+
+```c
+#include <stdio.h>
+
+int search(const int *a, int n, int key) {
+    int low = 0;
+    int high = n - 1;
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        if (a[mid] == key) {
+            return mid;
+        }
+        if (a[mid] < key) {
+            low = mid + 1;
+        } else {
+            high = mid - 1;
+        }
+    }
+    return -1;
+}
+
+int main(void) {
+    int a[6] = {2, 3, 5, 7, 11, 13};
+    printf("%d %d %d\n", search(a, 6, 13), search(a, 6, 2), search(a, 6, 4));
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+5 0 -1
+```
+
+Если бы условие цикла было `low < high`, поиск числа 13 вернул бы `-1`. Вот как это выглядит в LLDB с условной точкой останова:
+
+```text
+(lldb) b search.c:7 -c 'key == 13'
+Breakpoint 1: where = search`search + 40 at search.c:7:19, address = 0x0000000100003e88
+(lldb) r
+Process 5120 stopped
+* thread #1, stop reason = breakpoint 1.1
+    frame #0: search`search(a=0x000000016fdff2a0, n=6, key=13) at search.c:7:19
+-> 7   	        int mid = low + (high - low) / 2;
+(lldb) v low high
+(int) low = 0
+(int) high = 5
+(lldb) c
+(lldb) v low high
+(int) low = 3
+(int) high = 5
+(lldb) c
+(lldb) v low high
+(int) low = 5
+(int) high = 5
+```
+
+На третьей остановке `low == high == 5`, и в `a[5]` лежит искомое 13. С условием `low < high` цикл здесь бы закончился, не проверив последний кандидат. Ошибка найдена без единого `printf`.
+
+## frame variable и expression
+
+У LLDB две команды для просмотра значений, и разница между ними важна:
+
+- `frame variable` (`v`) **читает** переменные из памяти по отладочной информации. Она ничего не выполняет в программе и работает даже в «сломанном» процессе. Понимает простые выражения: `v a[2]`, `v *ptr`, `v node->next`.
+- `expression` (`p`) **компилирует и выполняет** выражение C в контексте программы: можно вызвать функцию (`p search(a, 6, 7)`) или изменить значение (`p low = 0`). Это мощнее, но может изменить состояние программы.
+
+```text
+(lldb) v
+(const int *) a = 0x000000016fdff2a0
+(int) n = 6
+(int) key = 13
+(int) low = 5
+(int) high = 5
+(lldb) p a[5] * 2
+(int) 26
+(lldb) v -f hex key
+(int) key = 0x0000000d
+```
+
+Формат вывода — `(тип) имя = значение`: тип сразу виден, что удобно при поиске ошибок преобразования. Флаг `-f` задаёт формат: `hex`, `binary`, `char`.
+
+<Concept title="Инструмент меняется, приёмы остаются">
+
+Точка останова, шаг, стек вызовов, точка наблюдения — понятия отладки, а не конкретного отладчика. Научившись им в GDB, вы за вечер освоите LLDB, отладчик Visual Studio или кнопки VS Code. Держите под рукой таблицу соответствий и думайте о вопросе, а не о команде: «где остановиться?», «что посмотреть?», «кто изменил?».
+
+</Concept>
+
+## Частые ошибки
+
+<CommonMistake title="Синтаксис GDB в полной форме">
+
+`breakpoint main` или `info locals` LLDB не поймёт. Короткие псевдонимы (`b main`, `bt`, `n`) совпадают с GDB, а для остального нужна форма «объект действие»: `frame variable`.
+
+</CommonMistake>
+
+<CommonMistake title="expression там, где хватит frame variable">
+
+`p` выполняет код внутри программы. Вызов функции с побочным эффектом (`p pop(stack)`) изменит состояние, и дальнейшая отладка пойдёт по другому пути. Для простого просмотра используйте `v`.
+
+</CommonMistake>
+
+<CommonMistake title="Отладка на macOS без разрешения">
+
+При первом запуске macOS может спросить разрешение на отладку процессов (Developer Tools). Если `process launch` завершается ошибкой `attach failed`, разрешите доступ в настройках безопасности или запустите отладку из терминала, где установлены Command Line Tools.
+
+</CommonMistake>
+
+<TryIt title="Попробуйте сами">
+
+Замените в примере `low <= high` на `low < high` и пройдите сеанс из урока на своём компьютере. Затем поставьте точку наблюдения `w s v high` и посмотрите, как меняется граница поиска.
+
+</TryIt>
+
+## Практика
+
+1. **Команды GDB → LLDB** — перевести сеанс GDB на язык LLDB.
+2. **Разбор frame variable** — прочитать вывод `v` и найти нулевые указатели.
+3. **Найди ошибку: двоичный поиск** — исправить условие цикла, найденное отладчиком.
+
+<CodingExercise />
+
+## Итоги
+
+- LLDB — отладчик проекта LLVM, штатный на macOS; программы для него собирают с `-g -O0`.
+- Команды строятся как «объект действие параметры»: `breakpoint set`, `thread step-over`, `frame variable`; есть короткие псевдонимы `b`, `r`, `n`, `s`, `c`, `bt`, `p`.
+- `frame variable` (`v`) только читает переменные, `expression` (`p`) выполняет код C в программе.
+- Условные точки останова (`-c`), точки наблюдения (`watchpoint set variable`) и `thread backtrace` работают так же, как в GDB.
+- Приёмы отладки не зависят от отладчика: переносите их, сверяясь с таблицей соответствий.

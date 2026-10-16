@@ -1,0 +1,468 @@
+{
+  "id": "compilation-stages",
+  "title": "Этапы компиляции",
+  "description": "Четыре стадии сборки — препроцессор, компиляция, ассемблирование, линковка; флаги -E, -S, -c и -o, промежуточные файлы, раздельная компиляция и определение стадии по тексту ошибки.",
+  "moduleId": "developer-tools",
+  "order": 2,
+  "difficulty": "beginner",
+  "estimatedMinutes": 50,
+  "prerequisites": ["terminal-basics"],
+  "objectives": [
+    "Называть четыре стадии сборки, их входы и выходы",
+    "Останавливать сборку после нужной стадии флагами -E, -S и -c",
+    "Собирать программу из нескольких файлов раздельной компиляцией",
+    "Определять по сообщению об ошибке, какая стадия её выдала"
+  ],
+  "tags": ["Сборка", "GCC", "Препроцессор", "Линковка", "Объектный файл"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "compilation-stages-task-1",
+    "title": "Имя выходного файла",
+    "description": "Дана команда компилятора в одной строке: имя компилятора (`gcc` или `clang`) и аргументы через пробел. Определите, на какой стадии остановится сборка и какие файлы появятся.\n\nПравила:\n- `-E` — стадия `препроцессор`, `-S` — `компиляция`, `-c` — `ассемблирование`, без них — `линковка`. Если указано несколько, работает самая ранняя стадия.\n- `-o имя` задаёт имя результата. Остальные аргументы, начинающиеся с `-`, на ответ не влияют.\n- Все прочие аргументы — входные файлы.\n\nНапечатайте `стадия: …`, затем по строке `файл: …` на каждый результат:\n- при линковке результат один — имя из `-o` или `a.out`;\n- для `-E` без `-o` результат идёт в терминал: `файл: stdout`;\n- для `-S` и `-c` без `-o` каждый входной файл даёт свой результат: имя без каталогов, расширение заменено на `.s` или `.o`;\n- если при `-E`, `-S` или `-c` указан `-o` и входных файлов больше одного, вместо файлов напечатайте `ошибка: -o с несколькими входными файлами`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "gcc main.c\n",
+        "output": "стадия: линковка\nфайл: a.out\n"
+      },
+      {
+        "input": "gcc -c src/util.c\n",
+        "output": "стадия: ассемблирование\nфайл: util.o\n"
+      }
+    ],
+    "constraints": [
+      "В команде от 2 до 20 слов, каждое — не длиннее 100 символов.",
+      "Есть хотя бы один входной файл; у входных файлов есть расширение."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Читайте слова через scanf(\"%127s\", word). Первое слово — имя компилятора. Входные файлы сохраните в массив: char inputs[20][128].",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Стадию храните числом: 1 — препроцессор, 2 — компиляция, 3 — ассемблирование, 4 — линковка. Флаг устанавливает стадию, только если она раньше текущей.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Имя без каталога — всё после последнего /: strrchr(path, '/'). Расширение — после последней точки в этом имени: strrchr(base, '.').",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "gcc main.c\n",
+        "expected": "стадия: линковка\nфайл: a.out\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "gcc -c src/util.c\n",
+        "expected": "стадия: ассемблирование\nфайл: util.o\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Обычная сборка",
+        "stdin": "gcc -std=c17 -Wall main.c -o app\n",
+        "expected": "стадия: линковка\nфайл: app\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Ассемблер",
+        "stdin": "clang -S -O2 square.c\n",
+        "expected": "стадия: компиляция\nфайл: square.s\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Препроцессор в терминал",
+        "stdin": "gcc -E main.c\n",
+        "expected": "стадия: препроцессор\nфайл: stdout\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Препроцессор в файл",
+        "stdin": "gcc -E main.c -o main.i\n",
+        "expected": "стадия: препроцессор\nфайл: main.i\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Несколько объектных файлов",
+        "stdin": "gcc -c main.c parser.c lexer.c\n",
+        "expected": "стадия: ассемблирование\nфайл: main.o\nфайл: parser.o\nфайл: lexer.o\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "-o с несколькими файлами",
+        "stdin": "gcc -c main.c parser.c -o all.o\n",
+        "expected": "стадия: ассемблирование\nошибка: -o с несколькими входными файлами\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Самая ранняя стадия",
+        "stdin": "gcc -S -c main.c\n",
+        "expected": "стадия: компиляция\nфайл: main.s\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Линковка объектных файлов",
+        "stdin": "gcc main.o parser.o -lm -o calc\n",
+        "expected": "стадия: линковка\nфайл: calc\n"
+      },
+      {
+        "id": "hidden-9",
+        "name": "-o перед файлом",
+        "stdin": "gcc -c -o build/main.o src/main.c\n",
+        "expected": "стадия: ассемблирование\nфайл: build/main.o\n"
+      },
+      {
+        "id": "hidden-10",
+        "name": "Точка в имени каталога",
+        "stdin": "gcc -c lib/v1.2/io.c\n",
+        "expected": "стадия: ассемблирование\nфайл: io.o\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define WORD 128\n\nstatic void print_object(const char *path, const char *extension) {\n    const char *slash = strrchr(path, '/');\n    const char *base = slash != NULL ? slash + 1 : path;\n    const char *dot = strrchr(base, '.');\n    int length = dot != NULL ? (int)(dot - base) : (int)strlen(base);\n    printf(\"файл: %.*s%s\\n\", length, base, extension);\n}\n\nint main(void) {\n    static const char *names[] = {\"\", \"препроцессор\", \"компиляция\", \"ассемблирование\", \"линковка\"};\n    char word[WORD];\n    char inputs[20][WORD];\n    char output[WORD] = \"\";\n    int count = 0;\n    int stage = 4;\n    if (scanf(\"%127s\", word) != 1) {\n        return 0;\n    }\n    while (scanf(\"%127s\", word) == 1) {\n        int flag_stage = 0;\n        if (strcmp(word, \"-E\") == 0) {\n            flag_stage = 1;\n        } else if (strcmp(word, \"-S\") == 0) {\n            flag_stage = 2;\n        } else if (strcmp(word, \"-c\") == 0) {\n            flag_stage = 3;\n        }\n        if (flag_stage != 0) {\n            if (flag_stage < stage) {\n                stage = flag_stage;\n            }\n        } else if (strcmp(word, \"-o\") == 0) {\n            if (scanf(\"%127s\", output) != 1) {\n                output[0] = '\\0';\n            }\n        } else if (word[0] != '-' && count < 20) {\n            strcpy(inputs[count], word);\n            count++;\n        }\n    }\n    printf(\"стадия: %s\\n\", names[stage]);\n    if (stage == 4) {\n        printf(\"файл: %s\\n\", output[0] != '\\0' ? output : \"a.out\");\n    } else if (output[0] != '\\0') {\n        if (count > 1) {\n            printf(\"ошибка: -o с несколькими входными файлами\\n\");\n        } else {\n            printf(\"файл: %s\\n\", output);\n        }\n    } else if (stage == 1) {\n        printf(\"файл: stdout\\n\");\n    } else {\n        for (int i = 0; i < count; i++) {\n            print_object(inputs[i], stage == 2 ? \".s\" : \".o\");\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Флаги стадии не взаимоисключающие: `gcc -S -c` — не ошибка, а «остановиться как можно раньше», то есть после компиляции. Поэтому стадия хранится числом, и флаг может только уменьшить его.\n\nИмя результата строится из **базового имени** исходника: каталоги отбрасываются, поэтому `gcc -c src/util.c` пишет `util.o` в текущий каталог. Расширение ищется в базовом имени, а не во всём пути — иначе путь `lib/v1.2/io.c` превратился бы в `v1.o`.\n\nОграничение с `-o` реальное: на `gcc -c a.c b.c -o x.o` настоящий gcc отвечает `cannot specify '-o' with '-c', '-S' or '-E' with multiple files` — два объектных файла нельзя записать в одно имя.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "compilation-stages-task-2",
+      "title": "Разбор сообщений компилятора",
+      "description": "На вход подаётся вывод компилятора — строки до конца ввода. Диагностика — это строка вида\n\n```\nфайл:строка:столбец: вид: сообщение\n```\n\nгде `вид` — `error`, `fatal error`, `warning` или `note`. Остальные строки (фрагменты кода, `In function …`, итоговые строки) нужно пропустить.\n\nДля каждой диагностики напечатайте `файл:строка вид: сообщение`, где вид по-русски: `ошибка` (для `error` и `fatal error`), `предупреждение` или `примечание`. В конце напечатайте `ошибок: E, предупреждений: W`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "main.c: In function 'main':\nmain.c:5:15: warning: unused variable 'y' [-Wunused-variable]\n    5 |     int x = 1, y;\n      |               ^\nmain.c:7:5: error: expected ';' before 'return'\n",
+          "output": "main.c:5 предупреждение: unused variable 'y' [-Wunused-variable]\nmain.c:7 ошибка: expected ';' before 'return'\nошибок: 1, предупреждений: 1\n"
+        },
+        {
+          "input": "",
+          "output": "ошибок: 0, предупреждений: 0\n"
+        }
+      ],
+      "constraints": [
+        "Не больше 50 строк, каждая — не длиннее 300 символов.",
+        "Имя файла не содержит двоеточий; строка и столбец — положительные целые."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Читайте строки через fgets и отрезайте перевод строки. Имя файла — всё до первого двоеточия: strchr(line, ':').",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Числа читайте через strtol(p, &end, 10) и проверяйте, что end сдвинулся и *end == ':'. Строка «main.c: In function» не пройдёт эту проверку.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "После столбца ожидайте \": \" и сравнивайте начало остатка с \"fatal error: \", \"error: \", \"warning: \", \"note: \" через strncmp.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "main.c: In function 'main':\nmain.c:5:15: warning: unused variable 'y' [-Wunused-variable]\n    5 |     int x = 1, y;\n      |               ^\nmain.c:7:5: error: expected ';' before 'return'\n",
+          "expected": "main.c:5 предупреждение: unused variable 'y' [-Wunused-variable]\nmain.c:7 ошибка: expected ';' before 'return'\nошибок: 1, предупреждений: 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "ошибок: 0, предупреждений: 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Фатальная ошибка",
+          "stdin": "main.c:2:10: fatal error: config.h: No such file or directory\n    2 | #include \"config.h\"\n      |          ^~~~~~~~~~\ncompilation terminated.\n",
+          "expected": "main.c:2 ошибка: config.h: No such file or directory\nошибок: 1, предупреждений: 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Примечание не считается",
+          "stdin": "src/io.c:120:3: error: implicit declaration of function 'fopen_s'\nsrc/io.c:98:6: note: declared here\n",
+          "expected": "src/io.c:120 ошибка: implicit declaration of function 'fopen_s'\nsrc/io.c:98 примечание: declared here\nошибок: 1, предупреждений: 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Включение из заголовка",
+          "stdin": "In file included from main.c:1:\nutil.h:4:5: warning: 'helper' declared 'static' but never defined\n",
+          "expected": "util.h:4 предупреждение: 'helper' declared 'static' but never defined\nошибок: 0, предупреждений: 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Сообщения линковщика пропускаются",
+          "stdin": "/usr/bin/ld: /tmp/cc1.o: in function `main':\nmain.c:(.text+0x1e): undefined reference to `helper'\ncollect2: error: ld returned 1 exit status\n",
+          "expected": "ошибок: 0, предупреждений: 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Только предупреждения",
+          "stdin": "a.c:1:1: warning: x\na.c:2:1: warning: y\nb.c:10:20: warning: z\n",
+          "expected": "a.c:1 предупреждение: x\na.c:2 предупреждение: y\nb.c:10 предупреждение: z\nошибок: 0, предупреждений: 3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Двоеточие в коде",
+          "stdin": "calc.c:14:12: error: incompatible types when assigning to type 'int' from type 'char *'\n   14 |     total: x = s;\n2 errors generated.\n",
+          "expected": "calc.c:14 ошибка: incompatible types when assigning to type 'int' from type 'char *'\nошибок: 1, предупреждений: 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Несколько ошибок",
+          "stdin": "main.c:3:2: error: #error \"нужен C17\"\nmain.c:8:1: error: expected declaration specifiers before '}' token\nmain.c:9:1: error: expected '{' at end of input\n",
+          "expected": "main.c:3 ошибка: #error \"нужен C17\"\nmain.c:8 ошибка: expected declaration specifiers before '}' token\nmain.c:9 ошибка: expected '{' at end of input\nошибок: 3, предупреждений: 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Неполный формат",
+          "stdin": "main.c:abc:1: error: не диагностика\nmain.c:4: error: нет столбца\nmain.c:4:2:error: нет пробела\n",
+          "expected": "ошибок: 0, предупреждений: 0\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Длинный путь",
+          "stdin": "deep/path/to/module.c:1024:80: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' [-Wsign-compare]\n",
+          "expected": "deep/path/to/module.c:1024 предупреждение: comparison of integer expressions of different signedness: 'int' and 'size_t' [-Wsign-compare]\nошибок: 0, предупреждений: 1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Читает число и обязательное двоеточие после него; возвращает позицию за двоеточием. */\nstatic char *read_number(char *p, long *value) {\n    char *end;\n    *value = strtol(p, &end, 10);\n    if (end == p || *end != ':') {\n        return NULL;\n    }\n    return end + 1;\n}\n\nint main(void) {\n    static const char *kinds[][2] = {\n        {\"fatal error: \", \"ошибка\"},\n        {\"error: \", \"ошибка\"},\n        {\"warning: \", \"предупреждение\"},\n        {\"note: \", \"примечание\"},\n    };\n    char line[512];\n    int errors = 0;\n    int warnings = 0;\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        line[strcspn(line, \"\\r\\n\")] = '\\0';\n        char *colon = strchr(line, ':');\n        if (colon == NULL) {\n            continue;\n        }\n        *colon = '\\0';\n        long number;\n        long column;\n        char *p = read_number(colon + 1, &number);\n        if (p != NULL) {\n            p = read_number(p, &column);\n        }\n        if (p == NULL || *p != ' ') {\n            continue;\n        }\n        p++;\n        for (int i = 0; i < 4; i++) {\n            size_t length = strlen(kinds[i][0]);\n            if (strncmp(p, kinds[i][0], length) == 0) {\n                printf(\"%s:%ld %s: %s\\n\", line, number, kinds[i][1], p + length);\n                if (i < 2) {\n                    errors++;\n                } else if (i == 2) {\n                    warnings++;\n                }\n                break;\n            }\n        }\n    }\n    printf(\"ошибок: %d, предупреждений: %d\\n\", errors, warnings);\n    return 0;\n}\n",
+      "solutionExplanation": "Формат `файл:строка:столбец: вид: сообщение` одинаков у GCC и Clang, и на него опираются редакторы: именно так VS Code превращает вывод компилятора в подчёркивания в коде.\n\nРазбор идёт «по контракту»: каждая часть проверяется, и любое несовпадение означает «это не диагностика». `strtol` с проверкой `end` отличает число от текста — поэтому строки `main.c: In function 'main':`, `In file included from main.c:1:` и `collect2: error: …` пропускаются без особых случаев.\n\n`fatal error` проверяется раньше `error`: иначе пришлось бы отдельно разбирать слово `fatal`. Примечания (`note`) не считаются: они поясняют предыдущую ошибку, а не сообщают новую.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "compilation-stages-task-3",
+      "title": "Кто сообщил об ошибке",
+      "description": "Дан вывод сборки — строки до конца ввода, пронумерованные с 1. Определите стадию для каждой строки по правилам, проверяя их **по порядку**:\n\n1. строка содержит `undefined reference`, `multiple definition` или `ld returned` — `линковщик`;\n2. содержит `No such file or directory` или `#error` — `препроцессор`;\n3. содержит `error:` или `warning:` — `компилятор`;\n4. иначе строка не является сообщением, её нужно пропустить.\n\nДля каждого сообщения напечатайте `строка N: стадия`. Сообщение считается **ошибкой**, если его стадия — линковщик или препроцессор либо в нём есть `error:`. В конце напечатайте `первая ошибка: строка N` или `ошибок нет`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "main.c: In function 'main':\nmain.c:4:9: warning: unused variable 'n'\nmain.c:6:5: error: expected ';' before '}' token\n",
+          "output": "строка 2: компилятор\nстрока 3: компилятор\nпервая ошибка: строка 3\n"
+        },
+        {
+          "input": "/usr/bin/ld: /tmp/ccA1.o: in function `main':\nmain.c:(.text+0x1e): undefined reference to `helper'\ncollect2: error: ld returned 1 exit status\n",
+          "output": "строка 2: линковщик\nстрока 3: линковщик\nпервая ошибка: строка 2\n"
+        }
+      ],
+      "constraints": ["Не больше 50 строк, каждая — не длиннее 300 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Подстроку ищет strstr(line, \"undefined reference\") — она возвращает NULL, если подстроки нет.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Порядок правил важен: в строке collect2: error: ld returned 1 exit status есть и error:, но это сообщение линковщика.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Номер первой ошибки храните в переменной, равной 0, пока ошибок не было.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "main.c: In function 'main':\nmain.c:4:9: warning: unused variable 'n'\nmain.c:6:5: error: expected ';' before '}' token\n",
+          "expected": "строка 2: компилятор\nстрока 3: компилятор\nпервая ошибка: строка 3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "/usr/bin/ld: /tmp/ccA1.o: in function `main':\nmain.c:(.text+0x1e): undefined reference to `helper'\ncollect2: error: ld returned 1 exit status\n",
+          "expected": "строка 2: линковщик\nстрока 3: линковщик\nпервая ошибка: строка 2\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустой вывод",
+          "stdin": "",
+          "expected": "ошибок нет\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Нет заголовка",
+          "stdin": "main.c:2:10: fatal error: config.h: No such file or directory\ncompilation terminated.\n",
+          "expected": "строка 1: препроцессор\nпервая ошибка: строка 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "#error",
+          "stdin": "main.c:3:2: error: #error \"нужен C17\"\n",
+          "expected": "строка 1: препроцессор\nпервая ошибка: строка 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Только предупреждения",
+          "stdin": "a.c:1:5: warning: unused parameter 'x'\nb.c:9:1: warning: control reaches end of non-void function\n",
+          "expected": "строка 1: компилятор\nстрока 2: компилятор\nошибок нет\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Повторное определение",
+          "stdin": "/usr/bin/ld: util.o: in function `log_line':\nutil.c:(.text+0x0): multiple definition of `log_line'; main.o:main.c:(.text+0x0): first defined here\ncollect2: error: ld returned 1 exit status\n",
+          "expected": "строка 2: линковщик\nстрока 3: линковщик\nпервая ошибка: строка 2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Нет сообщений",
+          "stdin": "Сборка завершена\n0 ошибок\n",
+          "expected": "ошибок нет\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Ошибки после предупреждения",
+          "stdin": "parser.c:12:3: warning: implicit fallthrough\nparser.c:40:1: error: expected identifier\nparser.c:41:1: error: expected '}'\n",
+          "expected": "строка 1: компилятор\nстрока 2: компилятор\nстрока 3: компилятор\nпервая ошибка: строка 2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Цепочка включений",
+          "stdin": "In file included from main.c:1:\nutil.h:3:10: fatal error: types.h: No such file or directory\n    3 | #include \"types.h\"\ncompilation terminated.\n",
+          "expected": "строка 2: препроцессор\nпервая ошибка: строка 2\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Предупреждение и линковка",
+          "stdin": "main.c:5:1: warning: return type defaults to 'int'\nmain.c:(.text+0x5): undefined reference to `run'\n",
+          "expected": "строка 1: компилятор\nстрока 2: линковщик\nпервая ошибка: строка 2\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstatic int has(const char *line, const char *text) {\n    return strstr(line, text) != NULL;\n}\n\nint main(void) {\n    char line[512];\n    int number = 0;\n    int first_error = 0;\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        number++;\n        const char *stage = NULL;\n        int error = 0;\n        if (has(line, \"undefined reference\") || has(line, \"multiple definition\") ||\n            has(line, \"ld returned\")) {\n            stage = \"линковщик\";\n            error = 1;\n        } else if (has(line, \"No such file or directory\") || has(line, \"#error\")) {\n            stage = \"препроцессор\";\n            error = 1;\n        } else if (has(line, \"error:\") || has(line, \"warning:\")) {\n            stage = \"компилятор\";\n            error = has(line, \"error:\");\n        }\n        if (stage == NULL) {\n            continue;\n        }\n        printf(\"строка %d: %s\\n\", number, stage);\n        if (error && first_error == 0) {\n            first_error = number;\n        }\n    }\n    if (first_error != 0) {\n        printf(\"первая ошибка: строка %d\\n\", first_error);\n    } else {\n        printf(\"ошибок нет\\n\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Правила проверяются от самых специфичных к самым общим. Строка `collect2: error: ld returned 1 exit status` содержит `error:`, но выдана линковщиком — поэтому правило линковщика стоит первым. Так же `#error` выдаёт препроцессор, хотя сообщение начинается с `error:`.\n\nНомер первой ошибки нужен потому, что исправлять ошибки надо **сверху вниз**: одна пропущенная скобка порождает десяток сообщений ниже, и после её исправления они исчезнут сами.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "compilation-stages-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Какой флаг останавливает сборку сразу после препроцессора?",
+        "explanation": "-E — только препроцессор, -S — до ассемблера, -c — до объектного файла, а -o задаёт имя результата.",
+        "options": ["-E", "-S", "-c", "-o"],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Какой файл создаст команда gcc -c src/net/socket.c, запущенная в корне проекта?",
+        "explanation": "Имя результата берётся из имени исходника без каталогов, а файл появляется в текущем каталоге.",
+        "type": "text",
+        "answers": ["socket.o"],
+        "placeholder": "Имя файла"
+      },
+      {
+        "id": "q3",
+        "question": "Какую стадию выдала ошибку?",
+        "code": "/usr/bin/ld: /tmp/ccN1c2.o: in function `main':\nmain.c:(.text+0x1a): undefined reference to `load_table'\ncollect2: error: ld returned 1 exit status",
+        "codeLanguage": "text",
+        "explanation": "undefined reference, ld и collect2 — признаки линковщика: каждый файл скомпилировался, но определения load_table нет ни в одном из переданных файлов.",
+        "options": ["Линковка", "Препроцессор", "Компиляция", "Ассемблирование"],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Какую стадию выдала ошибку main.c:3:10: fatal error: config.h: No such file or directory?",
+        "explanation": "Файлы из #include ищет препроцессор. Сборка прекращается сразу: без заголовка дальше идти нельзя.",
+        "options": ["Препроцессор", "Компиляция", "Линковка", "Запуск программы"],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\n#define DOUBLE(x) x + x\n\nint main(void) {\n    printf(\"%d\\n\", DOUBLE(3) * 2);\n    return 0;\n}",
+        "explanation": "Препроцессор подставляет текст, не зная о приоритетах: получается 3 + 3 * 2 = 9. Именно это видно в выводе gcc -E.",
+        "type": "text",
+        "answers": ["9"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Что содержится в объектном файле main.o? Выберите все.",
+        "explanation": "Адреса внешних функций и код запуска добавляет линковщик. Комментарии удалил ещё препроцессор.",
+        "type": "multiple",
+        "options": [
+          "Машинный код функций из main.c",
+          "Таблица символов: какие имена файл определяет, а какие использует",
+          "Уже подставленный адрес функции printf",
+          "Комментарии из исходника",
+          "Код запуска, который вызывает main"
+        ],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q7",
+        "question": "Программа собрана из main.o и parser.o. Вы изменили только parser.c. Какие команды обновят программу без лишней работы?",
+        "explanation": "Устарел только parser.o — его и нужно пересобрать, а затем перелинковать. Без пересборки линковщик возьмёт старый parser.o.",
+        "options": [
+          "gcc -c parser.c && gcc main.o parser.o -o calc",
+          "gcc main.o parser.o -o calc",
+          "gcc -c main.c && gcc main.o parser.o -o calc",
+          "gcc -E parser.c && gcc main.o parser.o -o calc"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Зачем в выводе gcc -E строки вида # 6 \"main.c\"?",
+        "explanation": "После вставки заголовков нумерация строк сбивается на сотни. Метки восстанавливают связь с исходным файлом и строкой.",
+        "options": [
+          "Чтобы компилятор указывал в ошибках строки исходного файла, а не раскрытого текста",
+          "Это закомментированные директивы #include",
+          "Они нумеруют функции для линковщика",
+          "Это ошибки препроцессора"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q9",
+        "question": "Какой файл создаст команда gcc -S -O2 filter.c?",
+        "explanation": "-S останавливает сборку после компиляции в ассемблер; результат — текстовый файл с расширением .s.",
+        "type": "text",
+        "answers": ["filter.s"],
+        "placeholder": "Имя файла"
+      }
+    ]
+  }
+}

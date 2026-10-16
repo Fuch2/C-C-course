@@ -1,0 +1,220 @@
+{
+  "id": "algo-vector",
+  "title": "Динамический массив — Dynamic array",
+  "description": "Динамический массив хранит элементы подряд, но различает логическую длину size и выделенную вместимость capacity.",
+  "moduleId": "algorithms-structures",
+  "order": 16,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 60,
+  "prerequisites": ["algo-recursion"],
+  "objectives": [
+    "Объяснить инвариант: Ряд мест с запасом: занято size, построено capacity; при расширении весь ряд может переехать.",
+    "Обосновать время: Индекс O(1), push амортизированно O(1), отдельный рост O(n), erase O(n).",
+    "Оценить память и компромиссы: Запас памяти уменьшает частоту аллокаций, но не обеспечивает стабильность адресов."
+  ],
+  "tags": [
+    "алгоритмы",
+    "C17",
+    "Динамический массив — Dynamic array",
+    "структуры данных",
+    "cache locality",
+    "benchmark"
+  ],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "algo-vector-exercise",
+    "title": "Массив с удалением по позиции",
+    "description": "Ввод q (0…128), затем q команд: P x добавляет int −1000…1000, E i удаляет индекс i (0…256) и выводит ДА либо НЕТ, G i выводит значение по индексу либо НЕТ, S выводит size и capacity. Начальное состояние пустое. Вместимость растёт 0→1→2→4… только при заполнении; удаление её не уменьшает. В конце освободите память.",
+    "difficulty": "intermediate",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "6 P 1 P 2 P 3 E 1 S E 2",
+        "output": "ДА\n2 4\nНЕТ\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      },
+      {
+        "input": "2 E 0 S",
+        "output": "НЕТ\n0 0\n",
+        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Используйте C17 и диапазоны входа из условия.",
+      "Выводите только требуемый результат.",
+      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Ряд мест с запасом: занято size, построено capacity; при расширении весь ряд может переехать."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "reserve не делает все зарезервированные позиции логическими элементами."
+      },
+      {
+        "id": "hint-3",
+        "order": 3,
+        "text": "Добавления 10,20,30 дают состояния size/capacity: 1/1 → 2/2 → 3/4. Удаление позиции 1 сдвигает 30 влево."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "6 P 1 P 2 P 3 E 1 S E 2",
+        "expected": "ДА\n2 4\nНЕТ\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "2 E 0 S",
+        "expected": "НЕТ\n0 0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "stdin": "6 P 1 E 0 P 2 S E 0 S",
+        "expected": "ДА\n1 1\nДА\n0 1\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "stdin": "0",
+        "expected": ""
+      },
+      {
+        "id": "case-5",
+        "name": "Граничный сценарий 3",
+        "stdin": "8 P 10 P 20 P 30 E 0 G 0 G 1 G 2 S",
+        "expected": "ДА\n20\n30\nНЕТ\n2 4\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\ntypedef struct { int *data; size_t size,capacity; } Vector;\nstatic int push(Vector *v,int value){\n    if(v->size==v->capacity){\n        if(v->capacity>SIZE_MAX/2)return 0;\n        size_t capacity=v->capacity?v->capacity*2:1;\n        if(capacity>SIZE_MAX/sizeof *v->data)return 0;\n        int *next=realloc(v->data,capacity*sizeof *next);\n        if(!next)return 0;\n        v->data=next;v->capacity=capacity;\n    }\n    v->data[v->size++]=value;return 1;\n}\nstatic int erase(Vector *v,size_t position){\n    if(position>=v->size)return 0;\n    for(size_t i=position+1;i<v->size;++i)v->data[i-1]=v->data[i];\n    --v->size;return 1;\n}\nstatic void destroy(Vector *v){free(v->data);*v=(Vector){0};}\nint main(void) {\nVector v={0};int q,failed=0;if(scanf(\"%d\",&q)!=1 || q<0 || q>128)return 1;\nfor(int k=0;k<q;++k){char command;if(scanf(\" %c\",&command)!=1){failed=1;break;}\n if(command=='P'){int x;if(scanf(\"%d\",&x)!=1 || !push(&v,x)){failed=1;break;}}\n else if(command=='E'){size_t i;if(scanf(\"%zu\",&i)!=1){failed=1;break;}puts(erase(&v,i)?\"ДА\":\"НЕТ\");}\n else if(command=='G'){size_t i;if(scanf(\"%zu\",&i)!=1){failed=1;break;}if(i<v.size)printf(\"%d\\n\",v.data[i]);else puts(\"НЕТ\");}\n else if(command=='S')printf(\"%zu %zu\\n\",v.size,v.capacity);else {failed=1;break;}}\ndestroy(&v);if(failed)return 1;\nreturn 0;\n}\n",
+    "solutionExplanation": "Инвариант: Ряд мест с запасом: занято size, построено capacity; при расширении весь ряд может переехать.\n\nДобавления 10,20,30 дают состояния size/capacity: 1/1 → 2/2 → 3/4. Удаление позиции 1 сдвигает 30 влево.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. reserve не делает все зарезервированные позиции логическими элементами.\n\nВремя: Индекс O(1), push амортизированно O(1), отдельный рост O(n), erase O(n).\nПамять: O(n) для элементов и запаса; в момент переноса allocator может держать старый и новый блоки.\nКомпромисс: Запас памяти уменьшает частоту аллокаций, но не обеспечивает стабильность адресов.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
+    "checking": { "type": "stdout", "comparison": "exact" }
+  },
+  "additionalExercises": [
+    {
+      "id": "algo-vector-benchmark",
+      "title": "Benchmark: цена роста вместимости",
+      "description": "Ввод n (0…10000). Сравните n добавлений при двух политиках: вместимость каждый раз size+1 и геометрический рост 0→1→2→4… Считайте логически переносимые прежние элементы при каждом росте, предполагая полный перенос. Новое значение не учитывается. Выведите два счётчика. Реальный realloc иногда расширяет блок на месте; здесь проверяется явно заданная модель, а не число физических копирований allocator.",
+      "difficulty": "intermediate",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "clang",
+      "diagnostics": "sanitizers",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
+      "examples": [
+        {
+          "input": "5",
+          "output": "10 7\n",
+          "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        },
+        {
+          "input": "8",
+          "output": "28 7\n",
+          "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        }
+      ],
+      "constraints": [
+        "Используйте C17 и диапазоны входа из условия.",
+        "Выводите только требуемый результат.",
+        "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "order": 1,
+          "text": "Сначала письменно определите событие, увеличивающее каждый счётчик."
+        },
+        {
+          "id": "hint-2",
+          "order": 2,
+          "text": "Проверьте пустой, минимальный и крайний вход; не подменяйте счётчик временем."
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5",
+          "expected": "10 7\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "8",
+          "expected": "28 7\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "case-3",
+          "name": "Граничный сценарий 1",
+          "stdin": "0",
+          "expected": "0 0\n"
+        },
+        {
+          "id": "case-4",
+          "name": "Граничный сценарий 2",
+          "stdin": "1",
+          "expected": "0 0\n"
+        },
+        {
+          "id": "case-5",
+          "name": "Граничный сценарий 3",
+          "stdin": "9",
+          "expected": "36 15\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\n\nint main(void) {\nlong long n,exact=0,doubling=0,capacity=0;if(scanf(\"%lld\",&n)!=1||n<0||n>10000)return 1;for(long long size=0;size<n;++size){exact+=size;if(size==capacity){doubling+=size;capacity=capacity?capacity*2:1;}}printf(\"%lld %lld\\n\",exact,doubling);\nreturn 0;\n}\n",
+      "solutionExplanation": "Точный рост переносит 0+1+…+(n−1) элементов, то есть Θ(n²). Удвоение суммирует 1+2+4+… и даёт O(n). Это аргумент об амортизированной цене последовательности. Сравнивать один дорогой resize с одним дешёвым push без контекста неверно.",
+      "checking": { "type": "stdout", "comparison": "exact" }
+    }
+  ],
+  "quiz": {
+    "id": "algo-vector-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "invariant",
+        "question": "Какова цена одного push, который переносит n элементов?",
+        "options": ["O(n), несмотря на амортизированное O(1)", "Всегда O(1)"],
+        "correct": 0,
+        "explanation": "Ряд мест с запасом: занято size, построено capacity; при расширении весь ряд может переехать. Добавления 10,20,30 дают состояния size/capacity: 1/1 → 2/2 → 3/4. Удаление позиции 1 сдвигает 30 влево."
+      },
+      {
+        "id": "complexity",
+        "question": "Какая оценка соответствует рассмотренной реализации?",
+        "options": [
+          "Всегда O(1), потому что все тесты ограничены по размеру.",
+          "Индекс O(1), push амортизированно O(1), отдельный рост O(n), erase O(n)."
+        ],
+        "correct": 1,
+        "explanation": "Запас памяти уменьшает частоту аллокаций, но не обеспечивает стабильность адресов."
+      },
+      {
+        "id": "engineering",
+        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "options": [
+          "reserve не делает все зарезервированные позиции логическими элементами.",
+          "Совпадение Big O гарантирует одинаковое время на любой машине."
+        ],
+        "correct": 0,
+        "explanation": "Соседние элементы дают пространственную локальность и удобный последовательный обход. O(n) для элементов и запаса; в момент переноса allocator может держать старый и новый блоки."
+      }
+    ]
+  }
+}

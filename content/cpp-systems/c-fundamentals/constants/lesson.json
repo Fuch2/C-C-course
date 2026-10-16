@@ -1,0 +1,480 @@
+{
+  "id": "c17-constants",
+  "title": "Константы и системы счисления",
+  "description": "Литералы разных типов, шестнадцатеричная и восьмеричная запись, константы через const и #define, ловушки текстовой замены и магические числа.",
+  "moduleId": "c-fundamentals",
+  "order": 10,
+  "difficulty": "beginner",
+  "estimatedMinutes": 40,
+  "prerequisites": ["c17-sizeof"],
+  "objectives": [
+    "Записывать литералы разных типов и понимать их тип",
+    "Читать и печатать числа в шестнадцатеричной и восьмеричной системе",
+    "Заменять магические числа константами через const и #define",
+    "Избегать ловушек #define: точки с запятой и выражений без скобок"
+  ],
+  "tags": ["C17", "const", "#define", "Шестнадцатеричная система"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-constants-task-1",
+    "title": "Три системы счисления",
+    "description": "Прочитайте неотрицательное целое число `n` и напечатайте через пробел: его десятичную запись, шестнадцатеричную со строчными буквами, шестнадцатеричную с заглавными и восьмеричную.\n\n**Пример:** `255` → `255 ff FF 377`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "255",
+        "output": "255 ff FF 377\n"
+      },
+      {
+        "input": "0",
+        "output": "0 0 0 0\n"
+      }
+    ],
+    "constraints": ["0 ≤ n ≤ 2 000 000 000."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Спецификаторы: %d, %x, %X, %o.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Одно и то же значение n передаётся в printf четыре раза.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "255",
+        "expected": "255 ff FF 377\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "0",
+        "expected": "0 0 0 0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "16",
+        "expected": "16 10 10 20\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "8",
+        "expected": "8 8 8 10\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "2000000000",
+        "expected": "2000000000 77359400 77359400 16715312000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "4096",
+        "expected": "4096 1000 1000 10000\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "48879",
+        "expected": "48879 beef BEEF 137357\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "1",
+        "expected": "1 1 1 1\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    printf(\"%d %x %X %o\\n\", n, n, n, n);\n    return 0;\n}\n",
+    "solutionExplanation": "Число хранится в памяти одинаково, а спецификатор выбирает систему счисления при печати. Поэтому одну переменную можно напечатать сколько угодно раз в разных видах.\n\n`%x` и `%o` формально предназначены для `unsigned int`, но для неотрицательных значений `int` результат совпадает.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-constants-task-2",
+      "title": "Цвет из HTML",
+      "description": "В HTML и CSS цвет записывают как `#RRGGBB` — решётка и три пары шестнадцатеричных цифр: красный, зелёный и синий каналы. Прочитайте такой цвет и напечатайте три десятичных числа через пробел.\n\n**Пример:** `#FF8800` → `255 136 0`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "#FF8800",
+          "output": "255 136 0\n"
+        },
+        {
+          "input": "#000000",
+          "output": "0 0 0\n"
+        }
+      ],
+      "constraints": [
+        "Ввод — ровно 7 символов: # и шесть шестнадцатеричных цифр (заглавных или строчных)."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Решётка в строке формата scanf совпадёт с решёткой во вводе.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Ширина в спецификаторе ограничивает число читаемых символов: %2x читает ровно две шестнадцатеричные цифры. Формат: \"#%2x%2x%2x\".",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "#FF8800",
+          "expected": "255 136 0\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "#000000",
+          "expected": "0 0 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "#ffffff",
+          "expected": "255 255 255\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "#1a2B3c",
+          "expected": "26 43 60\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "#010203",
+          "expected": "1 2 3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "#7F7F7F",
+          "expected": "127 127 127\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "#c0ffee",
+          "expected": "192 255 238\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "#00FF00",
+          "expected": "0 255 0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    unsigned int r, g, b;\n    scanf(\"#%2x%2x%2x\", &r, &g, &b);\n    printf(\"%u %u %u\\n\", r, g, b);\n    return 0;\n}\n",
+      "solutionExplanation": "`%x` в `scanf` читает шестнадцатеричное число, а ширина `2` останавливает чтение после двух цифр. Без ширины первый же `%x` прочитал бы все шесть цифр как одно большое число.\n\n`%x` в `scanf` ожидает адрес `unsigned int`, поэтому переменные беззнаковые. Буквы во вводе могут быть любого регистра.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-constants-task-3",
+      "title": "Чек с НДС",
+      "description": "Цена товара задана в копейках, а налог (НДС) составляет 20 %. Прочитайте цену `price` (в копейках) и количество `count`. Напечатайте сумму с налогом в формате `рубли.копейки`, копейки всегда двумя цифрами. Дробные доли копейки отбрасываются.\n\nСумма с налогом: `price · count · (100 + 20) / 100`.\n\nОбъявите ставку налога именованной константой, а не пишите «120» в формуле.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "15000 2",
+          "output": "360.00\n"
+        },
+        {
+          "input": "999 3",
+          "output": "35.96\n",
+          "explanation": "2997 · 1.2 = 3596.4 копейки, дробная доля отбрасывается."
+        }
+      ],
+      "constraints": ["1 ≤ price ≤ 10 000 000, 1 ≤ count ≤ 10 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "price · count · 120 может достигать 1,2 · 10¹³ — нужен long long.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Рубли — total / 100, копейки — total % 100, формат \"%lld.%02lld\\n\".",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "15000 2",
+          "expected": "360.00\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "999 3",
+          "expected": "35.96\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 1",
+          "expected": "0.01\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "10000000 10000",
+          "expected": "1200000000.00\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "5 1",
+          "expected": "0.06\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "12345 678",
+          "expected": "100438.92\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "100 1",
+          "expected": "1.20\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "7 9",
+          "expected": "0.75\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    const long long VAT_PERCENT = 20;\n    long long price, count;\n    scanf(\"%lld %lld\", &price, &count);\n    long long total = price * count * (100 + VAT_PERCENT) / 100;\n    printf(\"%lld.%02lld\\n\", total / 100, total % 100);\n    return 0;\n}\n",
+      "solutionExplanation": "Денежные суммы хранятся в целых копейках, чтобы не было погрешностей `double`. Формула сначала умножает, потом делит — иначе потерялась бы точность.\n\nКонстанта `VAT_PERCENT` объясняет число 20 и позволяет поменять ставку в одном месте. `%02lld` — та же ширина и дополнение нулями, но для `long long`: 5 копеек печатаются как `05`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-constants-task-4",
+      "title": "Сломанный макрос",
+      "description": "Рамка вокруг таблицы шире самой таблицы на 2 символа: ширина рамки `FRAME_WIDTH` равна 10 + 2. Программа должна напечатать, сколько символов займут `rows` строк рамки: `FRAME_WIDTH · rows`.\n\nДля 3 строк должно получиться 36, а заготовка печатает 16. Исправьте определение константы. Формулу в `main` не меняйте.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\n#define FRAME_WIDTH 10 + 2\n\nint main(void) {\n    int rows;\n    scanf(\"%d\", &rows);\n    printf(\"%d\\n\", FRAME_WIDTH * rows);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "3",
+          "output": "36\n"
+        },
+        {
+          "input": "1",
+          "output": "12\n"
+        }
+      ],
+      "constraints": ["1 ≤ rows ≤ 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Подставьте текст макроса в выражение FRAME_WIDTH * rows вручную и посчитайте.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Заключите выражение в #define в скобки: (10 + 2).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3",
+          "expected": "36\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1",
+          "expected": "12\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1000",
+          "expected": "12000\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "2",
+          "expected": "24\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "10",
+          "expected": "120\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "7",
+          "expected": "84\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "500",
+          "expected": "6000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "100",
+          "expected": "1200\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "999",
+          "expected": "11988\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\n#define FRAME_WIDTH (10 + 2)\n\nint main(void) {\n    int rows;\n    scanf(\"%d\", &rows);\n    printf(\"%d\\n\", FRAME_WIDTH * rows);\n    return 0;\n}\n",
+      "solutionExplanation": "Препроцессор подставляет текст, не учитывая приоритет операций: `FRAME_WIDTH * rows` превращается в `10 + 2 * rows`. Скобки в определении превращают подстановку в `(10 + 2) * rows`.\n\nДругой правильный вариант — заменить макрос на `const int FRAME_WIDTH = 10 + 2;` внутри `main`: константа с типом вычисляется как значение, а не подставляется текстом.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-constants-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%d %d %d\\n\", 0x10, 010, 10);\n    return 0;\n}",
+        "explanation": "0x10 — шестнадцатеричное 16, 010 — восьмеричное 8, 10 — обычное десятичное.",
+        "type": "text",
+        "answers": ["16 8 10"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\n#define SIZE 4 + 1\n\nint main(void) {\n    printf(\"%d\\n\", SIZE * 2);\n    return 0;\n}",
+        "explanation": "Препроцессор подставляет текст: 4 + 1 * 2 = 6. С #define SIZE (4 + 1) было бы 10.",
+        "type": "text",
+        "answers": ["6"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%x %#X %o\\n\", 200, 200, 8);\n    return 0;\n}",
+        "explanation": "200 = 12 · 16 + 8 → c8. %#X добавляет префикс 0X и заглавные буквы. 8 в восьмеричной — 10.",
+        "type": "text",
+        "answers": ["c8 0XC8 10"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Какой тип имеет литерал 1e3?",
+        "explanation": "Экспоненциальная запись всегда даёт double: 1e3 — это 1000.0.",
+        "options": ["int", "double", "long long", "Это не литерал"],
+        "correct": 1
+      },
+      {
+        "id": "q5",
+        "question": "Что произойдёт при компиляции const int LIMIT = 10; LIMIT = 20; ?",
+        "explanation": "Компилятор сообщает «assignment of read-only variable» и не собирает программу.",
+        "options": [
+          "Ошибка: нельзя присваивать константе",
+          "LIMIT станет 20",
+          "Предупреждение, LIMIT останется 10",
+          "Программа упадёт при запуске"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Какие строки #define записаны правильно? Выберите все.",
+        "explanation": "В #define нет = и ;: они станут частью подставляемого текста. Выражение в скобках подставится безопасно.",
+        "type": "multiple",
+        "options": [
+          "#define MAX_USERS 100",
+          "#define MAX_USERS = 100",
+          "#define MAX_USERS 100;",
+          "#define AREA (WIDTH * HEIGHT)"
+        ],
+        "correct": [0, 3]
+      },
+      {
+        "id": "q7",
+        "question": "Почему запись int month = 08; не компилируется?",
+        "explanation": "Литерал, начинающийся с 0, восьмеричный. В нём допустимы только цифры 0–7.",
+        "options": [
+          "Ведущий 0 означает восьмеричную систему, а цифры 8 в ней нет",
+          "Месяц нельзя хранить в int",
+          "Нужно писать 8.0",
+          "Числа нельзя начинать с нуля в любой записи"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Сколько бит описывает одна шестнадцатеричная цифра?",
+        "explanation": "16 = 2⁴, поэтому одна шестнадцатеричная цифра — ровно 4 бита, две — байт.",
+        "type": "text",
+        "answers": ["4"],
+        "placeholder": "Число"
+      }
+    ]
+  }
+}

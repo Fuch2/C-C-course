@@ -1,0 +1,621 @@
+{
+  "id": "c17-functions",
+  "title": "Функции",
+  "description": "Зачем нужны функции, определение и вызов, параметры и возврат результата, функции void, порядок в файле и прототипы.",
+  "moduleId": "c-fundamentals",
+  "order": 23,
+  "difficulty": "beginner",
+  "estimatedMinutes": 45,
+  "prerequisites": ["c17-practice-loops"],
+  "objectives": [
+    "Определять и вызывать функции с параметрами и результатом",
+    "Отличать функции, возвращающие значение, от функций void",
+    "Объяснять, как выполнение переходит в функцию и возвращается обратно",
+    "Объявлять функции до вызова: определением выше или прототипом",
+    "Разбивать программу на функции с одной задачей"
+  ],
+  "tags": ["C17", "Функции", "return", "void"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-functions-task-1",
+    "title": "Куб числа",
+    "description": "Напишите функцию `int cube(int x)`, которая возвращает куб числа `x`.\n\nФункцию `main` писать не нужно: проверяющая система вызовет `cube` с аргументом теста и напечатает результат. Для запуска кнопкой «Запустить» впишите аргумент в поле ввода.",
+    "difficulty": "beginner",
+    "starterCode": "int cube(int x) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "3",
+        "output": "27\n"
+      },
+      {
+        "input": "-2",
+        "output": "-8\n"
+      }
+    ],
+    "constraints": ["−1000 ≤ x ≤ 1000."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Тело функции — одна строка: return x * x * x;",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Куб отрицательного числа отрицателен: (−2)³ = −8. Наибольший куб 1000³ = 10⁹ ещё помещается в int (предел ≈ 2.1 · 10⁹).",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "arguments": [3],
+        "expected": "27\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "arguments": [-2],
+        "expected": "-8\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "arguments": [0],
+        "expected": "0\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "arguments": [1],
+        "expected": "1\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "arguments": [1000],
+        "expected": "1000000000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "arguments": [-1000],
+        "expected": "-1000000000\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "arguments": [12],
+        "expected": "1728\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "arguments": [-1],
+        "expected": "-1\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "arguments": [999],
+        "expected": "997002999\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "arguments": [-10],
+        "expected": "-1000\n"
+      }
+    ],
+    "referenceSolution": "int cube(int x) {\n    return x * x * x;\n}\n",
+    "solutionExplanation": "Функция получает копию аргумента в параметре `x` и возвращает `x³`. Для `|x| ≤ 1000` куб не больше 10⁹ и помещается в `int`.\n\nОбратите внимание: функция ничего не печатает. Печатью результата занимается вызывающий код — здесь это `main`, который добавляет проверяющая система.",
+    "checking": {
+      "type": "function",
+      "functionName": "cube",
+      "returnType": "int",
+      "parameters": [
+        {
+          "name": "x",
+          "type": "int"
+        }
+      ]
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-functions-task-2",
+      "title": "Максимум из трёх",
+      "description": "Напишите функцию `int max3(int a, int b, int c)`, которая возвращает наибольшее из трёх чисел.\n\nСовет: сначала напишите вспомогательную функцию `int max2(int a, int b)`, а `max3` выразите через неё.",
+      "difficulty": "beginner",
+      "starterCode": "int max2(int a, int b) {\n    // Вспомогательная функция: большее из двух.\n    return 0;\n}\n\nint max3(int a, int b, int c) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "3 9 4",
+          "output": "9\n"
+        },
+        {
+          "input": "-5 -2 -9",
+          "output": "-2\n"
+        }
+      ],
+      "constraints": ["−10⁹ ≤ a, b, c ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "max2: return a > b ? a : b;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "max3(a, b, c) = max2(max2(a, b), c).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "arguments": [3, 9, 4],
+          "expected": "9\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "arguments": [-5, -2, -9],
+          "expected": "-2\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "arguments": [1, 1, 1],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "arguments": [7, 2, 3],
+          "expected": "7\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "arguments": [2, 3, 7],
+          "expected": "7\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "arguments": [-1000000000, 1000000000, 0],
+          "expected": "1000000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "arguments": [5, 5, 4],
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "arguments": [4, 5, 5],
+          "expected": "5\n"
+        }
+      ],
+      "referenceSolution": "int max2(int a, int b) {\n    return a > b ? a : b;\n}\n\nint max3(int a, int b, int c) {\n    return max2(max2(a, b), c);\n}\n",
+      "solutionExplanation": "Функции можно вызывать из других функций. `max2` решает простую задачу, а `max3` собирается из двух её вызовов: результат первого вызова становится аргументом второго.\n\nТакой приём — выразить сложное через простое — главная идея работы с функциями. Таким же образом можно было бы написать `max4` из трёх вызовов `max2`.",
+      "checking": {
+        "type": "function",
+        "functionName": "max3",
+        "returnType": "int",
+        "parameters": [
+          {
+            "name": "a",
+            "type": "int"
+          },
+          {
+            "name": "b",
+            "type": "int"
+          },
+          {
+            "name": "c",
+            "type": "int"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c17-functions-task-3",
+      "title": "Лесенка из символов",
+      "description": "Функция `main` в заготовке уже написана: она читает число `n` и символ и рисует лесенку, вызывая функцию `print_row`. Напишите функцию `void print_row(char symbol, int count)`, которая печатает символ `count` раз подряд и переводит строку.\n\n**Пример:** для ввода `3 #` программа печатает\n\n```text\n#\n##\n###\n```",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nvoid print_row(char symbol, int count) {\n    // Напечатайте symbol count раз и переведите строку.\n}\n\nint main(void) {\n    int n;\n    char symbol;\n    scanf(\"%d %c\", &n, &symbol);\n    for (int i = 1; i <= n; i++) {\n        print_row(symbol, i);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "3 #",
+          "output": "#\n##\n###\n"
+        },
+        {
+          "input": "1 *",
+          "output": "*\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 50; символ — любой непробельный."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Внутри функции — цикл for от 0 до count и printf(\"%c\", symbol).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "После цикла — printf(\"\\n\"). Функция ничего не возвращает: return не нужен.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 #",
+          "expected": "#\n##\n###\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 *",
+          "expected": "*\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "5 @",
+          "expected": "@\n@@\n@@@\n@@@@\n@@@@@\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "2 x",
+          "expected": "x\nxx\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "50 =",
+          "expected": "=\n==\n===\n====\n=====\n======\n=======\n========\n=========\n==========\n===========\n============\n=============\n==============\n===============\n================\n=================\n==================\n===================\n====================\n=====================\n======================\n=======================\n========================\n=========================\n==========================\n===========================\n============================\n=============================\n==============================\n===============================\n================================\n=================================\n==================================\n===================================\n====================================\n=====================================\n======================================\n=======================================\n========================================\n=========================================\n==========================================\n===========================================\n============================================\n=============================================\n==============================================\n===============================================\n================================================\n=================================================\n==================================================\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "4 1",
+          "expected": "1\n11\n111\n1111\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "3 a",
+          "expected": "a\naa\naaa\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "10 %",
+          "expected": "%\n%%\n%%%\n%%%%\n%%%%%\n%%%%%%\n%%%%%%%\n%%%%%%%%\n%%%%%%%%%\n%%%%%%%%%%\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "7 Z",
+          "expected": "Z\nZZ\nZZZ\nZZZZ\nZZZZZ\nZZZZZZ\nZZZZZZZ\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nvoid print_row(char symbol, int count) {\n    for (int i = 0; i < count; i++) {\n        printf(\"%c\", symbol);\n    }\n    printf(\"\\n\");\n}\n\nint main(void) {\n    int n;\n    char symbol;\n    scanf(\"%d %c\", &n, &symbol);\n    for (int i = 1; i <= n; i++) {\n        print_row(symbol, i);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Вложенный цикл из прошлого раздела «спрятан» в функцию: `main` содержит только внешний цикл, а внутренний живёт в `print_row`. Код стал короче и понятнее: «для каждой строки напечатать ряд из i символов».\n\nВ `print_row` и в `main` есть переменные `i`, но это разные переменные: каждая существует только в своей функции. Подробнее — в уроке «Область видимости».",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-functions-task-4",
+      "title": "Сумма цифр",
+      "description": "Напишите функцию `int digit_sum(long long n)`, которая возвращает сумму цифр неотрицательного числа `n`.",
+      "difficulty": "beginner",
+      "starterCode": "int digit_sum(long long n) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "2026",
+          "output": "10\n"
+        },
+        {
+          "input": "0",
+          "output": "0\n"
+        }
+      ],
+      "constraints": ["0 ≤ n ≤ 10¹⁸."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Цикл while (n > 0): прибавить n % 10, затем n /= 10.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Изменять параметр n внутри функции можно: это копия аргумента.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "arguments": [2026],
+          "expected": "10\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "arguments": [0],
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "arguments": [9],
+          "expected": "9\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "arguments": ["1000000000000000000"],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "arguments": ["999999999999999999"],
+          "expected": "162\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "arguments": [123456789],
+          "expected": "45\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "arguments": [10],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "arguments": [99],
+          "expected": "18\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "arguments": ["123456789012345678"],
+          "expected": "81\n"
+        }
+      ],
+      "referenceSolution": "int digit_sum(long long n) {\n    int sum = 0;\n    while (n > 0) {\n        sum += n % 10;\n        n /= 10;\n    }\n    return sum;\n}\n",
+      "solutionExplanation": "Параметр `n` — локальная копия аргумента, поэтому функция может его «разрушать», не затрагивая переменную вызывающего кода. Подробно о копировании аргументов — в следующем уроке.\n\nДля `n = 0` цикл не выполняется, и функция возвращает 0 — верный ответ без отдельной проверки.",
+      "checking": {
+        "type": "function",
+        "functionName": "digit_sum",
+        "returnType": "int",
+        "parameters": [
+          {
+            "name": "n",
+            "type": "long_long"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c17-functions-task-5",
+      "title": "Високосный год",
+      "description": "Напишите функцию `bool is_leap(int year)`, которая возвращает `true` для високосного года и `false` для обычного. Тип `bool` подключается заголовком `<stdbool.h>` — он уже есть в заготовке.\n\nПроверяющая система напечатает результат как 1 или 0.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdbool.h>\n\nbool is_leap(int year) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return false;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "2024",
+          "output": "1\n"
+        },
+        {
+          "input": "1900",
+          "output": "0\n"
+        }
+      ],
+      "constraints": ["1 ≤ year ≤ 1 000 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Тело функции — одно выражение: return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Проверьте правила по порядку: делится на 400 — високосный; иначе делится на 100 — обычный; иначе делится на 4 — високосный.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "arguments": [2024],
+          "expected": "1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "arguments": [1900],
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "arguments": [2000],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "arguments": [2023],
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "arguments": [4],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "arguments": [1],
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "arguments": [400],
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "arguments": [2100],
+          "expected": "0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdbool.h>\n\nbool is_leap(int year) {\n    return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;\n}\n",
+      "solutionExplanation": "Функция, отвечающая «да/нет», обычно возвращает `bool`, а её имя начинается с `is_` или `has_`: `is_leap`, `is_prime`, `has_digit`. Тогда вызов читается как вопрос: `if (is_leap(year))`.\n\nТеперь правило високосного года записано один раз. Если оно понадобится в задаче о датах, достаточно вызвать функцию — не нужно копировать формулу.",
+      "checking": {
+        "type": "function",
+        "functionName": "is_leap",
+        "returnType": "bool",
+        "parameters": [
+          {
+            "name": "year",
+            "type": "int"
+          }
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-functions-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint twice(int x) {\n    return x * 2;\n}\n\nint main(void) {\n    printf(\"%d\\n\", twice(twice(3)) + 1);\n    return 0;\n}",
+        "explanation": "Внутренний вызов twice(3) = 6, внешний twice(6) = 12, плюс 1 — 13.",
+        "type": "text",
+        "answers": ["13"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nvoid greet(void) {\n    printf(\"привет\\n\");\n}\n\nint main(void) {\n    printf(\"A\\n\");\n    greet();\n    greet();\n    printf(\"B\\n\");\n    return 0;\n}",
+        "explanation": "Каждый вызов greet() выполняет её тело и возвращается в main к следующей инструкции.",
+        "type": "text",
+        "answers": ["A\nпривет\nпривет\nB"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Что означает тип результата void?",
+        "explanation": "void в позиции типа результата — «результата нет». В скобках (void) означает «нет параметров» — это другое место.",
+        "options": [
+          "Функция ничего не возвращает",
+          "Функция возвращает ноль",
+          "Функция не принимает параметров",
+          "Функция может вернуть значение любого типа"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Чем прототип int cube(int x); отличается от определения функции?",
+        "explanation": "Прототип сообщает компилятору имя, параметры и тип результата, чтобы функцию можно было вызвать до её определения.",
+        "options": [
+          "У прототипа нет тела — только заголовок и точка с запятой",
+          "Прототип выполняется быстрее",
+          "Прототип нужен только в C++",
+          "Ничем"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какие вызовы допустимы для функций int square(int x) и void print_line(int n)? Выберите все.",
+        "explanation": "void-функция не даёт значения, её нельзя присвоить. square требует ровно один аргумент — вызов без аргументов не скомпилируется.",
+        "type": "multiple",
+        "options": [
+          "int a = square(5);",
+          "print_line(3);",
+          "int b = print_line(3);",
+          "printf(\"%d\\n\", square(2) * 3);",
+          "square();"
+        ],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint f(int n) {\n    int r = 0;\n    for (int i = 1; i <= n; i++) {\n        r += i;\n    }\n    return r;\n}\n\nint main(void) {\n    printf(\"%d %d\\n\", f(4), f(f(2)));\n    return 0;\n}",
+        "explanation": "f(n) — сумма 1..n. f(4) = 10. f(2) = 3, f(3) = 6.",
+        "type": "text",
+        "answers": ["10 6"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Функция int sign(int x) { if (x > 0) return 1; if (x < 0) return -1; } — в чём ошибка?",
+        "explanation": "На каждом пути выполнения функция с результатом должна вернуть значение. GCC предупреждает: control reaches end of non-void function.",
+        "options": [
+          "При x == 0 функция доходит до конца без return — результат не определён",
+          "Нельзя писать два return",
+          "Функция не может возвращать отрицательные числа",
+          "Ошибки нет"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

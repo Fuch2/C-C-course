@@ -1,0 +1,523 @@
+{
+  "id": "memory-alignment",
+  "title": "Выравнивание",
+  "description": "Требования выравнивания типов и alignof, гарантия malloc, невыровненный доступ и strict aliasing, чтение чисел из байтового буфера через memcpy, формула выравнивания вверх и alignas.",
+  "moduleId": "memory-pointers",
+  "order": 23,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
+  "prerequisites": ["memory-undefined-behavior"],
+  "objectives": [
+    "Объяснять, что такое выравнивание и зачем оно процессору",
+    "Определять требования выравнивания через alignof",
+    "Читать значения из байтовых буферов через memcpy без невыровненного доступа",
+    "Округлять размеры и адреса вверх до кратного степени двойки"
+  ],
+  "tags": ["C17", "Память", "Выравнивание", "alignof", "memcpy"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "memory-alignment-task-1",
+    "title": "Выравнивание вверх",
+    "description": "Для каждой пары `x a` напечатайте наименьшее число, не меньшее `x` и кратное `a`, вычисленное формулой с маской. Если `a` — не степень двойки (или 0), напечатайте `bad alignment`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "3\n13 8\n16 8\n5 6\n",
+        "output": "16\n16\nbad alignment\n"
+      },
+      {
+        "input": "1\n0 4096\n",
+        "output": "0\n"
+      }
+    ],
+    "constraints": ["1 ≤ q ≤ 20.", "0 ≤ x ≤ 10¹².", "0 ≤ a ≤ 2²⁰."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Степень двойки: a != 0 && (a & (a - 1)) == 0 — у степени двойки ровно один единичный бит.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Используйте unsigned long long для x и a; результат: (x + a - 1) & ~(a - 1).",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "3\n13 8\n16 8\n5 6\n",
+        "expected": "16\n16\nbad alignment\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1\n0 4096\n",
+        "expected": "0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Выравнивание 1",
+        "stdin": "1\n7 1\n",
+        "expected": "7\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Максимальное выравнивание",
+        "stdin": "1\n1 1048576\n",
+        "expected": "1048576\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Большое число",
+        "stdin": "1\n1000000000000 1024\n",
+        "expected": "1000000000000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Ноль",
+        "stdin": "1\n10 0\n",
+        "expected": "bad alignment\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Не степень двойки",
+        "stdin": "2\n17 12\n17 16\n",
+        "expected": "bad alignment\n32\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Кэш-линия",
+        "stdin": "3\n63 64\n64 64\n65 64\n",
+        "expected": "64\n64\n128\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Чётность",
+        "stdin": "2\n3 2\n4 2\n",
+        "expected": "4\n4\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Страница памяти",
+        "stdin": "1\n999999999999 4096\n",
+        "expected": "1000000000000\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        unsigned long long x, a;\n        scanf(\"%llu %llu\", &x, &a);\n        if (a == 0 || (a & (a - 1)) != 0) {\n            printf(\"bad alignment\\n\");\n        } else {\n            printf(\"%llu\\n\", (x + a - 1) & ~(a - 1));\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "У степени двойки в двоичной записи ровно одна единица; вычитание единицы превращает её в ноль, а все младшие нули — в единицы. Поэтому `a & (a − 1)` равно нулю только для степеней двойки.\n\nМаска `~(a − 1)` обнуляет младшие биты, отвечающие за остаток от деления на `a`. Прибавление `a − 1` перед этим гарантирует округление вверх: кратное число не меняется, остальные переходят к следующему кратному.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "memory-alignment-task-2",
+      "title": "Чтение чисел из пакета",
+      "description": "Пакет задан как `n` байтов в шестнадцатеричной записи. Обработайте `q` запросов `тип смещение`, где тип — `i16`, `i32` или `i64` (знаковые целые `int16_t`, `int32_t`, `int64_t`). Прочитайте значение из пакета по этому смещению **в порядке байтов машины** и напечатайте его. Если значение не помещается в пакет, печатайте `out of range`.\n\nЧитайте только через `memcpy` — смещения бывают невыровненными.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "6\n01 2a 00 00 00 ff\n2\ni32 1\ni16 4\n",
+          "output": "42\n-256\n"
+        },
+        {
+          "input": "2\nff ff\n2\ni16 0\ni32 0\n",
+          "output": "-1\nout of range\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 64.", "1 ≤ q ≤ 20.", "0 ≤ смещение ≤ 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Байты: unsigned value; scanf(\"%x\", &value); buf[i] = (unsigned char)value;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Для i32: if (offset + 4 > n) — out of range; иначе int32_t v; memcpy(&v, buf + offset, sizeof v); printf(\"%\" PRId32 \"\\n\", v); (PRId32 из <inttypes.h>) или приведите к long long.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "6\n01 2a 00 00 00 ff\n2\ni32 1\ni16 4\n",
+          "expected": "42\n-256\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\nff ff\n2\ni16 0\ni32 0\n",
+          "expected": "-1\nout of range\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "i64 = 1",
+          "stdin": "8\n01 00 00 00 00 00 00 00\n1\ni64 0\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Максимум int64",
+          "stdin": "9\n00 ff ff ff ff ff ff ff 7f\n1\ni64 1\n",
+          "expected": "9223372036854775807\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Минимум int32",
+          "stdin": "5\n00 00 00 00 80\n1\ni32 1\n",
+          "expected": "-2147483648\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Сдвигающиеся i16",
+          "stdin": "3\n34 12 00\n3\ni16 0\ni16 1\ni16 2\n",
+          "expected": "4660\n18\nout of range\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Огромное смещение",
+          "stdin": "4\n01 02 03 04\n1\ni32 100\n",
+          "expected": "out of range\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Граница пакета",
+          "stdin": "7\n10 20 30 40 50 60 70\n2\ni32 3\ni32 4\n",
+          "expected": "1885360192\nout of range\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Минимум int16",
+          "stdin": "2\n00 80\n1\ni16 0\n",
+          "expected": "-32768\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Невыровненные i64",
+          "stdin": "16\n00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f\n3\ni64 7\ni64 8\ni64 9\n",
+          "expected": "1012478732780767239\n1084818905618843912\nout of range\n"
+        }
+      ],
+      "referenceSolution": "#include <stdint.h>\n#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    unsigned char buf[64];\n    for (int i = 0; i < n; i++) {\n        unsigned value;\n        scanf(\"%x\", &value);\n        buf[i] = (unsigned char)value;\n    }\n    int q;\n    scanf(\"%d\", &q);\n    for (int k = 0; k < q; k++) {\n        char type[4];\n        int offset;\n        scanf(\"%3s %d\", type, &offset);\n        int size = type[1] == '1' ? 2 : type[1] == '3' ? 4 : 8;\n        if (offset + size > n) {\n            printf(\"out of range\\n\");\n        } else if (size == 2) {\n            int16_t v;\n            memcpy(&v, buf + offset, sizeof v);\n            printf(\"%d\\n\", v);\n        } else if (size == 4) {\n            int32_t v;\n            memcpy(&v, buf + offset, sizeof v);\n            printf(\"%ld\\n\", (long)v);\n        } else {\n            int64_t v;\n            memcpy(&v, buf + offset, sizeof v);\n            printf(\"%lld\\n\", (long long)v);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`memcpy` копирует нужное число байтов в правильно выровненную переменную, поэтому смещение может быть любым. Приведение `*(int32_t *)(buf + offset)` при нечётном смещении было бы невыровненным доступом — UBSan остановил бы программу.\n\nПроверка `offset + size > n` выполняется до копирования: иначе `memcpy` прочитал бы байты за концом пакета. Порядок байтов здесь машинный (little-endian), поэтому байты `2a 00` дают 42, а `ff ff` — −1.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-alignment-task-3",
+      "title": "Найди ошибку: невыровненный заголовок",
+      "description": "Поток байтов состоит из записей: байт-метка, затем 8-байтовый заголовок `struct Header` (`uint32_t id`, `uint16_t length`, `uint16_t flags`). Программа печатает поля всех заголовков. Результат на x86 правильный, но UBSan сообщает о доступе по невыровненному адресу.\n\nИсправьте чтение заголовка.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdint.h>\n#include <stdio.h>\n#include <string.h>\n\nstruct Header {\n    uint32_t id;\n    uint16_t length;\n    uint16_t flags;\n};\n\nint main(void) {\n    unsigned char buffer[64];\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        unsigned value;\n        scanf(\"%x\", &value);\n        buffer[i] = (unsigned char)value;\n    }\n    int offset = 1;\n    while (offset + (int)sizeof(struct Header) <= n) {\n        const struct Header *p = (const struct Header *)(buffer + offset);\n        struct Header h = {p->id, p->length, p->flags};\n        printf(\"id=%u length=%u flags=%u\\n\", (unsigned)h.id, (unsigned)h.length, (unsigned)h.flags);\n        offset += (int)sizeof(struct Header) + 1;\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "9\naa 07 00 00 00 10 00 01 00\n",
+          "output": "id=7 length=16 flags=1\n"
+        },
+        {
+          "input": "18\n01 01 00 00 00 02 00 03 00 02 ff ff ff ff ff ff 00 00\n",
+          "output": "id=1 length=2 flags=3\nid=4294967295 length=65535 flags=0\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 64 байта.", "Порядок байтов — машинный."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Кратен ли 4 адрес buffer + offset при offset = 1?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Скопируйте заголовок в локальную структуру: struct Header h; memcpy(&h, buffer + offset, sizeof h);",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "9\naa 07 00 00 00 10 00 01 00\n",
+          "expected": "id=7 length=16 flags=1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "18\n01 01 00 00 00 02 00 03 00 02 ff ff ff ff ff ff 00 00\n",
+          "expected": "id=1 length=2 flags=3\nid=4294967295 length=65535 flags=0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Нули",
+          "stdin": "9\n00 00 00 00 00 00 00 00 00\n",
+          "expected": "id=0 length=0 flags=0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Разные байты",
+          "stdin": "9\nff 78 56 34 12 cd ab 01 00\n",
+          "expected": "id=305419896 length=43981 flags=1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Неполный заголовок",
+          "stdin": "8\nff 01 00 00 00 01 00 01\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-4",
+          "name": "Три записи",
+          "stdin": "27\n01 01 00 00 00 01 00 01 00 02 02 00 00 00 02 00 02 00 03 03 00 00 00 03 00 03 00\n",
+          "expected": "id=1 length=1 flags=1\nid=2 length=2 flags=2\nid=3 length=3 flags=3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Хвост после записи",
+          "stdin": "10\n00 2a 00 00 00 08 00 00 00 99\n",
+          "expected": "id=42 length=8 flags=0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Старшие биты",
+          "stdin": "9\n05 00 00 00 80 00 80 00 80\n",
+          "expected": "id=2147483648 length=32768 flags=32768\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Только метка",
+          "stdin": "1\n00\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-8",
+          "name": "Десятичные круглые",
+          "stdin": "9\n7f 10 27 00 00 e8 03 0a 00\n",
+          "expected": "id=10000 length=1000 flags=10\n"
+        }
+      ],
+      "referenceSolution": "#include <stdint.h>\n#include <stdio.h>\n#include <string.h>\n\nstruct Header {\n    uint32_t id;\n    uint16_t length;\n    uint16_t flags;\n};\n\nint main(void) {\n    unsigned char buffer[64];\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        unsigned value;\n        scanf(\"%x\", &value);\n        buffer[i] = (unsigned char)value;\n    }\n    int offset = 1;\n    while (offset + (int)sizeof(struct Header) <= n) {\n        struct Header h;\n        memcpy(&h, buffer + offset, sizeof h);\n        printf(\"id=%u length=%u flags=%u\\n\", (unsigned)h.id, (unsigned)h.length, (unsigned)h.flags);\n        offset += (int)sizeof(struct Header) + 1;\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Структура `Header` требует выравнивания 4 (по полю `uint32_t`), а `buffer + 1` — нечётный адрес. Приведение указателя обещает компилятору выровненный объект, которого там нет, — это неопределённое поведение, хотя x86 и прочитает данные.\n\n`memcpy` в локальную `struct Header` копирует 8 байтов в переменную, которую компилятор разместил правильно. Затем поля читаются обычным образом. Этот приём — стандартный для разбора двоичных форматов и сетевых пакетов.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-alignment-task-4",
+      "title": "Простой распределитель",
+      "description": "Распределитель-«арена» выдаёт участки из общего буфера размером `N` байтов, начиная с позиции 0. На запрос `size align` он выравнивает текущую позицию вверх до кратного `align`, выдаёт участок `[позиция, позиция + size)` и сдвигает позицию за его конец. Если участок не помещается в буфер, печатается `fail`, и позиция не меняется.\n\nДля каждого запроса напечатайте смещение выданного участка или `fail`. В конце — `used=U`, где U — итоговая позиция.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "64 4\n1 1\n4 4\n8 8\n60 1\n",
+          "output": "0\n4\n8\nfail\nused=16\n"
+        },
+        {
+          "input": "16 2\n16 16\n1 1\n",
+          "output": "0\nfail\nused=16\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ N ≤ 10⁹.",
+        "1 ≤ запросов ≤ 50.",
+        "1 ≤ size ≤ 10⁹.",
+        "align — степень двойки от 1 до 4096."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "start = (pos + align - 1) & ~(align - 1); участок помещается, если start + size <= N.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Используйте unsigned long long: pos + size может превысить 2³¹.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "При fail позицию не меняйте — следующий маленький запрос может поместиться.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "64 4\n1 1\n4 4\n8 8\n60 1\n",
+          "expected": "0\n4\n8\nfail\nused=16\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "16 2\n16 16\n1 1\n",
+          "expected": "0\nfail\nused=16\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ровно весь буфер",
+          "stdin": "1 1\n1 1\n",
+          "expected": "0\nused=1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Разные выравнивания",
+          "stdin": "100 3\n3 1\n8 8\n8 16\n",
+          "expected": "0\n8\n16\nused=24\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Отказ, затем успех",
+          "stdin": "10 3\n20 1\n5 1\n5 1\n",
+          "expected": "fail\n0\n5\nused=10\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Огромный буфер",
+          "stdin": "1000000000 2\n999999999 1\n1 4096\n",
+          "expected": "0\nfail\nused=999999999\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Выравнивание по странице",
+          "stdin": "4096 3\n1 4096\n1 4096\n1 4096\n",
+          "expected": "0\nfail\nfail\nused=1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Растущие выравнивания",
+          "stdin": "32 5\n1 1\n1 2\n1 4\n1 8\n1 16\n",
+          "expected": "0\n2\n4\n8\n16\nused=17\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Промежуток при выравнивании",
+          "stdin": "20 3\n7 1\n8 8\n4 4\n",
+          "expected": "0\n8\n16\nused=20\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Плотная упаковка",
+          "stdin": "8 4\n2 2\n2 2\n2 2\n2 2\n",
+          "expected": "0\n2\n4\n6\nused=8\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    unsigned long long capacity;\n    int q;\n    scanf(\"%llu %d\", &capacity, &q);\n    unsigned long long pos = 0;\n    for (int i = 0; i < q; i++) {\n        unsigned long long size, align;\n        scanf(\"%llu %llu\", &size, &align);\n        unsigned long long start = (pos + align - 1) & ~(align - 1);\n        if (start + size > capacity) {\n            printf(\"fail\\n\");\n        } else {\n            printf(\"%llu\\n\", start);\n            pos = start + size;\n        }\n    }\n    printf(\"used=%llu\\n\", pos);\n    return 0;\n}\n",
+      "solutionExplanation": "Арена — самый простой и быстрый распределитель: выделение — это выравнивание и сдвиг одного указателя, а освобождение — сброс позиции в ноль для всех участков сразу. Так устроены распределители в компиляторах, играх и парсерах, где много мелких объектов живут одинаково долго.\n\nВыравнивание обязательно: участок под `double` должен начинаться с позиции, кратной 8, иначе получится тот самый невыровненный доступ. Промежутки, возникающие при выравнивании, — плата за корректность; в следующем уроке вы увидите такие же промежутки внутри структур.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "memory-alignment-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Чему равен align_up(21, 8) по формуле (x + a − 1) & ~(a − 1)?",
+        "explanation": "21 + 7 = 28 = 0b11100; обнуление трёх младших битов даёт 0b11000 = 24.",
+        "type": "text",
+        "answers": ["24"],
+        "placeholder": "Результат"
+      },
+      {
+        "id": "q2",
+        "question": "Какие адреса подходят для объекта double с выравниванием 8? Выберите все.",
+        "explanation": "Адрес должен быть кратен 8: последняя шестнадцатеричная цифра 0 или 8.",
+        "type": "multiple",
+        "options": ["0x1000", "0x1004", "0x1008", "0x1010", "0x100C"],
+        "correct": [0, 2, 3]
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdalign.h>\n#include <stdio.h>\n\nint main(void) {\n    printf(\"%zu %zu %zu\\n\", alignof(char), alignof(int), alignof(double));\n    return 0;\n}",
+        "explanation": "На 64-битном Linux выравнивание простых типов совпадает с их размером.",
+        "type": "text",
+        "answers": ["1 4 8"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Как правильно прочитать uint32_t из байтового буфера buf со смещения 3?",
+        "explanation": "Приведение указателя даёт невыровненный доступ и нарушает strict aliasing. buf[3] — только один байт. memcpy копирует байты без требований к выравниванию.",
+        "options": [
+          "uint32_t v; memcpy(&v, buf + 3, sizeof v);",
+          "uint32_t v = *(uint32_t *)(buf + 3);",
+          "uint32_t v = buf[3];",
+          "uint32_t *p = buf + 3; uint32_t v = *p;"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какое выравнивание гарантирует блок, полученный от malloc?",
+        "explanation": "Поэтому результат malloc можно привести к указателю на любой тип без проверки выравнивания.",
+        "options": [
+          "Не меньше alignof(max_align_t) — подходит для любого стандартного типа",
+          "Только 1 байт",
+          "Ровно размер запрошенного блока",
+          "Никакого"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Почему невыровненное чтение int на x86 опасно, если оно «работает»?",
+        "explanation": "Векторные команды требуют выравнивания, а процессоры других архитектур могут аварийно завершить программу.",
+        "options": [
+          "Это неопределённое поведение: оптимизатор и другие процессоры не обязаны его поддерживать",
+          "На x86 оно всегда возвращает 0",
+          "Оно меняет порядок байтов",
+          "Оно опасно только в многопоточных программах"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Для каких a формула (x + a − 1) & ~(a − 1) даёт правильное выравнивание вверх? Выберите все.",
+        "explanation": "Формула с маской верна только для степеней двойки. Для 6 и 12 нужна формула (x + a − 1) / a * a.",
+        "type": "multiple",
+        "options": ["a = 1", "a = 4", "a = 6", "a = 64", "a = 12"],
+        "correct": [0, 1, 3]
+      }
+    ]
+  }
+}

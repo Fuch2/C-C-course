@@ -1,0 +1,539 @@
+{
+  "id": "memory-heap",
+  "title": "Куча: память по запросу",
+  "description": "Зачем нужна динамическая память: размер известен только во время работы и данные переживают функцию. Первое знакомство с malloc и free, владение блоком, стек против кучи, таблица в одном блоке.",
+  "moduleId": "memory-pointers",
+  "order": 4,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["memory-stack"],
+  "objectives": [
+    "Объяснять, какие задачи не решаются массивами на стеке и в статических данных",
+    "Выделять массив в куче через malloc(n * sizeof *p) и проверять результат на NULL",
+    "Возвращать блок из функции и освобождать его в вызывающем коде",
+    "Выбирать между стеком и кучей и размещать таблицу в одном блоке"
+  ],
+  "tags": ["C17", "Память", "Куча", "malloc", "free"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "memory-heap-task-1",
+    "title": "Обратный порядок",
+    "description": "Прочитайте количество чисел `n` и сами `n` целых чисел. Напечатайте их в обратном порядке через пробел.\n\nМассив выделите в куче ровно на `n` элементов и освободите перед завершением программы. Если `malloc` вернул `NULL`, завершите программу с кодом 1.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "4\n10 20 30 40\n",
+        "output": "40 30 20 10\n"
+      },
+      {
+        "input": "1\n-5\n",
+        "output": "-5\n"
+      }
+    ],
+    "constraints": ["1 ≤ n ≤ 1000.", "|x| ≤ 10⁹."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "int *a = malloc(n * sizeof *a); if (a == NULL) return 1;",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Чтобы не было лишнего пробела в конце, печатайте пробел перед каждым числом, кроме первого: if (i != n - 1) printf(\" \");",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Не забудьте free(a) после печати — проверка с AddressSanitizer считает забытый free ошибкой.",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "4\n10 20 30 40\n",
+        "expected": "40 30 20 10\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1\n-5\n",
+        "expected": "-5\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Два числа",
+        "stdin": "2\n1 2\n",
+        "expected": "2 1\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Нули",
+        "stdin": "3\n0 0 0\n",
+        "expected": "0 0 0\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Крайние значения",
+        "stdin": "5\n1000000000 -1000000000 7 -7 0\n",
+        "expected": "0 -7 7 -1000000000 1000000000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Палиндром",
+        "stdin": "6\n1 2 3 3 2 1\n",
+        "expected": "1 2 3 3 2 1\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Десять чисел",
+        "stdin": "10\n1 2 3 4 5 6 7 8 9 10\n",
+        "expected": "10 9 8 7 6 5 4 3 2 1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Отрицательные",
+        "stdin": "3\n-1 -2 -3\n",
+        "expected": "-3 -2 -1\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Повторы",
+        "stdin": "4\n5 5 5 6\n",
+        "expected": "6 5 5 5\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Убывание",
+        "stdin": "7\n9 8 7 6 5 4 3\n",
+        "expected": "3 4 5 6 7 8 9\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int *a = malloc(n * sizeof *a);\n    if (a == NULL) {\n        return 1;\n    }\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    for (int i = n - 1; i >= 0; i--) {\n        printf(\"%d\", a[i]);\n        printf(i > 0 ? \" \" : \"\\n\");\n    }\n    free(a);\n    return 0;\n}\n",
+    "solutionExplanation": "Размер массива известен только после чтения `n`, поэтому блок выделяется во время работы — ровно столько, сколько нужно. Выражение `n * sizeof *a` даёт размер в байтах и не зависит от того, сколько байтов занимает `int`.\n\n`free(a)` стоит после последнего обращения к массиву. Если его убрать, программа выведет тот же ответ, но LeakSanitizer сообщит об утечке 4·n байтов — и тест не будет пройден.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "memory-heap-task-2",
+      "title": "Функция создаёт диапазон",
+      "description": "Реализуйте функцию\n\n```c\nint *make_range(int from, int to, int *length);\n```\n\nОна выделяет в куче массив всех целых чисел от `from` до `to` включительно — по возрастанию, если `from ≤ to`, и по убыванию иначе, — записывает количество элементов в `*length` и возвращает массив. При ошибке выделения возвращает `NULL`.\n\nФункция `main` дана: она печатает длину, затем элементы и освобождает массив.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint *make_range(int from, int to, int *length) {\n    // Выделите массив, заполните его и запишите длину в *length.\n    return NULL;\n}\n\nint main(void) {\n    int from, to;\n    scanf(\"%d %d\", &from, &to);\n    int length = 0;\n    int *range = make_range(from, to, &length);\n    if (range == NULL) {\n        return 1;\n    }\n    printf(\"%d\\n\", length);\n    for (int i = 0; i < length; i++) {\n        printf(i + 1 < length ? \"%d \" : \"%d\\n\", range[i]);\n    }\n    free(range);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3 7\n",
+          "output": "5\n3 4 5 6 7\n"
+        },
+        {
+          "input": "2 -1\n",
+          "output": "4\n2 1 0 -1\n"
+        }
+      ],
+      "constraints": ["−1000 ≤ from, to ≤ 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Длина: abs(to - from) + 1 (abs из <stdlib.h>). Шаг: from <= to ? 1 : -1.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Заполнение: for (int i = 0; i < n; i++) a[i] = from + i * step;",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Запишите длину через указатель: *length = n; — так функция возвращает два результата: массив и его размер.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 7\n",
+          "expected": "5\n3 4 5 6 7\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2 -1\n",
+          "expected": "4\n2 1 0 -1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Один элемент",
+          "stdin": "5 5\n",
+          "expected": "1\n5\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Два элемента",
+          "stdin": "0 1\n",
+          "expected": "2\n0 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Два по убыванию",
+          "stdin": "1 0\n",
+          "expected": "2\n1 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Через ноль",
+          "stdin": "-3 3\n",
+          "expected": "7\n-3 -2 -1 0 1 2 3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Отрицательные",
+          "stdin": "-1000 -990\n",
+          "expected": "11\n-1000 -999 -998 -997 -996 -995 -994 -993 -992 -991 -990\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Убывание у максимума",
+          "stdin": "1000 990\n",
+          "expected": "11\n1000 999 998 997 996 995 994 993 992 991 990\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Убывание отрицательных",
+          "stdin": "-5 -10\n",
+          "expected": "6\n-5 -6 -7 -8 -9 -10\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Одиннадцать элементов",
+          "stdin": "10 20\n",
+          "expected": "11\n10 11 12 13 14 15 16 17 18 19 20\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\nint *make_range(int from, int to, int *length) {\n    int n = abs(to - from) + 1;\n    int step = from <= to ? 1 : -1;\n    int *a = malloc(n * sizeof *a);\n    if (a == NULL) {\n        return NULL;\n    }\n    for (int i = 0; i < n; i++) {\n        a[i] = from + i * step;\n    }\n    *length = n;\n    return a;\n}\n\nint main(void) {\n    int from, to;\n    scanf(\"%d %d\", &from, &to);\n    int length = 0;\n    int *range = make_range(from, to, &length);\n    if (range == NULL) {\n        return 1;\n    }\n    printf(\"%d\\n\", length);\n    for (int i = 0; i < length; i++) {\n        printf(i + 1 < length ? \"%d \" : \"%d\\n\", range[i]);\n    }\n    free(range);\n    return 0;\n}\n",
+      "solutionExplanation": "Функция владеет блоком лишь до `return`: возвращая указатель, она передаёт владение `main`, и освобождает блок уже `main`. Локальный массив здесь не подошёл бы — он исчез бы вместе с кадром `make_range`.\n\nВторой результат — длина — возвращается через выходной параметр `int *length`. Это обычный для C способ вернуть «массив и его размер»: вызывающий код без длины не смог бы безопасно обойти блок.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-heap-task-3",
+      "title": "Слияние в новый массив",
+      "description": "Даны два массива, каждый отсортирован по неубыванию. Реализуйте функцию\n\n```c\nint *merge(const int *a, int n, const int *b, int m);\n```\n\nОна возвращает **новый** блок из `n + m` элементов, содержащий все элементы обоих массивов по неубыванию (или `NULL` при ошибке выделения). Исходные массивы не меняются.\n\nВвод: `n`, затем `n` чисел; `m`, затем `m` чисел. Функция `main` дана: она печатает результат через пробел и освобождает все три блока.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint *merge(const int *a, int n, const int *b, int m) {\n    // Выделите новый блок и слейте a и b.\n    return NULL;\n}\n\nint *read_array(int *length) {\n    scanf(\"%d\", length);\n    int *a = malloc(*length * sizeof *a);\n    if (a == NULL) {\n        return NULL;\n    }\n    for (int i = 0; i < *length; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    return a;\n}\n\nint main(void) {\n    int n, m;\n    int *a = read_array(&n);\n    int *b = read_array(&m);\n    int *c = (a && b) ? merge(a, n, b, m) : NULL;\n    if (c != NULL) {\n        for (int i = 0; i < n + m; i++) {\n            printf(i + 1 < n + m ? \"%d \" : \"%d\\n\", c[i]);\n        }\n    }\n    free(a);\n    free(b);\n    free(c);\n    return c == NULL;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\n1 4 9\n4\n2 3 10 11\n",
+          "output": "1 2 3 4 9 10 11\n"
+        },
+        {
+          "input": "1\n5\n1\n5\n",
+          "output": "5 5\n"
+        }
+      ],
+      "constraints": ["1 ≤ n, m ≤ 500.", "|x| ≤ 10⁹.", "Оба массива отсортированы по неубыванию."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Два индекса i и j идут по a и b; на каждом шаге в результат кладётся меньший из a[i] и b[j].",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Когда один массив закончился, допишите остаток другого отдельными циклами.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Результат выделяйте внутри merge: int *out = malloc((n + m) * sizeof *out);",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\n1 4 9\n4\n2 3 10 11\n",
+          "expected": "1 2 3 4 9 10 11\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n5\n1\n5\n",
+          "expected": "5 5\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Первый массив целиком меньше",
+          "stdin": "2\n1 2\n2\n3 4\n",
+          "expected": "1 2 3 4\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Второй массив целиком меньше",
+          "stdin": "2\n7 8\n3\n1 2 3\n",
+          "expected": "1 2 3 7 8\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Одинаковые элементы",
+          "stdin": "3\n1 1 1\n3\n1 1 1\n",
+          "expected": "1 1 1 1 1 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Крайние значения",
+          "stdin": "1\n-1000000000\n1\n1000000000\n",
+          "expected": "-1000000000 1000000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Чередование",
+          "stdin": "4\n1 3 5 7\n4\n2 4 6 8\n",
+          "expected": "1 2 3 4 5 6 7 8\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Один против пяти",
+          "stdin": "1\n0\n5\n-2 -1 0 1 2\n",
+          "expected": "-2 -1 0 0 1 2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смешанные",
+          "stdin": "5\n-5 -3 0 0 9\n2\n-4 10\n",
+          "expected": "-5 -4 -3 0 0 9 10\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Повторы в обоих",
+          "stdin": "3\n2 2 3\n3\n1 2 2\n",
+          "expected": "1 2 2 2 2 3\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\nint *merge(const int *a, int n, const int *b, int m) {\n    int *out = malloc((n + m) * sizeof *out);\n    if (out == NULL) {\n        return NULL;\n    }\n    int i = 0, j = 0, k = 0;\n    while (i < n && j < m) {\n        if (a[i] <= b[j]) {\n            out[k++] = a[i++];\n        } else {\n            out[k++] = b[j++];\n        }\n    }\n    while (i < n) {\n        out[k++] = a[i++];\n    }\n    while (j < m) {\n        out[k++] = b[j++];\n    }\n    return out;\n}\n\nint *read_array(int *length) {\n    scanf(\"%d\", length);\n    int *a = malloc(*length * sizeof *a);\n    if (a == NULL) {\n        return NULL;\n    }\n    for (int i = 0; i < *length; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    return a;\n}\n\nint main(void) {\n    int n, m;\n    int *a = read_array(&n);\n    int *b = read_array(&m);\n    int *c = (a && b) ? merge(a, n, b, m) : NULL;\n    if (c != NULL) {\n        for (int i = 0; i < n + m; i++) {\n            printf(i + 1 < n + m ? \"%d \" : \"%d\\n\", c[i]);\n        }\n    }\n    free(a);\n    free(b);\n    free(c);\n    return c == NULL;\n}\n",
+      "solutionExplanation": "Слияние идёт двумя «пальцами»: каждый шаг берёт меньший из текущих элементов, поэтому результат отсортирован и строится за `n + m` шагов. Параметры `const int *` обещают, что исходные массивы не изменятся.\n\nОбратите внимание на `main`: в программе три блока и три `free`. `free(NULL)` разрешён и ничего не делает — поэтому освобождать можно без дополнительных проверок, даже если какое-то выделение не удалось.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-heap-task-4",
+      "title": "Транспонирование таблицы",
+      "description": "Прочитайте размеры таблицы `rows` и `cols`, затем `rows` строк по `cols` целых чисел. Напечатайте **транспонированную** таблицу: `cols` строк по `rows` чисел, где строка `c` результата — это столбец `c` исходной таблицы. Числа в строке — через пробел.\n\nХраните таблицу в **одном** блоке из `rows · cols` элементов; элемент `(r, c)` — по индексу `r · cols + c`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2 3\n1 2 3\n4 5 6\n",
+          "output": "1 4\n2 5\n3 6\n"
+        },
+        {
+          "input": "1 1\n7\n",
+          "output": "7\n"
+        }
+      ],
+      "constraints": ["1 ≤ rows, cols ≤ 20.", "|x| ≤ 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "int *t = malloc(rows * cols * sizeof *t); — один блок на всю таблицу.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Чтение — двойной цикл r, c с записью в t[r * cols + c].",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Печать транспонированной: внешний цикл по c, внутренний по r, элемент t[r * cols + c].",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2 3\n1 2 3\n4 5 6\n",
+          "expected": "1 4\n2 5\n3 6\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 1\n7\n",
+          "expected": "7\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна строка",
+          "stdin": "1 4\n1 2 3 4\n",
+          "expected": "1\n2\n3\n4\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Один столбец",
+          "stdin": "4 1\n1\n2\n3\n4\n",
+          "expected": "1 2 3 4\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Квадрат 2×2",
+          "stdin": "2 2\n1 2\n3 4\n",
+          "expected": "1 3\n2 4\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Квадрат 3×3",
+          "stdin": "3 3\n1 2 3\n4 5 6\n7 8 9\n",
+          "expected": "1 4 7\n2 5 8\n3 6 9\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Отрицательные",
+          "stdin": "3 2\n-1 -2\n-3 -4\n-5 -6\n",
+          "expected": "-1 -3 -5\n-2 -4 -6\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Крайние значения",
+          "stdin": "2 4\n1000000 0 0 -1000000\n5 6 7 8\n",
+          "expected": "1000000 5\n0 6\n0 7\n-1000000 8\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Широкая таблица",
+          "stdin": "2 5\n1 2 3 4 5\n6 7 8 9 10\n",
+          "expected": "1 6\n2 7\n3 8\n4 9\n5 10\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Высокая таблица",
+          "stdin": "5 2\n1 2\n3 4\n5 6\n7 8\n9 10\n",
+          "expected": "1 3 5 7 9\n2 4 6 8 10\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    int rows, cols;\n    scanf(\"%d %d\", &rows, &cols);\n    int *t = malloc(rows * cols * sizeof *t);\n    if (t == NULL) {\n        return 1;\n    }\n    for (int r = 0; r < rows; r++) {\n        for (int c = 0; c < cols; c++) {\n            scanf(\"%d\", &t[r * cols + c]);\n        }\n    }\n    for (int c = 0; c < cols; c++) {\n        for (int r = 0; r < rows; r++) {\n            printf(r + 1 < rows ? \"%d \" : \"%d\\n\", t[r * cols + c]);\n        }\n    }\n    free(t);\n    return 0;\n}\n",
+      "solutionExplanation": "Таблица хранится построчно: сначала все `cols` элементов строки 0, затем строки 1 и так далее. Формула `r * cols + c` пропускает `r` полных строк и берёт `c`-й элемент текущей.\n\nТранспонирование не требует второго блока: достаточно поменять порядок циклов при печати — внешний цикл идёт по столбцам. Один `malloc` на всю таблицу проще и надёжнее, чем отдельный блок на каждую строку: один `free`, и данные лежат компактно.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "memory-heap-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Сколько байтов выделит malloc(n * sizeof *p), если p имеет тип double *, а n = 6?",
+        "explanation": "sizeof *p — размер double, 8 байтов. 6 · 8 = 48.",
+        "type": "text",
+        "answers": ["48"],
+        "placeholder": "Число байтов"
+      },
+      {
+        "id": "q2",
+        "question": "Что вернёт malloc, если память выделить не удалось?",
+        "explanation": "Поэтому результат проверяют: if (p == NULL) — и обрабатывают ошибку, не разыменовывая указатель.",
+        "options": [
+          "NULL",
+          "Адрес блока нулевого размера",
+          "Программа завершится внутри malloc",
+          "-1"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n#include <stdlib.h>\n\nint *make(int value) {\n    int *p = malloc(sizeof *p);\n    if (p != NULL) {\n        *p = value * 2;\n    }\n    return p;\n}\n\nint main(void) {\n    int *a = make(5);\n    int *b = make(*a);\n    if (a == NULL || b == NULL) {\n        return 1;\n    }\n    printf(\"%d %d\\n\", *a, *b);\n    free(a);\n    free(b);\n    return 0;\n}",
+        "explanation": "Каждый вызов make выделяет отдельный блок. Блоки переживают функцию и освобождаются в main.",
+        "type": "text",
+        "answers": ["10 20"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Какие объекты исчезают при возврате из функции, выделившей блок? Выберите все.",
+        "code": "int *create(int n) {\n    int count = n;\n    int *block = malloc(count * sizeof *block);\n    return block;\n}",
+        "codeLanguage": "c",
+        "explanation": "Параметр и локальные переменные живут в кадре функции. Блок в куче живёт до free; его адрес возвращён вызывающему коду.",
+        "type": "multiple",
+        "options": [
+          "Параметр n",
+          "Локальная переменная count",
+          "Указатель block (переменная)",
+          "Блок в куче, на который указывает block"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q5",
+        "question": "Чем опасен код int n; scanf(\"%d\", &n); int data[n]; при n = 5 000 000?",
+        "explanation": "VLA живёт на стеке, а размер стека — около 8 МБ. Для больших массивов заранее неизвестного размера используют malloc.",
+        "options": [
+          "Массив переменной длины размещается на стеке — 20 МБ переполнят стек",
+          "Такой код не компилируется в C",
+          "Массив будет обнулён, что очень долго",
+          "Ничем, массив размещается в куче"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Какой вызов free допустим?",
+        "explanation": "free принимает только адрес начала блока из malloc/calloc/realloc (или NULL). Всё остальное — неопределённое поведение.",
+        "options": [
+          "free(p), где p получен из malloc и ещё не освобождён",
+          "free(&x), где x — локальная переменная",
+          "free(p + 1), где p получен из malloc",
+          "free(s), где s указывает на строковый литерал"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "По какому индексу в одном блоке хранится элемент строки r и столбца c таблицы rows × cols?",
+        "explanation": "Перед строкой r лежат r полных строк по cols элементов, затем c элементов текущей строки.",
+        "options": ["r * cols + c", "c * cols + r", "r * rows + c", "r + c"],
+        "correct": 0
+      }
+    ]
+  }
+}

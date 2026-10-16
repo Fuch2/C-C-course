@@ -1,0 +1,121 @@
+{
+  "id": "advanced-conditional-compilation",
+  "title": "Conditional compilation",
+  "description": "#if, #ifdef и #elif выбирают код при сборке.",
+  "moduleId": "advanced-c",
+  "order": 8,
+  "difficulty": "advanced",
+  "estimatedMinutes": 40,
+  "prerequisites": ["advanced-macro-hazards"],
+  "objectives": [
+    "Объяснить: Conditional compilation",
+    "Различать корректный контракт и ошибку: #ifdef FEATURE включает ветвь даже при -DFEATURE=0.",
+    "Реализовать и проверить практику на обычном и граничном вводе"
+  ],
+  "tags": ["C17", "углублённый C", "Conditional compilation"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "advanced-conditional-compilation-exercise",
+    "title": "Практика: Conditional compilation",
+    "description": "Задайте SENSOR_FAST=0 по умолчанию и выберите коэффициент 2 при #if SENSOR_FAST, иначе 1. В тестируемой конфигурации без внешних флагов ввод x −100…100 и вывод x.",
+    "difficulty": "advanced",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "5",
+        "output": "5\n",
+        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+      },
+      {
+        "input": "-9",
+        "output": "-9\n",
+        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
+      "В stdout только требуемый результат.",
+      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Конфигурация сборки выбирает один чертёж; runtime if выбирает действие уже собранного устройства."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "#ifdef FEATURE включает ветвь даже при -DFEATURE=0."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "test-1",
+        "name": "Основной сценарий",
+        "stdin": "5",
+        "expected": "5\n"
+      },
+      {
+        "id": "test-2",
+        "name": "Граничный сценарий 1",
+        "stdin": "-9",
+        "expected": "-9\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "test-3",
+        "name": "Граничный сценарий 2",
+        "stdin": "0",
+        "expected": "0\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#ifndef SENSOR_FAST\n#define SENSOR_FAST 0\n#endif\n#if SENSOR_FAST\nstatic const int gain = 2;\n#else\nstatic const int gain = 1;\n#endif\nint main(void) {\n    int x;\n    if (scanf(\"%d\", &x) != 1) return 1;\n    printf(\"%d\\n\", x * gain);\n    return 0;\n}\n",
+    "solutionExplanation": "Конфигурация сборки выбирает один чертёж; runtime if выбирает действие уже собранного устройства.\n\n#ifdef FEATURE включает ветвь даже при -DFEATURE=0.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '5' → '5\\n'; '-9' → '-9\\n'; '0' → '0\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "advanced-conditional-compilation-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "concept",
+        "question": "Макрос FEATURE определён как 0. Что проверяет #ifdef FEATURE?",
+        "options": [
+          "Наличие определения, поэтому ветвь включается",
+          "Числовой ноль, поэтому ветвь исключается"
+        ],
+        "correct": 0,
+        "explanation": "#if, #ifdef и #elif выбирают код при сборке. defined(NAME) отвечает, определён ли макрос, а #if NAME проверяет его числовое значение. Макрос, определённый как 0, всё ещё проходит #ifdef. Это различие особенно важно для флагов возможностей."
+      },
+      {
+        "id": "mistake",
+        "question": "Какое утверждение корректно?",
+        "options": [
+          "Успешный вывод одного примера доказывает корректность на всех входах.",
+          "#ifdef FEATURE включает ветвь даже при -DFEATURE=0."
+        ],
+        "correct": 1,
+        "explanation": "Конфигурация сборки выбирает один чертёж; runtime if выбирает действие уже собранного устройства."
+      },
+      {
+        "id": "trace",
+        "question": "Какой stdout выдаст запускаемый пример урока?",
+        "options": ["Работа", "Ошибка компиляции при корректном C17", "Никакого вывода"],
+        "correct": 0,
+        "explanation": "Проследите значения последовательно: puts(LABEL); Ожидаемый результат: Работа"
+      }
+    ]
+  }
+}

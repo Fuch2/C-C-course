@@ -1,0 +1,527 @@
+{
+  "id": "memory-pointer-to-pointer",
+  "title": "Указатель на указатель",
+  "description": "Функция, изменяющая указатель вызывающего кода: выходной параметр int **, курсор для разбора строки, массив строк как char **, сортировка указателей и динамический массив строк.",
+  "moduleId": "memory-pointers",
+  "order": 8,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 55,
+  "prerequisites": ["memory-pointer-arithmetic"],
+  "objectives": [
+    "Объяснять, почему изменение параметра-указателя не меняет указатель вызывающего кода",
+    "Возвращать выделенную память через выходной параметр int ** вместе с кодом ошибки",
+    "Писать функции-курсоры, сдвигающие указатель вызывающего кода",
+    "Работать с массивами строк char ** и освобождать их в правильном порядке"
+  ],
+  "tags": ["C17", "Память", "Указатели", "Указатель на указатель", "Массив строк"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "memory-pointer-to-pointer-task-1",
+    "title": "Найти и изменить",
+    "description": "Реализуйте функцию\n\n```c\nint find_negative(int *a, int n, int **found);\n```\n\nОна ищет первый отрицательный элемент массива. Если он есть, функция записывает его **адрес** в `*found` и возвращает 1, иначе возвращает 0 и `*found` не трогает.\n\nФункция `main` дана: по найденному адресу она печатает индекс элемента, заменяет его нулём и печатает массив. Если отрицательных нет, печатается `none`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint find_negative(int *a, int n, int **found) {\n    // Найдите первый отрицательный элемент.\n    return 0;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int a[100];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    int *where = NULL;\n    if (!find_negative(a, n, &where)) {\n        printf(\"none\\n\");\n        return 0;\n    }\n    printf(\"%td\\n\", where - a);\n    *where = 0;\n    for (int i = 0; i < n; i++) {\n        printf(i + 1 < n ? \"%d \" : \"%d\\n\", a[i]);\n    }\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "5\n3 -1 4 -1 5\n",
+        "output": "1\n3 0 4 -1 5\n"
+      },
+      {
+        "input": "3\n1 2 3\n",
+        "output": "none\n"
+      }
+    ],
+    "constraints": ["1 ≤ n ≤ 100.", "|x| ≤ 10⁹."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Цикл по i; при a[i] < 0 — *found = &a[i]; return 1;",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "found — адрес указателя из main, поэтому записывать нужно в *found, а не в found.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "5\n3 -1 4 -1 5\n",
+        "expected": "1\n3 0 4 -1 5\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "3\n1 2 3\n",
+        "expected": "none\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Единственный отрицательный",
+        "stdin": "1\n-5\n",
+        "expected": "0\n0\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Ноль не отрицательный",
+        "stdin": "1\n0\n",
+        "expected": "none\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Все отрицательные",
+        "stdin": "4\n-1 -2 -3 -4\n",
+        "expected": "0\n0 -2 -3 -4\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Последний",
+        "stdin": "4\n1 2 3 -4\n",
+        "expected": "3\n1 2 3 0\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Крайние значения",
+        "stdin": "3\n1000000000 -1000000000 5\n",
+        "expected": "1\n1000000000 0 5\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "После нулей",
+        "stdin": "6\n0 0 0 0 0 -1\n",
+        "expected": "5\n0 0 0 0 0 0\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Нет отрицательных",
+        "stdin": "5\n7 7 7 7 7\n",
+        "expected": "none\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Первый",
+        "stdin": "2\n-7 3\n",
+        "expected": "0\n0 3\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint find_negative(int *a, int n, int **found) {\n    for (int i = 0; i < n; i++) {\n        if (a[i] < 0) {\n            *found = &a[i];\n            return 1;\n        }\n    }\n    return 0;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int a[100];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    int *where = NULL;\n    if (!find_negative(a, n, &where)) {\n        printf(\"none\\n\");\n        return 0;\n    }\n    printf(\"%td\\n\", where - a);\n    *where = 0;\n    for (int i = 0; i < n; i++) {\n        printf(i + 1 < n ? \"%d \" : \"%d\\n\", a[i]);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Функция возвращает два результата: признак «нашли» — значением, а сам элемент — адресом через выходной параметр `int **found`. Через полученный указатель `main` может и узнать индекс (`where − a`), и изменить элемент на месте.\n\nУказатель `where` указывает на элемент массива `a` из кадра `main` — объект живёт дольше указателя, так что это безопасно.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "memory-pointer-to-pointer-task-2",
+      "title": "Разбор чисел курсором",
+      "description": "Строка текста содержит целые числа, перемешанные с другими символами, например `t=12; dt=-7, k=300.`. Минус, стоящий **непосредственно перед цифрой**, — знак числа.\n\nРеализуйте функцию\n\n```c\nint next_number(const char **cursor, long long *value);\n```\n\nОна пропускает символы до начала следующего числа, читает его в `*value`, сдвигает `*cursor` за последнюю цифру и возвращает 1. Если чисел больше нет, возвращает 0. Функция `main` дана: она печатает количество чисел и их сумму.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <ctype.h>\n#include <stdio.h>\n\nint next_number(const char **cursor, long long *value) {\n    // Найдите и прочитайте следующее число, сдвигая *cursor.\n    return 0;\n}\n\nint main(void) {\n    char line[256];\n    if (fgets(line, sizeof line, stdin) == NULL) {\n        line[0] = '\\0';\n    }\n    const char *pos = line;\n    long long value = 0, sum = 0;\n    int count = 0;\n    while (next_number(&pos, &value)) {\n        count++;\n        sum += value;\n    }\n    printf(\"count=%d sum=%lld\\n\", count, sum);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "t=12; dt=-7, k=300.\n",
+          "output": "count=3 sum=305\n"
+        },
+        {
+          "input": "no numbers here\n",
+          "output": "count=0 sum=0\n"
+        }
+      ],
+      "constraints": ["Строка — до 200 символов.", "Модуль каждого числа ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Пропуск: while (**cursor && !isdigit((unsigned char)**cursor)) — но остановитесь на минусе, за которым идёт цифра: (*cursor)[0] == '-' && isdigit((unsigned char)(*cursor)[1]).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Если дошли до '\\0' — вернуть 0. Иначе запомните знак, сдвиньте курсор за минус и накапливайте цифры: v = v * 10 + (**cursor - '0'); (*cursor)++;",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "isdigit объявлена в <ctype.h>; аргумент приводят к unsigned char.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "t=12; dt=-7, k=300.\n",
+          "expected": "count=3 sum=305\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "no numbers here\n",
+          "expected": "count=0 sum=0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одно число",
+          "stdin": "42\n",
+          "expected": "count=1 sum=42\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Одно отрицательное",
+          "stdin": "-5\n",
+          "expected": "count=1 sum=-5\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Минус как знак второго числа",
+          "stdin": "5-3\n",
+          "expected": "count=2 sum=2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Минусы без цифр",
+          "stdin": "--8 - 2\n",
+          "expected": "count=2 sum=-6\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Большая сумма",
+          "stdin": "1000000000,1000000000,1000000000\n",
+          "expected": "count=3 sum=3000000000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Буквы между цифрами",
+          "stdin": "a1b2c3d4e5\n",
+          "expected": "count=5 sum=15\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Ведущие нули",
+          "stdin": "007 and 0\n",
+          "expected": "count=2 sum=7\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Отрицательные пределы",
+          "stdin": "x=-1000000000;y=-1000000000\n",
+          "expected": "count=2 sum=-2000000000\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Пустая строка",
+          "stdin": "\n",
+          "expected": "count=0 sum=0\n"
+        }
+      ],
+      "referenceSolution": "#include <ctype.h>\n#include <stdio.h>\n\nint next_number(const char **cursor, long long *value) {\n    const char *p = *cursor;\n    while (*p != '\\0' && !isdigit((unsigned char)*p) &&\n           !(*p == '-' && isdigit((unsigned char)p[1]))) {\n        p++;\n    }\n    if (*p == '\\0') {\n        *cursor = p;\n        return 0;\n    }\n    int negative = 0;\n    if (*p == '-') {\n        negative = 1;\n        p++;\n    }\n    long long v = 0;\n    while (isdigit((unsigned char)*p)) {\n        v = v * 10 + (*p - '0');\n        p++;\n    }\n    *value = negative ? -v : v;\n    *cursor = p;\n    return 1;\n}\n\nint main(void) {\n    char line[256];\n    if (fgets(line, sizeof line, stdin) == NULL) {\n        line[0] = '\\0';\n    }\n    const char *pos = line;\n    long long value = 0, sum = 0;\n    int count = 0;\n    while (next_number(&pos, &value)) {\n        count++;\n        sum += value;\n    }\n    printf(\"count=%d sum=%lld\\n\", count, sum);\n    return 0;\n}\n",
+      "solutionExplanation": "Функция работает с локальной копией `p = *cursor` и в конце записывает новое положение обратно: `*cursor = p`. Так меньше звёздочек и меньше шансов перепутать `*cursor++` с `(*cursor)++`. Указатель вызывающего кода меняется ровно один раз — в конце.\n\nСледующий вызов начинает с того места, где закончился предыдущий, поэтому `main` разбирает строку простым циклом и не знает ничего о её формате. Так же работает стандартная `strtol` с параметром `char **endptr`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-pointer-to-pointer-task-3",
+      "title": "Сортировка указателей",
+      "description": "Прочитайте `n` слов. Напечатайте их, отсортированные по **длине**, а при равной длине — по алфавиту (`strcmp`), каждое слово на отдельной строке.\n\nСлова храните в массиве `char words[50][21]` и не перемещайте их: сортируйте массив указателей `const char *order[50]`, где `order[i]` вначале указывает на `words[i]`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "4\npear apple fig plum\n",
+          "output": "fig\npear\nplum\napple\n"
+        },
+        {
+          "input": "1\nsolo\n",
+          "output": "solo\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 50.", "Слова — из строчных латинских букв, длиной от 1 до 20."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Заполнение: for (int i = 0; i < n; i++) { scanf(\"%20s\", words[i]); order[i] = words[i]; }",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Функция сравнения двух указателей: сначала strlen, при равенстве — strcmp.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Сортировка вставками по order: сдвигаются только указатели, words остаётся нетронутым.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\npear apple fig plum\n",
+          "expected": "fig\npear\nplum\napple\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nsolo\n",
+          "expected": "solo\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Обратный порядок длин",
+          "stdin": "3\nccc bb a\n",
+          "expected": "a\nbb\nccc\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Одинаковая длина",
+          "stdin": "3\nab aa ac\n",
+          "expected": "aa\nab\nac\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Повторы",
+          "stdin": "4\nx x y x\n",
+          "expected": "x\nx\nx\ny\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Максимальная длина",
+          "stdin": "2\nabcdefghijklmnopqrst a\n",
+          "expected": "a\nabcdefghijklmnopqrst\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Смешанные",
+          "stdin": "5\nkiwi date lime fig plum\n",
+          "expected": "fig\ndate\nkiwi\nlime\nplum\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Однобуквенные",
+          "stdin": "6\nb a d c f e\n",
+          "expected": "a\nb\nc\nd\ne\nf\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Префиксы",
+          "stdin": "3\nzz zzz z\n",
+          "expected": "z\nzz\nzzz\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Похожие слова",
+          "stdin": "4\napple apply ample maple\n",
+          "expected": "ample\napple\napply\nmaple\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nint before(const char *a, const char *b) {\n    size_t la = strlen(a), lb = strlen(b);\n    if (la != lb) {\n        return la < lb;\n    }\n    return strcmp(a, b) < 0;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    char words[50][21];\n    const char *order[50];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%20s\", words[i]);\n        order[i] = words[i];\n    }\n    for (int i = 1; i < n; i++) {\n        const char *current = order[i];\n        int j = i - 1;\n        while (j >= 0 && before(current, order[j])) {\n            order[j + 1] = order[j];\n            j--;\n        }\n        order[j + 1] = current;\n    }\n    for (int i = 0; i < n; i++) {\n        printf(\"%s\\n\", order[i]);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Перестановка двух указателей — копирование 8 байтов, а перестановка самих слов потребовала бы копирования до 21 байта и вспомогательного буфера. Для больших записей разница огромна: так сортируют, например, массивы структур по разным ключам, не трогая сами данные.\n\nИсходный массив `words` остаётся в порядке ввода. Можно держать несколько массивов указателей — по алфавиту, по длине — на одни и те же данные.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-pointer-to-pointer-task-4",
+      "title": "Массив через выходной параметр",
+      "description": "Реализуйте функцию\n\n```c\nint read_array(int **out, int *length);\n```\n\nОна читает число `n`, затем `n` целых чисел, выделяет под них блок и записывает его адрес в `*out`, а `n` — в `*length`. Возвращает 0 при успехе и −1 при ошибке ввода: `n` не прочиталось, `n < 0`, `n > 100000` или чисел меньше `n`.\n\nТребования:\n- при ошибке `*out` остаётся `NULL`, и вся выделенная память освобождена;\n- при `n = 0` память не выделяется: `*out = NULL`, `*length = 0`, результат 0.\n\nФункция `main` дана: печатает `error`, `empty` или `sum=S max=M` и освобождает массив.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint read_array(int **out, int *length) {\n    // Прочитайте n и n чисел в новый блок.\n    return -1;\n}\n\nint main(void) {\n    int *a = NULL;\n    int n = 0;\n    if (read_array(&a, &n) != 0) {\n        printf(\"error\\n\");\n        return 0;\n    }\n    if (n == 0) {\n        printf(\"empty\\n\");\n    } else {\n        long long sum = 0;\n        int max = a[0];\n        for (int i = 0; i < n; i++) {\n            sum += a[i];\n            if (a[i] > max) {\n                max = a[i];\n            }\n        }\n        printf(\"sum=%lld max=%d\\n\", sum, max);\n    }\n    free(a);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\n4 -2 7\n",
+          "output": "sum=9 max=7\n"
+        },
+        {
+          "input": "3\n1 2\n",
+          "output": "error\n",
+          "explanation": "Чисел меньше, чем обещано: блок нужно освободить."
+        }
+      ],
+      "constraints": ["Числа по модулю ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Проверка n: if (scanf(\"%d\", &n) != 1 || n < 0 || n > 100000) return -1;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Ошибка в середине чтения: блок уже выделен — free(block); return -1; иначе LeakSanitizer найдёт утечку.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "В *out записывайте только в самом конце, когда всё прочитано успешно.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\n4 -2 7\n",
+          "expected": "sum=9 max=7\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3\n1 2\n",
+          "expected": "error\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустой массив",
+          "stdin": "0\n",
+          "expected": "empty\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Отрицательное n",
+          "stdin": "-1\n",
+          "expected": "error\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Нет n",
+          "stdin": "\n",
+          "expected": "error\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Слишком большое n",
+          "stdin": "100001\n",
+          "expected": "error\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Одно число",
+          "stdin": "1\n-1000000000\n",
+          "expected": "sum=-1000000000 max=-1000000000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Мусор в середине",
+          "stdin": "4\n1 x 3 4\n",
+          "expected": "error\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Большая сумма",
+          "stdin": "5\n1000000000 1000000000 1000000000 1000000000 1000000000\n",
+          "expected": "sum=5000000000 max=1000000000\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Не хватает одного числа",
+          "stdin": "2\n5\n",
+          "expected": "error\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\nint read_array(int **out, int *length) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 0 || n > 100000) {\n        return -1;\n    }\n    if (n == 0) {\n        *out = NULL;\n        *length = 0;\n        return 0;\n    }\n    int *block = malloc((size_t)n * sizeof *block);\n    if (block == NULL) {\n        return -1;\n    }\n    for (int i = 0; i < n; i++) {\n        if (scanf(\"%d\", &block[i]) != 1) {\n            free(block);\n            return -1;\n        }\n    }\n    *out = block;\n    *length = n;\n    return 0;\n}\n\nint main(void) {\n    int *a = NULL;\n    int n = 0;\n    if (read_array(&a, &n) != 0) {\n        printf(\"error\\n\");\n        return 0;\n    }\n    if (n == 0) {\n        printf(\"empty\\n\");\n    } else {\n        long long sum = 0;\n        int max = a[0];\n        for (int i = 0; i < n; i++) {\n            sum += a[i];\n            if (a[i] > max) {\n                max = a[i];\n            }\n        }\n        printf(\"sum=%lld max=%d\\n\", sum, max);\n    }\n    free(a);\n    return 0;\n}\n",
+      "solutionExplanation": "Функция пишет в выходные параметры только при полном успехе. Пока чтение не закончено, блок принадлежит ей самой — и на каждой ветке ошибки она обязана его освободить. Вызывающий код получает простой договор: вернулся 0 — я владею `*out` и освобожу его; вернулось −1 — освобождать нечего.\n\nДля `n = 0` решение не вызывает `malloc(0)`: результат такого вызова зависит от реализации (`NULL` или особый указатель). Пустой массив проще описать парой `NULL` и длина 0 — и `free(NULL)` в `main` корректно ничего не делает.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "memory-pointer-to-pointer-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nvoid redirect(int **pp, int *target) {\n    *pp = target;\n    **pp += 1;\n}\n\nint main(void) {\n    int a = 10, b = 20;\n    int *p = &a;\n    redirect(&p, &b);\n    printf(\"%d %d %d\\n\", a, b, *p);\n    return 0;\n}",
+        "explanation": "*pp = target перенаправляет p из main на b. **pp += 1 увеличивает b. a не меняется.",
+        "type": "text",
+        "answers": ["10 21 21"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nvoid skip(const char *s) {\n    s += 2;\n}\n\nvoid skip_really(const char **s) {\n    *s += 2;\n}\n\nint main(void) {\n    const char *text = \"abcdef\";\n    skip(text);\n    printf(\"%c\", *text);\n    skip_really(&text);\n    printf(\"%c\\n\", *text);\n    return 0;\n}",
+        "explanation": "skip сдвигает копию указателя — text не меняется. skip_really получает адрес text и сдвигает сам указатель.",
+        "type": "text",
+        "answers": ["ac"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Переменная объявлена как int x = 5; int *p = &x; int **pp = &p; Какие выражения равны 5? Выберите все.",
+        "explanation": "*pp — это указатель p, а не число. pp[0][0] — то же, что **pp.",
+        "type": "multiple",
+        "options": ["x", "*p", "**pp", "*pp", "pp[0][0]"],
+        "correct": [0, 1, 2, 4]
+      },
+      {
+        "id": "q4",
+        "question": "Функция void f(const char **cursor) должна сдвинуть указатель вызывающего кода на один символ. Какая запись верна?",
+        "explanation": "Постфиксный ++ сильнее разыменования, поэтому *cursor++ сдвигает локальный cursor. Скобки (*cursor)++ сдвигают указатель вызывающего кода.",
+        "options": ["(*cursor)++", "*cursor++", "cursor++", "**cursor++"],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какой тип имеет параметр words, если в функцию передают массив char *list[10]?",
+        "explanation": "Массив указателей сводится к указателю на первый элемент — указатель на char *.",
+        "options": ["char **", "char (*)[10]", "char *", "char"],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Динамический массив char **lines содержит n строк, каждая выделена своим malloc. Сколько вызовов free нужно и в каком порядке?",
+        "explanation": "После free(lines) читать lines[i] уже нельзя — адреса строк были бы потеряны. Поэтому сначала строки.",
+        "options": [
+          "n + 1: сначала каждую lines[i], затем lines",
+          "n + 1: сначала lines, затем каждую lines[i]",
+          "1: free(lines) освобождает всё",
+          "n: только строки"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    const char *names[] = {\"Kim\", \"Lee\", \"Park\"};\n    const char **p = names;\n    p++;\n    printf(\"%s %c\\n\", *p, **p);\n    return 0;\n}",
+        "explanation": "p указывает на элемент names[1]. *p — строка \"Lee\", **p — её первый символ.",
+        "type": "text",
+        "answers": ["Lee L"],
+        "placeholder": "Вывод программы"
+      }
+    ]
+  }
+}

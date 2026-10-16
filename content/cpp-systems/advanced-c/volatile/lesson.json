@@ -1,0 +1,121 @@
+{
+  "id": "advanced-volatile",
+  "title": "volatile",
+  "description": "volatile сообщает реализации, что доступы к объекту имеют наблюдаемое значение, например при работе с отображённым аппаратным регистром.",
+  "moduleId": "advanced-c",
+  "order": 13,
+  "difficulty": "advanced",
+  "estimatedMinutes": 40,
+  "prerequisites": ["advanced-const"],
+  "objectives": [
+    "Объяснить: volatile",
+    "Различать корректный контракт и ошибку: volatile не устраняет data race и не превращает read-modify-write в атомарную операцию.",
+    "Реализовать и проверить практику на обычном и граничном вводе"
+  ],
+  "tags": ["C17", "углублённый C", "volatile"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "advanced-volatile-exercise",
+    "title": "Практика: volatile",
+    "description": "Прочитайте unsigned 0…255, присвойте volatile-объекту status. Снимите один снимок и выведите младший бит.",
+    "difficulty": "advanced",
+    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "3",
+        "output": "1\n",
+        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+      },
+      {
+        "input": "254",
+        "output": "0\n",
+        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
+      "В stdout только требуемый результат.",
+      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Каждое чтение — отдельное наблюдение прибора; снимок хранит результат одного наблюдения."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "volatile не устраняет data race и не превращает read-modify-write в атомарную операцию."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "test-1",
+        "name": "Основной сценарий",
+        "stdin": "3",
+        "expected": "1\n"
+      },
+      {
+        "id": "test-2",
+        "name": "Граничный сценарий 1",
+        "stdin": "254",
+        "expected": "0\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "test-3",
+        "name": "Граничный сценарий 2",
+        "stdin": "0",
+        "expected": "0\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    unsigned value;\n    if(scanf(\"%u\", &value)!=1 || value>255) return 1;\n    volatile unsigned status = value;\n    unsigned snapshot = status;\n    printf(\"%u\\n\", snapshot & 1u);\n    return 0;\n}\n",
+    "solutionExplanation": "Каждое чтение — отдельное наблюдение прибора; снимок хранит результат одного наблюдения.\n\nvolatile не устраняет data race и не превращает read-modify-write в атомарную операцию.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '3' → '1\\n'; '254' → '0\\n'; '0' → '0\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "advanced-volatile-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "concept",
+        "question": "Достаточно ли volatile для обмена данными между потоками?",
+        "options": [
+          "Нет, нужны соответствующие средства синхронизации",
+          "Да, любые обращения становятся атомарными"
+        ],
+        "correct": 0,
+        "explanation": "volatile сообщает реализации, что доступы к объекту имеют наблюдаемое значение, например при работе с отображённым аппаратным регистром. Конкретные гарантии ширины и порядка доступа определяются компилятором и платформой. Этот квалификатор не заменяет атомики и не обеспечивает межпоточную синхронизацию."
+      },
+      {
+        "id": "mistake",
+        "question": "Какое утверждение корректно?",
+        "options": [
+          "Успешный вывод одного примера доказывает корректность на всех входах.",
+          "volatile не устраняет data race и не превращает read-modify-write в атомарную операцию."
+        ],
+        "correct": 1,
+        "explanation": "Каждое чтение — отдельное наблюдение прибора; снимок хранит результат одного наблюдения."
+      },
+      {
+        "id": "trace",
+        "question": "Какой stdout выдаст запускаемый пример урока?",
+        "options": ["2 4", "Ошибка компиляции при корректном C17", "Никакого вывода"],
+        "correct": 0,
+        "explanation": "Проследите значения последовательно: volatile unsigned status=2;unsigned snapshot=status;status=4;printf(\"%u %u\\n\",snapshot,status); Ожидаемый результат: 2 4"
+      }
+    ]
+  }
+}

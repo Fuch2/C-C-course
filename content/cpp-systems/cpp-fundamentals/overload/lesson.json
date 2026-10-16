@@ -1,0 +1,133 @@
+{
+  "id": "cpp20-overload",
+  "title": "Function overload",
+  "description": "Перегрузки связывают одно понятие с разными статическими типами. Они удобнее макросов C, но неоднозначные преобразования дают ошибку компиляции.",
+  "moduleId": "cpp-fundamentals",
+  "order": 10,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["cpp20-range-for"],
+  "objectives": [
+    "Объяснить, зачем появился Function overload и какую проблему он решает.",
+    "Сравнить стоимость и ограничения с аналогом в C.",
+    "Применить инструмент в задаче обработки данных."
+  ],
+  "tags": ["C++20", "основы C++", "Function overload"],
+  "published": true,
+  "standard": "c++20",
+  "completion": "practice",
+  "exercise": {
+    "id": "cpp20-overload-exercise",
+    "title": "Масштабирование двух видов измерений",
+    "description": "Ввод: I и int −1000…1000 либо D и конечное double в том же диапазоне, кратное 1. Создайте scale(int) → value×2 и scale(double) → value×0.5. Вызовите нужную через аргумент соответствующего типа. Для I выведите целое, для D — fixed с одной цифрой после точки.",
+    "difficulty": "intermediate",
+    "language": "cpp",
+    "standard": "c++20",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
+    "examples": [
+      {
+        "input": "I 7",
+        "output": "14\n",
+        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+      },
+      {
+        "input": "D 7",
+        "output": "3.5\n",
+        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+      }
+    ],
+    "constraints": [
+      "Используйте C++20 и стандартную библиотеку.",
+      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
+      "Выводите только требуемый результат."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "I 7",
+        "expected": "14\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "D 7",
+        "expected": "3.5\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "stdin": "I -4",
+        "expected": "-8\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "stdin": "D -8",
+        "expected": "-4.0\n"
+      },
+      {
+        "id": "case-5",
+        "name": "Граничный сценарий 3",
+        "stdin": "D 0",
+        "expected": "0.0\n"
+      }
+    ],
+    "referenceSolution": "#include <iostream>\n#include <iomanip>\n\nint scale(int value) { return value * 2; }\ndouble scale(double value) { return value * 0.5; }\nint main() {\n    char tag{};\n    if (!(std::cin >> tag)) return 1;\n    if (tag == 'I') {\n        int value{};\n        if (!(std::cin >> value)) return 1;\n        std::cout << scale(value) << '\\n';\n    } else if (tag == 'D') {\n        double value{};\n        if (!(std::cin >> value)) return 1;\n        std::cout << std::fixed << std::setprecision(1) << scale(value) << '\\n';\n    } else return 1;\n}\n",
+    "solutionExplanation": "Статический тип аргумента выбирает точную перегрузку. Значение 7.0 не выбирает int только потому, что математически целое. Работа O(1). Для реального API смысл перегрузок стоит согласовывать; здесь различие намеренно делает выбор видимым в результате.",
+    "checking": { "type": "stdout", "comparison": "exact" }
+  },
+  "additionalExercises": [],
+  "quiz": {
+    "id": "cpp20-overload-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "purpose",
+        "question": "Что важно помнить в теме «Function overload»?",
+        "options": [
+          "Выбирать инструмент по контракту, времени, памяти и владению",
+          "Всегда переписывать решение через указатели C"
+        ],
+        "correct": 0,
+        "explanation": "Перегрузки связывают одно понятие с разными статическими типами. Они удобнее макросов C, но неоднозначные преобразования дают ошибку компиляции."
+      },
+      {
+        "id": "cost",
+        "question": "Что нужно учитывать при выборе инструмента?",
+        "options": [
+          "Только длину исходного кода",
+          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
+        ],
+        "correct": 1,
+        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+      },
+      {
+        "id": "mistake",
+        "question": "Как избежать типичной ошибки?",
+        "options": [
+          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
+          "Считать C-подход рекомендуемым стилем в любой задаче"
+        ],
+        "correct": 0,
+        "explanation": "Используйте Function overload как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+      }
+    ]
+  }
+}

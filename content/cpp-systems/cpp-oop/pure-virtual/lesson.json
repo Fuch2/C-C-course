@@ -1,0 +1,209 @@
+{
+  "id": "oop-pure-virtual",
+  "title": "Чисто виртуальные функции",
+  "description": "Запись virtual int read() const = 0 объявляет обязательную операцию без реализации по умолчанию в интерфейсе. Класс, у которого остаётся чисто виртуальный финальный переопределитель, абстрактен. Производный класс становится конкретным, когда реализует все обязательные операции. Ноль здесь — часть синтаксиса, а не возвращаемое значение.",
+  "moduleId": "cpp-oop",
+  "order": 17,
+  "difficulty": "advanced",
+  "estimatedMinutes": 60,
+  "prerequisites": ["oop-final"],
+  "objectives": [
+    "Применить Чисто виртуальные функции в работающем C++20 коде.",
+    "Проследить состояние и время жизни объектов в примере.",
+    "Реализовать контракт практики и проверить граничные случаи."
+  ],
+  "tags": ["C++20", "ООП", "Чисто виртуальные функции", "датчики", "проект"],
+  "published": true,
+  "standard": "c++20",
+  "completion": "practice",
+  "exercise": {
+    "id": "oop-pure-virtual-exercise",
+    "title": "Практика: Чисто виртуальные функции",
+    "description": "Определите Source с чисто виртуальным int read() const и виртуальным деструктором. Constant(int) сохраняет число, реализует read. Функция int twice(const Source&) вызывает read ровно два раза и суммирует результаты. solve(a,b) возвращает twice(Constant{a})+b. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
+    "difficulty": "advanced",
+    "language": "cpp",
+    "standard": "c++20",
+    "compiler": "clang",
+    "diagnostics": "sanitizers",
+    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
+    "examples": [
+      {
+        "input": "solve(4, 1)",
+        "output": "9\n",
+        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+      },
+      {
+        "input": "solve(0, 2)",
+        "output": "2\n",
+        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+      }
+    ],
+    "constraints": [
+      "Аргументы a, b — целые от −1000 до 1000 включительно.",
+      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
+      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "order": 1,
+        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+      },
+      {
+        "id": "hint-2",
+        "order": 2,
+        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "arguments": [4, 1],
+        "expected": "9\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "arguments": [0, 2],
+        "expected": "2\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "case-3",
+        "name": "Граничный сценарий 1",
+        "arguments": [-3, 1],
+        "expected": "-5\n"
+      },
+      {
+        "id": "case-4",
+        "name": "Граничный сценарий 2",
+        "arguments": [1000, -1000],
+        "expected": "1000\n"
+      }
+    ],
+    "referenceSolution": "struct Source { virtual int read() const = 0; virtual ~Source() = default; };\nclass Constant : public Source { int value_; public: explicit Constant(int x) : value_(x) {} int read() const override { return value_; } };\nint twice(const Source& s) { return s.read()+s.read(); }\nint solve(int a,int b) { Constant s{a}; return twice(s)+b; }",
+    "solutionExplanation": "Определите Source с чисто виртуальным int read() const и виртуальным деструктором. Constant(int) сохраняет число, реализует read. Функция int twice(const Source&) вызывает read ровно два раза и суммирует результаты. solve(a,b) возвращает twice(Constant{a})+b. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не возвращайте фиктивный ноль в базе, если реального значения по умолчанию нет. Такая заглушка скрывает забытое переопределение. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "checking": {
+      "type": "function",
+      "functionName": "solve",
+      "returnType": "int",
+      "parameters": [
+        { "name": "a", "type": "int" },
+        { "name": "b", "type": "int" }
+      ]
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "oop-project-sensors",
+      "title": "Проект, этап 1: модели датчиков",
+      "description": "Реализуйте Measurement{int sensorId,int value}, абстрактный Sensor с virtual Measurement read(int raw) const=0 и virtual destructor; TemperatureSensor(int id,int offset) возвращает {id,raw+offset}, PressureSensor(int id,int scale) — {id,raw*scale}. Поля закрыты, реализации final, методы override. solve(a,b) создаёт TemperatureSensor{1,b} и PressureSensor{2,2}, читает оба через const Sensor& с raw=a и возвращает сумму кодов результатов. Это техническая контрольная сумма, а не сумма физических величин. a,b — целые −1000…1000. Без main.",
+      "difficulty": "advanced",
+      "language": "cpp",
+      "standard": "c++20",
+      "compiler": "clang",
+      "diagnostics": "sanitizers",
+      "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <stdexcept>\n#include <utility>\nstruct Measurement { int sensorId; int value; };\nclass Sensor {\npublic:\n    virtual Measurement read(int raw) const = 0;\n    virtual ~Sensor() = default;\n};\nclass TemperatureSensor final : public Sensor {\n    int id_; int offset_;\npublic:\n    TemperatureSensor(int id, int offset) : id_(id), offset_(offset) {}\n    Measurement read(int raw) const override {\n        (void)raw; (void)id_; (void)offset_;\n        throw std::logic_error(\"Реализуйте преобразование температуры\");\n    }\n};\nclass PressureSensor final : public Sensor {\n    int id_; int scale_;\npublic:\n    PressureSensor(int id, int scale) : id_(id), scale_(scale) {}\n    Measurement read(int raw) const override {\n        (void)raw; (void)id_; (void)scale_;\n        throw std::logic_error(\"Реализуйте преобразование давления\");\n    }\n};\nint solve(int a,int b) { (void)a; (void)b; throw std::logic_error(\"Соберите проверку двух датчиков через Sensor\"); }",
+      "examples": [
+        {
+          "input": "solve(10, 2)",
+          "output": "32\n",
+          "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        },
+        {
+          "input": "solve(0, -3)",
+          "output": "-3\n",
+          "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        }
+      ],
+      "constraints": [
+        "Аргументы a, b — целые от −1000 до 1000 включительно.",
+        "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
+        "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "order": 1,
+          "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        },
+        {
+          "id": "hint-2",
+          "order": 2,
+          "text": "Каждый конкретный датчик хранит свою калибровку, read возвращает независимое Measurement. Базовые ссылки сохраняют динамический тип. Процессору не придётся знать формулы конкретных устройств. Время и дополнительная память каждого чтения O(1)."
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "arguments": [10, 2],
+          "expected": "32\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "arguments": [0, -3],
+          "expected": "-3\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "case-3",
+          "name": "Граничный сценарий 1",
+          "arguments": [-10, 2],
+          "expected": "-28\n"
+        },
+        {
+          "id": "case-4",
+          "name": "Граничный сценарий 2",
+          "arguments": [1000, -1000],
+          "expected": "2000\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <stdexcept>\n#include <utility>\nstruct Measurement { int sensorId; int value; };\nclass Sensor {\npublic:\n    virtual Measurement read(int raw) const = 0;\n    virtual ~Sensor() = default;\n};\nclass TemperatureSensor final : public Sensor {\n    int id_;\n    int offset_;\npublic:\n    TemperatureSensor(int id, int offset) : id_(id), offset_(offset) {}\n    Measurement read(int raw) const override { return {id_, raw + offset_}; }\n};\nclass PressureSensor final : public Sensor {\n    int id_;\n    int scale_;\npublic:\n    PressureSensor(int id, int scale) : id_(id), scale_(scale) {}\n    Measurement read(int raw) const override { return {id_, raw * scale_}; }\n};\nint solve(int a,int b) { TemperatureSensor t{1,b}; PressureSensor p{2,2}; const Sensor& left=t; const Sensor& right=p; return left.read(a).value+right.read(a).value; }",
+      "solutionExplanation": "Каждый конкретный датчик хранит свою калибровку, read возвращает независимое Measurement. Базовые ссылки сохраняют динамический тип. Процессору не придётся знать формулы конкретных устройств. Время и дополнительная память каждого чтения O(1).",
+      "checking": {
+        "type": "function",
+        "functionName": "solve",
+        "returnType": "int",
+        "parameters": [
+          { "name": "a", "type": "int" },
+          { "name": "b", "type": "int" }
+        ]
+      }
+    }
+  ],
+  "quiz": {
+    "id": "oop-pure-virtual-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "contract",
+        "question": "Что означает = 0 в объявлении виртуального метода?",
+        "options": ["Операция объявлена чисто виртуальной", "Метод всегда возвращает ноль"],
+        "correct": 0,
+        "explanation": "У чисто виртуальной функции может быть отдельное определение, но это не отменяет абстрактность соответствующего класса. Чисто виртуальному деструктору определение необходимо: он всё равно участвует в уничтожении. Для нашего интерфейса проще обычный virtual ~Sensor() = default. Не вызывайте чисто виртуальные функции виртуально из конструктора или деструктора базы. Интерфейс должен требовать только то, что способен обеспечить каждый датчик."
+      },
+      {
+        "id": "trace",
+        "question": "Какой вывод даёт запускаемый пример этого урока?",
+        "options": ["Ошибка компиляции", "14", "Программа ничего не выводит"],
+        "correct": 1,
+        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 14. Запись virtual int read() const = 0 объявляет обязательную операцию без реализации по умолчанию в интерфейсе. Класс, у которого остаётся чисто виртуальный финальный переопределитель, абстрактен. Производный класс становится конкретным, когда реализует все обязательные операции. Ноль здесь — часть синтаксиса, а не возвращаемое значение."
+      },
+      {
+        "id": "review",
+        "question": "Какое замечание нужно учесть при ревью решения?",
+        "options": [
+          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
+          "Не возвращайте фиктивный ноль в базе, если реального значения по умолчанию нет. Такая заглушка скрывает забытое переопределение."
+        ],
+        "correct": 1,
+        "explanation": "Удалите реализацию read у Constant и объясните, почему его нельзя создать. Ошибка появляется до выполнения. Затем добавьте другой конкретный Source и передайте его тому же клиенту без изменения клиента. Это практический смысл обязательной операции интерфейса."
+      }
+    ]
+  }
+}

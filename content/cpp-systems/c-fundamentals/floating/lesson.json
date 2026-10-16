@@ -1,0 +1,563 @@
+{
+  "id": "c17-floating",
+  "title": "Дробные числа: double",
+  "description": "Тип double, вывод с заданной точностью, ввод через %lf, дробное и целочисленное деление, округление, функции math.h и погрешность вычислений.",
+  "moduleId": "c-fundamentals",
+  "order": 7,
+  "difficulty": "beginner",
+  "estimatedMinutes": 45,
+  "prerequisites": ["c17-integer-types"],
+  "objectives": [
+    "Хранить дробные значения в double и печатать их с нужной точностью",
+    "Читать дробные числа с помощью %lf",
+    "Получать дробный результат деления целых чисел",
+    "Округлять числа функциями floor, ceil, round и понимать отбрасывание при приведении к int",
+    "Объяснять, почему дробные числа нельзя сравнивать через =="
+  ],
+  "tags": ["C17", "double", "math.h", "Округление"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-floating-task-1",
+    "title": "Средний балл",
+    "description": "Прочитайте три целые оценки и напечатайте их среднее арифметическое ровно с двумя знаками после точки.\n\n**Пример:** `5 4 4` → `4.33`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "5 4 4",
+        "output": "4.33\n"
+      },
+      {
+        "input": "5 5 4",
+        "output": "4.67\n",
+        "explanation": "4.666… округляется до 4.67."
+      }
+    ],
+    "constraints": ["0 ≤ каждая оценка ≤ 100."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Сумма целых, делённая на целое 3, даст целое. Делите на 3.0.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Вывод: printf(\"%.2f\\n\", average);",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "5 4 4",
+        "expected": "4.33\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "5 5 4",
+        "expected": "4.67\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "0 0 0",
+        "expected": "0.00\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "100 100 100",
+        "expected": "100.00\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "100 0 0",
+        "expected": "33.33\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "1 2 3",
+        "expected": "2.00\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "99 98 100",
+        "expected": "99.00\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "0 0 1",
+        "expected": "0.33\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int a, b, c;\n    scanf(\"%d %d %d\", &a, &b, &c);\n    double average = (a + b + c) / 3.0;\n    printf(\"%.2f\\n\", average);\n    return 0;\n}\n",
+    "solutionExplanation": "`a + b + c` — целое, но делитель `3.0` дробный, поэтому деление дробное. С делителем `3` результат был бы целым: для `5 4 4` получилось бы `4.00`.\n\n`%.2f` округляет: 13 / 3 = 4.3333… печатается как `4.33`, а 14 / 3 = 4.6666… — как `4.67`.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-floating-task-2",
+      "title": "Площадь круга",
+      "description": "Прочитайте радиус круга `r` (дробное число) и напечатайте площадь `π · r²` с тремя знаками после точки.\n\nИспользуйте константу `const double PI = 3.141592653589793;`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "1",
+          "output": "3.142\n"
+        },
+        {
+          "input": "2.5",
+          "output": "19.635\n"
+        }
+      ],
+      "constraints": ["0 ≤ r ≤ 10 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Радиус читается через %lf.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Площадь: PI * r * r. Вывод через %.3f.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1",
+          "expected": "3.142\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2.5",
+          "expected": "19.635\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0",
+          "expected": "0.000\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "10000",
+          "expected": "314159265.359\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "0.1",
+          "expected": "0.031\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "7",
+          "expected": "153.938\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "123.456",
+          "expected": "47882.220\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "0.5",
+          "expected": "0.785\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    const double PI = 3.141592653589793;\n    double r;\n    scanf(\"%lf\", &r);\n    printf(\"%.3f\\n\", PI * r * r);\n    return 0;\n}\n",
+      "solutionExplanation": "Слово `const` запрещает менять переменную после инициализации — подробнее в уроке «Константы». Константа с понятным именем лучше, чем число 3.14159… в нескольких местах формулы.\n\n`r * r` проще и точнее, чем `pow(r, 2)`, и не требует `<math.h>`. Для степеней выше второй `pow` удобнее.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-floating-task-3",
+      "title": "Расстояние между точками",
+      "description": "Прочитайте координаты двух точек `x1 y1 x2 y2` (дробные числа) и напечатайте расстояние между ними с четырьмя знаками после точки.\n\nРасстояние по теореме Пифагора: `√((x2 − x1)² + (y2 − y1)²)`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "0 0 3 4",
+          "output": "5.0000\n"
+        },
+        {
+          "input": "1 1 2 2",
+          "output": "1.4142\n"
+        }
+      ],
+      "constraints": ["Все координаты по модулю не больше 10 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Подключите <math.h> и используйте sqrt.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сначала посчитайте dx = x2 - x1 и dy = y2 - y1.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "0 0 3 4",
+          "expected": "5.0000\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 1 2 2",
+          "expected": "1.4142\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0 0 0 0",
+          "expected": "0.0000\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "-10000 -10000 10000 10000",
+          "expected": "28284.2712\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1.5 -2.5 -3.5 4.5",
+          "expected": "8.6023\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "5 5 5 -5",
+          "expected": "10.0000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "0.1 0.2 0.3 0.4",
+          "expected": "0.2828\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "-1 0 1 0",
+          "expected": "2.0000\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <math.h>\n\nint main(void) {\n    double x1, y1, x2, y2;\n    scanf(\"%lf %lf %lf %lf\", &x1, &y1, &x2, &y2);\n    double dx = x2 - x1;\n    double dy = y2 - y1;\n    printf(\"%.4f\\n\", sqrt(dx * dx + dy * dy));\n    return 0;\n}\n",
+      "solutionExplanation": "Промежуточные переменные `dx` и `dy` делают формулу читаемой и избавляют от повторного вычисления разностей. `sqrt` объявлена в `<math.h>`; без этого заголовка компилятор не знает её тип и посчитает неправильно.\n\nПорядок точек не важен: разность возводится в квадрат, знак исчезает.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-floating-task-4",
+      "title": "Цена со скидкой",
+      "description": "Прочитайте цену товара в рублях (дробное число, например `199.99`) и скидку в процентах (целое число). Напечатайте цену со скидкой, округлённую до копеек, — два знака после точки.\n\nЦена со скидкой: `price · (100 − discount) / 100`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "199.99 15",
+          "output": "169.99\n"
+        },
+        {
+          "input": "1000 0",
+          "output": "1000.00\n"
+        }
+      ],
+      "constraints": ["0 < price ≤ 1 000 000, 0 ≤ discount ≤ 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "price — double, discount — int. В выражении price * (100 - discount) первый операнд дробный, поэтому всё выражение дробное.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "%.2f округлит результат до копеек при выводе.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "199.99 15",
+          "expected": "169.99\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1000 0",
+          "expected": "1000.00\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "50 100",
+          "expected": "0.00\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1000000 1",
+          "expected": "990000.00\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "0.01 50",
+          "expected": "0.01\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "99.9 33",
+          "expected": "66.93\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1234.56 10",
+          "expected": "1111.10\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "10 99",
+          "expected": "0.10\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    double price;\n    int discount;\n    scanf(\"%lf %d\", &price, &discount);\n    double result = price * (100 - discount) / 100;\n    printf(\"%.2f\\n\", result);\n    return 0;\n}\n",
+      "solutionExplanation": "Порядок вычисления: `100 - discount` — целое, затем `price * (…)` — дробное, потому что `price` типа `double`, и деление на 100 тоже дробное.\n\nЕсли записать `(100 - discount) / 100 * price`, первое деление окажется целочисленным и даст 0 при любой скидке больше нуля. Порядок операндов здесь важен.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-floating-task-5",
+      "title": "Округления",
+      "description": "Прочитайте дробное число `x` и напечатайте через пробел четыре целых числа:\n\n1. округление вниз (`floor`);\n2. округление вверх (`ceil`);\n3. округление к ближайшему (`round`; половины округляются от нуля);\n4. отбрасывание дробной части (приведение к целому типу).",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "2.7",
+          "output": "2 3 3 2\n"
+        },
+        {
+          "input": "-2.5",
+          "output": "-3 -2 -3 -2\n"
+        }
+      ],
+      "constraints": ["|x| ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Функции floor, ceil, round из <math.h> возвращают double. Приведите их к long long и печатайте через %lld.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Приведение (long long)x само отбрасывает дробную часть.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2.7",
+          "expected": "2 3 3 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "-2.5",
+          "expected": "-3 -2 -3 -2\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0",
+          "expected": "0 0 0 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "5",
+          "expected": "5 5 5 5\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "-5",
+          "expected": "-5 -5 -5 -5\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "0.5",
+          "expected": "0 1 1 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "-0.5",
+          "expected": "-1 0 -1 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "2.4999",
+          "expected": "2 3 2 2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "1000000000",
+          "expected": "1000000000 1000000000 1000000000 1000000000\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "-999999999.9",
+          "expected": "-1000000000 -999999999 -1000000000 -999999999\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <math.h>\n\nint main(void) {\n    double x;\n    scanf(\"%lf\", &x);\n    printf(\"%lld %lld %lld %lld\\n\",\n           (long long)floor(x), (long long)ceil(x),\n           (long long)round(x), (long long)x);\n    return 0;\n}\n",
+      "solutionExplanation": "Приведение к целому типу нужно, чтобы печатать результаты как целые числа. Это заодно убирает «минус ноль»: `ceil(-0.5)` равно −0.0, и `%.0f` напечатал бы `-0`, а `(long long)` даёт обычный 0.\n\nДля отрицательных чисел функции различаются сильнее всего: для −2.5 получится `-3 -2 -3 -2`. `round` округляет половину от нуля, `(long long)` отбрасывает дробную часть к нулю.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-floating-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int a = 9, b = 4;\n    double x = a / b;\n    double y = (double)a / b;\n    printf(\"%.2f %.2f\\n\", x, y);\n    return 0;\n}",
+        "explanation": "a / b — деление целых: 2, и только потом 2 записывается в double. (double)a / b — дробное деление: 2.25.",
+        "type": "text",
+        "answers": ["2.00 2.25"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%.1f|%6.2f|\\n\", 3.14159, 2.5);\n    return 0;\n}",
+        "explanation": "%.1f округляет до одного знака: 3.1. %6.2f — 2.50 в поле ширины 6, два пробела слева.",
+        "type": "text",
+        "answers": ["3.1|  2.50|"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Какой спецификатор нужен для чтения double через scanf?",
+        "explanation": "В scanf %f означает float, а для double нужен %lf. В printf для double используется %f.",
+        "options": ["%f", "%lf", "%d", "%lld"],
+        "correct": 1
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n#include <math.h>\n\nint main(void) {\n    double x = -3.5;\n    printf(\"%d %.0f %.0f\\n\", (int)x, floor(x), ceil(x));\n    return 0;\n}",
+        "explanation": "(int) отбрасывает дробную часть в сторону нуля: −3. floor округляет вниз: −4. ceil — вверх: −3.",
+        "type": "text",
+        "answers": ["-3 -4 -3"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Почему выражение 0.1 + 0.2 == 0.3 в C ложно?",
+        "explanation": "Многие десятичные дроби в двоичной системе бесконечны и округляются. Сумма получается 0.30000000000000004.",
+        "options": [
+          "Числа 0,1 и 0,2 хранятся в двоичном виде с небольшой погрешностью",
+          "В C нельзя складывать дробные числа",
+          "Оператор == не работает с double вообще",
+          "Нужно писать 0,1 через запятую"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Какие выражения дают 2.5? Выберите все.",
+        "explanation": "Деление дробное, если хотя бы один операнд дробный. В (double)(5 / 2) сначала выполняется целое деление: 2.",
+        "type": "multiple",
+        "options": ["5 / 2", "5.0 / 2", "(double)5 / 2", "(double)(5 / 2)", "5 / 2.0"],
+        "correct": [1, 2, 4]
+      },
+      {
+        "id": "q7",
+        "question": "Как правильнее хранить денежную сумму 199,99 рубля в программе учёта?",
+        "explanation": "Целые числа складываются точно. При многократных операциях с double копейки начинают «теряться» из-за погрешности.",
+        "options": [
+          "Целым числом копеек в long long: 19999",
+          "В double: 199.99",
+          "В float: 199.99f",
+          "В int рублей: 199"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

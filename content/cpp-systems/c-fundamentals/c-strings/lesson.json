@@ -1,0 +1,544 @@
+{
+  "id": "c17-c-strings",
+  "title": "Строки в C",
+  "description": "Строка как массив символов с нуль-терминатором, литералы и размер массива, обход до \\0, изменение строк, ввод слова через scanf и строки через fgets.",
+  "moduleId": "c-fundamentals",
+  "order": 32,
+  "difficulty": "beginner",
+  "estimatedMinutes": 50,
+  "prerequisites": ["c17-char"],
+  "objectives": [
+    "Объяснять устройство строки в C и роль нуль-терминатора",
+    "Выбирать размер массива с учётом завершающего нуля",
+    "Обходить и изменять строку посимвольно",
+    "Безопасно читать слово с ограничением ширины и строку через fgets"
+  ],
+  "tags": ["C17", "Строки", "fgets", "Нуль-терминатор"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-c-strings-task-1",
+    "title": "Длина слова",
+    "description": "Прочитайте слово и напечатайте его длину. Не используйте библиотечную функцию `strlen` — посчитайте символы циклом до нуль-терминатора.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "programming",
+        "output": "11\n"
+      },
+      {
+        "input": "C",
+        "output": "1\n"
+      }
+    ],
+    "constraints": ["Слово состоит из латинских букв и цифр, длина от 1 до 100."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Массив на 101 байт и scanf(\"%100s\", word).",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Цикл: while (word[length] != '\\0') length++;",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "programming",
+        "expected": "11\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "C",
+        "expected": "1\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "abc",
+        "expected": "3\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "a1b2c3",
+        "expected": "6\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "expected": "100\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "2026",
+        "expected": "4\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "Z9",
+        "expected": "2\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "abcdefghijklmnopqrstuvwxyz",
+        "expected": "26\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    char word[101];\n    scanf(\"%100s\", word);\n    int length = 0;\n    while (word[length] != '\\0') {\n        length++;\n    }\n    printf(\"%d\\n\", length);\n    return 0;\n}\n",
+    "solutionExplanation": "Длина строки — индекс её нуль-терминатора. Именно так устроена стандартная `strlen`: она просматривает символы до `'\\0'`. Поэтому `strlen` работает за время, пропорциональное длине строки, — это стоит помнить, вызывая её в цикле.\n\nШирина `%100s` вместе с массивом на 101 байт гарантирует, что даже самое длинное допустимое слово поместится вместе с `'\\0'`.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-c-strings-task-2",
+      "title": "Слово-палиндром",
+      "description": "Прочитайте слово из строчных латинских букв и напечатайте `да`, если оно читается одинаково слева направо и справа налево, иначе `нет`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "level",
+          "output": "да\n"
+        },
+        {
+          "input": "abca",
+          "output": "нет\n"
+        }
+      ],
+      "constraints": ["Длина слова от 1 до 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Найдите длину n, затем сравнивайте word[i] и word[n - 1 - i] для i от 0 до n / 2.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "При первом несовпадении ответ «нет».",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "level",
+          "expected": "да\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "abca",
+          "expected": "нет\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "a",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "aa",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "ab",
+          "expected": "нет\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "abba",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "racecar",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "abcdcbaa",
+          "expected": "нет\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    char word[101];\n    scanf(\"%100s\", word);\n    int n = 0;\n    while (word[n] != '\\0') {\n        n++;\n    }\n    int palindrome = 1;\n    for (int i = 0; i < n / 2; i++) {\n        if (word[i] != word[n - 1 - i]) {\n            palindrome = 0;\n            break;\n        }\n    }\n    printf(\"%s\\n\", palindrome ? \"да\" : \"нет\");\n    return 0;\n}\n",
+      "solutionExplanation": "Два индекса движутся навстречу: `i` с начала, `n - 1 - i` с конца. Достаточно дойти до середины — дальше пары повторяются. Средний символ слова нечётной длины сравнивать не с чем, он ни на что не влияет.\n\nСравните с палиндромом-числом из практикума по циклам: там число переворачивалось целиком, здесь — сравнение «на месте» без копии.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-c-strings-task-3",
+      "title": "Количество слов",
+      "description": "Прочитайте одну строку текста и напечатайте количество слов в ней. Слова — последовательности непробельных символов, разделённые одним или несколькими пробелами. Пробелы могут быть и в начале, и в конце строки.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "C is a great language\n",
+          "output": "5\n"
+        },
+        {
+          "input": "   many   spaces   here  \n",
+          "output": "3\n"
+        }
+      ],
+      "constraints": ["Длина строки не больше 1000 символов; строка может быть пустой."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Читайте строку через fgets в массив на 1002 байта.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Новое слово начинается там, где непробельный символ стоит в начале строки или после пробела.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "C is a great language\n",
+          "expected": "5\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "   many   spaces   here  \n",
+          "expected": "3\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "one\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "a b c d e f g\n",
+          "expected": "7\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "    \n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "no-spaces-at-all",
+          "expected": "1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    char line[1002];\n    if (fgets(line, sizeof(line), stdin) == NULL) {\n        printf(\"0\\n\");\n        return 0;\n    }\n    int words = 0;\n    for (int i = 0; line[i] != '\\0' && line[i] != '\\n'; i++) {\n        int is_space = line[i] == ' ';\n        int prev_space = i == 0 || line[i - 1] == ' ';\n        if (!is_space && prev_space) {\n            words++;\n        }\n    }\n    printf(\"%d\\n\", words);\n    return 0;\n}\n",
+      "solutionExplanation": "Слова считаются по их **началам**: символ начинает слово, если он не пробел, а перед ним пробел или начало строки. Так несколько пробелов подряд не создают «пустых слов», а пробелы в начале и конце не мешают.\n\nБуфер на 1002 байта вмещает 1000 символов, перевод строки и `'\\0'`. Если ввод пустой, `fgets` вернёт `NULL` — этот случай обрабатывается отдельно.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-c-strings-task-4",
+      "title": "Число из строки",
+      "description": "Прочитайте слово, состоящее только из цифр, и самостоятельно, без библиотечных функций, переведите его в число. Напечатайте это число, умноженное на 2.\n\n**Пример:** `0042` → число 42 → `84`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "0042",
+          "output": "84\n"
+        },
+        {
+          "input": "7",
+          "output": "14\n"
+        }
+      ],
+      "constraints": ["Слово из 1–18 цифр."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Число собирается так же, как в задачах о переворачивании: value = value * 10 + (c - '0').",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Значение до 10¹⁸ — long long.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "0042",
+          "expected": "84\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "7",
+          "expected": "14\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "999999999999999999",
+          "expected": "1999999999999999998\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "100000000000000000",
+          "expected": "200000000000000000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "123456789",
+          "expected": "246913578\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "000000000000000001",
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "500000000000000000",
+          "expected": "1000000000000000000\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    char digits[19];\n    scanf(\"%18s\", digits);\n    long long value = 0;\n    for (int i = 0; digits[i] != '\\0'; i++) {\n        value = value * 10 + (digits[i] - '0');\n    }\n    printf(\"%lld\\n\", value * 2);\n    return 0;\n}\n",
+      "solutionExplanation": "Каждая следующая цифра дописывается справа: старое значение умножается на 10, прибавляется значение цифры `c - '0'`. Так работают функции стандартной библиотеки вроде `atoi` и `strtol`, а также сам `scanf(\"%d\")` внутри.\n\nВедущие нули не мешают: `0 * 10 + 0` остаётся нулём. Максимальное значение 999 999 999 999 999 999, удвоенное, — около 2 · 10¹⁸, меньше `LLONG_MAX`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-c-strings-task-5",
+      "title": "Инициалы",
+      "description": "В строке записаны фамилия, имя и отчество латиницей через пробел, например `Lovelace Augusta Ada`. Напечатайте фамилию и инициалы: `Lovelace A. A.`\n\nФамилия, имя и отчество начинаются с заглавной буквы.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "Lovelace Augusta Ada",
+          "output": "Lovelace A. A.\n"
+        },
+        {
+          "input": "X Y Z",
+          "output": "X Y. Z.\n"
+        }
+      ],
+      "constraints": ["Каждое слово — от 1 до 30 латинских букв."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Три слова удобно прочитать одним scanf(\"%30s %30s %30s\", ...).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Инициал — первый символ слова: name[0].",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "Lovelace Augusta Ada",
+          "expected": "Lovelace A. A.\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "X Y Z",
+          "expected": "X Y. Z.\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "Turing Alan Mathison",
+          "expected": "Turing A. M.\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "Ritchie Dennis MacAlistair",
+          "expected": "Ritchie D. M.\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "Hopper Grace Brewster",
+          "expected": "Hopper G. B.\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "Ab Cd Ef",
+          "expected": "Ab C. E.\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "Abcdefghijklmnopqrstuvwxyzabcd Bcdefghijklmnopqrstuvwxyzabc Cdefghijklmnopqrstuvwxyzabcd",
+          "expected": "Abcdefghijklmnopqrstuvwxyzabcd B. C.\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "Q R S",
+          "expected": "Q R. S.\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    char last[31], first[31], middle[31];\n    scanf(\"%30s %30s %30s\", last, first, middle);\n    printf(\"%s %c. %c.\\n\", last, first[0], middle[0]);\n    return 0;\n}\n",
+      "solutionExplanation": "Строки — массивы, поэтому первый символ — элемент с индексом 0, и печатается он через `%c`. Фамилия печатается целиком через `%s`.\n\n`scanf` с тремя `%s` разбивает строку по пробелам сам. Если бы части разделялись другим символом (например, запятой), понадобился бы посимвольный разбор или функции следующего урока.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-c-strings-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Сколько байт занимает массив char s[] = \"C17\"?",
+        "explanation": "Три символа и нуль-терминатор \\0.",
+        "type": "text",
+        "answers": ["4"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    char s[] = \"abcdef\";\n    s[3] = '\\0';\n    printf(\"%s\\n\", s);\n    return 0;\n}",
+        "explanation": "printf печатает до первого \\0. Символы после него остаются в массиве, но не печатаются.",
+        "type": "text",
+        "answers": ["abc"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    char s[] = \"hello world\";\n    int n = 0;\n    for (int i = 0; s[i]; i++) {\n        if (s[i] == 'o') {\n            n++;\n        }\n    }\n    printf(\"%d\\n\", n);\n    return 0;\n}",
+        "explanation": "Условие s[i] ложно на '\\0'. Буква o встречается в hello и в world.",
+        "type": "text",
+        "answers": ["2"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Какая самая длинная строка поместится в массив char buf[20]?",
+        "explanation": "Один байт всегда нужен под нуль-терминатор.",
+        "type": "text",
+        "answers": ["19"],
+        "placeholder": "Число символов"
+      },
+      {
+        "id": "q5",
+        "question": "Пользователь ввёл «New York». Что окажется в массиве после scanf(\"%49s\", city)?",
+        "explanation": "%s читает одно слово — до пробела. Для строки с пробелами используют fgets.",
+        "options": ["New", "New York", "York", "Пустая строка"],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что окажется в конце строки после fgets(line, 100, stdin) при вводе «yes» и Enter?",
+        "explanation": "fgets сохраняет перевод строки. Поэтому строку «yes\\n» не получится сравнить с «yes», пока \\n не удалён.",
+        "options": [
+          "Символы y, e, s, '\\n', '\\0'",
+          "Символы y, e, s, '\\0'",
+          "Только y, e, s",
+          "Ничего, fgets читает до пробела"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Какие операции со строками char a[10], b[10] недопустимы или работают не так, как кажется? Выберите все.",
+        "explanation": "Массив нельзя присвоить, == сравнивает адреса, а не текст, сложение массивов не склеивает строки. Изменить отдельный символ можно.",
+        "type": "multiple",
+        "options": ["a = \"hi\";", "if (a == b)", "a[0] = 'h';", "printf(\"%s\", a + b);"],
+        "correct": [0, 1, 3]
+      }
+    ]
+  }
+}

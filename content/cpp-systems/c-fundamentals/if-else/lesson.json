@@ -1,0 +1,682 @@
+{
+  "id": "c17-if-else",
+  "title": "Условия: if и else",
+  "description": "Оператор if, ветка else, цепочки else if, вложенные условия, тернарный оператор, типичные ловушки и проверка ввода с ранним выходом.",
+  "moduleId": "c-fundamentals",
+  "order": 14,
+  "difficulty": "beginner",
+  "estimatedMinutes": 50,
+  "prerequisites": ["c17-logical"],
+  "objectives": [
+    "Выполнять код в зависимости от условия с помощью if и else",
+    "Строить цепочки else if с правильным порядком проверок",
+    "Писать вложенные условия и упрощать их",
+    "Выбирать значение тернарным оператором",
+    "Обрабатывать особые случаи и ошибки ввода ранним выходом"
+  ],
+  "tags": ["C17", "if", "else", "Ветвления"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-if-else-task-1",
+    "title": "Модуль числа",
+    "description": "Прочитайте целое число и напечатайте его модуль. Не используйте функцию `abs` — решите задачу условием.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "-7",
+        "output": "7\n"
+      },
+      {
+        "input": "12",
+        "output": "12\n"
+      }
+    ],
+    "constraints": ["−10⁹ ≤ n ≤ 10⁹."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Если число отрицательное, поменяйте его знак: n = -n;",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Положительные числа и ноль печатаются без изменений.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "-7",
+        "expected": "7\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "12",
+        "expected": "12\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "0",
+        "expected": "0\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "-1",
+        "expected": "1\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "1000000000",
+        "expected": "1000000000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "-1000000000",
+        "expected": "1000000000\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "1",
+        "expected": "1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "-999",
+        "expected": "999\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    if (n < 0) {\n        n = -n;\n    }\n    printf(\"%d\\n\", n);\n    return 0;\n}\n",
+    "solutionExplanation": "Ветка `else` не нужна: для неотрицательных чисел делать ничего не надо. Вариант с тернарным оператором: `printf(\"%d\\n\", n < 0 ? -n : n);`.\n\nОграничение 10⁹ выбрано не случайно. Для `n = INT_MIN` (−2 147 483 648) выражение `-n` переполняется: положительного числа 2 147 483 648 в `int` нет. Так же ведёт себя и `abs`.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-if-else-task-2",
+      "title": "Оценка",
+      "description": "Прочитайте количество баллов от 0 до 100 и напечатайте оценку:\n\n| Баллы    | Оценка               |\n| -------- | -------------------- |\n| 90–100   | отлично              |\n| 75–89    | хорошо               |\n| 60–74    | удовлетворительно    |\n| 0–59     | неудовлетворительно  |",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "82",
+          "output": "хорошо\n"
+        },
+        {
+          "input": "59",
+          "output": "неудовлетворительно\n"
+        }
+      ],
+      "constraints": ["0 ≤ баллы ≤ 100.", "Слово печатается строчными буквами, как в таблице."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Начните проверку с самого высокого порога: score >= 90.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "В следующих проверках не нужно повторять верхнюю границу — её уже исключили предыдущие условия.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "82",
+          "expected": "хорошо\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "59",
+          "expected": "неудовлетворительно\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "100",
+          "expected": "отлично\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "90",
+          "expected": "отлично\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "89",
+          "expected": "хорошо\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "75",
+          "expected": "хорошо\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "74",
+          "expected": "удовлетворительно\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "60",
+          "expected": "удовлетворительно\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "0",
+          "expected": "неудовлетворительно\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int score;\n    scanf(\"%d\", &score);\n    if (score >= 90) {\n        printf(\"отлично\\n\");\n    } else if (score >= 75) {\n        printf(\"хорошо\\n\");\n    } else if (score >= 60) {\n        printf(\"удовлетворительно\\n\");\n    } else {\n        printf(\"неудовлетворительно\\n\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Цепочка проверяет пороги сверху вниз. Когда выполнение дошло до `score >= 75`, уже известно, что `score < 90`, поэтому достаточно одной границы.\n\nТесты проверяют каждую границу с обеих сторон: 89 и 90, 74 и 75, 59 и 60. Ошибка «на единицу» (`>` вместо `>=`) проявится именно на них.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-if-else-task-3",
+      "title": "Время суток",
+      "description": "Прочитайте час от 0 до 23 и напечатайте время суток:\n\n- 0–5 — `ночь`;\n- 6–11 — `утро`;\n- 12–17 — `день`;\n- 18–23 — `вечер`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "7",
+          "output": "утро\n"
+        },
+        {
+          "input": "23",
+          "output": "вечер\n"
+        }
+      ],
+      "constraints": ["0 ≤ час ≤ 23."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Используйте цепочку else if с верхними границами: hour < 6, hour < 12, hour < 18.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Последний вариант — else.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "7",
+          "expected": "утро\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "23",
+          "expected": "вечер\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0",
+          "expected": "ночь\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "5",
+          "expected": "ночь\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "6",
+          "expected": "утро\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "11",
+          "expected": "утро\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "12",
+          "expected": "день\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "17",
+          "expected": "день\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "18",
+          "expected": "вечер\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int hour;\n    scanf(\"%d\", &hour);\n    if (hour < 6) {\n        printf(\"ночь\\n\");\n    } else if (hour < 12) {\n        printf(\"утро\\n\");\n    } else if (hour < 18) {\n        printf(\"день\\n\");\n    } else {\n        printf(\"вечер\\n\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Цепочку удобно строить по возрастанию с проверкой верхней границы. Каждый следующий `else if` неявно знает нижнюю границу из ложности предыдущих условий.\n\nСтрогое `<` с «круглыми» числами 6, 12, 18 выглядит естественно: «до шести утра — ночь». Проверьте границы 5/6, 11/12 и 17/18.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-if-else-task-4",
+      "title": "Три числа по порядку",
+      "description": "Прочитайте три целых числа и напечатайте их в порядке неубывания через пробел.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "3 1 2",
+          "output": "1 2 3\n"
+        },
+        {
+          "input": "5 5 1",
+          "output": "1 5 5\n"
+        }
+      ],
+      "constraints": ["−10⁹ ≤ a, b, c ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сравнивайте пары и меняйте местами, если порядок нарушен: сначала a и b, потом b и c, потом снова a и b.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Обмен двух переменных — через временную переменную, как в уроке «Переменные».",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 1 2",
+          "expected": "1 2 3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5 5 1",
+          "expected": "1 5 5\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 2 3",
+          "expected": "1 2 3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "3 2 1",
+          "expected": "1 2 3\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "2 3 1",
+          "expected": "1 2 3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1 3 2",
+          "expected": "1 2 3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "7 7 7",
+          "expected": "7 7 7\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "-1000000000 1000000000 0",
+          "expected": "-1000000000 0 1000000000\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "2 1 2",
+          "expected": "1 2 2\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int a, b, c;\n    scanf(\"%d %d %d\", &a, &b, &c);\n    if (a > b) {\n        int t = a;\n        a = b;\n        b = t;\n    }\n    if (b > c) {\n        int t = b;\n        b = c;\n        c = t;\n    }\n    if (a > b) {\n        int t = a;\n        a = b;\n        b = t;\n    }\n    printf(\"%d %d %d\\n\", a, b, c);\n    return 0;\n}\n",
+      "solutionExplanation": "Три сравнения с обменом гарантируют порядок:\n\n1. после первого `a <= b`;\n2. после второго наибольшее из трёх оказывается в `c`;\n3. третье ещё раз упорядочивает `a` и `b`, потому что `b` могло измениться.\n\nЭто сортировка трёх элементов «пузырьком» — алгоритм, который вы разберёте в модуле об алгоритмах. Переменная `t` объявлена внутри блока и существует только в нём; об этом — урок «Область видимости».",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-if-else-task-5",
+      "title": "Корни квадратного уравнения",
+      "description": "Дано уравнение `a·x² + b·x + c = 0` с целыми коэффициентами, `a ≠ 0`. Напечатайте, сколько у него различных действительных корней: 0, 1 или 2.\n\nЧисло корней определяется знаком дискриминанта `D = b² − 4ac`: положительный — два корня, ноль — один, отрицательный — ни одного.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "1 -3 2",
+          "output": "2\n"
+        },
+        {
+          "input": "1 2 1",
+          "output": "1\n"
+        }
+      ],
+      "constraints": ["−10⁶ ≤ a, b, c ≤ 10⁶, a ≠ 0."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "b² может достигать 10¹², а 4ac — 4 · 10¹². Используйте long long.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "После вычисления D нужна цепочка из трёх вариантов.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1 -3 2",
+          "expected": "2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 2 1",
+          "expected": "1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 0 1",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "-1 0 1",
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1000000 1000000 1000000",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1 2000000 1000000000000",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "-1000000 0 1000000",
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "2 4 2",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "5 0 0",
+          "expected": "1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long a, b, c;\n    scanf(\"%lld %lld %lld\", &a, &b, &c);\n    long long d = b * b - 4 * a * c;\n    if (d > 0) {\n        printf(\"2\\n\");\n    } else if (d == 0) {\n        printf(\"1\\n\");\n    } else {\n        printf(\"0\\n\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Целочисленный дискриминант вычисляется точно, без погрешностей `double`, поэтому сравнение `d == 0` надёжно. Это важно: с дробными числами случай «ровно один корень» легко потерять.\n\nЗначения `b²` и `4ac` до 4 · 10¹² не помещаются в `int`, поэтому все коэффициенты читаются как `long long`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-if-else-task-6",
+      "title": "Деление с проверкой",
+      "description": "Прочитайте два целых числа `a` и `b`. Если `b` равно нулю, напечатайте `деление на ноль`. Иначе напечатайте через пробел частное и остаток `a / b` и `a % b` по правилам C.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "17 5",
+          "output": "3 2\n"
+        },
+        {
+          "input": "4 0",
+          "output": "деление на ноль\n"
+        }
+      ],
+      "constraints": ["−10⁹ ≤ a, b ≤ 10⁹.", "Программа всегда завершается с кодом 0."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сначала проверьте особый случай b == 0.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "В ветке else вычисляйте a / b и a % b.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "17 5",
+          "expected": "3 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "4 0",
+          "expected": "деление на ноль\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0 0",
+          "expected": "деление на ноль\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "-7 2",
+          "expected": "-3 -1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "7 -2",
+          "expected": "-3 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "-7 -2",
+          "expected": "3 -1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "0 5",
+          "expected": "0 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "1000000000 -1",
+          "expected": "-1000000000 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "-1000000000 1000000000",
+          "expected": "-1 0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf(\"%d %d\", &a, &b);\n    if (b == 0) {\n        printf(\"деление на ноль\\n\");\n    } else {\n        printf(\"%d %d\\n\", a / b, a % b);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Особый случай обрабатывается первым — так деление гарантированно выполняется только при `b ≠ 0`. Знаки частного и остатка подчиняются правилам C: `-7 / 2 == -3`, `-7 % 2 == -1`, `7 % -2 == 1` (знак остатка совпадает со знаком делимого).",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-if-else-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int x = 15;\n    if (x > 10) {\n        printf(\"A\\n\");\n    } else if (x > 5) {\n        printf(\"B\\n\");\n    } else {\n        printf(\"C\\n\");\n    }\n    return 0;\n}",
+        "explanation": "Проверка останавливается на первом истинном условии x > 10. Хотя x > 5 тоже верно, до него дело не доходит.",
+        "type": "text",
+        "answers": ["A"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int x = 3;\n    if (x > 5);\n    {\n        printf(\"большое\\n\");\n    }\n    printf(\"конец\\n\");\n    return 0;\n}",
+        "explanation": "Точка с запятой после if (x > 5) — пустая инструкция, которая и является телом if. Блок в скобках — уже отдельная инструкция и выполняется всегда.",
+        "type": "text",
+        "answers": ["большое\nконец"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int balance = 50;\n    if (balance < 0)\n        printf(\"долг\\n\");\n        balance = 0;\n    printf(\"%d\\n\", balance);\n    return 0;\n}",
+        "explanation": "Без фигурных скобок к if относится только printf. balance = 0 выполняется всегда, несмотря на отступ.",
+        "type": "text",
+        "answers": ["0"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int a = 4, b = 9;\n    printf(\"%d\\n\", a > b ? a - b : b - a);\n    return 0;\n}",
+        "explanation": "a > b ложно, поэтому выбирается второе значение: b − a = 5.",
+        "type": "text",
+        "answers": ["5"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Цепочка начинается с if (score >= 60) печатать «зачёт», затем else if (score >= 90) печатать «отлично». Что получит score = 95?",
+        "explanation": "Первое истинное условие score >= 60 останавливает цепочку. Узкие или более высокие диапазоны нужно проверять раньше.",
+        "options": ["зачёт", "отлично", "оба слова", "ничего"],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что произойдёт при выполнении if (x = 0) { ... } ?",
+        "explanation": "Это присваивание: x получает 0, а значение выражения 0 — ложь. Компилятор предупредит о присваивании в условии.",
+        "options": [
+          "x станет 0, блок никогда не выполнится",
+          "Проверится, равно ли x нулю",
+          "Ошибка компиляции",
+          "Блок выполнится всегда"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Какие фрагменты печатают max(a, b)? Выберите все.",
+        "explanation": "Третий вариант печатает b всегда, а при a > b — ещё и a: две строки вместо одной.",
+        "type": "multiple",
+        "options": [
+          "printf(\"%d\\n\", a > b ? a : b);",
+          "if (a > b) { printf(\"%d\\n\", a); } else { printf(\"%d\\n\", b); }",
+          "if (a > b) { printf(\"%d\\n\", a); } printf(\"%d\\n\", b);",
+          "printf(\"%d\\n\", a < b ? b : a);"
+        ],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q8",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int x = -4, y = 7;\n    if (x > 0) {\n        if (y > 0) {\n            printf(\"1\\n\");\n        } else {\n            printf(\"2\\n\");\n        }\n    } else if (y > 0) {\n        printf(\"3\\n\");\n    } else {\n        printf(\"4\\n\");\n    }\n    return 0;\n}",
+        "explanation": "x > 0 ложно, во внутренний if не заходим. Затем y > 0 истинно — печатается 3.",
+        "type": "text",
+        "answers": ["3"],
+        "placeholder": "Вывод программы"
+      }
+    ]
+  }
+}

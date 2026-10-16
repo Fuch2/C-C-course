@@ -1,0 +1,170 @@
+[
+  {
+    "id": "advanced-translation-units-example",
+    "lessonId": "advanced-translation-units",
+    "source": "#include <stdio.h>\nint adjust(int);\nint main(void) {\n    printf(\"%d\\n\",adjust(10));\n    return 0;\n}\nint adjust(int value){return value+1;}\n",
+    "stdout": "11\n"
+  },
+  {
+    "id": "advanced-headers-example",
+    "lessonId": "advanced-headers",
+    "source": "#include <stdio.h>\ntypedef struct { int raw; } Reading;\nint main(void) {\n    Reading r={12}; printf(\"%d\\n\",r.raw);\n    return 0;\n}\n\n",
+    "stdout": "12\n"
+  },
+  {
+    "id": "advanced-header-guards-example",
+    "lessonId": "advanced-header-guards",
+    "source": "#include <stdio.h>\n#ifndef SENSOR_READING_H\n#define SENSOR_READING_H\ntypedef struct { int raw; } Reading;\n#endif\nint main(void) {\n    Reading r={7};printf(\"%d\\n\",r.raw);\n    return 0;\n}\n\n",
+    "stdout": "7\n"
+  },
+  {
+    "id": "advanced-preprocessor-example",
+    "lessonId": "advanced-preprocessor",
+    "source": "#include <stdio.h>\n#define CHANNELS 3\nint main(void) {\n    printf(\"%d\\n\",CHANNELS+1);\n    return 0;\n}\n\n",
+    "stdout": "4\n"
+  },
+  {
+    "id": "advanced-define-example",
+    "lessonId": "advanced-define",
+    "source": "#include <stdio.h>\n#define STEP (1 + 2)\nint main(void) {\n    printf(\"%d\\n\",2*STEP);\n    return 0;\n}\n\n",
+    "stdout": "6\n"
+  },
+  {
+    "id": "advanced-function-macros-example",
+    "lessonId": "advanced-function-macros",
+    "source": "#include <stdio.h>\n#define TWICE(x) ((x)+(x))\nint main(void) {\n    int sample=4;printf(\"%d\\n\",TWICE(sample+1));\n    return 0;\n}\n\n",
+    "stdout": "10\n"
+  },
+  {
+    "id": "advanced-macro-hazards-example",
+    "lessonId": "advanced-macro-hazards",
+    "source": "#include <stdio.h>\nstatic int twice(int value){return value+value;}\nint main(void) {\n    int i=3;int value=twice(i);++i;printf(\"%d %d\\n\",value,i);\n    return 0;\n}\n\n",
+    "stdout": "6 4\n"
+  },
+  {
+    "id": "advanced-conditional-compilation-example",
+    "lessonId": "advanced-conditional-compilation",
+    "source": "#include <stdio.h>\n#define TRACE 0\n#if TRACE\n#define LABEL \"Отладка\"\n#else\n#define LABEL \"Работа\"\n#endif\nint main(void) {\n    puts(LABEL);\n    return 0;\n}\n\n",
+    "stdout": "Работа\n"
+  },
+  {
+    "id": "advanced-static-example",
+    "lessonId": "advanced-static",
+    "source": "#include <stdio.h>\nstatic int count(void){static int value=10;return ++value;}\nint main(void) {\n    int first=count();int second=count();printf(\"%d %d\\n\",first,second);\n    return 0;\n}\n\n",
+    "stdout": "11 12\n"
+  },
+  {
+    "id": "advanced-extern-example",
+    "lessonId": "advanced-extern",
+    "source": "#include <stdio.h>\nextern int limit;\nint limit=8;\nint main(void) {\n    printf(\"%d\\n\",limit);\n    return 0;\n}\n\n",
+    "stdout": "8\n"
+  },
+  {
+    "id": "advanced-linkage-example",
+    "lessonId": "advanced-linkage",
+    "source": "#include <stdio.h>\nstatic int local_value(void){return 6;}\nint main(void) {\n    printf(\"%d\\n\",local_value());\n    return 0;\n}\n\n",
+    "stdout": "6\n"
+  },
+  {
+    "id": "advanced-const-example",
+    "lessonId": "advanced-const",
+    "source": "#include <stdio.h>\n\nint main(void) {\n    int sample=5;const int *view=&sample;sample=6;printf(\"%d\\n\",*view);\n    return 0;\n}\n\n",
+    "stdout": "6\n"
+  },
+  {
+    "id": "advanced-volatile-example",
+    "lessonId": "advanced-volatile",
+    "source": "#include <stdio.h>\n\nint main(void) {\n    volatile unsigned status=2;unsigned snapshot=status;status=4;printf(\"%u %u\\n\",snapshot,status);\n    return 0;\n}\n\n",
+    "stdout": "2 4\n"
+  },
+  {
+    "id": "advanced-function-pointers-example",
+    "lessonId": "advanced-function-pointers",
+    "source": "#include <stdio.h>\nstatic int negate(int x){return -x;}\nint main(void) {\n    int (*operation)(int)=negate;printf(\"%d\\n\",operation(7));\n    return 0;\n}\n\n",
+    "stdout": "-7\n"
+  },
+  {
+    "id": "advanced-callbacks-example",
+    "lessonId": "advanced-callbacks",
+    "source": "#include <stdio.h>\nstatic void visit(int value,void *context){int *sum=context;*sum+=value;}\nint main(void) {\n    int sum=0;visit(4,&sum);visit(6,&sum);printf(\"%d\\n\",sum);\n    return 0;\n}\n\n",
+    "stdout": "10\n"
+  },
+  {
+    "id": "advanced-void-pointer-example",
+    "lessonId": "advanced-void-pointer",
+    "source": "#include <stdio.h>\n\nint main(void) {\n    int value=9;void *opaque=&value;int *restored=opaque;printf(\"%d\\n\",*restored);\n    return 0;\n}\n\n",
+    "stdout": "9\n"
+  },
+  {
+    "id": "advanced-bitwise-and-example",
+    "lessonId": "advanced-bitwise-and",
+    "source": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%u\\n\",14u & 3u);\n    return 0;\n}\n\n",
+    "stdout": "2\n"
+  },
+  {
+    "id": "advanced-bitwise-or-example",
+    "lessonId": "advanced-bitwise-or",
+    "source": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%u\\n\",8u | 1u);\n    return 0;\n}\n\n",
+    "stdout": "9\n"
+  },
+  {
+    "id": "advanced-xor-example",
+    "lessonId": "advanced-xor",
+    "source": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%u\\n\",9u ^ 1u);\n    return 0;\n}\n\n",
+    "stdout": "8\n"
+  },
+  {
+    "id": "advanced-bit-shifts-example",
+    "lessonId": "advanced-bit-shifts",
+    "source": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%u\\n\",32u >> 2);\n    return 0;\n}\n\n",
+    "stdout": "8\n"
+  },
+  {
+    "id": "advanced-bit-masks-example",
+    "lessonId": "advanced-bit-masks",
+    "source": "#include <stdio.h>\n\nint main(void) {\n    unsigned packet=28;printf(\"%u\\n\",(packet >> 2) & 7u);\n    return 0;\n}\n\n",
+    "stdout": "7\n"
+  },
+  {
+    "id": "advanced-registers-example",
+    "lessonId": "advanced-registers",
+    "source": "#include <stdio.h>\n\nint main(void) {\n    unsigned pending=7;unsigned acknowledge=1;printf(\"%u\\n\",pending & ~acknowledge);\n    return 0;\n}\n\n",
+    "stdout": "6\n"
+  },
+  {
+    "id": "advanced-binary-files-example",
+    "lessonId": "advanced-binary-files",
+    "source": "#include <stdio.h>\n\nint main(void) {\n    unsigned value=258;printf(\"%u %u\\n\",value & 255u,(value >> 8) & 255u);\n    return 0;\n}\n\n",
+    "stdout": "2 1\n"
+  },
+  {
+    "id": "advanced-file-stream-example",
+    "lessonId": "advanced-file-stream",
+    "source": "#include <stdio.h>\n\nint main(void) {\n    FILE *f=tmpfile();if(!f)return 1;if(fputs(\"AB\",f)==EOF || fseek(f,0,SEEK_SET)!=0){fclose(f);return 1;}int c=fgetc(f);if(fclose(f)!=0 || c==EOF)return 1;printf(\"%c\\n\",c);\n    return 0;\n}\n\n",
+    "stdout": "A\n"
+  },
+  {
+    "id": "advanced-fread-fwrite-example",
+    "lessonId": "advanced-fread-fwrite",
+    "source": "#include <stdio.h>\n\nint main(void) {\n    FILE *f=tmpfile();if(!f)return 1;unsigned char data[2]={3,4},copy[2];if(fwrite(data,1,2,f)!=2 || fseek(f,0,SEEK_SET)!=0 || fread(copy,1,2,f)!=2){fclose(f);return 1;}if(fclose(f)!=0)return 1;printf(\"%u %u\\n\",(unsigned)copy[0],(unsigned)copy[1]);\n    return 0;\n}\n\n",
+    "stdout": "3 4\n"
+  },
+  {
+    "id": "advanced-error-handling-example",
+    "lessonId": "advanced-error-handling",
+    "source": "#include <stdio.h>\nstatic int read_value(int valid,int *out){if(!valid)return 0;*out=42;return 1;}\nint main(void) {\n    int value=7;int ok=read_value(0,&value);printf(\"%d %d\\n\",ok,value);\n    return 0;\n}\n\n",
+    "stdout": "0 7\n"
+  },
+  {
+    "id": "advanced-errno-example",
+    "lessonId": "advanced-errno",
+    "source": "#include <stdio.h>\n#include <stdlib.h>\n#include <errno.h>\nint main(void) {\n    char *end;errno=0;long value=strtol(\"12x\",&end,10);printf(\"%ld %c\\n\",value,*end);\n    return 0;\n}\n\n",
+    "stdout": "12 x\n"
+  },
+  {
+    "id": "advanced-assertions-example",
+    "lessonId": "advanced-assertions",
+    "source": "#include <stdio.h>\n#include <assert.h>\nint main(void) {\n    int count=3;assert(count>=0);printf(\"%d\\n\",count);\n    return 0;\n}\n\n",
+    "stdout": "3\n"
+  }
+]

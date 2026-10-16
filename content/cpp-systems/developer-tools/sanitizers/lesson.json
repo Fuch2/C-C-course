@@ -1,0 +1,460 @@
+{
+  "id": "advanced-sanitizers",
+  "title": "Отладочные сборки и санитайзеры",
+  "description": "Конфигурации сборки Debug, ASan + UBSan, TSan и Release, семейство санитайзеров и их совместимость, настройка через ASAN_OPTIONS и UBSAN_OPTIONS, санитайзеры в Make и CMake, защита выпускной сборки, assert и статический анализ.",
+  "moduleId": "developer-tools",
+  "order": 11,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["advanced-lldb"],
+  "objectives": [
+    "Выбирать набор сборок проекта и флаги для каждой",
+    "Сочетать санитайзеры и включать их в Make и CMake",
+    "Делать ошибки санитайзеров фатальными и читать отчёты UBSan",
+    "Защищать выпускную сборку и пользоваться статическим анализом"
+  ],
+  "tags": ["Санитайзеры", "ASan", "UBSan", "Сборка", "Статический анализ"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "advanced-sanitizers-task-1",
+    "title": "Совместимость санитайзеров",
+    "description": "Проверьте, можно ли собрать программу с указанным набором санитайзеров. В первой строке — число запросов `q`, далее `q` строк `компилятор список`: компилятор — `gcc` или `clang`, список — имена через запятую без пробелов.\n\nПроверки выполняются по порядку, печатается результат первой сработавшей:\n1. имя не из набора `address`, `undefined`, `leak`, `thread`, `memory` — `неизвестный санитайзер: ИМЯ` (первое такое имя);\n2. `memory` с компилятором `gcc` — `gcc не поддерживает memory`;\n3. несовместимые пары: `address` с `thread` или `memory`, `thread` с `memory`, `leak` с `thread` или `memory`. Напечатайте `несовместимы: A и B` для первой пары, где `B` — самое раннее имя списка, которое несовместимо с каким-то именем перед ним, а `A` — самое раннее из таких предшествующих;\n4. иначе — `можно: список`, где повторы удалены, а порядок сохранён.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "3\nclang address,undefined\ngcc address,thread\ngcc memory\n",
+        "output": "можно: address,undefined\nнесовместимы: address и thread\ngcc не поддерживает memory\n"
+      },
+      {
+        "input": "1\ngcc adress\n",
+        "output": "неизвестный санитайзер: adress\n"
+      }
+    ],
+    "constraints": ["1 ≤ q ≤ 20; в списке от 1 до 10 имён, каждое — не длиннее 20 символов."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Разбейте список через strtok(list, \",\"), сохраните имена в массив и сразу пропускайте повторы.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Несовместимость удобно проверять функцией conflict(a, b), которая сравнивает пару в обоих порядках.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Для правила 3 переберите j от 1 и для каждого j — i от 0 до j − 1; первая найденная пара и есть ответ.",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "3\nclang address,undefined\ngcc address,thread\ngcc memory\n",
+        "expected": "можно: address,undefined\nнесовместимы: address и thread\ngcc не поддерживает memory\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1\ngcc adress\n",
+        "expected": "неизвестный санитайзер: adress\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "MSan в Clang",
+        "stdin": "1\nclang memory,undefined\n",
+        "expected": "можно: memory,undefined\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Повторы",
+        "stdin": "1\ngcc undefined,undefined,address\n",
+        "expected": "можно: undefined,address\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "LSan и TSan",
+        "stdin": "1\nclang thread,leak\n",
+        "expected": "несовместимы: thread и leak\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "LSan с ASan",
+        "stdin": "1\ngcc address,leak,undefined\n",
+        "expected": "можно: address,leak,undefined\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Первая несовместимая пара",
+        "stdin": "1\nclang undefined,thread,memory,address\n",
+        "expected": "несовместимы: thread и memory\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "gcc и memory раньше пары",
+        "stdin": "1\ngcc memory,thread\n",
+        "expected": "gcc не поддерживает memory\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Неизвестное раньше всего",
+        "stdin": "1\nclang foo,memory,thread\n",
+        "expected": "неизвестный санитайзер: foo\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Только TSan",
+        "stdin": "1\nclang thread\n",
+        "expected": "можно: thread\n"
+      },
+      {
+        "id": "hidden-9",
+        "name": "Несколько запросов",
+        "stdin": "4\ngcc leak\nclang leak,memory\ngcc undefined,thread\nclang address,undefined,leak,address\n",
+        "expected": "можно: leak\nнесовместимы: leak и memory\nможно: undefined,thread\nможно: address,undefined,leak\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstatic int known(const char *name) {\n    static const char *names[] = {\"address\", \"undefined\", \"leak\", \"thread\", \"memory\"};\n    for (int i = 0; i < 5; i++) {\n        if (strcmp(name, names[i]) == 0) {\n            return 1;\n        }\n    }\n    return 0;\n}\n\nstatic int pair(const char *a, const char *b, const char *x, const char *y) {\n    return (strcmp(a, x) == 0 && strcmp(b, y) == 0) || (strcmp(a, y) == 0 && strcmp(b, x) == 0);\n}\n\nstatic int conflict(const char *a, const char *b) {\n    return pair(a, b, \"address\", \"thread\") || pair(a, b, \"address\", \"memory\") ||\n           pair(a, b, \"thread\", \"memory\") || pair(a, b, \"leak\", \"thread\") ||\n           pair(a, b, \"leak\", \"memory\");\n}\n\nint main(void) {\n    int q;\n    if (scanf(\"%d\", &q) != 1) {\n        return 0;\n    }\n    for (int query = 0; query < q; query++) {\n        char compiler[16];\n        char list[256];\n        if (scanf(\"%15s %255s\", compiler, list) != 2) {\n            break;\n        }\n        char names[10][32];\n        int count = 0;\n        for (char *name = strtok(list, \",\"); name != NULL && count < 10; name = strtok(NULL, \",\")) {\n            int repeated = 0;\n            for (int i = 0; i < count && !repeated; i++) {\n                repeated = strcmp(names[i], name) == 0;\n            }\n            if (!repeated) {\n                snprintf(names[count++], sizeof names[0], \"%s\", name);\n            }\n        }\n        const char *unknown = NULL;\n        int has_memory = 0;\n        for (int i = 0; i < count; i++) {\n            if (!known(names[i]) && unknown == NULL) {\n                unknown = names[i];\n            }\n            if (strcmp(names[i], \"memory\") == 0) {\n                has_memory = 1;\n            }\n        }\n        if (unknown != NULL) {\n            printf(\"неизвестный санитайзер: %s\\n\", unknown);\n            continue;\n        }\n        if (has_memory && strcmp(compiler, \"gcc\") == 0) {\n            printf(\"gcc не поддерживает memory\\n\");\n            continue;\n        }\n        int found = 0;\n        for (int j = 1; j < count && !found; j++) {\n            for (int i = 0; i < j && !found; i++) {\n                if (conflict(names[i], names[j])) {\n                    printf(\"несовместимы: %s и %s\\n\", names[i], names[j]);\n                    found = 1;\n                }\n            }\n        }\n        if (found) {\n            continue;\n        }\n        printf(\"можно:\");\n        for (int i = 0; i < count; i++) {\n            printf(\"%s%s\", i == 0 ? \" \" : \",\", names[i]);\n        }\n        putchar('\\n');\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Совместимость определяется тем, как санитайзер следит за памятью. ASan, TSan и MSan заводят каждый свою «теневую память» — разметку всего адресного пространства процесса, — и двух разметок одновременно быть не может. LSan использует механизмы ASan, поэтому вместе с ASan работает, а с TSan и MSan — нет. UBSan лишь вставляет проверки в отдельные операции и сочетается со всем.\n\nОтсюда практическое правило: одна сборка `-fsanitize=address,undefined` для основных тестов и отдельная `-fsanitize=thread` для многопоточного кода. MSan требует Clang и пересборки **всех** библиотек с ним, поэтому используется реже.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "advanced-sanitizers-task-2",
+      "title": "Разбор отчёта UBSan",
+      "description": "На вход до конца ввода подаётся вывод программы, собранной с UBSan. Сообщения об ошибках имеют вид\n\n```\nфайл:строка:столбец: runtime error: текст\n```\n\nОстальные строки пропускайте. UBSan сообщает о каждом **месте** только один раз, поэтому повтор того же `файл:строка:столбец` тоже пропускайте.\n\nДля каждого сообщения напечатайте `файл:строка категория`. Категория определяется по тексту:\n- `signed integer overflow` — `переполнение`;\n- `shift exponent` или `left shift of` — `сдвиг`;\n- `division by zero` — `деление на ноль`;\n- `out of bounds for type` — `выход за границы`;\n- `null pointer` — `нулевой указатель`;\n- `misaligned address` — `невыровненный адрес`;\n- иначе — `другое`.\n\nВ конце напечатайте `всего: N` и для каждой встреченной категории в порядке первого появления строку `категория: K`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "main.c:7:17: runtime error: signed integer overflow: 2147483647 + 1 cannot be represented in type 'int'\nmain.c:7:17: runtime error: signed integer overflow: 2147483647 + 1 cannot be represented in type 'int'\nmain.c:12:9: runtime error: index 10 out of bounds for type 'int [10]'\n",
+          "output": "main.c:7 переполнение\nmain.c:12 выход за границы\nвсего: 2\nпереполнение: 1\nвыход за границы: 1\n"
+        },
+        {
+          "input": "всё хорошо\n42\n",
+          "output": "всего: 0\n"
+        }
+      ],
+      "constraints": ["Не больше 100 строк, каждая — не длиннее 300 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Найдите подстроку \": runtime error: \" через strstr. Всё до неё — место, после — текст сообщения.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Из места «файл:строка:столбец» для вывода отрежьте последнее двоеточие и столбец (strrchr).",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Для итогов храните массив названий категорий в порядке появления и счётчики к ним.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "main.c:7:17: runtime error: signed integer overflow: 2147483647 + 1 cannot be represented in type 'int'\nmain.c:7:17: runtime error: signed integer overflow: 2147483647 + 1 cannot be represented in type 'int'\nmain.c:12:9: runtime error: index 10 out of bounds for type 'int [10]'\n",
+          "expected": "main.c:7 переполнение\nmain.c:12 выход за границы\nвсего: 2\nпереполнение: 1\nвыход за границы: 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "всё хорошо\n42\n",
+          "expected": "всего: 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Сдвиги",
+          "stdin": "bits.c:5:20: runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'\nbits.c:9:14: runtime error: left shift of negative value -1\n",
+          "expected": "bits.c:5 сдвиг\nbits.c:9 сдвиг\nвсего: 2\nсдвиг: 2\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Деление на ноль",
+          "stdin": "calc.c:20:13: runtime error: division by zero\n",
+          "expected": "calc.c:20 деление на ноль\nвсего: 1\nделение на ноль: 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Нулевые указатели",
+          "stdin": "list.c:31:18: runtime error: member access within null pointer of type 'struct node'\nlist.c:40:5: runtime error: load of null pointer of type 'int'\n",
+          "expected": "list.c:31 нулевой указатель\nlist.c:40 нулевой указатель\nвсего: 2\nнулевой указатель: 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Невыровненный адрес",
+          "stdin": "net.c:8:12: runtime error: load of misaligned address 0x602000000011 for type 'int', which requires 4 byte alignment\n",
+          "expected": "net.c:8 невыровненный адрес\nвсего: 1\nневыровненный адрес: 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Другое",
+          "stdin": "x.c:3:10: runtime error: execution reached the end of a value-returning function without returning a value\n",
+          "expected": "x.c:3 другое\nвсего: 1\nдругое: 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Разные столбцы одной строки",
+          "stdin": "SUMMARY: UndefinedBehaviorSanitizer: undefined-behavior main.c:7:17\na.c:1:1: runtime error: signed integer overflow: 1 + 1\na.c:1:2: runtime error: signed integer overflow: 2 + 2\n",
+          "expected": "a.c:1 переполнение\na.c:1 переполнение\nвсего: 2\nпереполнение: 2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Повтор между другими",
+          "stdin": "src/stats.c:14:22: runtime error: signed integer overflow: 46341 * 46341 cannot be represented in type 'int'\nsrc/stats.c:30:9: runtime error: index -1 out of bounds for type 'int [8]'\nsrc/stats.c:14:22: runtime error: signed integer overflow: 46342 * 46342 cannot be represented in type 'int'\nsrc/io.c:3:1: runtime error: division by zero\n",
+          "expected": "src/stats.c:14 переполнение\nsrc/stats.c:30 выход за границы\nsrc/io.c:3 деление на ноль\nвсего: 3\nпереполнение: 1\nвыход за границы: 1\nделение на ноль: 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пустой вывод",
+          "stdin": "",
+          "expected": "всего: 0\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Строки стека",
+          "stdin": "    #0 0x55d3 in main main.c:7\nmain.c:7:17: runtime error: signed integer overflow: 1 + 2147483647\n    #1 0x7f12 in __libc_start_main\n",
+          "expected": "main.c:7 переполнение\nвсего: 1\nпереполнение: 1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define LINE 320\n\nstatic const char *category(const char *text) {\n    if (strstr(text, \"signed integer overflow\") != NULL) {\n        return \"переполнение\";\n    }\n    if (strstr(text, \"shift exponent\") != NULL || strstr(text, \"left shift of\") != NULL) {\n        return \"сдвиг\";\n    }\n    if (strstr(text, \"division by zero\") != NULL) {\n        return \"деление на ноль\";\n    }\n    if (strstr(text, \"out of bounds for type\") != NULL) {\n        return \"выход за границы\";\n    }\n    if (strstr(text, \"null pointer\") != NULL) {\n        return \"нулевой указатель\";\n    }\n    if (strstr(text, \"misaligned address\") != NULL) {\n        return \"невыровненный адрес\";\n    }\n    return \"другое\";\n}\n\nint main(void) {\n    static char seen[100][LINE];\n    int seen_count = 0;\n    const char *names[7];\n    int counts[7] = {0};\n    int kinds = 0;\n    int total = 0;\n    char line[LINE];\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        line[strcspn(line, \"\\r\\n\")] = '\\0';\n        char *marker = strstr(line, \": runtime error: \");\n        if (marker == NULL) {\n            continue;\n        }\n        *marker = '\\0';\n        int repeated = 0;\n        for (int i = 0; i < seen_count && !repeated; i++) {\n            repeated = strcmp(seen[i], line) == 0;\n        }\n        if (repeated || seen_count >= 100) {\n            continue;\n        }\n        strcpy(seen[seen_count++], line);\n        const char *kind = category(marker + 17);\n        char *column = strrchr(line, ':');\n        if (column != NULL) {\n            *column = '\\0';\n        }\n        printf(\"%s %s\\n\", line, kind);\n        total++;\n        int index = 0;\n        while (index < kinds && strcmp(names[index], kind) != 0) {\n            index++;\n        }\n        if (index == kinds) {\n            names[kinds++] = kind;\n        }\n        counts[index]++;\n    }\n    printf(\"всего: %d\\n\", total);\n    for (int i = 0; i < kinds; i++) {\n        printf(\"%s: %d\\n\", names[i], counts[i]);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Отчёт UBSan короче отчёта ASan: место и одна фраза о нарушенном правиле языка. По этой фразе сразу понятен класс ошибки, а значит, и способ исправления: переполнение — более широкий тип или проверка до операции, сдвиг — ограничение величины сдвига, выход за границы — проверка индекса.\n\nПовторы одного места UBSan подавляет: ошибка в цикле на миллион итераций даст одно сообщение, а не миллион. Поэтому число сообщений — это число **мест** с ошибками, а не число срабатываний. Если ошибки сделаны фатальными (`-fno-sanitize-recover=all`), сообщение будет ровно одно — первое.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-sanitizers-task-3",
+      "title": "Найди ошибку: гистограмма",
+      "description": "Программа читает `n` оценок от 0 до 10 и печатает в одну строку, сколько раз встретилась каждая оценка: 11 чисел через пробел — для оценок 0, 1, …, 10.\n\nВ обычной сборке программа иногда выводит правильный ответ, а в сборке с AddressSanitizer падает с отчётом `stack-buffer-overflow`. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int counts[10] = {0};\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        int grade;\n        scanf(\"%d\", &grade);\n        counts[grade]++;\n    }\n    for (int grade = 0; grade <= 10; grade++) {\n        printf(\"%d%c\", counts[grade], grade < 10 ? ' ' : '\\n');\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5\n10 9 10 0 5\n",
+          "output": "1 0 0 0 0 1 0 0 0 1 2\n"
+        },
+        {
+          "input": "1\n3\n",
+          "output": "0 0 0 1 0 0 0 0 0 0 0\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; каждая оценка — целое от 0 до 10."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сколько разных оценок бывает от 0 до 10 включительно? Сколько элементов в массиве counts?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "ASan указывает на строку с counts[grade]++ или на цикл печати — оба обращаются к элементу с индексом 10.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5\n10 9 10 0 5\n",
+          "expected": "1 0 0 0 0 1 0 0 0 1 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n3\n",
+          "expected": "0 0 0 1 0 0 0 0 0 0 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна десятка",
+          "stdin": "1\n10\n",
+          "expected": "0 0 0 0 0 0 0 0 0 0 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Один ноль",
+          "stdin": "1\n0\n",
+          "expected": "1 0 0 0 0 0 0 0 0 0 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Все оценки",
+          "stdin": "11\n0 1 2 3 4 5 6 7 8 9 10\n",
+          "expected": "1 1 1 1 1 1 1 1 1 1 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Одинаковые",
+          "stdin": "6\n7 7 7 7 7 7\n",
+          "expected": "0 0 0 0 0 0 0 6 0 0 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Только десятки",
+          "stdin": "4\n10 10 10 10\n",
+          "expected": "0 0 0 0 0 0 0 0 0 0 4\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Без десяток",
+          "stdin": "3\n9 8 9\n",
+          "expected": "0 0 0 0 0 0 0 0 1 2 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смешанные",
+          "stdin": "8\n5 4 5 6 5 4 10 0\n",
+          "expected": "1 0 0 0 2 3 1 0 0 0 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Чередование",
+          "stdin": "10\n1 2 1 2 1 2 1 2 1 2\n",
+          "expected": "0 5 5 0 0 0 0 0 0 0 0\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Крайние",
+          "stdin": "2\n0 10\n",
+          "expected": "1 0 0 0 0 0 0 0 0 0 1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int counts[11] = {0};\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        int grade;\n        scanf(\"%d\", &grade);\n        counts[grade]++;\n    }\n    for (int grade = 0; grade <= 10; grade++) {\n        printf(\"%d%c\", counts[grade], grade < 10 ? ' ' : '\\n');\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Оценок от 0 до 10 — одиннадцать, а массив объявлен на десять элементов. Элемент `counts[10]` лежит за концом массива — на стеке рядом с другими переменными функции. Запись туда портит соседние данные, а чтение возвращает случайное значение. Без санитайзера результат зависит от раскладки стека, компилятора и уровня оптимизации: программа может даже работать.\n\nASan размечает границы каждого массива на стеке и останавливает программу на первом же обращении за границу. Именно поэтому тесты прогоняют в санитайзерной сборке: ошибка, которая «иногда проявляется», становится ошибкой, которая проявляется всегда.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "advanced-sanitizers-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Какие санитайзеры нельзя включить в одной сборке?",
+        "explanation": "ASan, TSan и MSan каждый по-своему размечают всю память процесса. UBSan сочетается с любым из них, а LSan входит в ASan.",
+        "options": [
+          "AddressSanitizer и ThreadSanitizer",
+          "AddressSanitizer и UBSan",
+          "UBSan и ThreadSanitizer",
+          "AddressSanitizer и LeakSanitizer"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Что делает UBSan после найденной ошибки, если не указан -fno-sanitize-recover?",
+        "explanation": "Поэтому в тестах ошибки делают фатальными: -fno-sanitize-recover=all или UBSAN_OPTIONS=halt_on_error=1.",
+        "options": [
+          "Печатает runtime error и продолжает выполнение",
+          "Сразу завершает программу",
+          "Исправляет значение и продолжает",
+          "Ничего не печатает"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Зачем в санитайзерной сборке флаг -fno-omit-frame-pointer?",
+        "explanation": "Указатель кадра связывает кадры стека в цепочку. Без него стек приходится восстанавливать медленнее и не всегда точно.",
+        "options": [
+          "Чтобы санитайзер быстро и надёжно строил стек вызовов в отчёте",
+          "Чтобы включить проверку границ массивов",
+          "Чтобы ускорить программу",
+          "Без него санитайзер не компилируется"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Напишите флаг, который включает AddressSanitizer и UBSan одновременно.",
+        "explanation": "Санитайзеры перечисляются через запятую в одном флаге. Этот же флаг нужен и при линковке.",
+        "type": "text",
+        "answers": ["-fsanitize=address,undefined", "-fsanitize=undefined,address"],
+        "placeholder": "Флаг"
+      },
+      {
+        "id": "q5",
+        "question": "Какой санитайзер есть только в Clang?",
+        "explanation": "MSan находит чтение неинициализированной памяти. В GCC для этого используют Valgrind.",
+        "options": ["MemorySanitizer", "AddressSanitizer", "UBSan", "ThreadSanitizer"],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Почему санитайзеры не включают в сборку для пользователей?",
+        "explanation": "Для выпуска есть лёгкие защитные флаги: -D_FORTIFY_SOURCE=2 и -fstack-protector-strong.",
+        "options": [
+          "Они замедляют программу и увеличивают расход памяти, а их среда выполнения не рассчитана на защиту от атак",
+          "Санитайзеры работают только в отладчике",
+          "Санитайзеры запрещены лицензией",
+          "Они меняют вывод программы"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Какие флаги подходят для защиты выпускной сборки? Выберите все.",
+        "explanation": "FORTIFY проверяет размеры буферов в функциях вроде memcpy, stack protector — перезапись стека. -O0 не защищает, а FORTIFY без оптимизаций даже не работает.",
+        "type": "multiple",
+        "options": ["-D_FORTIFY_SOURCE=2", "-fstack-protector-strong", "-fsanitize=address", "-O0"],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q8",
+        "question": "Что выведет программа?",
+        "code": "#define NDEBUG\n#include <assert.h>\n#include <stdio.h>\n\nint main(void) {\n    int count = 0;\n    assert(count > 0);\n    printf(\"count = %d\\n\", count);\n    return 0;\n}",
+        "explanation": "NDEBUG определён до подключения assert.h, поэтому assert превращается в пустое выражение и ничего не проверяет.",
+        "type": "text",
+        "answers": ["count = 0"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q9",
+        "question": "Чем статический анализ (gcc -fanalyzer, clang --analyze) отличается от санитайзеров?",
+        "explanation": "Анализатор рассматривает возможные пути выполнения, но может давать ложные срабатывания. Санитайзеры точны, но видят только выполненный код.",
+        "options": [
+          "Он ищет ошибки в коде без запуска программы, в том числе на путях, которые тесты не выполнили",
+          "Он работает быстрее санитайзеров при запуске программы",
+          "Он находит только синтаксические ошибки",
+          "Он заменяет предупреждения компилятора"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

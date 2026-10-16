@@ -1,0 +1,524 @@
+{
+  "id": "memory-addresses",
+  "title": "Байты объекта и sizeof",
+  "description": "Объект как последовательность байтов: sizeof для типов и выражений, расстояние между элементами массива, чтение байтов через unsigned char *, представление целых и double.",
+  "moduleId": "memory-pointers",
+  "order": 2,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["memory-process-memory"],
+  "objectives": [
+    "Вычислять размеры типов, массивов и выражений оператором sizeof",
+    "Измерять расстояние между объектами в байтах и в элементах",
+    "Читать байтовое представление любого объекта через const unsigned char *",
+    "Объяснять, почему размер структуры и равенство байтов не следуют из значений полей"
+  ],
+  "tags": ["C17", "Память", "sizeof", "Байты", "Представление"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "memory-addresses-task-1",
+    "title": "Сколько байтов",
+    "description": "Программа получает `q` запросов. Каждый запрос — буква типа и количество элементов `n`. Для каждого запроса напечатайте, сколько байтов займёт массив из `n` элементов этого типа **на машине, где выполняется программа**.\n\nБуквы: `c` — `char`, `s` — `short`, `i` — `int`, `l` — `long long`, `f` — `float`, `d` — `double`, `p` — указатель `void *`.\n\nИспользуйте `sizeof`, а не числа: решение должно оставаться верным на любой платформе.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "3\ni 10\nd 3\nc 7\n",
+        "output": "40\n24\n7\n"
+      },
+      {
+        "input": "1\np 100\n",
+        "output": "800\n"
+      }
+    ],
+    "constraints": ["1 ≤ q ≤ 20.", "0 ≤ n ≤ 10⁹."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Прочитать букву и число: scanf(\" %c %zu\", &type, &n); — пробел перед %c пропускает перевод строки.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "switch по букве выбирает размер: case 'i': size = sizeof(int); break;",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Произведение до 8 · 10⁹ не помещается в int, но помещается в size_t на 64-битной системе. Печать — %zu.",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "3\ni 10\nd 3\nc 7\n",
+        "expected": "40\n24\n7\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1\np 100\n",
+        "expected": "800\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "short",
+        "stdin": "1\ns 5\n",
+        "expected": "10\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Пустой массив",
+        "stdin": "1\nl 0\n",
+        "expected": "0\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "float",
+        "stdin": "1\nf 1000\n",
+        "expected": "4000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Произведение больше int",
+        "stdin": "2\nd 1000000000\nl 1000000000\n",
+        "expected": "8000000000\n8000000000\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Все типы по одному",
+        "stdin": "7\nc 1\ns 1\ni 1\nl 1\nf 1\nd 1\np 1\n",
+        "expected": "1\n2\n4\n8\n4\n8\n8\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Миллиард байтов",
+        "stdin": "1\nc 1000000000\n",
+        "expected": "1000000000\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Нулевые количества",
+        "stdin": "3\ni 0\np 0\nc 0\n",
+        "expected": "0\n0\n0\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Разные типы",
+        "stdin": "2\ns 123456789\np 3\n",
+        "expected": "246913578\n24\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int k = 0; k < q; k++) {\n        char type;\n        size_t n;\n        scanf(\" %c %zu\", &type, &n);\n        size_t size = 0;\n        switch (type) {\n        case 'c': size = sizeof(char); break;\n        case 's': size = sizeof(short); break;\n        case 'i': size = sizeof(int); break;\n        case 'l': size = sizeof(long long); break;\n        case 'f': size = sizeof(float); break;\n        case 'd': size = sizeof(double); break;\n        case 'p': size = sizeof(void *); break;\n        }\n        printf(\"%zu\\n\", n * size);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Каждая ветка `switch` берёт размер у самого типа, поэтому программа сама узнаёт, сколько байтов занимает `int` или указатель на текущей платформе. Число `n` читается сразу в `size_t` — тот же тип, что у `sizeof`, — и произведение не переполняется для допустимых данных.\n\nИменно так считают размер перед `malloc`: «количество × `sizeof` элемента».",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "memory-addresses-task-2",
+      "title": "Байты числа",
+      "description": "Прочитайте число `x` типа `unsigned int` и напечатайте его байты **в том порядке, в котором они лежат в памяти**: каждый байт — две шестнадцатеричные цифры в нижнем регистре, байты через пробел.\n\nПолучите байты через указатель `const unsigned char *` на `x`, а их количество — через `sizeof x`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "305419896\n",
+          "output": "78 56 34 12\n",
+          "explanation": "305419896 = 0x12345678."
+        },
+        {
+          "input": "1\n",
+          "output": "01 00 00 00\n"
+        }
+      ],
+      "constraints": ["0 ≤ x ≤ 4 294 967 295.", "Проверка выполняется на little-endian машине."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "const unsigned char *bytes = (const unsigned char *)&x;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Печать байта: printf(\"%02x\", bytes[i]); Пробел ставьте перед каждым байтом, кроме первого, чтобы в конце строки не было лишнего пробела.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "305419896\n",
+          "expected": "78 56 34 12\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n",
+          "expected": "01 00 00 00\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ноль",
+          "stdin": "0\n",
+          "expected": "00 00 00 00\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Максимум",
+          "stdin": "4294967295\n",
+          "expected": "ff ff ff ff\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Перенос во второй байт",
+          "stdin": "256\n",
+          "expected": "00 01 00 00\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Один полный байт",
+          "stdin": "255\n",
+          "expected": "ff 00 00 00\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Третий байт",
+          "stdin": "65536\n",
+          "expected": "00 00 01 00\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Старший байт",
+          "stdin": "16777216\n",
+          "expected": "00 00 00 01\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "0xDEADBEEF",
+          "stdin": "3735928559\n",
+          "expected": "ef be ad de\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "0xAABBCCDD",
+          "stdin": "2864434397\n",
+          "expected": "dd cc bb aa\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    unsigned int x;\n    scanf(\"%u\", &x);\n    const unsigned char *bytes = (const unsigned char *)&x;\n    for (size_t i = 0; i < sizeof x; i++) {\n        if (i > 0) {\n            printf(\" \");\n        }\n        printf(\"%02x\", bytes[i]);\n    }\n    printf(\"\\n\");\n    return 0;\n}\n",
+      "solutionExplanation": "Указатель `bytes` смотрит на те же четыре байта, что и `x`, но видит их как массив чисел 0…255. Цикл до `sizeof x` не зависит от того, сколько байтов занимает `unsigned int` на конкретной машине.\n\nНа little-endian процессоре первым идёт младший байт: число 1 даёт `01 00 00 00`, а 256 — `00 01 00 00`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-addresses-task-3",
+      "title": "Единичные биты в представлении",
+      "description": "Прочитайте число `x` типа `long long` и подсчитайте, сколько битов равны 1 во **всех байтах** его представления в памяти.\n\nОбойдите байты через `const unsigned char *` и в каждом байте проверьте 8 битов. Отрицательные числа хранятся в дополнительном коде: например, у `-1` все биты единичные.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "7\n",
+          "output": "3\n"
+        },
+        {
+          "input": "-1\n",
+          "output": "64\n",
+          "explanation": "В дополнительном коде у −1 все 64 бита — единицы."
+        }
+      ],
+      "constraints": ["−9 223 372 036 854 775 808 ≤ x ≤ 9 223 372 036 854 775 807."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Внешний цикл по байтам: for (size_t i = 0; i < sizeof x; i++), внутренний — по битам: for (int b = 0; b < 8; b++).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Бит b байта v: (v >> b) & 1. Сдвигайте копию байта, а не исходный long long — сдвиг отрицательного знакового числа даёт не то, что ожидается.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "7\n",
+          "expected": "3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "-1\n",
+          "expected": "64\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ноль",
+          "stdin": "0\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Единица",
+          "stdin": "1\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Полный байт",
+          "stdin": "255\n",
+          "expected": "8\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Бит во втором байте",
+          "stdin": "256\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Минус два",
+          "stdin": "-2\n",
+          "expected": "63\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Максимум",
+          "stdin": "9223372036854775807\n",
+          "expected": "63\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Минимум",
+          "stdin": "-9223372036854775808\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "0x123456789ABCDEF0",
+          "stdin": "1311768467463790320\n",
+          "expected": "32\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    long long x;\n    scanf(\"%lld\", &x);\n    const unsigned char *bytes = (const unsigned char *)&x;\n    int count = 0;\n    for (size_t i = 0; i < sizeof x; i++) {\n        unsigned char v = bytes[i];\n        for (int b = 0; b < 8; b++) {\n            count += (v >> b) & 1;\n        }\n    }\n    printf(\"%d\\n\", count);\n    return 0;\n}\n",
+      "solutionExplanation": "Работа с байтами через `unsigned char` избавляет от проблем со знаком: каждый байт — неотрицательное число 0…255, и сдвиг вправо добавляет слева нули. Для `-1` все 8 байтов равны `0xff`, по 8 единиц — всего 64.\n\nПорядок байтов здесь не важен: количество единиц не зависит от того, в каком порядке обходить байты.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "memory-addresses-task-4",
+      "title": "Равные значения, разные байты",
+      "description": "Прочитайте два числа `a` и `b` типа `double` (`scanf` с `%lf` понимает и записи `nan`, `inf`). Напечатайте две строки:\n\n```\nvalues: equal\nbytes: different\n```\n\nПервая строка — результат сравнения `a == b` (`equal` или `different`). Вторая — совпадают ли все `sizeof(double)` байтов представлений, сравненные в цикле через `const unsigned char *`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "0 -0\n",
+          "output": "values: equal\nbytes: different\n"
+        },
+        {
+          "input": "nan nan\n",
+          "output": "values: different\nbytes: equal\n"
+        }
+      ],
+      "constraints": ["Числа записаны так, как их принимает scanf(\"%lf\")."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Два указателя: const unsigned char *pa = (const unsigned char *)&a; и такой же pb. Сравнивайте pa[i] и pb[i] в цикле до sizeof a.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Подумайте о 0 и -0: значения равны, но бит знака отличается. А NaN (nan) не равен даже самому себе, хотя байты двух одинаковых NaN совпадают.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "0 -0\n",
+          "expected": "values: equal\nbytes: different\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "nan nan\n",
+          "expected": "values: different\nbytes: equal\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одинаковые числа",
+          "stdin": "1.5 1.5\n",
+          "expected": "values: equal\nbytes: equal\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Разные числа",
+          "stdin": "0.1 0.2\n",
+          "expected": "values: different\nbytes: different\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Два отрицательных нуля",
+          "stdin": "-0 -0\n",
+          "expected": "values: equal\nbytes: equal\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Бесконечности",
+          "stdin": "inf inf\n",
+          "expected": "values: equal\nbytes: equal\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Бесконечности разных знаков",
+          "stdin": "inf -inf\n",
+          "expected": "values: different\nbytes: different\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "NaN и число",
+          "stdin": "nan 1\n",
+          "expected": "values: different\nbytes: different\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Очень большие числа",
+          "stdin": "1e308 1e308\n",
+          "expected": "values: equal\nbytes: equal\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Соседние double",
+          "stdin": "0.3 0.30000000000000004\n",
+          "expected": "values: different\nbytes: different\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    double a, b;\n    scanf(\"%lf %lf\", &a, &b);\n    const unsigned char *pa = (const unsigned char *)&a;\n    const unsigned char *pb = (const unsigned char *)&b;\n    int same_bytes = 1;\n    for (size_t i = 0; i < sizeof a; i++) {\n        if (pa[i] != pb[i]) {\n            same_bytes = 0;\n        }\n    }\n    printf(\"values: %s\\n\", a == b ? \"equal\" : \"different\");\n    printf(\"bytes: %s\\n\", same_bytes ? \"equal\" : \"different\");\n    return 0;\n}\n",
+      "solutionExplanation": "Сравнение значений и сравнение байтов — разные операции:\n\n- `0.0` и `-0.0` равны как числа, но отличаются битом знака;\n- `NaN` по правилам IEEE 754 не равен ничему, даже себе, хотя байты двух одинаковых NaN совпадают.\n\nОтсюда практический вывод: объекты сравнивают по значению, а побайтовое сравнение применяют только там, где важно именно представление — например, при проверке, что файл записан без изменений.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "memory-addresses-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    double data[10];\n    printf(\"%td\\n\", (char *)&data[4] - (char *)&data[1]);\n    return 0;\n}",
+        "explanation": "Между data[1] и data[4] три элемента по 8 байтов. Разность указателей на char считается в байтах: 3 · 8 = 24.",
+        "type": "text",
+        "answers": ["24"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа на little-endian процессоре (x86, ARM)?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    unsigned int x = 0x0A0B0C0D;\n    const unsigned char *p = (const unsigned char *)&x;\n    printf(\"%02x\\n\", p[0]);\n    return 0;\n}",
+        "explanation": "В little-endian первым в памяти лежит младший байт — 0x0D.",
+        "type": "text",
+        "answers": ["0d"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nvoid show(int a[]) {\n    printf(\"%zu \", sizeof a);\n}\n\nint main(void) {\n    int a[10];\n    show(a);\n    printf(\"%zu\\n\", sizeof a);\n    return 0;\n}",
+        "explanation": "В функции параметр a — указатель (8 байтов на 64-битной системе), а в main a — массив из 10 int по 4 байта. Компилятор даже предупреждает об этом: sizeof on array function parameter.",
+        "type": "text",
+        "answers": ["8 40"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Какие утверждения верны? Выберите все.",
+        "explanation": "Размер int зависит от платформы: стандарт требует только не меньше 16 бит. sizeof(char) == 1 по определению.",
+        "type": "multiple",
+        "options": [
+          "sizeof(char) всегда равен 1",
+          "sizeof возвращает значение типа size_t",
+          "int всегда занимает 4 байта",
+          "На одной платформе указатели на int и на double обычно имеют одинаковый размер"
+        ],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q5",
+        "question": "Почему для просмотра байтов объекта используют unsigned char *, а не char * ?",
+        "explanation": "Оба типа занимают один байт, но unsigned char гарантированно даёт значения 0…255.",
+        "options": [
+          "char может быть знаковым: байт 0xff прочитается как -1",
+          "char * нельзя приводить к указателю на другой тип",
+          "unsigned char занимает меньше памяти",
+          "char * читает по два байта"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int n = 5;\n    size_t s = sizeof(n += 10);\n    printf(\"%zu %d\\n\", s, n);\n    return 0;\n}",
+        "explanation": "Операнд sizeof не вычисляется (кроме массивов переменной длины), поэтому n += 10 не выполнится. Размер берётся по типу выражения — int.",
+        "type": "text",
+        "answers": ["4 5"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Чему обычно равен sizeof(struct { char c; int i; }) на x86-64 и почему?",
+        "explanation": "Поле int должно начинаться с адреса, кратного 4, поэтому компилятор добавляет промежуток. Подробно — в уроках об alignment и padding.",
+        "options": [
+          "8: после c вставлены 3 байта выравнивания",
+          "5: сумма размеров полей",
+          "4: поля перекрываются",
+          "16: каждое поле занимает 8 байтов"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

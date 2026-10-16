@@ -1,0 +1,584 @@
+{
+  "id": "toolchain-pipeline",
+  "title": "Препроцессор и объектные файлы",
+  "description": "Поиск заголовков и флаг -I, дерево включений -H, макросы из командной строки -D, предопределённые макросы, зависимости -MM, секции объектного файла, таблица символов nm и записи о перемещении.",
+  "moduleId": "developer-tools",
+  "order": 3,
+  "difficulty": "beginner",
+  "estimatedMinutes": 55,
+  "prerequisites": ["compilation-stages"],
+  "objectives": [
+    "Объяснять, где препроцессор ищет заголовки, и управлять поиском флагом -I",
+    "Задавать макросы при сборке и пользоваться предопределёнными макросами",
+    "Читать таблицу символов объектного файла с помощью nm",
+    "Объяснять, что линковщик делает с неопределёнными символами"
+  ],
+  "tags": ["Препроцессор", "Объектный файл", "nm", "Символы", "Зависимости"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "toolchain-pipeline-task-1",
+    "title": "Подстановка #define",
+    "description": "Смоделируйте препроцессор для макросов-констант. В первой строке — число макросов `n`, далее `n` строк вида `ИМЯ значение` (значение — остаток строки, может быть пустым). Остальные строки до конца ввода — текст программы.\n\nНапечатайте текст, заменив каждый **идентификатор**, совпадающий с именем макроса, его значением. Правила, как у настоящего препроцессора:\n- идентификатор — последовательность букв, цифр и `_`, начинающаяся не с цифры; `WIDTH2` и `MY_WIDTH` — не `WIDTH`;\n- внутри строковых `\"…\"` и символьных `'…'` литералов замены нет (внутри литерала возможны экранирования `\\\"`);\n- числа вроде `0x1F` или `2u` целиком считаются числами;\n- значение макроса тоже просматривается на макросы, но макрос не раскрывается внутри собственной подстановки — это защищает от бесконечной рекурсии.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "2\nWIDTH 80\nHALF (WIDTH / 2)\nint w = HALF;\nprintf(\"WIDTH\\n\");\n",
+        "output": "int w = (80 / 2);\nprintf(\"WIDTH\\n\");\n"
+      },
+      {
+        "input": "1\nN N + 1\nint a = N;\n",
+        "output": "int a = N + 1;\n"
+      }
+    ],
+    "constraints": [
+      "0 ≤ n ≤ 20; имена макросов различны.",
+      "Строки не длиннее 200 символов; в тексте нет комментариев."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Напишите функцию void expand(const char *text, unsigned active), которая печатает text с подстановками. active — битовая маска макросов, которые сейчас раскрываются.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Идентификатор: if (isalpha(c) || c == '_') — собирайте его, пока isalnum или _. Число: если цифра, пропускайте всё, что isalnum, _ или точка.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Найденный макрос i раскрывайте рекурсивно: expand(values[i], active | 1u << i). Если бит i уже установлен — печатайте имя как есть.",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "2\nWIDTH 80\nHALF (WIDTH / 2)\nint w = HALF;\nprintf(\"WIDTH\\n\");\n",
+        "expected": "int w = (80 / 2);\nprintf(\"WIDTH\\n\");\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1\nN N + 1\nint a = N;\n",
+        "expected": "int a = N + 1;\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Без макросов",
+        "stdin": "0\nint x = 5;\n",
+        "expected": "int x = 5;\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Похожие идентификаторы",
+        "stdin": "1\nMAX 10\nint MAX2 = MAX + MY_MAX + _MAX;\n",
+        "expected": "int MAX2 = 10 + MY_MAX + _MAX;\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Взаимная рекурсия",
+        "stdin": "2\nA B\nB A\nA B\n",
+        "expected": "A B\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Символьный литерал",
+        "stdin": "1\nC 'x'\nchar c = C, d = 'C';\n",
+        "expected": "char c = 'x', d = 'C';\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Числа не трогаются",
+        "stdin": "1\nx 0\nint v = 0x1F + 2x;\n",
+        "expected": "int v = 0x1F + 2x;\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Пустое значение",
+        "stdin": "1\nEMPTY\nint EMPTY a;\n",
+        "expected": "int  a;\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Вложенные макросы",
+        "stdin": "3\nROWS 4\nCOLS 5\nSIZE (ROWS * COLS)\nint grid[SIZE];\nfor (int i = 0; i < ROWS; i++) {}\n",
+        "expected": "int grid[(4 * 5)];\nfor (int i = 0; i < 4; i++) {}\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Экранированная кавычка",
+        "stdin": "1\nMSG \"hi\"\nputs(\"say \\\"MSG\\\"\");\nputs(MSG);\n",
+        "expected": "puts(\"say \\\"MSG\\\"\");\nputs(\"hi\");\n"
+      },
+      {
+        "id": "hidden-9",
+        "name": "Дробные значения",
+        "stdin": "2\nPI 3.14\nTAU (2 * PI)\ndouble t = TAU * PI;\n",
+        "expected": "double t = (2 * 3.14) * 3.14;\n"
+      }
+    ],
+    "referenceSolution": "#include <ctype.h>\n#include <stdio.h>\n#include <string.h>\n\n#define MAX_MACROS 20\n#define LINE 256\n\nstatic char names[MAX_MACROS][LINE];\nstatic char values[MAX_MACROS][LINE];\nstatic int macro_count;\n\nstatic int find(const char *name, size_t length) {\n    for (int i = 0; i < macro_count; i++) {\n        if (strlen(names[i]) == length && strncmp(names[i], name, length) == 0) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nstatic int is_ident(char c) {\n    return isalnum((unsigned char)c) || c == '_';\n}\n\nstatic void expand(const char *text, unsigned active) {\n    const char *p = text;\n    while (*p != '\\0') {\n        if (*p == '\"' || *p == '\\'') {\n            char quote = *p;\n            putchar(*p++);\n            while (*p != '\\0' && *p != quote) {\n                if (*p == '\\\\' && p[1] != '\\0') {\n                    putchar(*p++);\n                }\n                putchar(*p++);\n            }\n            if (*p != '\\0') {\n                putchar(*p++);\n            }\n        } else if (isdigit((unsigned char)*p)) {\n            while (is_ident(*p) || *p == '.') {\n                putchar(*p++);\n            }\n        } else if (is_ident(*p)) {\n            const char *start = p;\n            while (is_ident(*p)) {\n                p++;\n            }\n            size_t length = (size_t)(p - start);\n            int macro = find(start, length);\n            if (macro >= 0 && !(active & (1u << macro))) {\n                expand(values[macro], active | (1u << macro));\n            } else {\n                printf(\"%.*s\", (int)length, start);\n            }\n        } else {\n            putchar(*p++);\n        }\n    }\n}\n\nint main(void) {\n    char line[LINE];\n    if (fgets(line, sizeof line, stdin) == NULL || sscanf(line, \"%d\", &macro_count) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < macro_count && fgets(line, sizeof line, stdin) != NULL; i++) {\n        line[strcspn(line, \"\\r\\n\")] = '\\0';\n        size_t name_length = strcspn(line, \" \");\n        memcpy(names[i], line, name_length);\n        names[i][name_length] = '\\0';\n        const char *value = line + name_length;\n        while (*value == ' ') {\n            value++;\n        }\n        strcpy(values[i], value);\n    }\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        expand(line, 0);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Препроцессор работает не с символами, а с **токенами**: идентификаторами, числами, литералами, знаками. Поэтому `WIDTH2` не содержит `WIDTH` — это другой идентификатор, а `\"WIDTH\"` — строковый литерал, который препроцессор не трогает.\n\nРекурсивная функция `expand` повторяет правило повторного просмотра: подстановка снова ищется на макросы, но с маской «уже раскрываемых». Поэтому `#define N N + 1` даёт `N + 1`, а пара `A → B`, `B → A` останавливается на исходном имени — так же поступает и `gcc -E`.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "toolchain-pipeline-task-2",
+      "title": "Таблица символов",
+      "description": "На вход подаётся вывод `nm` для одного объектного файла — строки до конца ввода. Строка — это `адрес буква имя` или, для неопределённых символов, `U имя` с пробелами вместо адреса.\n\nРаспределите символы по четырём группам и напечатайте их в таком порядке:\n\n```\nфункции: …\nданные: …\nнужны извне: …\nлокальные: …\n```\n\n- `функции` — буква `T`; `данные` — `D`, `B` или `R`; `нужны извне` — `U`;\n- `локальные` — любая строчная буква (`t`, `d`, `b`, `r`).\n\nИмена в группе идут в порядке ввода через пробел. Если группа пуста, после двоеточия напечатайте `-`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "0000000000000020 b cache\n0000000000000000 D counter\n0000000000000000 R limits\n0000000000000014 T main\n                 U printf\n0000000000000000 B total\n0000000000000000 t twice\n",
+          "output": "функции: main\nданные: counter limits total\nнужны извне: printf\nлокальные: cache twice\n"
+        },
+        {
+          "input": "0000000000000000 T add\n0000000000000010 T sub\n",
+          "output": "функции: add sub\nданные: -\nнужны извне: -\nлокальные: -\n"
+        }
+      ],
+      "constraints": ["Не больше 50 строк; имена не длиннее 60 символов и не содержат пробелов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Разбейте строку на слова: int words = sscanf(line, \"%63s %63s %63s\", a, b, c). Три слова — адрес, буква, имя; два — буква и имя.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Храните каждую группу как строку и дописывайте к ней \" имя\" через strcat; при печати пустую группу заменяйте на \"-\".",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Строчную букву проверяет islower((unsigned char)letter).",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "0000000000000020 b cache\n0000000000000000 D counter\n0000000000000000 R limits\n0000000000000014 T main\n                 U printf\n0000000000000000 B total\n0000000000000000 t twice\n",
+          "expected": "функции: main\nданные: counter limits total\nнужны извне: printf\nлокальные: cache twice\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0000000000000000 T add\n0000000000000010 T sub\n",
+          "expected": "функции: add sub\nданные: -\nнужны извне: -\nлокальные: -\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустая таблица",
+          "stdin": "",
+          "expected": "функции: -\nданные: -\nнужны извне: -\nлокальные: -\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Только внешние",
+          "stdin": "                 U puts\n                 U malloc\n                 U free\n",
+          "expected": "функции: -\nданные: -\nнужны извне: puts malloc free\nлокальные: -\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Только локальные",
+          "stdin": "0000000000000000 t helper\n0000000000000000 d state\n0000000000000000 r names\n0000000000000000 b buf\n",
+          "expected": "функции: -\nданные: -\nнужны извне: -\nлокальные: helper state names buf\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Вперемешку",
+          "stdin": "0000000000000000 T parse_line\n                 U strtol\n0000000000000040 T parse_file\n                 U fopen\n0000000000000000 B line_count\n",
+          "expected": "функции: parse_line parse_file\nданные: line_count\nнужны извне: strtol fopen\nлокальные: -\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Только константы",
+          "stdin": "0000000000000000 R version\n0000000000000008 R build_date\n",
+          "expected": "функции: -\nданные: version build_date\nнужны извне: -\nлокальные: -\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Имена macOS",
+          "stdin": "0000000000000000 T _main\n                 U _printf\n0000000000000000 D _counter\n",
+          "expected": "функции: _main\nданные: _counter\nнужны извне: _printf\nлокальные: -\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Похожие имена",
+          "stdin": "0000000000000000 T main\n0000000000000000 T main_loop\n0000000000000030 t main_helper\n",
+          "expected": "функции: main main_loop\nданные: -\nнужны извне: -\nлокальные: main_helper\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Служебные имена",
+          "stdin": "                 U __stack_chk_fail\n0000000000000000 T checksum\n0000000000000000 r table.0\n",
+          "expected": "функции: checksum\nданные: -\nнужны извне: __stack_chk_fail\nлокальные: table.0\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Все группы",
+          "stdin": "0000000000000000 B errors\n0000000000000004 B warnings\n0000000000000000 D level\n                 U exit\n0000000000000000 T report\n0000000000000020 t format\n",
+          "expected": "функции: report\nданные: errors warnings level\nнужны извне: exit\nлокальные: format\n"
+        }
+      ],
+      "referenceSolution": "#include <ctype.h>\n#include <stdio.h>\n#include <string.h>\n\n#define GROUP 4096\n\nstatic char groups[4][GROUP];\n\nstatic void add(int group, const char *name) {\n    strcat(groups[group], \" \");\n    strcat(groups[group], name);\n}\n\nint main(void) {\n    static const char *titles[] = {\"функции\", \"данные\", \"нужны извне\", \"локальные\"};\n    char line[256];\n    char a[64];\n    char b[64];\n    char c[64];\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        int words = sscanf(line, \"%63s %63s %63s\", a, b, c);\n        const char *letter;\n        const char *name;\n        if (words == 3) {\n            letter = b;\n            name = c;\n        } else if (words == 2) {\n            letter = a;\n            name = b;\n        } else {\n            continue;\n        }\n        char kind = letter[0];\n        if (islower((unsigned char)kind)) {\n            add(3, name);\n        } else if (kind == 'T') {\n            add(0, name);\n        } else if (kind == 'D' || kind == 'B' || kind == 'R') {\n            add(1, name);\n        } else if (kind == 'U') {\n            add(2, name);\n        }\n    }\n    for (int i = 0; i < 4; i++) {\n        printf(\"%s:%s\\n\", titles[i], groups[i][0] != '\\0' ? groups[i] : \" -\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Число слов в строке различает два формата: у определённого символа есть адрес, у неопределённого — нет. `sscanf` с `%s` пропускает ведущие пробелы, поэтому строки `U printf` с длинным отступом разбираются без особого кода.\n\nГруппы повторяют вопросы, которые задают объектному файлу при ошибке линковки: что он **предлагает** другим файлам (функции и данные), что ему **нужно** (`U`) и что он **скрывает** (локальные символы, которые никогда не будут связаны с чужими `U`).",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "toolchain-pipeline-task-3",
+      "title": "Дерево включений",
+      "description": "Смоделируйте вывод `gcc -H`. В первой строке — число файлов `n`. Далее `n` строк: `имя k вкл₁ … вклₖ` — файл и `k` файлов, которые он подключает, в порядке `#include`. Первый файл — компилируемый `.c`.\n\nПрепроцессор обходит включения в глубину. Все заголовки защищены include guard, поэтому каждый заголовок обрабатывается **только при первом** включении — повторные пропускаются целиком.\n\nДля каждого обработанного заголовка напечатайте строку: точки по глубине вложенности (заголовок, подключённый из `.c`, — одна точка), пробел и имя. В конце напечатайте `заголовков: X`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "4\nmain.c 2 calc.h stdio.h\ncalc.h 1 types.h\ntypes.h 0\nstdio.h 0\n",
+          "output": ". calc.h\n.. types.h\n. stdio.h\nзаголовков: 3\n"
+        },
+        {
+          "input": "3\nmain.c 2 a.h b.h\na.h 1 b.h\nb.h 0\n",
+          "output": ". a.h\n.. b.h\nзаголовков: 2\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 30; 0 ≤ k ≤ 10; имена не длиннее 40 символов.",
+        "Каждый подключаемый файл описан в одной из n строк."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сохраните файлы в массивы: char names[30][64], char includes[30][10][64], int counts[30]. Поиск файла по имени — простой перебор со strcmp.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Рекурсивная функция visit(file, depth) перебирает включения файла; для каждого ещё не обработанного печатает depth точек, имя и вызывает visit(child, depth + 1).",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Отметку «обработан» ставьте до рекурсивного вызова: так циклические включения a.h ↔ b.h не зациклят программу — как и настоящие include guard.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\nmain.c 2 calc.h stdio.h\ncalc.h 1 types.h\ntypes.h 0\nstdio.h 0\n",
+          "expected": ". calc.h\n.. types.h\n. stdio.h\nзаголовков: 3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3\nmain.c 2 a.h b.h\na.h 1 b.h\nb.h 0\n",
+          "expected": ". a.h\n.. b.h\nзаголовков: 2\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Без заголовков",
+          "stdin": "1\nmain.c 0\n",
+          "expected": "заголовков: 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Циклическое включение",
+          "stdin": "3\nmain.c 1 a.h\na.h 1 b.h\nb.h 1 a.h\n",
+          "expected": ". a.h\n.. b.h\nзаголовков: 2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Повторные включения",
+          "stdin": "3\nmain.c 3 a.h a.h a.h\na.h 1 b.h\nb.h 0\n",
+          "expected": ". a.h\n.. b.h\nзаголовков: 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Глубокая цепочка",
+          "stdin": "5\nmain.c 1 h1.h\nh1.h 1 h2.h\nh2.h 1 h3.h\nh3.h 1 h4.h\nh4.h 0\n",
+          "expected": ". h1.h\n.. h2.h\n... h3.h\n.... h4.h\nзаголовков: 4\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Общие заголовки",
+          "stdin": "6\nmain.c 3 net.h log.h util.h\nnet.h 2 util.h types.h\nlog.h 2 types.h stdio.h\nutil.h 1 types.h\ntypes.h 0\nstdio.h 0\n",
+          "expected": ". net.h\n.. util.h\n... types.h\n. log.h\n.. stdio.h\nзаголовков: 5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Неподключённые файлы",
+          "stdin": "4\napp.c 1 config.h\nlib.h 1 config.h\nconfig.h 0\nunused.h 0\n",
+          "expected": ". config.h\nзаголовков: 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Порядок включения",
+          "stdin": "4\nmain.c 2 b.h a.h\na.h 1 c.h\nb.h 1 c.h\nc.h 0\n",
+          "expected": ". b.h\n.. c.h\n. a.h\nзаголовков: 3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Сервер",
+          "stdin": "7\nserver.c 2 server.h stdio.h\nserver.h 2 socket.h list.h\nsocket.h 1 types.h\nlist.h 2 types.h stdlib.h\ntypes.h 1 stdint.h\nstdint.h 0\nstdlib.h 0\n",
+          "expected": ". server.h\n.. socket.h\n... types.h\n.... stdint.h\n.. list.h\n... stdlib.h\nзаголовков: 6\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Заголовок включает сам себя",
+          "stdin": "2\nmain.c 1 self.h\nself.h 1 self.h\n",
+          "expected": ". self.h\nзаголовков: 1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define MAX_FILES 30\n#define MAX_INCLUDES 10\n#define NAME 64\n\nstatic char names[MAX_FILES][NAME];\nstatic char includes[MAX_FILES][MAX_INCLUDES][NAME];\nstatic int counts[MAX_FILES];\nstatic int seen[MAX_FILES];\nstatic int file_count;\nstatic int headers;\n\nstatic int find(const char *name) {\n    for (int i = 0; i < file_count; i++) {\n        if (strcmp(names[i], name) == 0) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nstatic void visit(int file, int depth) {\n    for (int i = 0; i < counts[file]; i++) {\n        int child = find(includes[file][i]);\n        if (child < 0 || seen[child]) {\n            continue;\n        }\n        seen[child] = 1;\n        headers++;\n        for (int d = 0; d < depth; d++) {\n            putchar('.');\n        }\n        printf(\" %s\\n\", names[child]);\n        visit(child, depth + 1);\n    }\n}\n\nint main(void) {\n    if (scanf(\"%d\", &file_count) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < file_count; i++) {\n        if (scanf(\"%63s %d\", names[i], &counts[i]) != 2) {\n            return 0;\n        }\n        for (int j = 0; j < counts[i]; j++) {\n            if (scanf(\"%63s\", includes[i][j]) != 1) {\n                return 0;\n            }\n        }\n    }\n    seen[0] = 1;\n    visit(0, 1);\n    printf(\"заголовков: %d\\n\", headers);\n    return 0;\n}\n",
+      "solutionExplanation": "Препроцессор встречает `#include` и сразу, не дочитав текущий файл, начинает читать подключаемый — это обход в глубину, и рекурсия выражает его напрямую. Глубина рекурсии и есть число точек в выводе `gcc -H`.\n\nInclude guard (`#ifndef UTIL_H` / `#define UTIL_H`) превращает повторное включение в пустое место: макрос уже определён, и всё содержимое пропускается. В модели это массив `seen`. Отметка ставится **до** обхода вложенных файлов — иначе пара заголовков, включающих друг друга, давала бы бесконечную рекурсию.\n\nНа реальном проекте `gcc -H` помогает найти, откуда пришёл конфликтующий тип и почему компиляция одного файла читает сотни заголовков.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "toolchain-pipeline-task-4",
+      "title": "Зависимости для make",
+      "description": "Смоделируйте `gcc -MM` для всех исходников проекта. Формат ввода — как в задаче «Дерево включений»: число файлов `n` и строки `имя k вкл₁ … вклₖ`. Системные заголовки записаны в угловых скобках, например `<stdio.h>`.\n\nДля каждого файла с расширением `.c` в порядке ввода напечатайте правило:\n\n```\nимя.o: имя.c заголовок₁ заголовок₂ …\n```\n\n- имя объектного файла — имя исходника без каталогов с расширением `.o` (как у `gcc -c`);\n- заголовки перечисляются в порядке **первого** включения при обходе в глубину, каждый один раз;\n- системные заголовки пропускаются вместе со всем, что подключается только через них.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "4\nsrc/main.c 2 calc.h <stdio.h>\nsrc/calc.c 1 calc.h\ncalc.h 1 types.h\ntypes.h 0\n",
+          "output": "main.o: src/main.c calc.h types.h\ncalc.o: src/calc.c calc.h types.h\n"
+        },
+        {
+          "input": "1\nhello.c 1 <stdio.h>\n",
+          "output": "hello.o: hello.c\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 30; 0 ≤ k ≤ 10; имена не длиннее 40 символов.",
+        "Каждый подключаемый заголовок проекта описан в одной из n строк; системные могут быть не описаны."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Используйте тот же обход в глубину, что и в «Дереве включений», но перед каждым .c сбрасывайте массив seen — у каждого исходника свой список зависимостей.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Системный заголовок узнаётся по первому символу: name[0] == '<'. Его не печатайте и не обходите.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Имя .o: возьмите часть после последнего / и замените всё после последней точки на \"o\".",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\nsrc/main.c 2 calc.h <stdio.h>\nsrc/calc.c 1 calc.h\ncalc.h 1 types.h\ntypes.h 0\n",
+          "expected": "main.o: src/main.c calc.h types.h\ncalc.o: src/calc.c calc.h types.h\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nhello.c 1 <stdio.h>\n",
+          "expected": "hello.o: hello.c\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Заголовок описан раньше",
+          "stdin": "2\nutil.h 0\nmain.c 1 util.h\n",
+          "expected": "main.o: main.c util.h\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Цикл",
+          "stdin": "3\na.c 1 x.h\nx.h 1 y.h\ny.h 1 x.h\n",
+          "expected": "a.o: a.c x.h y.h\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Через системный не идём",
+          "stdin": "4\nmain.c 1 <stdlib.h>\n<stdlib.h> 1 internal.h\ninternal.h 0\nother.c 1 internal.h\n",
+          "expected": "main.o: main.c\nother.o: other.c internal.h\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Три исходника",
+          "stdin": "5\na.c 2 b.h c.h\nb.c 1 b.h\nc.c 0\nb.h 1 c.h\nc.h 0\n",
+          "expected": "a.o: a.c b.h c.h\nb.o: b.c b.h c.h\nc.o: c.c\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Порядок первого включения",
+          "stdin": "3\nmain.c 2 b.h a.h\na.h 0\nb.h 1 a.h\n",
+          "expected": "main.o: main.c b.h a.h\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Точка в каталоге",
+          "stdin": "2\nlib/v1.2/io.c 1 io.h\nio.h 0\n",
+          "expected": "io.o: lib/v1.2/io.c io.h\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Проект с тестами",
+          "stdin": "6\nserver/net.c 3 net.h <sys/socket.h> log.h\nserver/log.c 2 log.h <stdio.h>\nnet.h 1 types.h\nlog.h 1 types.h\ntypes.h 1 <stdint.h>\ntests/net_test.c 2 net.h <assert.h>\n",
+          "expected": "net.o: server/net.c net.h types.h log.h\nlog.o: server/log.c log.h types.h\nnet_test.o: tests/net_test.c net.h types.h\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Нет файлов .c",
+          "stdin": "2\nonly.h 0\nnot_c.cpp 1 only.h\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-9",
+          "name": "Повторные включения",
+          "stdin": "3\nm.c 3 a.h a.h a.h\na.h 1 b.h\nb.h 0\n",
+          "expected": "m.o: m.c a.h b.h\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define MAX_FILES 30\n#define MAX_INCLUDES 10\n#define NAME 64\n\nstatic char names[MAX_FILES][NAME];\nstatic char includes[MAX_FILES][MAX_INCLUDES][NAME];\nstatic int counts[MAX_FILES];\nstatic int seen[MAX_FILES];\nstatic int file_count;\n\nstatic int find(const char *name) {\n    for (int i = 0; i < file_count; i++) {\n        if (strcmp(names[i], name) == 0) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nstatic void visit(int file) {\n    for (int i = 0; i < counts[file]; i++) {\n        const char *name = includes[file][i];\n        int child = find(name);\n        if (name[0] == '<' || child < 0 || seen[child]) {\n            continue;\n        }\n        seen[child] = 1;\n        printf(\" %s\", name);\n        visit(child);\n    }\n}\n\nstatic int is_source(const char *name) {\n    size_t length = strlen(name);\n    return length > 2 && strcmp(name + length - 2, \".c\") == 0;\n}\n\nint main(void) {\n    if (scanf(\"%d\", &file_count) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < file_count; i++) {\n        if (scanf(\"%63s %d\", names[i], &counts[i]) != 2) {\n            return 0;\n        }\n        for (int j = 0; j < counts[i]; j++) {\n            if (scanf(\"%63s\", includes[i][j]) != 1) {\n                return 0;\n            }\n        }\n    }\n    for (int i = 0; i < file_count; i++) {\n        if (!is_source(names[i])) {\n            continue;\n        }\n        memset(seen, 0, sizeof seen);\n        seen[i] = 1;\n        const char *slash = strrchr(names[i], '/');\n        const char *base = slash != NULL ? slash + 1 : names[i];\n        printf(\"%.*so: %s\", (int)strlen(base) - 1, base, names[i]);\n        visit(i);\n        putchar('\\n');\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Правило `main.o: main.c calc.h types.h` говорит Make: «если любой файл справа новее `main.o` — пересобери». Поэтому в списке должны быть **все** заголовки, прочитанные при компиляции, включая подключённые через цепочку: правка `types.h` меняет смысл кода в `main.c`, даже если он подключает `types.h` не напрямую.\n\nСистемные заголовки `-MM` пропускает: они меняются только при обновлении компилятора, а их проверка замедлила бы каждую сборку (флаг `-M` включает и их). Массив `seen` сбрасывается для каждого исходника, потому что каждый `.c` — отдельная единица трансляции со своим набором заголовков.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "toolchain-pipeline-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int a = 1;\n\n    printf(\"%d\\n\", __LINE__ + a);\n    return 0;\n}",
+        "explanation": "__LINE__ заменяется номером строки, на которой стоит: это строка 6. 6 + 1 = 7.",
+        "type": "text",
+        "answers": ["7"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Чем #include \"util.h\" отличается от #include <util.h>?",
+        "explanation": "После каталога исходника обе формы ищут в каталогах -I и системных. Поэтому свои заголовки пишут в кавычках.",
+        "options": [
+          "Кавычки сначала ищут файл в каталоге текущего исходника, угловые скобки — нет",
+          "Угловые скобки подключают заголовок только один раз",
+          "Кавычки подключают файл без препроцессора",
+          "Ничем: это две записи одного и того же"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Заголовки проекта лежат в каталоге include. Какой флаг нужно передать компилятору?",
+        "explanation": "-I добавляет каталог поиска заголовков. -L и -l относятся к библиотекам для линковщика, -D определяет макрос.",
+        "options": ["-Iinclude", "-Linclude", "-linclude", "-Dinclude"],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Программа собрана командой gcc -DLIMIT=10 main.c -o app. Что выведет ./app?",
+        "code": "#include <stdio.h>\n\n#ifndef LIMIT\n#define LIMIT 3\n#endif\n\nint main(void) {\n    printf(\"%d\\n\", LIMIT * 2);\n    return 0;\n}",
+        "explanation": "Макрос LIMIT уже определён флагом -D, поэтому #ifndef пропускает запасное значение 3.",
+        "type": "text",
+        "answers": ["20"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Что означает строка \"                 U strlen\" в выводе nm main.o?",
+        "explanation": "U — undefined: символ нужно найти в другом объектном файле или библиотеке. Адреса нет, поэтому слева пусто.",
+        "options": [
+          "main.o использует strlen, но не определяет её",
+          "strlen определена в main.o как глобальная функция",
+          "strlen объявлена static",
+          "strlen не используется и будет удалена"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Какие символы этого файла nm покажет строчными буквами? Выберите все.",
+        "code": "static int hits;\nint misses;\nstatic void reset(void) { hits = 0; }\nint ratio(void) { reset(); return misses; }",
+        "codeLanguage": "c",
+        "explanation": "Строчная буква — локальный символ. Это всё, что объявлено static на уровне файла: hits (b) и reset (t).",
+        "type": "multiple",
+        "options": ["hits", "reset", "misses", "ratio"],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q7",
+        "question": "Почему в объектном файле вызов printf выглядит как e8 00 00 00 00?",
+        "explanation": "Рядом стоит запись о перемещении: какой символ вписать и по какому смещению. Так связываются раздельно скомпилированные файлы.",
+        "options": [
+          "Адрес printf ещё неизвестен: нули — место, которое заполнит линковщик",
+          "Компилятор удалил вызов как бесполезный",
+          "Нули означают вызов функции по адресу 0",
+          "Так кодируется любой вызов функции в x86-64"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какой буквой nm обозначит глобальную переменную int total; без инициализатора?",
+        "explanation": "Переменные, равные нулю, попадают в секцию .bss, а глобальный символ обозначается заглавной буквой.",
+        "type": "text",
+        "answers": ["B"],
+        "placeholder": "Буква"
+      },
+      {
+        "id": "q9",
+        "question": "Для чего нужен вывод gcc -MM src/main.c?",
+        "explanation": "Строка main.o: src/main.c include/calc.h … — готовое правило зависимостей для Make.",
+        "options": [
+          "Чтобы система сборки знала, при изменении каких файлов пересобирать main.o",
+          "Чтобы посмотреть машинный код main.o",
+          "Чтобы проверить код без компиляции",
+          "Чтобы получить список системных библиотек"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

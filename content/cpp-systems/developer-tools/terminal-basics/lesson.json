@@ -1,0 +1,593 @@
+{
+  "id": "terminal-basics",
+  "title": "Терминал и основные команды",
+  "description": "Оболочка и приглашение, абсолютные и относительные пути, команды для работы с файлами, запуск своей программы, код завершения, цепочки && и ||, потоки stdin/stdout/stderr и перенаправления.",
+  "moduleId": "developer-tools",
+  "order": 1,
+  "difficulty": "beginner",
+  "estimatedMinutes": 50,
+  "prerequisites": [],
+  "objectives": [
+    "Перемещаться по файловой системе и работать с файлами из терминала",
+    "Отличать абсолютные пути от относительных и вычислять, куда ведёт путь",
+    "Запускать свою программу и читать её код завершения",
+    "Перенаправлять stdin, stdout и stderr и строить конвейеры"
+  ],
+  "tags": ["Терминал", "Shell", "Пути", "Перенаправления", "Код завершения"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "terminal-basics-task-1",
+    "title": "Как wc",
+    "description": "Команда `wc` считает строки, слова и байты. Напишите её упрощённую версию: прочитайте весь stdin до конца и напечатайте три числа через пробел — количество строк, слов и байтов.\n\n- **Строка** — это символ перевода строки `\\n`. Последняя строка без `\\n` в конце не считается (так делает и настоящий `wc`).\n- **Слово** — непрерывная последовательность символов, не являющихся пробельными (`isspace`).\n- **Байт** — любой прочитанный символ, включая пробелы и переводы строк.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "hello world\n",
+        "output": "1 2 12\n"
+      },
+      {
+        "input": "one\ntwo three\n",
+        "output": "2 3 14\n"
+      }
+    ],
+    "constraints": ["Размер ввода — не больше 10 000 байтов.", "Ввод может быть пустым."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Читайте посимвольно: int c; while ((c = getchar()) != EOF) { ... }. Переменная c должна быть int, чтобы отличить EOF от байта.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Для слов храните флаг «сейчас внутри слова». Слово начинается, когда после пробельного символа встретился непробельный.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Русская буква в UTF-8 занимает два байта, поэтому «мир» — это 6 байтов.",
+        "order": 3
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "hello world\n",
+        "expected": "1 2 12\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "one\ntwo three\n",
+        "expected": "2 3 14\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Пустой ввод",
+        "stdin": "",
+        "expected": "0 0 0\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Без перевода строки",
+        "stdin": "abc",
+        "expected": "0 1 3\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Лишние пробелы",
+        "stdin": "  spaced   out  \n",
+        "expected": "1 2 17\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Только переводы строк",
+        "stdin": "\n\n\n",
+        "expected": "3 0 3\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Табуляции",
+        "stdin": "tab\tseparated\twords\n",
+        "expected": "1 3 20\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Кириллица",
+        "stdin": "привет мир\n",
+        "expected": "1 2 20\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Пустая строка в середине",
+        "stdin": "a\n\nb\n",
+        "expected": "3 2 5\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Только пробелы",
+        "stdin": "   \n",
+        "expected": "1 0 4\n"
+      },
+      {
+        "id": "hidden-9",
+        "name": "Команды",
+        "stdin": "gcc -std=c17 -Wall -Wextra main.c -o app\n./app < in.txt > out.txt\n",
+        "expected": "2 12 66\n"
+      }
+    ],
+    "referenceSolution": "#include <ctype.h>\n#include <stdio.h>\n\nint main(void) {\n    long lines = 0;\n    long words = 0;\n    long bytes = 0;\n    int in_word = 0;\n    int c;\n    while ((c = getchar()) != EOF) {\n        bytes++;\n        if (c == '\\n') {\n            lines++;\n        }\n        if (isspace(c)) {\n            in_word = 0;\n        } else if (!in_word) {\n            in_word = 1;\n            words++;\n        }\n    }\n    printf(\"%ld %ld %ld\\n\", lines, words, bytes);\n    return 0;\n}\n",
+    "solutionExplanation": "Программа делает один проход по вводу: каждый символ — плюс один байт, каждый `\\n` — плюс одна строка. Слово считается в момент его **начала** — при переходе из пробельного символа в непробельный, поэтому несколько пробелов подряд не создают пустых слов.\n\n`getchar` возвращает байт как `unsigned char`, приведённый к `int`, — такое значение безопасно передавать в `isspace`. Байты русских букв больше 127 и не считаются пробельными, поэтому «привет мир» — два слова и 19 байтов.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "terminal-basics-task-2",
+      "title": "Переход по каталогам",
+      "description": "Смоделируйте команду `cd` и напечатайте, что показал бы `pwd` после каждой команды.\n\nВ первой строке — домашний каталог (абсолютный путь), во второй — число команд `n`. Далее `n` строк вида `cd путь` или просто `cd`. В начале текущий каталог — домашний.\n\nПравила:\n- `cd` без аргумента и `cd ~` переходят в домашний каталог, `~/a/b` — путь от домашнего;\n- `cd -` возвращает в каталог, где вы были перед последним `cd`;\n- путь, начинающийся с `/`, — абсолютный, остальные отсчитываются от текущего каталога;\n- `.` — текущий каталог, `..` — родительский (у корня `/` родитель — он сам), лишние `/` игнорируются.\n\nКаталоги считаются существующими. После каждой команды напечатайте текущий каталог: без `/` в конце, корень — как `/`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "/home/student\n3\ncd projects\ncd ..\ncd /tmp\n",
+          "output": "/home/student/projects\n/home/student\n/tmp\n"
+        },
+        {
+          "input": "/home/ann\n4\ncd ~/code/calc\ncd ../../music\ncd -\ncd\n",
+          "output": "/home/ann/code/calc\n/home/ann/music\n/home/ann/code/calc\n/home/ann\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 20.",
+        "Имена каталогов не содержат пробелов; длина любого пути — не больше 200 символов.",
+        "cd - не встречается раньше первого другого cd."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Читайте строки через fgets и отрезайте перевод строки: line[strcspn(line, \"\\n\")] = '\\0';. Аргумент начинается после \"cd\" и пробелов.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сведите все случаи к одному: превратите ~, ~/… и - в обычный путь, а затем примените его к текущему каталогу.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Разбивайте путь на части через strtok(parts, \"/\"): часть \".\" пропускайте, \"..\" отрезает всё после последнего / (strrchr), остальное дописывается через \"/\".",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "/home/student\n3\ncd projects\ncd ..\ncd /tmp\n",
+          "expected": "/home/student/projects\n/home/student\n/tmp\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "/home/ann\n4\ncd ~/code/calc\ncd ../../music\ncd -\ncd\n",
+          "expected": "/home/ann/code/calc\n/home/ann/music\n/home/ann/code/calc\n/home/ann\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Выше корня",
+          "stdin": "/home/u\n3\ncd /\ncd ..\ncd ../..\n",
+          "expected": "/\n/\n/\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Точки",
+          "stdin": "/home/u\n2\ncd ./a/./b/\ncd .\n",
+          "expected": "/home/u/a/b\n/home/u/a/b\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Лишние слэши",
+          "stdin": "/home/u\n2\ncd //usr///lib/\ncd ../share//doc\n",
+          "expected": "/usr/lib\n/usr/share/doc\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "cd - туда и обратно",
+          "stdin": "/home/u\n4\ncd /etc\ncd -\ncd -\ncd -\n",
+          "expected": "/etc\n/home/u\n/etc\n/home/u\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Абсолютный путь с ..",
+          "stdin": "/home/u\n1\ncd /usr/local/../bin\n",
+          "expected": "/usr/bin\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Домашний каталог — корень",
+          "stdin": "/\n3\ncd ~/tmp\ncd ..\ncd ~\n",
+          "expected": "/tmp\n/\n/\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Относительно корня",
+          "stdin": "/home/u\n3\ncd /\ncd etc\ncd nginx/sites\n",
+          "expected": "/\n/etc\n/etc/nginx/sites\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Много уровней вверх",
+          "stdin": "/home/u/work\n2\ncd ../../../../../x\ncd ~/../u/./work/src\n",
+          "expected": "/x\n/home/u/u/work/src\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Сессия работы",
+          "stdin": "/home/dev\n6\ncd project\ncd build\ncd ../src/core\ncd ~\ncd -\ncd ../../tests\n",
+          "expected": "/home/dev/project\n/home/dev/project/build\n/home/dev/project/src/core\n/home/dev\n/home/dev/project/src/core\n/home/dev/project/tests\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define MAX_PATH 512\n\nstatic void strip(char *line) {\n    line[strcspn(line, \"\\r\\n\")] = '\\0';\n}\n\n/* Применяет путь path (абсолютный или относительный) к абсолютному каталогу dir. */\nstatic void change_dir(char *dir, const char *path) {\n    char result[MAX_PATH] = \"\";\n    char parts[2 * MAX_PATH];\n    if (path[0] != '/' && strcmp(dir, \"/\") != 0) {\n        strcpy(result, dir);\n    }\n    strcpy(parts, path);\n    for (char *part = strtok(parts, \"/\"); part != NULL; part = strtok(NULL, \"/\")) {\n        if (strcmp(part, \".\") == 0) {\n            continue;\n        }\n        if (strcmp(part, \"..\") == 0) {\n            char *slash = strrchr(result, '/');\n            if (slash != NULL) {\n                *slash = '\\0';\n            }\n            continue;\n        }\n        strcat(result, \"/\");\n        strcat(result, part);\n    }\n    strcpy(dir, result[0] != '\\0' ? result : \"/\");\n}\n\nint main(void) {\n    char home[MAX_PATH];\n    char line[MAX_PATH];\n    char dir[MAX_PATH];\n    char previous[MAX_PATH];\n    int n = 0;\n    if (fgets(home, sizeof home, stdin) == NULL || fgets(line, sizeof line, stdin) == NULL) {\n        return 0;\n    }\n    strip(home);\n    sscanf(line, \"%d\", &n);\n    strcpy(dir, home);\n    strcpy(previous, home);\n    for (int i = 0; i < n && fgets(line, sizeof line, stdin) != NULL; i++) {\n        strip(line);\n        const char *arg = line + 2;\n        while (*arg == ' ') {\n            arg++;\n        }\n        char target[2 * MAX_PATH];\n        if (*arg == '\\0' || strcmp(arg, \"~\") == 0) {\n            strcpy(target, home);\n        } else if (strncmp(arg, \"~/\", 2) == 0) {\n            snprintf(target, sizeof target, \"%s%s\", home, arg + 1);\n        } else if (strcmp(arg, \"-\") == 0) {\n            strcpy(target, previous);\n        } else {\n            strcpy(target, arg);\n        }\n        strcpy(previous, dir);\n        change_dir(dir, target);\n        puts(dir);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Все виды аргументов сводятся к одному действию «применить путь к каталогу». `~` и `-` заменяются абсолютными путями, а дальше работает общая функция `change_dir`.\n\nВнутри неё каталог хранится без завершающего `/`, а корень — пустой строкой: так `..` всегда означает «отрезать последний компонент», а у корня отрезать нечего — он остаётся корнем. `strtok` пропускает пустые части между соседними `/`, поэтому `//usr///lib/` превращается в `/usr/lib` без особого кода.\n\nРовно так оболочка и вычисляет новый каталог; для реальных путей она ещё проверяет, что каталог существует, и разрешает символические ссылки.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "terminal-basics-task-3",
+      "title": "Перенаправления",
+      "description": "Дана одна команда оболочки — слова через пробел. Определите, куда после всех перенаправлений направлены три стандартных потока, и напечатайте:\n\n```\nstdin: …\nstdout: …\nstderr: …\n```\n\nПо умолчанию все потоки — `терминал`. Перенаправления обрабатываются **слева направо**:\n\n| Слово | Действие |\n| --- | --- |\n| `< файл` | stdin читается из файла |\n| `> файл`, `1> файл` | stdout пишется в файл |\n| `>> файл` | stdout дописывается в файл |\n| `2> файл` | stderr пишется в файл |\n| `2>> файл` | stderr дописывается в файл |\n| `&> файл` | stdout и stderr пишутся в файл |\n| `2>&1` | stderr направляется туда, куда **сейчас** направлен stdout |\n| `>&2` | stdout направляется туда, куда сейчас направлен stderr |\n\nОператор и имя файла разделены пробелом. Для дописывания печатайте имя файла с пометкой ` (дописать)`. Остальные слова — имя программы и её аргументы — на ответ не влияют.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "./calc\n",
+          "output": "stdin: терминал\nstdout: терминал\nstderr: терминал\n"
+        },
+        {
+          "input": "./calc < in.txt > out.txt\n",
+          "output": "stdin: in.txt\nstdout: out.txt\nstderr: терминал\n"
+        }
+      ],
+      "constraints": [
+        "Команда содержит от 1 до 30 слов, каждое — не длиннее 100 символов.",
+        "После операторов с файлом всегда идёт имя файла."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Читайте слова по одному: while (scanf(\"%255s\", word) == 1). После оператора с файлом прочитайте ещё одно слово — имя.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Храните три строки-направления. 2>&1 — это просто копия: strcpy(err, out). Поэтому важен момент, когда она выполняется.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Пометку дописывания удобно сразу записать в направление: snprintf(out, sizeof out, \"%s (дописать)\", name).",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "./calc\n",
+          "expected": "stdin: терминал\nstdout: терминал\nstderr: терминал\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "./calc < in.txt > out.txt\n",
+          "expected": "stdin: in.txt\nstdout: out.txt\nstderr: терминал\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Оба потока в лог",
+          "stdin": "./app > log.txt 2>&1\n",
+          "expected": "stdin: терминал\nstdout: log.txt\nstderr: log.txt\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Ловушка порядка",
+          "stdin": "./app 2>&1 > log.txt\n",
+          "expected": "stdin: терминал\nstdout: log.txt\nstderr: терминал\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Дописывание",
+          "stdin": "./tests >> results.txt\n",
+          "expected": "stdin: терминал\nstdout: results.txt (дописать)\nstderr: терминал\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Только ошибки",
+          "stdin": "make 2> errors.txt\n",
+          "expected": "stdin: терминал\nstdout: терминал\nstderr: errors.txt\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Короткая запись &>",
+          "stdin": "./app -v &> all.txt\n",
+          "expected": "stdin: терминал\nstdout: all.txt\nstderr: all.txt\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "stdout в stderr",
+          "stdin": "echo ошибка >&2\n",
+          "expected": "stdin: терминал\nstdout: терминал\nstderr: терминал\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Последнее побеждает",
+          "stdin": "./a > x.txt > y.txt\n",
+          "expected": "stdin: терминал\nstdout: y.txt\nstderr: терминал\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Три потока",
+          "stdin": "./server 2>> server.log < config.txt 1> out.txt\n",
+          "expected": "stdin: config.txt\nstdout: out.txt\nstderr: server.log (дописать)\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "stdout за stderr",
+          "stdin": "./a 2> err.txt >&2\n",
+          "expected": "stdin: терминал\nstdout: err.txt\nstderr: err.txt\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define WORD 256\n#define TARGET (WORD + 32)\n\nint main(void) {\n    char in[TARGET] = \"терминал\";\n    char out[TARGET] = \"терминал\";\n    char err[TARGET] = \"терминал\";\n    char word[WORD];\n    char name[WORD];\n    while (scanf(\"%255s\", word) == 1) {\n        if (strcmp(word, \"2>&1\") == 0) {\n            strcpy(err, out);\n        } else if (strcmp(word, \">&2\") == 0) {\n            strcpy(out, err);\n        } else if (strcmp(word, \"<\") == 0 && scanf(\"%255s\", name) == 1) {\n            strcpy(in, name);\n        } else if ((strcmp(word, \">\") == 0 || strcmp(word, \"1>\") == 0) &&\n                   scanf(\"%255s\", name) == 1) {\n            strcpy(out, name);\n        } else if (strcmp(word, \">>\") == 0 && scanf(\"%255s\", name) == 1) {\n            snprintf(out, sizeof out, \"%s (дописать)\", name);\n        } else if (strcmp(word, \"2>\") == 0 && scanf(\"%255s\", name) == 1) {\n            strcpy(err, name);\n        } else if (strcmp(word, \"2>>\") == 0 && scanf(\"%255s\", name) == 1) {\n            snprintf(err, sizeof err, \"%s (дописать)\", name);\n        } else if (strcmp(word, \"&>\") == 0 && scanf(\"%255s\", name) == 1) {\n            strcpy(out, name);\n            strcpy(err, name);\n        }\n    }\n    printf(\"stdin: %s\\nstdout: %s\\nstderr: %s\\n\", in, out, err);\n    return 0;\n}\n",
+      "solutionExplanation": "Перенаправление — это присваивание: «теперь поток 1 ведёт в такой-то файл». Поэтому последнее перенаправление одного потока побеждает, а `2>&1` копирует **текущее** значение stdout, а не связывает потоки навсегда.\n\nОтсюда классическая ловушка: в `./app 2>&1 > log.txt` stderr копирует направление stdout, когда тот ещё ведёт в терминал. Ошибки остаются на экране, и только stdout уходит в файл. Правильный порядок — `./app > log.txt 2>&1` или короткая запись `&> log.txt`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "terminal-basics-task-4",
+      "title": "Цепочки && и ||",
+      "description": "Дана цепочка команд, соединённых операторами `&&`, `||` и `;`. Каждая команда записана как `имя:код`, где `код` — код завершения, который она вернула бы при запуске.\n\nСмоделируйте оболочку. Для каждой команды по порядку напечатайте `имя -> код`, если она выполнилась, или `имя -> пропущена`. В конце напечатайте `итог: S`, где `S` — значение `$?` после всей цепочки.\n\nПравила оболочки:\n- первая команда и команда после `;` выполняются всегда;\n- команда после `&&` выполняется, только если **последняя выполненная** команда вернула 0;\n- команда после `||` выполняется, только если последняя выполненная команда вернула не 0;\n- пропущенная команда не меняет `$?`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "gcc:0 && ./app:0\n",
+          "output": "gcc -> 0\n./app -> 0\nитог: 0\n"
+        },
+        {
+          "input": "gcc:1 && ./app:0 || echo:0\n",
+          "output": "gcc -> 1\n./app -> пропущена\necho -> 0\nитог: 0\n"
+        }
+      ],
+      "constraints": [
+        "В цепочке от 1 до 20 команд; слова разделены пробелами.",
+        "Коды завершения — от 0 до 255; имена не содержат двоеточий."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Читайте слова через scanf(\"%127s\", word). Слово — либо оператор (&&, ||, ;), либо команда. Запомните последний оператор.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Отделите код от имени: char *colon = strrchr(word, ':'); *colon = '\\0'; int code = atoi(colon + 1);",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Решение «выполнять ли» зависит только от оператора перед командой и текущего $?: run = op == ';' || (op == '&' && status == 0) || (op == '|' && status != 0).",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "gcc:0 && ./app:0\n",
+          "expected": "gcc -> 0\n./app -> 0\nитог: 0\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "gcc:1 && ./app:0 || echo:0\n",
+          "expected": "gcc -> 1\n./app -> пропущена\necho -> 0\nитог: 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна неудачная команда",
+          "stdin": "make:2\n",
+          "expected": "make -> 2\nитог: 2\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Точка с запятой",
+          "stdin": "a:1 ; b:0\n",
+          "expected": "a -> 1\nb -> 0\nитог: 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Пропуск и продолжение",
+          "stdin": "a:0 || b:0 && c:1\n",
+          "expected": "a -> 0\nb -> пропущена\nc -> 1\nитог: 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Обрыв цепочки",
+          "stdin": "a:0 && b:3 && c:0\n",
+          "expected": "a -> 0\nb -> 3\nc -> пропущена\nитог: 3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Первый успех",
+          "stdin": "a:1 || b:1 || c:0 || d:0\n",
+          "expected": "a -> 1\nb -> 1\nc -> 0\nd -> пропущена\nитог: 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Не совсем if/else",
+          "stdin": "build:0 && test:1 || notify:0 ; clean:0\n",
+          "expected": "build -> 0\ntest -> 1\nnotify -> 0\nclean -> 0\nитог: 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Всё пропущено",
+          "stdin": "x:4 && y:0 && z:0\n",
+          "expected": "x -> 4\ny -> пропущена\nz -> пропущена\nитог: 4\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Последний код",
+          "stdin": "a:0 ; b:1 ; c:2\n",
+          "expected": "a -> 0\nb -> 1\nc -> 2\nитог: 2\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Длинная цепочка",
+          "stdin": "mkdir:0 && cd:0 && cmake:0 && make:1 || echo:0 ; ls:0 && pwd:0\n",
+          "expected": "mkdir -> 0\ncd -> 0\ncmake -> 0\nmake -> 1\necho -> 0\nls -> 0\npwd -> 0\nитог: 0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint main(void) {\n    char word[128];\n    char op = ';';\n    int status = 0;\n    while (scanf(\"%127s\", word) == 1) {\n        if (strcmp(word, \"&&\") == 0 || strcmp(word, \"||\") == 0 || strcmp(word, \";\") == 0) {\n            op = word[0];\n            continue;\n        }\n        char *colon = strrchr(word, ':');\n        int code = 0;\n        if (colon != NULL) {\n            *colon = '\\0';\n            code = atoi(colon + 1);\n        }\n        int run = op == ';' || (op == '&' && status == 0) || (op == '|' && status != 0);\n        if (run) {\n            status = code;\n            printf(\"%s -> %d\\n\", word, code);\n        } else {\n            printf(\"%s -> пропущена\\n\", word);\n        }\n    }\n    printf(\"итог: %d\\n\", status);\n    return 0;\n}\n",
+      "solutionExplanation": "У `&&` и `||` в оболочке одинаковый приоритет, и цепочка разбирается слева направо. Каждая команда смотрит только на оператор перед собой и на `$?` — код последней **выполненной** команды.\n\nПоэтому `gcc:1 && ./app:0 || echo:0` работает как «если не собралось — сообщи»: `./app` пропущена, `$?` остался равен 1, и `echo` выполняется. Но запись `a && b || c` — не полноценный if/else: если `a` успешна, а `b` упала, `c` тоже выполнится.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "terminal-basics-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Какой каталог напечатает последняя команда?",
+        "code": "$ pwd\n/home/student\n$ cd projects\n$ cd ../music\n$ cd ./rock\n$ pwd",
+        "codeLanguage": "text",
+        "explanation": "/home/student → /home/student/projects → .. возвращает в /home/student, затем music → /home/student/music, ./rock → /home/student/music/rock.",
+        "type": "text",
+        "answers": ["/home/student/music/rock"],
+        "placeholder": "Абсолютный путь"
+      },
+      {
+        "id": "q2",
+        "question": "Текущий каталог — /home/student/projects/calc. Каким абсолютным путём является ../notes.txt?",
+        "explanation": ".. — родитель текущего каталога, то есть /home/student/projects; к нему добавляется notes.txt.",
+        "type": "text",
+        "answers": ["/home/student/projects/notes.txt"],
+        "placeholder": "Абсолютный путь"
+      },
+      {
+        "id": "q3",
+        "question": "Что сделает команда ./calc > input.txt, если в input.txt лежат тестовые данные?",
+        "explanation": "Знак > направляет stdout в файл и сначала очищает его. Данные теста потеряны. Чтобы передать файл на вход, нужен знак <.",
+        "options": [
+          "Перезапишет input.txt тем, что программа выведет в stdout",
+          "Передаст содержимое input.txt программе на вход",
+          "Допишет вывод программы в конец input.txt",
+          "Выведет ошибку: файл уже существует"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Программу запустили командой ./prog > out.txt. Что окажется в файле out.txt?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    printf(\"A \");\n    fprintf(stderr, \"B \");\n    printf(\"C\\n\");\n    return 0;\n}",
+        "explanation": "В файл перенаправлен только stdout. Строка B напечатана в stderr — она появится на экране, а не в файле.",
+        "type": "text",
+        "answers": ["A C"],
+        "placeholder": "Содержимое файла"
+      },
+      {
+        "id": "q5",
+        "question": "Какое число напечатает echo?",
+        "code": "$ cat code.c\nint main(void) {\n    return 3;\n}\n$ gcc code.c -o code\n$ ./code ; echo $?",
+        "codeLanguage": "text",
+        "explanation": "Переменная $? хранит код завершения последней команды — значение, которое вернул main.",
+        "type": "text",
+        "answers": ["3"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q6",
+        "question": "Компиляция в команде gcc main.c -o app && ./app завершилась с ошибкой. Что произойдёт дальше?",
+        "explanation": "Оператор && выполняет вторую команду только при коде завершения 0. Поэтому устаревший файл app не запустится по ошибке.",
+        "options": [
+          "./app не запустится",
+          "Запустится старая версия app, если она есть",
+          "./app запустится, но сразу завершится",
+          "Оболочка повторит компиляцию"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Почему программу из текущего каталога запускают как ./calc, а не calc?",
+        "explanation": "Текущий каталог исключён из PATH ради безопасности: иначе чужой файл с именем ls в скачанной папке мог бы запуститься вместо системного.",
+        "options": [
+          "Оболочка ищет команды только в каталогах из PATH, а текущий каталог туда не входит",
+          "Без ./ программа запустится с правами администратора",
+          "Запись ./ заставляет оболочку перекомпилировать программу",
+          "calc — зарезервированное слово оболочки"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "После каких команд сообщения об ошибках (stderr) попадут в файл? Выберите все.",
+        "explanation": "Перенаправления выполняются слева направо. В 2>&1 > out.txt поток stderr копирует направление stdout в момент записи — тогда это ещё терминал, а уже потом stdout уходит в файл.",
+        "type": "multiple",
+        "options": [
+          "./app 2> err.txt",
+          "./app &> all.txt",
+          "./app > out.txt 2>&1",
+          "./app 2>&1 > out.txt",
+          "./app > out.txt"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q9",
+        "question": "Чем опасна команда rm?",
+        "explanation": "rm сразу освобождает файл. Перед rm -r проверьте pwd и ls, особенно если в команде есть шаблон *.",
+        "options": [
+          "Файлы удаляются без корзины и без подтверждения",
+          "Она удаляет файлы только после перезагрузки",
+          "Она перемещает файлы в каталог /tmp",
+          "Ничем: удалённый файл всегда можно восстановить командой undo"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

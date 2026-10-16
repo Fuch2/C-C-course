@@ -1,0 +1,592 @@
+{
+  "id": "c17-char",
+  "title": "Символы: char и таблица ASCII",
+  "description": "Тип char и коды символов, таблица ASCII, арифметика на символах, функции ctype.h, посимвольный ввод через getchar и ограничения с UTF-8.",
+  "moduleId": "c-fundamentals",
+  "order": 31,
+  "difficulty": "beginner",
+  "estimatedMinutes": 45,
+  "prerequisites": ["c17-multidimensional"],
+  "objectives": [
+    "Хранить символы в char и печатать их как символы и как коды",
+    "Переводить символ цифры в число и обратно, менять регистр арифметикой",
+    "Классифицировать и преобразовывать символы функциями ctype.h",
+    "Обрабатывать текст посимвольно через getchar до конца ввода"
+  ],
+  "tags": ["C17", "char", "ASCII", "getchar"],
+  "published": true,
+  "standard": "c17",
+  "completion": "practice",
+  "exercise": {
+    "id": "c17-char-task-1",
+    "title": "Код символа",
+    "description": "Прочитайте один непробельный символ и напечатайте через пробел: его код, символ со следующим кодом и символ с предыдущим кодом.\n\n**Пример:** `B` → `66 C A`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c17",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "B",
+        "output": "66 C A\n"
+      },
+      {
+        "input": "5",
+        "output": "53 6 4\n"
+      }
+    ],
+    "constraints": ["Символ — печатный ASCII-символ с кодом от 34 до 125."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Чтение: scanf(\" %c\", &c).",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "printf(\"%d %c %c\\n\", c, c + 1, c - 1);",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "B",
+        "expected": "66 C A\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "5",
+        "expected": "53 6 4\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "a",
+        "expected": "97 b `\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "z",
+        "expected": "122 { y\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "A",
+        "expected": "65 B @\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "0",
+        "expected": "48 1 /\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "9",
+        "expected": "57 : 8\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "\"",
+        "expected": "34 # !\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "}",
+        "expected": "125 ~ |\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    char c;\n    scanf(\" %c\", &c);\n    printf(\"%d %c %c\\n\", c, c + 1, c - 1);\n    return 0;\n}\n",
+    "solutionExplanation": "Символ — это число, поэтому `c + 1` — следующий код. Печать через `%c` превращает код обратно в символ. При передаче в `printf` `char` автоматически расширяется до `int`, и `%d` печатает код.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "c17-char-task-2",
+      "title": "Статистика текста",
+      "description": "Прочитайте текст до конца ввода и напечатайте четыре числа через пробел: количество латинских букв, цифр, пробельных символов (пробелы, табуляции, переводы строк) и всех остальных символов.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "Hi, C17!\n",
+          "output": "3 2 2 2\n"
+        },
+        {
+          "input": "",
+          "output": "0 0 0 0\n"
+        }
+      ],
+      "constraints": ["Текст содержит только ASCII-символы, не длиннее 100 000 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Цикл while ((c = getchar()) != EOF).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Функции isalpha, isdigit, isspace; всё остальное — в четвёртый счётчик.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "Hi, C17!\n",
+          "expected": "3 2 2 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "0 0 0 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "abc",
+          "expected": "3 0 0 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "123 456\n",
+          "expected": "0 6 2 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "\t\t\n\n",
+          "expected": "0 0 4 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "Hello, World! 2026\nC is fun.\n",
+          "expected": "16 4 6 3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "!!!???",
+          "expected": "0 0 0 6\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "a\tb\tc 1 2 3 #$%",
+          "expected": "3 3 6 3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .a1 .",
+          "expected": "500 500 500 500\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <ctype.h>\n\nint main(void) {\n    int c;\n    int letters = 0, digits = 0, spaces = 0, others = 0;\n    while ((c = getchar()) != EOF) {\n        if (isalpha(c)) {\n            letters++;\n        } else if (isdigit(c)) {\n            digits++;\n        } else if (isspace(c)) {\n            spaces++;\n        } else {\n            others++;\n        }\n    }\n    printf(\"%d %d %d %d\\n\", letters, digits, spaces, others);\n    return 0;\n}\n",
+      "solutionExplanation": "Цепочка `else if` гарантирует, что каждый символ попадёт ровно в один счётчик. Перевод строки в конце ввода — тоже пробельный символ, и он засчитывается.\n\nФункции `<ctype.h>` принимают `int` — значение `c` из `getchar` подходит напрямую.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-char-task-3",
+      "title": "Заглавными",
+      "description": "Прочитайте текст до конца ввода и напечатайте его, заменив все строчные латинские буквы заглавными. Остальные символы, включая переводы строк, остаются без изменений.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "Hello, world!\nc17\n",
+          "output": "HELLO, WORLD!\nC17\n"
+        },
+        {
+          "input": "ABC",
+          "output": "ABC"
+        }
+      ],
+      "constraints": ["Текст содержит только ASCII-символы, не длиннее 100 000 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "while ((c = getchar()) != EOF) putchar(toupper(c));",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "toupper меняет только строчные латинские буквы, остальные символы возвращает без изменений — проверять их отдельно не нужно.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "Hello, world!\nc17\n",
+          "expected": "HELLO, WORLD!\nC17\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "ABC",
+          "expected": "ABC"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "z",
+          "expected": "Z"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "mixed CASE text 123\n",
+          "expected": "MIXED CASE TEXT 123\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "\n\n",
+          "expected": "\n\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "a-b_c.d",
+          "expected": "A-B_C.D"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "{a}[z]`~",
+          "expected": "{A}[Z]`~"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "abcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\nabcXYZ 09\n",
+          "expected": "ABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\nABCXYZ 09\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <ctype.h>\n\nint main(void) {\n    int c;\n    while ((c = getchar()) != EOF) {\n        putchar(toupper(c));\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`toupper` меняет только строчные латинские буквы, а всё остальное возвращает без изменений, поэтому никаких дополнительных проверок не нужно. Программа выводит ровно столько символов, сколько прочитала: переводы строк сохраняются.\n\nТакие программы-«фильтры», читающие stdin и пишущие в stdout, — основа философии Unix: их можно соединять в цепочки командами терминала.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-char-task-4",
+      "title": "Сумма цифр в тексте",
+      "description": "Прочитайте текст до конца ввода и напечатайте сумму всех цифр, встречающихся в нём (каждая цифра — отдельное слагаемое).\n\n**Пример:** `a1b22c` → 1 + 2 + 2 = `5`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "a1b22c",
+          "output": "5\n"
+        },
+        {
+          "input": "no digits\n",
+          "output": "0\n"
+        }
+      ],
+      "constraints": ["Текст содержит только ASCII-символы, не длиннее 100 000 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Если isdigit(c), прибавьте c - '0'.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Символ '7' — это код 55, а не число 7. Разность c - '0' превращает код цифры в её значение.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "a1b22c",
+          "expected": "5\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "no digits\n",
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "9999999999",
+          "expected": "90\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "2026-10-09\n",
+          "expected": "20\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "0",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "x9y8z7",
+          "expected": "24\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "d1g1t5 and 0ther 9",
+          "expected": "16\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999",
+          "expected": "90000\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <ctype.h>\n\nint main(void) {\n    int c;\n    long long sum = 0;\n    while ((c = getchar()) != EOF) {\n        if (isdigit(c)) {\n            sum += c - '0';\n        }\n    }\n    printf(\"%lld\\n\", sum);\n    return 0;\n}\n",
+      "solutionExplanation": "`c - '0'` превращает символ цифры в её значение. Числа из нескольких цифр здесь не собираются: «22» — это две цифры 2, а не двадцать два. Как собирать многозначные числа из символов, вы увидите в практикуме по строкам.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "c17-char-task-5",
+      "title": "Шифр Цезаря",
+      "description": "Юлий Цезарь шифровал письма, сдвигая каждую букву на 3 позиции по алфавиту: A → D, B → E, …, X → A, Y → B, Z → C.\n\nВ первой строке ввода — сдвиг `k`, далее — текст до конца ввода. Зашифруйте текст: сдвиньте каждую латинскую букву на `k` позиций вперёд по кругу, сохраняя регистр. Остальные символы не меняйте.",
+      "difficulty": "beginner",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c17",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "3\nHello, World!\n",
+          "output": "Khoor, Zruog!\n"
+        },
+        {
+          "input": "1\nxyz XYZ\n",
+          "output": "yza YZA\n"
+        }
+      ],
+      "constraints": ["0 ≤ k ≤ 1000; текст содержит только ASCII-символы."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Прочитайте k через scanf(\"%d\", &k), затем один getchar(), чтобы пропустить перевод строки после числа.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Для строчной буквы: (c - 'a' + k) % 26 + 'a'. Для заглавной — то же с 'A'.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\nHello, World!\n",
+          "expected": "Khoor, Zruog!\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nxyz XYZ\n",
+          "expected": "yza YZA\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0\nabc\n",
+          "expected": "abc\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "26\nabc\n",
+          "expected": "abc\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1000\nThe quick brown fox jumps over the lazy dog.\n",
+          "expected": "Ftq cguow ndaiz raj vgybe ahqd ftq xmlk pas.\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "13\nUryyb\n",
+          "expected": "Hello\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "5\n12345 !?\n",
+          "expected": "12345 !?\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "25\nabc XYZ\n",
+          "expected": "zab WXY\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "52\nZz\n",
+          "expected": "Zz\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "7\nAttack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! Attack at dawn! \n",
+          "expected": "Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! Haahjr ha khdu! \n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <ctype.h>\n\nint main(void) {\n    int k;\n    scanf(\"%d\", &k);\n    getchar();\n    k %= 26;\n    int c;\n    while ((c = getchar()) != EOF) {\n        if (islower(c)) {\n            c = (c - 'a' + k) % 26 + 'a';\n        } else if (isupper(c)) {\n            c = (c - 'A' + k) % 26 + 'A';\n        }\n        putchar(c);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Буква переводится в номер от 0 до 25 (`c - 'a'`), номер сдвигается по кругу через `% 26`, затем возвращается в символ (`+ 'a'`). Это та же арифметика «по кругу», что для дней недели и часов.\n\n`scanf` оставляет во вводе перевод строки после числа `k`. Если его не прочитать, он стал бы первым символом текста и попал бы в вывод. Лишний `getchar()` «съедает» его.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "c17-char-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    char c = 'D';\n    printf(\"%c%c %d\\n\", c + 1, c + 2, 'b' - 'a');\n    return 0;\n}",
+        "explanation": "Буквы идут подряд: 'D' + 1 = 'E', 'D' + 2 = 'F'. 'b' − 'a' = 1.",
+        "type": "text",
+        "answers": ["EF 1"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    char d = '8';\n    printf(\"%d %d\\n\", d - '0', d - '0' + 2);\n    return 0;\n}",
+        "explanation": "d − '0' превращает символ '8' в число 8; прибавление 2 даёт 10.",
+        "type": "text",
+        "answers": ["8 10"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Почему переменную для результата getchar объявляют как int, а не char?",
+        "explanation": "Если хранить результат в char, EOF может совпасть с реальным символом или не распознаться — цикл сломается.",
+        "options": [
+          "getchar возвращает 257 разных значений: 256 кодов и EOF — в char они не помещаются",
+          "char нельзя сравнивать с EOF синтаксически",
+          "int быстрее char",
+          "Это требование стиля, на работу не влияет"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа при вводе «a1b2»?",
+        "code": "#include <stdio.h>\n#include <ctype.h>\n\nint main(void) {\n    int c;\n    while ((c = getchar()) != EOF) {\n        if (isdigit(c)) {\n            putchar('#');\n        } else {\n            putchar(toupper(c));\n        }\n    }\n    return 0;\n}",
+        "explanation": "Цифры заменяются на #, буквы переводятся в верхний регистр.",
+        "type": "text",
+        "answers": ["A#B#"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Какие выражения истинны для символа c = 'x'? Выберите все.",
+        "explanation": "x — строчная латинская буква, 24-я в алфавите, поэтому 'x' − 'a' = 23.",
+        "type": "multiple",
+        "options": [
+          "c >= 'a' && c <= 'z'",
+          "isalpha(c)",
+          "isupper(c)",
+          "c - 'a' == 23",
+          "isdigit(c)"
+        ],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q6",
+        "question": "Сколько вызовов getchar понадобится, чтобы прочитать русскую букву «ж» в кодировке UTF-8?",
+        "explanation": "В UTF-8 кириллические буквы занимают по два байта, и каждый байт читается отдельно.",
+        "type": "text",
+        "answers": ["2"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q7",
+        "question": "Чем отличаются 'A' и \"A\" в C?",
+        "explanation": "Одинарные кавычки — один символ. Двойные — строка; о строках следующий урок.",
+        "options": [
+          "'A' — символ (число 65), \"A\" — строка из символа A и завершающего нуля",
+          "Ничем",
+          "'A' — строка, \"A\" — символ",
+          "Двойные кавычки запрещены"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}
