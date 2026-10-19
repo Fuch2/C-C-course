@@ -13,9 +13,9 @@
     "Находить use-after-free в порядке операций, функциях-закрывателях, циклах и при нескольких ссылках",
     "Исправлять ошибку изменением времени жизни или копированием данных, а не удалением free"
   ],
-  "tags": ["C17", "Память", "Use-after-free", "AddressSanitizer", "Найди ошибку"],
+  "tags": ["C23", "Память", "Use-after-free", "AddressSanitizer", "Найди ошибку"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-use-after-free-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nstruct Account {\n    char owner[32];\n    long long balance;\n};\n\nstruct Account *account_open(void) {\n    struct Account *a = malloc(sizeof *a);\n    if (a == NULL || scanf(\"%31s\", a->owner) != 1) {\n        free(a);\n        return NULL;\n    }\n    a->balance = 0;\n    return a;\n}\n\nvoid account_close(struct Account *a) {\n    printf(\"closed %s\\n\", a->owner);\n    free(a);\n}\n\nint main(void) {\n    struct Account *a = account_open();\n    if (a == NULL) {\n        return 1;\n    }\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        long long amount;\n        scanf(\"%lld\", &amount);\n        a->balance += amount;\n    }\n    account_close(a);\n    printf(\"balance=%lld\\n\", a->balance);\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -129,7 +129,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nstruct Node {\n    int value;\n    struct Node *next;\n};\n\nstruct Node *read_list(void) {\n    struct Node *head = NULL, **tail = &head;\n    int x;\n    while (scanf(\"%d\", &x) == 1) {\n        struct Node *node = malloc(sizeof *node);\n        if (node == NULL) {\n            break;\n        }\n        node->value = x;\n        node->next = NULL;\n        *tail = node;\n        tail = &node->next;\n    }\n    return head;\n}\n\nvoid free_list(struct Node *head) {\n    while (head != NULL) {\n        struct Node *next = head->next;\n        free(head);\n        head = next;\n    }\n}\n\nint remove_negative(struct Node **head) {\n    int removed = 0;\n    struct Node *prev = NULL;\n    for (struct Node *n = *head; n != NULL; n = n->next) {\n        if (n->value < 0) {\n            if (prev == NULL) {\n                *head = n->next;\n            } else {\n                prev->next = n->next;\n            }\n            free(n);\n            removed++;\n        } else {\n            prev = n;\n        }\n    }\n    return removed;\n}\n\nint main(void) {\n    struct Node *head = read_list();\n    int removed = remove_negative(&head);\n    for (struct Node *n = head; n != NULL; n = n->next) {\n        printf(\"%d \", n->value);\n    }\n    printf(\"(removed %d)\\n\", removed);\n    free_list(head);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -233,7 +233,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nstruct Task {\n    char name[24];\n    int duration;\n};\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    struct Task *all[50] = {NULL};\n    for (int i = 0; i < n; i++) {\n        all[i] = malloc(sizeof *all[i]);\n        if (all[i] == NULL) {\n            return 1;\n        }\n        scanf(\"%23s %d\", all[i]->name, &all[i]->duration);\n    }\n    struct Task *queue[50];\n    int length;\n    scanf(\"%d\", &length);\n    for (int i = 0; i < length; i++) {\n        int id;\n        scanf(\"%d\", &id);\n        queue[i] = all[id];\n    }\n    int c;\n    scanf(\"%d\", &c);\n    for (int i = 0; i < c; i++) {\n        int id;\n        scanf(\"%d\", &id);\n        free(all[id]);\n        all[id] = NULL;\n    }\n\n    int total = 0;\n    for (int i = 0; i < length; i++) {\n        if (queue[i] != NULL) {\n            printf(\"%s \", queue[i]->name);\n            total += queue[i]->duration;\n        }\n    }\n    printf(\"total=%d\\n\", total);\n    for (int i = 0; i < n; i++) {\n        free(all[i]);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -341,7 +341,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

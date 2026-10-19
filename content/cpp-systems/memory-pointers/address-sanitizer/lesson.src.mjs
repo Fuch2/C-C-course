@@ -107,8 +107,8 @@ export default {
     'Знать, какие ошибки находят санитайзеры и какие остаются незамеченными',
     'Читать отчёт по четырём вопросам и исправлять несколько ошибок по одной',
   ],
-  tags: ['C17', 'Память', 'AddressSanitizer', 'UBSan', 'Отладка'],
-  standard: 'c17',
+  tags: ['C23', 'Память', 'AddressSanitizer', 'UBSan', 'Отладка'],
+  standard: 'c23',
   diagnostics: 'sanitizers',
   quiz: [
     {

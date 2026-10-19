@@ -1,117 +1,549 @@
 {
   "id": "advanced-file-stream",
-  "title": "FILE*",
-  "description": "FILE * — указатель на библиотечный поток, содержащий состояние буферизации, позицию и индикаторы конца/ошибки.",
+  "title": "Файлы: FILE * и текстовый ввод-вывод",
+  "description": "Поток FILE * и стандартные потоки; fopen и режимы открытия, проверка NULL и perror; fclose и её результат; запись fprintf, fputs, fputc; чтение строк fgets и символов fgetc, тип int для EOF; признаки конца файла и ошибки, ловушка while (!feof); буферизация и fflush; функции для любого потока.",
   "moduleId": "advanced-c",
-  "order": 24,
-  "difficulty": "advanced",
-  "estimatedMinutes": 40,
-  "prerequisites": ["advanced-binary-files"],
+  "order": 23,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 55,
+  "prerequisites": ["advanced-registers"],
   "objectives": [
-    "Объяснить: FILE*",
-    "Различать корректный контракт и ошибку: while (!feof(file)) проверяет прошлое состояние: конец становится известен после попытки чтения.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Открывать, читать, записывать и закрывать файлы с проверкой ошибок",
+    "Выбирать режим открытия файла",
+    "Читать строки и символы, правильно распознавая конец файла",
+    "Учитывать буферизацию потоков"
   ],
-  "tags": ["C17", "углублённый C", "FILE*"],
+  "tags": ["Файлы", "FILE *", "fopen", "fgets", "feof"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-file-stream-exercise",
-    "title": "Практика: FILE*",
-    "description": "Прочитайте строку до 100 символов через fgets, запишите её в tmpfile, переместитесь к началу и сосчитайте байты до EOF, включая перевод строки, если он был во вводе. Выведите количество.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-file-stream-task-1",
+    "title": "Журнал заметок",
+    "description": "В первой строке ввода — слово для поиска, в остальных строках до конца ввода — заметки.\n\nЗапишите заметки в файл `journal.txt`, каждую строкой вида `N: текст` (нумерация с 1). Закройте файл, откройте его снова на чтение и напечатайте строки файла, в которых встречается слово поиска (как подстрока, с учётом регистра), а затем `найдено: K`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "abc\n",
-        "output": "4\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "хлеб\nкупить хлеб\nпозвонить маме\nхлеб и молоко\n",
+        "output": "1: купить хлеб\n3: хлеб и молоко\nнайдено: 2\n"
       },
       {
-        "input": "\n",
-        "output": "1\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "xyz\nnothing here\n",
+        "output": "найдено: 0\n"
       }
     ],
     "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+      "Заметки — до 200 символов, их не больше 50; слово поиска — до 30 символов без пробелов."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Поток — курсор плюс буфер и состояние; указатель является дескриптором владения этим ресурсом."
+        "text": "Слово прочитайте fgets и удалите перевод строки: word[strcspn(word, \"\\n\")] = '\\0'. Заметки читайте fgets до конца ввода и пишите fprintf(out, \"%d: %s\", n, line) — перевод строки уже в line.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "while (!feof(file)) проверяет прошлое состояние: конец становится известен после попытки чтения."
+        "text": "Последняя заметка может не заканчиваться \\n: проверьте это и допишите перевод строки сами, чтобы строки файла не склеились.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "После fclose откройте файл режимом \"r\" и проверяйте каждую строку функцией strstr(line, word).",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "abc\n",
-        "expected": "4\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "хлеб\nкупить хлеб\nпозвонить маме\nхлеб и молоко\n",
+        "expected": "1: купить хлеб\n3: хлеб и молоко\nнайдено: 2\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "\n",
-        "expected": "1\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "xyz\nnothing here\n",
+        "expected": "найдено: 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "sensor",
-        "expected": "6\n"
+        "id": "hidden-1",
+        "name": "Нет заметок",
+        "stdin": "a\n",
+        "expected": "найдено: 0\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Регистр и подстроки",
+        "stdin": "cat\ncat\nCat\nconcatenate\n",
+        "expected": "1: cat\n3: concatenate\nнайдено: 2\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Без перевода строки в конце",
+        "stdin": "end\nno newline at the end",
+        "expected": "1: no newline at the end\nнайдено: 1\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Число совпадает с номером",
+        "stdin": "2\nfirst\nsecond\n",
+        "expected": "2: second\nнайдено: 1\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Пустые заметки",
+        "stdin": "x\n\nx\n\n",
+        "expected": "2: x\nнайдено: 1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Русский текст",
+        "stdin": "фото\nотпуск: фото моря\nфотография\nвидео\n",
+        "expected": "1: отпуск: фото моря\n2: фотография\nнайдено: 2\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Двоеточие есть в каждой строке",
+        "stdin": ":\nbuy milk\n",
+        "expected": "1: buy milk\nнайдено: 1\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Несколько совпадений",
+        "stdin": "todo\ntodo 1\ntodo 2\ntodo 3\ndone\n",
+        "expected": "1: todo 1\n2: todo 2\n3: todo 3\nнайдено: 3\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    char text[102];if(!fgets(text,sizeof text,stdin))return 1;\n    FILE *file=tmpfile();if(!file)return 1;\n    if(fputs(text,file)==EOF || fseek(file,0,SEEK_SET)!=0){fclose(file);return 1;}\n    size_t count=0;while(fgetc(file)!=EOF)++count;\n    int failed=ferror(file);if(fclose(file)!=0)failed=1;\n    if(failed)return 1;printf(\"%zu\\n\",count);\n    return 0;\n}\n",
-    "solutionExplanation": "Поток — курсор плюс буфер и состояние; указатель является дескриптором владения этим ресурсом.\n\nwhile (!feof(file)) проверяет прошлое состояние: конец становится известен после попытки чтения.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: 'abc\\n' → '4\\n'; '\\n' → '1\\n'; 'sensor' → '6\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char word[64], line[256];\n    if (fgets(word, sizeof word, stdin) == NULL) {\n        return 0;\n    }\n    word[strcspn(word, \"\\n\")] = '\\0';\n\n    FILE *out = fopen(\"journal.txt\", \"w\");\n    if (out == NULL) {\n        perror(\"journal.txt\");\n        return 1;\n    }\n    int n = 0;\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        line[strcspn(line, \"\\n\")] = '\\0';\n        fprintf(out, \"%d: %s\\n\", ++n, line);\n    }\n    if (fclose(out) != 0) {\n        perror(\"journal.txt\");\n        return 1;\n    }\n\n    FILE *in = fopen(\"journal.txt\", \"r\");\n    if (in == NULL) {\n        perror(\"journal.txt\");\n        return 1;\n    }\n    int found = 0;\n    char stored[300];\n    while (fgets(stored, sizeof stored, in) != NULL) {\n        if (strstr(stored, word) != NULL) {\n            fputs(stored, stdout);\n            found++;\n        }\n    }\n    fclose(in);\n    printf(\"найдено: %d\\n\", found);\n    return 0;\n}\n",
+    "solutionExplanation": "Программа проходит полный цикл работы с файлом: открыть на запись, записать, закрыть (и проверить результат `fclose` — данные попадают на диск именно здесь), открыть снова на чтение, прочитать, закрыть. Между двумя открытиями файл закрыт, поэтому все данные из буфера гарантированно записаны.\n\nПеревод строки удаляется из каждой заметки и дописывается заново в `fprintf` — так последняя заметка без `\\n` в конце ввода не склеится со следующей строкой файла. Поиск идёт по строкам файла, а не по исходным заметкам: номер в начале строки — часть сохранённых данных, и слово-число может совпасть и с ним.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-file-stream-task-2",
+      "title": "Статистика файла",
+      "description": "Скопируйте весь стандартный ввод в файл `data.txt` (байт за байтом), закройте его, затем откройте снова и посчитайте:\n- **строки** — число переводов строки плюс одна, если файл не пуст и последний байт не `\\n`;\n- **слова** — последовательности символов, отличных от пробела, табуляции и перевода строки;\n- **байты** — размер файла;\n- **самую длинную строку** — наибольшее число байтов в строке без перевода строки.\n\nНапечатайте `строк L, слов W, байтов B, самая длинная M`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "раз два\nтри\n",
+          "output": "строк 2, слов 3, байтов 21, самая длинная 13\n"
+        },
+        {
+          "input": "no newline",
+          "output": "строк 1, слов 2, байтов 10, самая длинная 10\n"
+        }
+      ],
+      "constraints": ["Ввод не длиннее 10 000 байтов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Копирование: int c; while ((c = getchar()) != EOF) fputc(c, out);. Результат getchar и fgetc храните в int.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "При чтении считайте длину текущей строки: на \\n сравнивайте её с максимумом и обнуляйте. После цикла не забудьте последнюю строку без \\n.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Слово начинается, когда после разделителя (или в начале) встретился не разделитель: заведите флаг «внутри слова».",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "раз два\nтри\n",
+          "expected": "строк 2, слов 3, байтов 21, самая длинная 13\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "no newline",
+          "expected": "строк 1, слов 2, байтов 10, самая длинная 10\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустой ввод",
+          "stdin": "",
+          "expected": "строк 0, слов 0, байтов 0, самая длинная 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Один перевод строки",
+          "stdin": "\n",
+          "expected": "строк 1, слов 0, байтов 1, самая длинная 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Пустые строки",
+          "stdin": "\n\n\n",
+          "expected": "строк 3, слов 0, байтов 3, самая длинная 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Разделители",
+          "stdin": "  a  b\t\tc  \n",
+          "expected": "строк 1, слов 3, байтов 12, самая длинная 11\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Самая длинная в середине",
+          "stdin": "short\na much longer line here\nmid\n",
+          "expected": "строк 3, слов 7, байтов 34, самая длинная 23\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Последняя строка без перевода",
+          "stdin": "last line is the longest one",
+          "expected": "строк 1, слов 6, байтов 28, самая длинная 28\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Отступы",
+          "stdin": "word\n\tindent\n    spaces\n",
+          "expected": "строк 3, слов 3, байтов 24, самая длинная 10\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Русские слова",
+          "stdin": "один\nдва\nтри\nчетыре\n",
+          "expected": "строк 4, слов 4, байтов 36, самая длинная 12\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic int is_space(int c) {\n    return c == ' ' || c == '\\t' || c == '\\n';\n}\n\nint main(void) {\n    FILE *out = fopen(\"data.txt\", \"w\");\n    if (out == NULL) {\n        perror(\"data.txt\");\n        return 1;\n    }\n    int c;\n    while ((c = getchar()) != EOF) {\n        fputc(c, out);\n    }\n    if (fclose(out) != 0) {\n        perror(\"data.txt\");\n        return 1;\n    }\n\n    FILE *in = fopen(\"data.txt\", \"r\");\n    if (in == NULL) {\n        perror(\"data.txt\");\n        return 1;\n    }\n    long lines = 0, words = 0, bytes = 0, current = 0, longest = 0;\n    int inside = 0, last = '\\n';\n    while ((c = fgetc(in)) != EOF) {\n        bytes++;\n        if (c == '\\n') {\n            lines++;\n            if (current > longest) {\n                longest = current;\n            }\n            current = 0;\n        } else {\n            current++;\n        }\n        if (is_space(c)) {\n            inside = 0;\n        } else if (!inside) {\n            inside = 1;\n            words++;\n        }\n        last = c;\n    }\n    fclose(in);\n    if (bytes > 0 && last != '\\n') {\n        lines++;\n        if (current > longest) {\n            longest = current;\n        }\n    }\n    printf(\"строк %ld, слов %ld, байтов %ld, самая длинная %ld\\n\", lines, words, bytes, longest);\n    return 0;\n}\n",
+      "solutionExplanation": "Посимвольное чтение через `fgetc` — самый простой способ пройти файл целиком, не думая о длине строк: буфер потока всё равно читает данные блоками, поэтому вызов на каждый байт обходится дёшево. Результат хранится в `int`, чтобы `EOF` не путался с байтом `0xFF`.\n\nПоследняя строка без перевода строки — классическая граница: `wc -l` её не считает, а в этой задаче она считается, поэтому после цикла нужна отдельная проверка последнего байта. Длина строки измеряется в байтах: в UTF-8 русская буква занимает два байта, и «самая длинная строка» из русских слов окажется вдвое длиннее, чем в буквах.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-file-stream-task-3",
+      "title": "Найди ошибку: лишнее число",
+      "description": "Программа читает целые числа из стандартного ввода, записывает их в файл `numbers.txt` по одному в строке, затем читает файл и печатает `чисел N, сумма S, максимум M` (или `чисел нет`).\n\nРезультат всегда на одно число больше, а сумма — на последнее число больше правильной. Найдите и исправьте ошибку чтения.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    FILE *out = fopen(\"numbers.txt\", \"w\");\n    if (out == NULL) {\n        perror(\"numbers.txt\");\n        return 1;\n    }\n    int value;\n    while (scanf(\"%d\", &value) == 1) {\n        fprintf(out, \"%d\\n\", value);\n    }\n    if (fclose(out) != 0) {\n        perror(\"numbers.txt\");\n        return 1;\n    }\n\n    FILE *in = fopen(\"numbers.txt\", \"r\");\n    if (in == NULL) {\n        perror(\"numbers.txt\");\n        return 1;\n    }\n    int count = 0;\n    long long sum = 0;\n    int max = 0;\n    value = 0;\n    while (!feof(in)) {\n        fscanf(in, \"%d\", &value);\n        if (count == 0 || value > max) {\n            max = value;\n        }\n        sum += value;\n        count++;\n    }\n    fclose(in);\n    if (count == 0) {\n        printf(\"чисел нет\\n\");\n    } else {\n        printf(\"чисел %d, сумма %lld, максимум %d\\n\", count, sum, max);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "10 20 30\n",
+          "output": "чисел 3, сумма 60, максимум 30\n"
+        },
+        {
+          "input": "-5\n",
+          "output": "чисел 1, сумма -5, максимум -5\n"
+        }
+      ],
+      "constraints": ["Чисел не больше 100, каждое по модулю не больше 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Когда именно feof(in) становится истинным — до или после неудачной попытки чтения?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "После последнего числа в файле остаётся перевод строки, и цикл делает лишнюю итерацию со старым значением. Сделайте условием цикла результат чтения: while (fscanf(in, \"%d\", &value) == 1).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "10 20 30\n",
+          "expected": "чисел 3, сумма 60, максимум 30\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "-5\n",
+          "expected": "чисел 1, сумма -5, максимум -5\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 2\n",
+          "expected": "чисел 2, сумма 3, максимум 2\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "7\n7\n7\n",
+          "expected": "чисел 3, сумма 21, максимум 7\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "-1 -2 -3\n",
+          "expected": "чисел 3, сумма -6, максимум -1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1000000 -1000000 999999\n",
+          "expected": "чисел 3, сумма 999999, максимум 1000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "0\n",
+          "expected": "чисел 1, сумма 0, максимум 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "5 4 3 2 1\n",
+          "expected": "чисел 5, сумма 15, максимум 5\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "42 17\n",
+          "expected": "чисел 2, сумма 59, максимум 42\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "3 1 4 1 5 9 2 6\n",
+          "expected": "чисел 8, сумма 31, максимум 9\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    FILE *out = fopen(\"numbers.txt\", \"w\");\n    if (out == NULL) {\n        perror(\"numbers.txt\");\n        return 1;\n    }\n    int value;\n    while (scanf(\"%d\", &value) == 1) {\n        fprintf(out, \"%d\\n\", value);\n    }\n    if (fclose(out) != 0) {\n        perror(\"numbers.txt\");\n        return 1;\n    }\n\n    FILE *in = fopen(\"numbers.txt\", \"r\");\n    if (in == NULL) {\n        perror(\"numbers.txt\");\n        return 1;\n    }\n    int count = 0;\n    long long sum = 0;\n    int max = 0;\n    value = 0;\n    while (fscanf(in, \"%d\", &value) == 1) {\n        if (count == 0 || value > max) {\n            max = value;\n        }\n        sum += value;\n        count++;\n    }\n    fclose(in);\n    if (count == 0) {\n        printf(\"чисел нет\\n\");\n    } else {\n        printf(\"чисел %d, сумма %lld, максимум %d\\n\", count, sum, max);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Признак конца файла устанавливается только тогда, когда функция чтения **попыталась** прочитать за концом. После чтения последнего числа в файле остаётся перевод строки, `feof` ещё ложен, и цикл выполняется снова: `fscanf` пропускает перевод строки, упирается в конец файла и возвращает `EOF`, не меняя `value`. Старое значение обрабатывается второй раз.\n\nПравильная схема — проверять результат самой функции чтения: `fscanf(...) == 1` означает «одно число прочитано». А `feof` и `ferror` нужны после цикла — чтобы понять, закончились ли данные или произошла ошибка. Для пустого ввода исправленная программа тоже работает: цикл не выполнится ни разу.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-file-stream-task-4",
+      "title": "Раскладка по файлам",
+      "description": "Каждая строка ввода — запись `категория,сумма`, например `food,250`. Разложите суммы по файлам: сумма записывается строкой в конец файла `категория.txt`. Затем для каждой категории в порядке первого появления откройте её файл, прочитайте суммы и напечатайте `категория: записей N, итого S, максимум M`.\n\nНекорректные строки пропустите, напечатав `строка K пропущена` (K — номер строки ввода, с 1), в момент их обработки. Строка некорректна, если в ней нет запятой, если категория пуста, длиннее 15 символов или содержит что-то кроме строчных латинских букв, или если после запятой не целое число (допустимы знак и цифры, больше ничего).\n\nОткрывайте файл категории режимом `\"a\"` при каждой записи и сразу закрывайте — так программе не нужно держать открытыми много файлов одновременно.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "food,250\ntaxi,400\nfood,100\nfood,-50\n",
+          "output": "food: записей 3, итого 300, максимум 250\ntaxi: записей 1, итого 400, максимум 400\n"
+        },
+        {
+          "input": "food,10\nbad line\nFood,5\nfood,12x\n,7\nfood,20\n",
+          "output": "строка 2 пропущена\nстрока 3 пропущена\nстрока 4 пропущена\nстрока 5 пропущена\nfood: записей 2, итого 30, максимум 20\n"
+        }
+      ],
+      "constraints": [
+        "Строк не больше 100, каждая до 100 символов; различных категорий не больше 20.",
+        "Суммы по модулю не больше 10⁶."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Разбор строки: найдите запятую через strchr, проверьте категорию (длина 1–15, только a–z), число — через strtol с проверкой, что после числа строка закончилась.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Имя файла: snprintf(path, sizeof path, \"%s.txt\", category). Проверка «только строчные буквы» заодно защищает от имён вроде ../secret — не используйте ввод как путь без проверки.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Порядок первого появления храните в массиве имён категорий. Во второй части для каждой категории откройте файл режимом \"r\" и читайте числа fscanf(f, \"%ld\", &value) == 1.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "food,250\ntaxi,400\nfood,100\nfood,-50\n",
+          "expected": "food: записей 3, итого 300, максимум 250\ntaxi: записей 1, итого 400, максимум 400\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "food,10\nbad line\nFood,5\nfood,12x\n,7\nfood,20\n",
+          "expected": "строка 2 пропущена\nстрока 3 пропущена\nстрока 4 пропущена\nстрока 5 пропущена\nfood: записей 2, итого 30, максимум 20\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустой ввод",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-2",
+          "name": "Длина категории",
+          "stdin": "abcdefghijklmnop,1\nabcdefghijklmno,2\n",
+          "expected": "строка 1 пропущена\nabcdefghijklmno: записей 1, итого 2, максимум 2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Попытка пути",
+          "stdin": "../etc,5\nsafe,5\n",
+          "expected": "строка 1 пропущена\nsafe: записей 1, итого 5, максимум 5\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Порядок первого появления",
+          "stdin": "a,1\nb,2\nc,3\na,4\nb,5\n",
+          "expected": "a: записей 2, итого 5, максимум 4\nb: записей 2, итого 7, максимум 5\nc: записей 1, итого 3, максимум 3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Знаки и пустая сумма",
+          "stdin": "x,\nx,+7\nx,-0\n",
+          "expected": "строка 1 пропущена\nx: записей 2, итого 7, максимум 7\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Большие суммы",
+          "stdin": "cafe,1000000\ncafe,-1000000\ncafe,999999\n",
+          "expected": "cafe: записей 3, итого 999999, максимум 1000000\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Окончания строк Windows",
+          "stdin": "rent,100\r\nrent,200\r\n",
+          "expected": "rent: записей 2, итого 300, максимум 200\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Двенадцать категорий",
+          "stdin": "aa,1\nbb,1\ncc,1\ndd,1\nee,1\nff,1\ngg,1\nhh,1\nii,1\njj,1\nkk,1\nll,1\n",
+          "expected": "aa: записей 1, итого 1, максимум 1\nbb: записей 1, итого 1, максимум 1\ncc: записей 1, итого 1, максимум 1\ndd: записей 1, итого 1, максимум 1\nee: записей 1, итого 1, максимум 1\nff: записей 1, итого 1, максимум 1\ngg: записей 1, итого 1, максимум 1\nhh: записей 1, итого 1, максимум 1\nii: записей 1, итого 1, максимум 1\njj: записей 1, итого 1, максимум 1\nkk: записей 1, итого 1, максимум 1\nll: записей 1, итого 1, максимум 1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstatic char categories[20][16];\nstatic int category_count;\n\nstatic int valid_category(const char *text, size_t len) {\n    if (len == 0 || len > 15) {\n        return 0;\n    }\n    for (size_t i = 0; i < len; i++) {\n        if (text[i] < 'a' || text[i] > 'z') {\n            return 0;\n        }\n    }\n    return 1;\n}\n\nstatic int parse_amount(const char *text, long *out) {\n    char *end;\n    if (*text == '\\0') {\n        return 0;\n    }\n    long value = strtol(text, &end, 10);\n    if (*end != '\\0' || end == text || text[0] == ' ') {\n        return 0;\n    }\n    *out = value;\n    return 1;\n}\n\nint main(void) {\n    char line[128];\n    int number = 0;\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        number++;\n        line[strcspn(line, \"\\r\\n\")] = '\\0';\n        char *comma = strchr(line, ',');\n        long amount;\n        if (comma == NULL || !valid_category(line, (size_t)(comma - line)) ||\n            !parse_amount(comma + 1, &amount)) {\n            printf(\"строка %d пропущена\\n\", number);\n            continue;\n        }\n        *comma = '\\0';\n        int index = -1;\n        for (int i = 0; i < category_count; i++) {\n            if (strcmp(categories[i], line) == 0) {\n                index = i;\n            }\n        }\n        if (index < 0) {\n            if (category_count == 20) {\n                printf(\"строка %d пропущена\\n\", number);\n                continue;\n            }\n            index = category_count++;\n            strcpy(categories[index], line);\n        }\n        char path[32];\n        snprintf(path, sizeof path, \"%s.txt\", categories[index]);\n        FILE *out = fopen(path, \"a\");\n        if (out == NULL) {\n            perror(path);\n            return 1;\n        }\n        fprintf(out, \"%ld\\n\", amount);\n        if (fclose(out) != 0) {\n            perror(path);\n            return 1;\n        }\n    }\n    for (int i = 0; i < category_count; i++) {\n        char path[32];\n        snprintf(path, sizeof path, \"%s.txt\", categories[i]);\n        FILE *in = fopen(path, \"r\");\n        if (in == NULL) {\n            perror(path);\n            return 1;\n        }\n        long value, total = 0, max = 0;\n        int count = 0;\n        while (fscanf(in, \"%ld\", &value) == 1) {\n            if (count == 0 || value > max) {\n                max = value;\n            }\n            total += value;\n            count++;\n        }\n        fclose(in);\n        printf(\"%s: записей %d, итого %ld, максимум %ld\\n\", categories[i], count, total, max);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Программа работает с несколькими файлами, но держит открытым не больше одного: каждая запись — `fopen` режимом `\"a\"`, запись строки, `fclose`. У процесса есть предел одновременно открытых файлов (в песочнице курса — 64), и программа, открывающая по файлу на каждую категорию, упёрлась бы в него при большом вводе. Режим `\"a\"` гарантирует, что каждая новая сумма окажется в конце файла.\n\nПроверка имени категории — не только формальность. Имя файла строится из пользовательского ввода, и без проверки строка `../../etc/passwd,1` попыталась бы писать за пределами рабочего каталога. Разрешив только строчные латинские буквы, программа исключает любые пути. Число проверяется `strtol` с указателем на конец: строка `12abc` или пустая сумма отклоняются, а не превращаются молча в 12 или 0.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-file-stream-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Когда feof становится истинным?",
-        "options": ["После чтения, обнаружившего конец", "Перед последним успешным чтением"],
-        "correct": 0,
-        "explanation": "FILE * — указатель на библиотечный поток, содержащий состояние буферизации, позицию и индикаторы конца/ошибки. Это не номер файлового дескриптора. fopen может вернуть NULL; каждый успешно открытый поток должен закрываться ровно один раз. Ошибка записи иногда обнаруживается только при fflush или fclose из-за буферизации."
-      },
-      {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q1",
+        "question": "Что вернёт fopen(\"report.txt\", \"r\"), если такого файла нет?",
+        "explanation": "При неудаче fopen возвращает NULL и записывает причину в errno. Результат проверяют сразу, а причину выводят через perror.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "while (!feof(file)) проверяет прошлое состояние: конец становится известен после попытки чтения."
+          "NULL",
+          "Пустой поток, из которого ничего нельзя прочитать",
+          "stdin",
+          "Программа завершится с ошибкой"
         ],
-        "correct": 1,
-        "explanation": "Поток — курсор плюс буфер и состояние; указатель является дескриптором владения этим ресурсом."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["A", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: FILE *f=tmpfile();if(!f)return 1;if(fputs(\"AB\",f)==EOF || fseek(f,0,SEEK_SET)!=0){fclose(f);return 1;}int c=fgetc(f);if(fclose(f)!=0 || c==EOF)return 1;printf(\"%c\\n\",c); Ожидаемый результат: A"
+        "id": "q2",
+        "question": "Какой режим fopen создаёт файл, если его нет, и дописывает данные в конец, если он есть?",
+        "explanation": "\"w\" стёр бы существующее содержимое, \"r\" не создаёт файл. \"a\" — append, дописывание.",
+        "type": "text",
+        "answers": ["\"a\"", "a"],
+        "placeholder": "Режим"
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    FILE *f = fopen(\"t.txt\", \"w\");\n    if (f == NULL) {\n        return 1;\n    }\n    fputs(\"ab\\ncd\\n\", f);\n    fclose(f);\n    f = fopen(\"t.txt\", \"a\");\n    if (f == NULL) {\n        return 1;\n    }\n    fputs(\"ef\\n\", f);\n    fclose(f);\n    f = fopen(\"t.txt\", \"r\");\n    if (f == NULL) {\n        return 1;\n    }\n    char line[16];\n    int count = 0;\n    while (fgets(line, sizeof line, f) != NULL) {\n        count++;\n    }\n    fclose(f);\n    printf(\"%d\\n\", count);\n    return 0;\n}",
+        "explanation": "Режим \"a\" дописал третью строку к двум существующим, и fgets прочитал три строки.",
+        "type": "text",
+        "answers": ["3"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Почему результат fgetc сохраняют в int, а не в char?",
+        "explanation": "EOF обычно равен −1, а байт 0xFF в знаковом char тоже становится −1: цикл закончится раньше времени. В беззнаковом char EOF не появится никогда, и цикл станет бесконечным.",
+        "options": [
+          "fgetc возвращает байты 0–255 и отдельное значение EOF; в char их не различить",
+          "char не может хранить буквы",
+          "fgetc возвращает номер строки",
+          "Так быстрее"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что не так в цикле while (!feof(f)) { fgets(line, 100, f); process(line); }?",
+        "explanation": "После чтения последней строки признак конца ещё не установлен. Следующий fgets вернёт NULL, line останется прежней — и обработается снова. Условие цикла — результат fgets.",
+        "options": [
+          "feof становится истинным только после неудачного чтения, поэтому последняя строка обработается дважды",
+          "feof нельзя вызывать для файлов, открытых на чтение",
+          "Цикл никогда не начнётся",
+          "Ничего, это правильный способ"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Какие утверждения о буферизации верны? Выберите все.",
+        "explanation": "Поток копит данные в буфере и отдаёт их системе блоками. stderr — без буфера, чтобы сообщения об ошибках не терялись.",
+        "type": "multiple",
+        "options": [
+          "Данные, записанные fprintf, могут оставаться в буфере до fflush или fclose",
+          "stderr не буферизуется",
+          "Если программа упадёт до fclose, хвост буфера может не попасть в файл",
+          "Каждый вызов fputc сразу записывает байт на диск"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q7",
+        "question": "Буфер для fgets объявлен как char buf[6]. Сколько символов строки \"abcdefgh\\n\" прочитает первый вызов fgets(buf, sizeof buf, f)?",
+        "explanation": "fgets читает не больше size − 1 символов и дописывает нулевой символ: \"abcde\". Остаток прочитают следующие вызовы.",
+        "type": "text",
+        "answers": ["5"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q8",
+        "question": "Что нужно сделать между записью и чтением в потоке, открытом режимом \"r+\"?",
+        "explanation": "Без fflush или перехода позиции переключение между записью и чтением — неопределённое поведение: буфер записи и буфер чтения не согласованы.",
+        "options": [
+          "Вызвать fflush или изменить позицию (fseek, rewind)",
+          "Ничего, можно переключаться в любой момент",
+          "Закрыть и снова открыть файл — другого способа нет",
+          "Вызвать feof"
+        ],
+        "correct": 0
       }
     ]
   }

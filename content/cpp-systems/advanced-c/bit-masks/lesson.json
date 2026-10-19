@@ -1,117 +1,527 @@
 {
   "id": "advanced-bit-masks",
-  "title": "Bit masks",
-  "description": "Маска описывает расположение поля, а сдвиг — его позицию.",
+  "title": "Битовые поля и маски",
+  "description": "Поле как позиция и ширина; чтение и запись поля, очистка места и обрезка значения; дата и время в формате FAT; множества чисел на битах и операции над ними; битовые массивы и решето Эратосфена; битовые поля структур и почему их расположение непереносимо.",
   "moduleId": "advanced-c",
-  "order": 21,
-  "difficulty": "advanced",
-  "estimatedMinutes": 40,
+  "order": 20,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 55,
   "prerequisites": ["advanced-bit-shifts"],
   "objectives": [
-    "Объяснить: Bit masks",
-    "Различать корректный контракт и ошибку: Если не очистить старые биты, запись меньшего значения может сохранить прежние единицы.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Читать и записывать поля произвольной ширины в числе",
+    "Упаковывать данные в компактные форматы и распаковывать их",
+    "Представлять множества и большие наборы флагов битами",
+    "Понимать ограничения битовых полей структур"
   ],
-  "tags": ["C17", "углублённый C", "Bit masks"],
+  "tags": ["Биты", "Маски", "Битовые поля", "Множества", "Битовый массив"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-bit-masks-exercise",
-    "title": "Практика: Bit masks",
-    "description": "Ввод value 0…255 и field 0…7. Замените биты 2…4 новым field и выведите итог.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-bit-masks-task-1",
+    "title": "Дата и время FAT",
+    "description": "Файловая система FAT хранит дату в 16 битах — год − 1980 (биты 9–15), месяц (5–8), день (0–4), — а время в других 16 — часы (11–15), минуты (5–10), секунды, делённые на 2 (0–4).\n\nКоманды до конца ввода:\n- `pack ГГГГ-ММ-ДД ЧЧ:ММ:СС` — напечатать `дата 0xHHHH время 0xHHHH` (по четыре заглавные шестнадцатеричные цифры);\n- `unpack 0xHHHH 0xHHHH` — дату и время напечатать в виде `ГГГГ-ММ-ДД ЧЧ:ММ:СС`.\n\nСекунды при упаковке делятся на 2 с отбрасыванием остатка.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "255 0",
-        "output": "227\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "pack 2024-03-15 14:30:45\nunpack 0x586F 0x73D6\n",
+        "output": "дата 0x586F время 0x73D6\n2024-03-15 14:30:44\n"
       },
       {
-        "input": "0 7",
-        "output": "28\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "pack 1980-01-01 00:00:00\n",
+        "output": "дата 0x0021 время 0x0000\n"
       }
     ],
-    "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
-    ],
+    "constraints": ["Годы от 1980 до 2107; значения корректны; команд не больше 20."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Поле — ячейка в упакованном документе: удалить старые отметки, затем записать новые."
+        "text": "Упаковка: (year - 1980) << 9 | month << 5 | day и hours << 11 | minutes << 5 | seconds / 2.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Если не очистить старые биты, запись меньшего значения может сохранить прежние единицы."
+        "text": "Разбор строки даты и времени — scanf(\"%u-%u-%u %u:%u:%u\", …); шестнадцатеричных чисел — scanf(\"%x %x\", …).",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Распаковка: год — (date >> 9) + 1980, месяц — (date >> 5) & 0xF, день — date & 0x1F; секунды — (time & 0x1F) * 2.",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "255 0",
-        "expected": "227\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "pack 2024-03-15 14:30:45\nunpack 0x586F 0x73D6\n",
+        "expected": "дата 0x586F время 0x73D6\n2024-03-15 14:30:44\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "0 7",
-        "expected": "28\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "pack 1980-01-01 00:00:00\n",
+        "expected": "дата 0x0021 время 0x0000\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "170 3",
-        "expected": "174\n"
+        "id": "hidden-1",
+        "name": "Максимальные значения",
+        "stdin": "pack 2107-12-31 23:59:59\n",
+        "expected": "дата 0xFF9F время 0xBF7D\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Распаковка максимума",
+        "stdin": "unpack 0xFF9F 0xBF7D\n",
+        "expected": "2107-12-31 23:59:58\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Високосный день",
+        "stdin": "pack 2000-02-29 12:00:01\n",
+        "expected": "дата 0x285D время 0x6000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Начало эпохи",
+        "stdin": "unpack 0x0021 0x0000\n",
+        "expected": "1980-01-01 00:00:00\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Девятки",
+        "stdin": "pack 1999-09-09 09:09:09\nunpack 0x2729 0x4924\n",
+        "expected": "дата 0x2729 время 0x4924\n1999-09-09 09:09:08\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Строчные цифры",
+        "stdin": "unpack 0x5a4f 0x8000\n",
+        "expected": "2025-02-15 16:00:00\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Обычная дата",
+        "stdin": "pack 2025-07-04 06:07:08\n",
+        "expected": "дата 0x5AE4 время 0x30E4\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Поля времени по отдельности",
+        "stdin": "pack 1980-01-01 00:00:59\npack 1980-01-01 00:59:00\npack 1980-01-01 23:00:00\n",
+        "expected": "дата 0x0021 время 0x001D\nдата 0x0021 время 0x0760\nдата 0x0021 время 0xB800\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    unsigned value,field;if(scanf(\"%u%u\",&value,&field)!=2 || value>255 || field>7)return 1;\n    printf(\"%u\\n\",(value & ~(7u << 2)) | (field << 2));\n    return 0;\n}\n",
-    "solutionExplanation": "Поле — ячейка в упакованном документе: удалить старые отметки, затем записать новые.\n\nЕсли не очистить старые биты, запись меньшего значения может сохранить прежние единицы.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '255 0' → '227\\n'; '0 7' → '28\\n'; '170 3' → '174\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"pack\") == 0) {\n            unsigned year, month, day, hours, minutes, seconds;\n            if (scanf(\"%u-%u-%u %u:%u:%u\", &year, &month, &day, &hours, &minutes, &seconds) != 6) {\n                break;\n            }\n            unsigned date = (year - 1980) << 9 | month << 5 | day;\n            unsigned time = hours << 11 | minutes << 5 | seconds / 2;\n            printf(\"дата 0x%04X время 0x%04X\\n\", date, time);\n        } else if (strcmp(command, \"unpack\") == 0) {\n            unsigned date, time;\n            if (scanf(\"%x %x\", &date, &time) != 2) {\n                break;\n            }\n            printf(\"%u-%02u-%02u %02u:%02u:%02u\\n\", (date >> 9) + 1980, (date >> 5) & 0xFu,\n                   date & 0x1Fu, time >> 11, (time >> 5) & 0x3Fu, (time & 0x1Fu) * 2);\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Каждая величина — поле фиксированной ширины в известной позиции. Упаковка сдвигает поля на их места и объединяет через `|`; поля не пересекаются, поэтому ИЛИ здесь работает как сложение. Распаковка — сдвиг вниз и маска ширины поля: `0xF` для 4-битного месяца, `0x1F` для 5-битного дня, `0x3F` для 6-битных минут.\n\nДля старшего поля маска не нужна: выше него в 16-битном значении ничего нет. Секунды хранятся с шагом 2 — пять битов вмещают только 0…31, поэтому нечётные секунды теряют единицу.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-bit-masks-task-2",
+      "title": "Множества на битах",
+      "description": "Храните два множества `A` и `B` чисел от 0 до 63, каждое — в одном `uint64_t`. Вначале оба пусты. Команды до конца ввода:\n- `add S x`, `del S x` — добавить или удалить число `x` из множества `S` (`A` или `B`);\n- `has S x` — напечатать `да` или `нет`;\n- `size S` — число элементов;\n- `print S` — элементы по возрастанию через пробел или `пусто`;\n- `union`, `inter`, `diff`, `xor` — напечатать (как `print`) A ∪ B, A ∩ B, A \\ B и симметрическую разность.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "add A 1\nadd A 3\nadd A 5\nadd B 3\nadd B 4\nunion\ninter\ndiff\nxor\n",
+          "output": "1 3 4 5\n3\n1 5\n1 4 5\n"
+        },
+        {
+          "input": "print A\nadd B 63\nhas B 63\nsize B\nhas A 63\n",
+          "output": "пусто\nда\n1\nнет\n"
+        }
+      ],
+      "constraints": ["0 ≤ x ≤ 63; команд не больше 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Маска числа x — UINT64_C(1) << x: литерал 1u здесь не подходит, сдвиг на 32 и больше для него не определён.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Храните множества в массиве uint64_t sets[2] и выбирайте индекс по букве: S == 'A' ? 0 : 1.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Операции над множествами — одна побитовая операция: a | b, a & b, a & ~b, a ^ b. Печать — проверка 64 битов по очереди.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add A 1\nadd A 3\nadd A 5\nadd B 3\nadd B 4\nunion\ninter\ndiff\nxor\n",
+          "expected": "1 3 4 5\n3\n1 5\n1 4 5\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "print A\nadd B 63\nhas B 63\nsize B\nhas A 63\n",
+          "expected": "пусто\nда\n1\nнет\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Границы и середина",
+          "stdin": "add A 0\nadd A 63\nadd A 31\nadd A 32\nprint A\nsize A\n",
+          "expected": "0 31 32 63\n4\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Удаление",
+          "stdin": "add A 5\ndel A 5\ndel A 6\nprint A\nsize A\n",
+          "expected": "пусто\n0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Повторное добавление",
+          "stdin": "add A 1\nadd A 1\nsize A\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Непересекающиеся",
+          "stdin": "add A 10\nadd B 20\ninter\ndiff\nunion\n",
+          "expected": "пусто\n10\n10 20\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Одинаковые множества",
+          "stdin": "add A 7\nadd B 7\nxor\ninter\n",
+          "expected": "пусто\n7\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Пустое A",
+          "stdin": "add B 40\nadd B 50\ndiff\nprint B\n",
+          "expected": "пусто\n40 50\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Старшая половина",
+          "stdin": "add A 33\nadd A 34\nadd A 35\nadd B 34\nadd B 60\nunion\ninter\ndiff\nxor\nsize A\nsize B\n",
+          "expected": "33 34 35 60\n34\n33 35\n33 35 60\n3\n2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Проверки в пустых",
+          "stdin": "has A 0\nhas B 63\nprint B\n",
+          "expected": "нет\nнет\nпусто\n"
+        }
+      ],
+      "referenceSolution": "#include <stdint.h>\n#include <stdio.h>\n#include <string.h>\n\nstatic void print_set(uint64_t set) {\n    if (set == 0) {\n        printf(\"пусто\\n\");\n        return;\n    }\n    int first = 1;\n    for (int k = 0; k < 64; k++) {\n        if ((set >> k) & 1u) {\n            printf(first ? \"%d\" : \" %d\", k);\n            first = 0;\n        }\n    }\n    printf(\"\\n\");\n}\n\nstatic int count(uint64_t set) {\n    int n = 0;\n    for (; set != 0; set &= set - 1) {\n        n++;\n    }\n    return n;\n}\n\nint main(void) {\n    uint64_t sets[2] = {0, 0};\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"union\") == 0) {\n            print_set(sets[0] | sets[1]);\n        } else if (strcmp(command, \"inter\") == 0) {\n            print_set(sets[0] & sets[1]);\n        } else if (strcmp(command, \"diff\") == 0) {\n            print_set(sets[0] & ~sets[1]);\n        } else if (strcmp(command, \"xor\") == 0) {\n            print_set(sets[0] ^ sets[1]);\n        } else {\n            char which;\n            if (scanf(\" %c\", &which) != 1) {\n                break;\n            }\n            uint64_t *s = &sets[which == 'A' ? 0 : 1];\n            if (strcmp(command, \"size\") == 0) {\n                printf(\"%d\\n\", count(*s));\n                continue;\n            }\n            if (strcmp(command, \"print\") == 0) {\n                print_set(*s);\n                continue;\n            }\n            int x;\n            if (scanf(\"%d\", &x) != 1 || x < 0 || x > 63) {\n                break;\n            }\n            uint64_t bit = UINT64_C(1) << x;\n            if (strcmp(command, \"add\") == 0) {\n                *s |= bit;\n            } else if (strcmp(command, \"del\") == 0) {\n                *s &= ~bit;\n            } else if (strcmp(command, \"has\") == 0) {\n                printf(\"%s\\n\", (*s & bit) != 0 ? \"да\" : \"нет\");\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Множество из чисел от 0 до 63 — это 64 флага «входит / не входит», и они помещаются в одно 64-битное число. Тогда операции теории множеств становятся побитовыми: объединение — `|`, пересечение — `&`, разность — `& ~`, симметрическая разность — `^`. Каждая выполняется одной командой процессора для всех 64 элементов сразу.\n\nГлавная тонкость — ширина маски. `1u << x` при `x ≥ 32` — неопределённое поведение, поэтому единица должна быть 64-битной: `UINT64_C(1) << x`. Размер множества — число единичных битов; цикл `set &= set - 1` убирает по одной единице.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-bit-masks-task-3",
+      "title": "Найди ошибку: запись поля",
+      "description": "16-битное слово настройки устройства состоит из полей: `mode` — биты 0–1, `speed` — 2–5, `level` — 6–9, `channel` — 10–15. Команды: `set ПОЛЕ ЗНАЧЕНИЕ` (значение обрезается до ширины поля), `get ПОЛЕ` и `show` — печать слова в виде `0xHHHH`. Вначале слово равно нулю.\n\nПервая запись в поле работает, а повторные дают неверные значения, иногда портя соседние поля. Исправьте функцию записи поля.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <string.h>\n\n// 16-битное слово настройки: режим — биты 0–1, скорость — 2–5, уровень — 6–9, канал — 10–15.\nstatic const struct {\n    const char *name;\n    unsigned pos, width;\n} FIELDS[] = {{\"mode\", 0, 2}, {\"speed\", 2, 4}, {\"level\", 6, 4}, {\"channel\", 10, 6}};\n\nstatic unsigned set_field(unsigned word, unsigned pos, unsigned width, unsigned value) {\n    return word | (value << pos);\n}\n\nstatic unsigned get_field(unsigned word, unsigned pos, unsigned width) {\n    return (word >> pos) & ((1u << width) - 1u);\n}\n\nint main(void) {\n    unsigned word = 0;\n    char command[16], name[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"show\") == 0) {\n            printf(\"0x%04X\\n\", word);\n            continue;\n        }\n        if (scanf(\"%15s\", name) != 1) {\n            break;\n        }\n        int index = -1;\n        for (int i = 0; i < 4; i++) {\n            if (strcmp(FIELDS[i].name, name) == 0) {\n                index = i;\n            }\n        }\n        if (index < 0) {\n            continue;\n        }\n        if (strcmp(command, \"set\") == 0) {\n            unsigned value;\n            if (scanf(\"%u\", &value) != 1) {\n                break;\n            }\n            word = set_field(word, FIELDS[index].pos, FIELDS[index].width, value);\n        } else if (strcmp(command, \"get\") == 0) {\n            printf(\"%s = %u\\n\", name, get_field(word, FIELDS[index].pos, FIELDS[index].width));\n        }\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "set speed 5\nset speed 2\nget speed\nshow\n",
+          "output": "speed = 2\n0x0008\n"
+        },
+        {
+          "input": "set mode 3\nset level 9\nshow\n",
+          "output": "0x0243\n"
+        }
+      ],
+      "constraints": ["Значения от 0 до 1000; команд не больше 50."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что происходит со старым значением поля, когда новое накладывается через |?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Перед записью очистите место: word & ~mask, где mask = ((1u << width) - 1u) << pos. Значение тоже обрежьте маской: (value << pos) & mask.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "set speed 5\nset speed 2\nget speed\nshow\n",
+          "expected": "speed = 2\n0x0008\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "set mode 3\nset level 9\nshow\n",
+          "expected": "0x0243\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "set channel 63\nset channel 1\nshow\nget channel\n",
+          "expected": "0x0400\nchannel = 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "set mode 7\nshow\nget speed\n",
+          "expected": "0x0003\nspeed = 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "set speed 15\nset level 15\nset speed 0\nshow\n",
+          "expected": "0x03C0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "set level 100\nget level\nget channel\nshow\n",
+          "expected": "level = 4\nchannel = 0\n0x0100\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "set mode 1\nset mode 2\nset mode 0\nget mode\n",
+          "expected": "mode = 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "show\nget mode\n",
+          "expected": "0x0000\nmode = 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "set channel 1000\nshow\n",
+          "expected": "0xA000\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "set mode 3\nset speed 15\nset level 15\nset channel 63\nset level 0\nshow\n",
+          "expected": "0xFC3F\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n// 16-битное слово настройки: режим — биты 0–1, скорость — 2–5, уровень — 6–9, канал — 10–15.\nstatic const struct {\n    const char *name;\n    unsigned pos, width;\n} FIELDS[] = {{\"mode\", 0, 2}, {\"speed\", 2, 4}, {\"level\", 6, 4}, {\"channel\", 10, 6}};\n\nstatic unsigned set_field(unsigned word, unsigned pos, unsigned width, unsigned value) {\n    unsigned mask = ((1u << width) - 1u) << pos;\n    return (word & ~mask) | ((value << pos) & mask);\n}\n\nstatic unsigned get_field(unsigned word, unsigned pos, unsigned width) {\n    return (word >> pos) & ((1u << width) - 1u);\n}\n\nint main(void) {\n    unsigned word = 0;\n    char command[16], name[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"show\") == 0) {\n            printf(\"0x%04X\\n\", word);\n            continue;\n        }\n        if (scanf(\"%15s\", name) != 1) {\n            break;\n        }\n        int index = -1;\n        for (int i = 0; i < 4; i++) {\n            if (strcmp(FIELDS[i].name, name) == 0) {\n                index = i;\n            }\n        }\n        if (index < 0) {\n            continue;\n        }\n        if (strcmp(command, \"set\") == 0) {\n            unsigned value;\n            if (scanf(\"%u\", &value) != 1) {\n                break;\n            }\n            word = set_field(word, FIELDS[index].pos, FIELDS[index].width, value);\n        } else if (strcmp(command, \"get\") == 0) {\n            printf(\"%s = %u\\n\", name, get_field(word, FIELDS[index].pos, FIELDS[index].width));\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`word | (value << pos)` складывает биты нового значения со старыми: записать 2 (`10`) в поле со значением 1 (`01`) — получится 3 (`11`), а записать меньшее число вообще невозможно. Кроме того, значение не обрезается: если оно шире поля, его старшие биты попадают в соседнее поле.\n\nПравильная запись состоит из двух шагов: `word & ~mask` обнуляет биты поля, не трогая остальные, а `(value << pos) & mask` кладёт новое значение, отрезав всё, что выходит за поле. Это универсальный шаблон для любых упакованных форматов и регистров устройств.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-bit-masks-task-4",
+      "title": "Решето на битовом массиве",
+      "description": "Прочитайте числа `n` до конца ввода. Для каждого напечатайте `n: простых K, наибольшее P` — сколько простых чисел не больше `n` и наибольшее из них; если простых нет, вместо `наибольшее P` напечатайте `наибольшего нет`.\n\nПостройте решето Эратосфена **один раз** — до наибольшего из запрошенных `n`, — и храните его в битовом массиве: бит `i` слова `i >> 5` (`uint32_t`) отмечает, что число `i` составное. Массив `bool` или `char` на два миллиона элементов занял бы в 8 раз больше памяти.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "10\n100\n1\n",
+          "output": "10: простых 4, наибольшее 7\n100: простых 25, наибольшее 97\n1: простых 0, наибольшего нет\n"
+        },
+        {
+          "input": "2\n",
+          "output": "2: простых 1, наибольшее 2\n"
+        }
+      ],
+      "constraints": [
+        "0 ≤ n ≤ 2 000 000; чисел не больше 20.",
+        "Ограничение по времени — несколько секунд с санитайзерами: решето должно строиться один раз."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сначала прочитайте все n в массив и найдите максимум — до него и стройте решето.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Отметка составного: words[m >> 5] |= 1u << (m & 31). Вычёркивайте кратные p, начиная с p · p, пока p · p ≤ max.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Чтобы ответить быстро, после решета посчитайте для каждого запроса количество простых проходом до n — или заранее заведите накопленные суммы. Двадцати проходов по 2 000 000 достаточно.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "10\n100\n1\n",
+          "expected": "10: простых 4, наибольшее 7\n100: простых 25, наибольшее 97\n1: простых 0, наибольшего нет\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\n",
+          "expected": "2: простых 1, наибольшее 2\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ноль",
+          "stdin": "0\n",
+          "expected": "0: простых 0, наибольшего нет\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Маленькие числа",
+          "stdin": "3\n4\n5\n",
+          "expected": "3: простых 2, наибольшее 3\n4: простых 2, наибольшее 3\n5: простых 3, наибольшее 5\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Тысяча",
+          "stdin": "1000\n",
+          "expected": "1000: простых 168, наибольшее 997\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Миллион",
+          "stdin": "1000000\n",
+          "expected": "1000000: простых 78498, наибольшее 999983\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Два миллиона",
+          "stdin": "2000000\n",
+          "expected": "2000000: простых 148933, наибольшее 1999993\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Простое и следующее",
+          "stdin": "97\n98\n",
+          "expected": "97: простых 25, наибольшее 97\n98: простых 25, наибольшее 97\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Границы слов",
+          "stdin": "31\n32\n33\n64\n65\n",
+          "expected": "31: простых 11, наибольшее 31\n32: простых 11, наибольшее 31\n33: простых 11, наибольшее 31\n64: простых 18, наибольшее 61\n65: простых 18, наибольшее 61\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Большое простое",
+          "stdin": "1999993\n1999992\n",
+          "expected": "1999993: простых 148933, наибольшее 1999993\n1999992: простых 148932, наибольшее 1999979\n"
+        }
+      ],
+      "referenceSolution": "#include <stdint.h>\n#include <stdio.h>\n\nenum { MAX_N = 2000000 };\nstatic uint32_t composite[MAX_N / 32 + 1];\n\nstatic void mark(unsigned i) {\n    composite[i >> 5] |= 1u << (i & 31);\n}\n\nstatic int is_composite(unsigned i) {\n    return (composite[i >> 5] >> (i & 31)) & 1u;\n}\n\nint main(void) {\n    unsigned queries[20];\n    int q = 0;\n    unsigned max = 0;\n    while (q < 20 && scanf(\"%u\", &queries[q]) == 1) {\n        if (queries[q] > MAX_N) {\n            queries[q] = MAX_N;\n        }\n        if (queries[q] > max) {\n            max = queries[q];\n        }\n        q++;\n    }\n    mark(0);\n    mark(1);\n    for (unsigned p = 2; (unsigned long)p * p <= max; p++) {\n        if (!is_composite(p)) {\n            for (unsigned m = p * p; m <= max; m += p) {\n                mark(m);\n            }\n        }\n    }\n    for (int i = 0; i < q; i++) {\n        unsigned n = queries[i];\n        unsigned count = 0, largest = 0;\n        for (unsigned k = 2; k <= n; k++) {\n            if (!is_composite(k)) {\n                count++;\n                largest = k;\n            }\n        }\n        printf(\"%u: простых %u, \", n, count);\n        if (count == 0) {\n            printf(\"наибольшего нет\\n\");\n        } else {\n            printf(\"наибольшее %u\\n\", largest);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Решето Эратосфена вычёркивает кратные каждого простого числа; то, что осталось невычеркнутым, — простые. Каждому числу нужен один флаг «составное», и битовый массив хранит его в одном бите: два миллиона флагов занимают около 250 КБ вместо 2 МБ для массива `char`. Меньше памяти — меньше промахов кэша, и на больших пределах битовая версия часто оказывается и быстрее.\n\nНомер слова и позиция бита вычисляются сдвигом и маской: `i >> 5` — деление на 32, `i & 31` — остаток. Вычёркивание начинается с `p · p`: меньшие кратные уже вычеркнуты меньшими простыми. Условие цикла `p * p <= max` вычисляется в `unsigned long`, чтобы произведение не переполнилось.\n\nРешето строится один раз до наибольшего запроса — повторное построение для каждого числа было бы в двадцать раз медленнее.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-bit-masks-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Зачем очищать поле перед OR?",
-        "options": ["Чтобы удалить старые единицы", "Чтобы изменить порядок байтов"],
-        "correct": 0,
-        "explanation": "Маска описывает расположение поля, а сдвиг — его позицию. Для чтения трёхбитового поля с позиции 2 вычисляют (value >> 2) & 7u. Для записи сначала очищают старое поле, затем добавляют новое: (value & ~(7u << 2)) | (field << 2). Значение field предварительно ограничивают диапазоном 0…7."
+        "id": "q1",
+        "question": "Запишите маску поля шириной 4 бита на позиции 8 в шестнадцатеричном виде.",
+        "explanation": "((1u << 4) − 1) << 8 = 0xF << 8 = 0xF00: четыре единицы в битах 8–11.",
+        "type": "text",
+        "answers": ["0xF00", "0x0F00", "0xf00", "0x0f00"],
+        "placeholder": "0x…"
       },
       {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q2",
+        "question": "Какое выражение читает поле шириной 3 бита на позиции 5 из беззнакового x?",
+        "explanation": "Сначала поле сдвигается в младшие биты, затем маска ширины 0b111 = 7 отрезает остальное. x & (7u << 5) выделяет поле, но оставляет его на месте — значение в 32 раза больше.",
+        "options": ["(x >> 5) & 7u", "(x & 7u) >> 5", "x & (7u << 5)", "(x >> 3) & 31u"],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    unsigned date = 0x5A4Fu;          // формат FAT: год−1980 | месяц | день\n    printf(\"%u-%02u-%02u\\n\", (date >> 9) + 1980, (date >> 5) & 0xFu, date & 0x1Fu);\n    return 0;\n}",
+        "explanation": "0x5A4F = 0101101 0010 01111: год 45 + 1980 = 2025, месяц 2, день 15.",
+        "type": "text",
+        "answers": ["2025-02-15"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Почему битовые поля структур не используют для описания формата файла или сетевого пакета?",
+        "explanation": "Расположение битовых полей — свойство реализации. Формат, заданный извне, кодируют явными сдвигами и масками.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "Если не очистить старые биты, запись меньшего значения может сохранить прежние единицы."
+          "Порядок полей в слове, выравнивание и размер структуры определяет компилятор",
+          "Битовые поля нельзя записывать в файл",
+          "Битовые поля медленнее обычных полей",
+          "Битовые поля не могут быть шире 8 бит"
         ],
-        "correct": 1,
-        "explanation": "Поле — ячейка в упакованном документе: удалить старые отметки, затем записать новые."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["7", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: unsigned packet=28;printf(\"%u\\n\",(packet >> 2) & 7u); Ожидаемый результат: 7"
+        "id": "q5",
+        "question": "Множества A = {1, 3, 5} и B = {3, 4} хранятся битами. Какие элементы в A & ~B? Перечислите через пробел.",
+        "explanation": "A & ~B — разность: элементы A, которых нет в B. Удаляется только 3.",
+        "type": "text",
+        "answers": ["1 5"],
+        "placeholder": "Элементы"
+      },
+      {
+        "id": "q6",
+        "question": "В битовом массиве из uint32_t элемент i хранится в слове i >> 5 на позиции i & 31. В каком слове и на какой позиции лежит элемент 100? Напишите два числа через пробел.",
+        "explanation": "100 / 32 = 3 (остаток 4): слово 3, бит 4.",
+        "type": "text",
+        "answers": ["3 4"],
+        "placeholder": "Слово и позиция"
+      },
+      {
+        "id": "q7",
+        "question": "Поле на позиции 4 шириной 3 бита содержит 6 (110). Выполнили x |= 1u << 4, чтобы записать в поле 1. Что теперь в поле?",
+        "explanation": "ИЛИ добавляет биты к старым: 110 | 001 = 111 = 7. Чтобы записать новое значение, место нужно сначала очистить: x &= ~(7u << 4).",
+        "options": ["7", "1", "6", "0"],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какой диапазон значений у знакового битового поля int level : 3;?",
+        "explanation": "Три бита в дополнительном коде дают восемь значений: от −4 до 3. Беззнаковое поле той же ширины хранит 0…7.",
+        "options": ["от −4 до 3", "от 0 до 7", "от −3 до 3", "от −8 до 7"],
+        "correct": 0
       }
     ]
   }

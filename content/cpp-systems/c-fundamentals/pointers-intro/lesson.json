@@ -13,9 +13,9 @@
     "Объявлять указатель и читать или изменять переменную через него",
     "Различать звёздочку в объявлении и в выражении"
   ],
-  "tags": ["C17", "Указатели", "Адреса", "Разыменование"],
+  "tags": ["C23", "Указатели", "Адреса", "Разыменование"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-pointers-intro-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "intermediate",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int x;\n    scanf(\"%d\", &x);\n    int *p = &x;\n    // Измените значение через p.\n\n    printf(\"%d\\n\", x);\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -116,7 +116,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -207,7 +207,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf(\"%d %d\", &a, &b);\n    int *pa = &a;\n    int *pb = &b;\n    // Поменяйте значения местами через pa и pb.\n\n    printf(\"%d %d\\n\", a, b);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

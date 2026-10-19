@@ -1,126 +1,544 @@
 {
   "id": "cpp20-default-arguments",
-  "title": "Default arguments",
-  "description": "Значение по умолчанию сокращает повторяющиеся вызовы. Оно подставляется в месте компиляции, поэтому меняйте декларации осторожно в публичных заголовках.",
+  "title": "Аргументы по умолчанию",
+  "description": "Значения параметров по умолчанию и подстановка в месте вызова; правила: справа налево и только в объявлении; значения по умолчанию или перегрузка; функция join с разделителем; почему логические параметры по умолчанию делают вызовы непонятными.",
   "moduleId": "cpp-fundamentals",
-  "order": 11,
-  "difficulty": "intermediate",
-  "estimatedMinutes": 50,
+  "order": 13,
+  "difficulty": "beginner",
+  "estimatedMinutes": 35,
   "prerequisites": ["cpp20-overload"],
   "objectives": [
-    "Объяснить, зачем появился Default arguments и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Задавать параметрам значения по умолчанию",
+    "Соблюдать правила: справа налево и только в объявлении",
+    "Выбирать между значениями по умолчанию и перегрузкой",
+    "Проектировать понятные вызовы функций"
   ],
-  "tags": ["C++20", "основы C++", "Default arguments"],
+  "tags": ["C++", "Функции", "Аргументы по умолчанию"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-default-arguments-exercise",
-    "title": "Настраиваемый порог тревоги",
-    "description": "Ввод: value и threshold, целые −1000…1000. above(int value, int threshold = 80) возвращает value > threshold. Выведите above(value) и above(value, threshold) как 0 или 1 через пробел.",
-    "difficulty": "intermediate",
+    "id": "cpp20-default-arguments-task-1",
+    "title": "Склеивание",
+    "description": "Каждая строка ввода начинается с разделителя, затем идут слова. Если разделитель — `-`, используйте разделитель по умолчанию `\", \"` (запятая и пробел). Напечатайте слова, соединённые разделителем.\n\nНапишите функцию `std::string join(const std::vector<std::string> &words, const std::string &sep = \", \")` и вызывайте её с одним аргументом, когда нужен разделитель по умолчанию.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "90 100",
-        "output": "1 0\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "- C C++ Rust\n",
+        "output": "C, C++, Rust\n"
       },
       {
-        "input": "80 70",
-        "output": "0 1\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "/ usr local bin\n+ one\n",
+        "output": "usr/local/bin\none\n"
       }
     ],
     "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
+      "Строк не больше 30; в строке от 0 до 50 слов; разделитель и слова — без пробелов."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "Разберите строку std::istringstream: первым прочитайте разделитель, затем слова в std::vector<std::string>.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "Если разделитель \"-\", вызовите join(words), иначе join(words, sep). Если слов нет, печатается пустая строка.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "90 100",
-        "expected": "1 0\n"
+        "stdin": "- C C++ Rust\n",
+        "expected": "C, C++, Rust\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "80 70",
-        "expected": "0 1\n"
+        "stdin": "/ usr local bin\n+ one\n",
+        "expected": "usr/local/bin\none\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "-5 -10",
-        "expected": "0 1\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "-\n",
+        "expected": "\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "80 80",
-        "expected": "0 0\n"
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "- solo\n",
+        "expected": "solo\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "| a b c d\n",
+        "expected": "a|b|c|d\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "-- x y\n",
+        "expected": "x--y\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "; alpha beta\n- p q r s t\n",
+        "expected": "alpha;beta\np, q, r, s, t\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "* 1 2 3\n",
+        "expected": "1*2*3\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "- a\n- a b\n",
+        "expected": "a\na, b\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "::: left right\n",
+        "expected": "left:::right\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n\nbool above(int value, int threshold = 80) { return value > threshold; }\nint main() {\n    int value{}, threshold{};\n    if (!(std::cin >> value >> threshold)) return 1;\n    std::cout << above(value) << ' ' << above(value, threshold) << '\\n';\n}\n",
-    "solutionExplanation": "Пропущенный аргумент подставляется из видимого объявления. Равенство не вызывает тревогу. Default argument не создаёт вторую функцию. Два сравнения стоят O(1); сложное выражение по умолчанию могло бы требовать отдельного вычисления при вызове.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <iostream>\n#include <sstream>\n#include <string>\n#include <vector>\n\nstd::string join(const std::vector<std::string> &words, const std::string &sep = \", \") {\n    std::string result;\n    for (std::size_t i = 0; i < words.size(); i++) {\n        if (i > 0) {\n            result += sep;\n        }\n        result += words[i];\n    }\n    return result;\n}\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        std::istringstream in(line);\n        std::string sep, word;\n        if (!(in >> sep)) {\n            continue;\n        }\n        std::vector<std::string> words;\n        while (in >> word) {\n            words.push_back(word);\n        }\n        std::cout << (sep == \"-\" ? join(words) : join(words, sep)) << '\\n';\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Вызов `join(words)` без второго аргумента компилятор превращает в `join(words, \", \")`. Сама функция не знает, передан ли разделитель явно, — она всегда получает два параметра.\n\nРазделитель вставляется **между** элементами: перед каждым, кроме первого. Так пустой вектор даёт пустую строку, а вектор из одного слова — само слово, без лишних разделителей.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-default-arguments-task-2",
+      "title": "Округление",
+      "description": "Каждая строка ввода — дробное число и, возможно, число знаков после точки `d`. Напечатайте число, округлённое до `d` знаков (по умолчанию — 0), ровно с `d` знаками после точки.\n\nНапишите функцию `std::string format_number(double x, int digits = 0)` и вызывайте её с одним аргументом, когда `d` не указано.",
+      "difficulty": "beginner",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3.14159 2\n2.71828\n",
+          "output": "3.14\n3\n"
+        },
+        {
+          "input": "-1.26 1\n1000000\n",
+          "output": "-1.3\n1000000\n"
+        }
+      ],
+      "constraints": [
+        "|x| ≤ 10⁶; 0 ≤ d ≤ 6; строк не больше 30; во входе нет чисел, лежащих ровно посередине между вариантами округления."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Внутри функции соберите строку строковым потоком вывода: std::ostringstream out; out << std::fixed << std::setprecision(digits) << x; return out.str();.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Строку ввода разберите std::istringstream: прочитайте x, затем попробуйте прочитать d — если удалось, вызовите format_number(x, d), иначе format_number(x).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3.14159 2\n2.71828\n",
+          "expected": "3.14\n3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "-1.26 1\n1000000\n",
+          "expected": "-1.3\n1000000\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Меньше половины",
+          "stdin": "0.4\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Больше половины",
+          "stdin": "0.6\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Отрицательное",
+          "stdin": "-7.7\n",
+          "expected": "-8\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Шесть знаков",
+          "stdin": "1.23456789 6\n",
+          "expected": "1.234568\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Целое с дробной частью",
+          "stdin": "42 3\n",
+          "expected": "42.000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Перенос разряда",
+          "stdin": "999999.99 1\n",
+          "expected": "1000000.0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Маленькие",
+          "stdin": "0.001 2\n0.009 2\n",
+          "expected": "0.00\n0.01\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Явный ноль и по умолчанию",
+          "stdin": "123.456 0\n123.456\n",
+          "expected": "123\n123\n"
+        }
+      ],
+      "referenceSolution": "#include <iomanip>\n#include <iostream>\n#include <sstream>\n#include <string>\n\nstd::string format_number(double x, int digits = 0) {\n    std::ostringstream out;\n    out << std::fixed << std::setprecision(digits) << x;\n    return out.str();\n}\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        std::istringstream in(line);\n        double x;\n        int d;\n        if (!(in >> x)) {\n            continue;\n        }\n        std::cout << (in >> d ? format_number(x, d) : format_number(x)) << '\\n';\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`std::ostringstream` — поток, который пишет не на экран, а в строку: все манипуляторы `<iomanip>` работают с ним так же, как с `std::cout`. Функция возвращает готовый текст, и форматирование не «залипает» в `std::cout` для следующих чисел.\n\nТочность по умолчанию — 0: число округляется до целого и печатается без точки. Половинные случаи вроде 2.5 условие исключает: `printf` и потоки округляют двоичное представление числа, и для точных половин glibc выбирает чётную цифру — 2.5 превращается в 2.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-default-arguments-task-3",
+      "title": "Найди ошибку: полоса загрузки",
+      "description": "Каждая строка ввода — процент выполнения и, возможно, ширина полосы. Программа печатает полосу загрузки вида `[#####...............] 25%`; ширина по умолчанию — 20.\n\nПрограмма не компилируется. Исправьте её.",
+      "difficulty": "beginner",
+      "starterCode": "#include <iostream>\n#include <sstream>\n#include <string>\n\nstd::string progress_bar(int percent, int width = 20);\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        std::istringstream in(line);\n        int percent, width;\n        if (!(in >> percent)) {\n            continue;\n        }\n        std::cout << (in >> width ? progress_bar(percent, width) : progress_bar(percent)) << '\\n';\n    }\n    return 0;\n}\n\nstd::string progress_bar(int percent, int width = 20) {\n    int filled = percent * width / 100;\n    return \"[\" + std::string(static_cast<std::size_t>(filled), '#') +\n           std::string(static_cast<std::size_t>(width - filled), '.') + \"] \" + std::to_string(percent) + \"%\";\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "25\n",
+          "output": "[#####...............] 25%\n"
+        },
+        {
+          "input": "50 10\n",
+          "output": "[#####.....] 50%\n"
+        }
+      ],
+      "constraints": ["0 ≤ процент ≤ 100; 1 ≤ ширина ≤ 100; строк не больше 30."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Прочитайте сообщение компилятора: default argument given for parameter 2. Где ещё указано значение 20?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Значение по умолчанию пишут один раз — в объявлении функции, которое видят вызовы. Уберите = 20 из определения.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "25\n",
+          "expected": "[#####...............] 25%\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "50 10\n",
+          "expected": "[#####.....] 50%\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0\n",
+          "expected": "[....................] 0%\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "100\n",
+          "expected": "[####################] 100%\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "100 5\n",
+          "expected": "[#####] 100%\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1 100\n",
+          "expected": "[#...................................................................................................] 1%\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "33 3\n",
+          "expected": "[...] 33%\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "99\n",
+          "expected": "[###################.] 99%\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "10 1\n",
+          "expected": "[.] 10%\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "75 8\n",
+          "expected": "[######..] 75%\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <sstream>\n#include <string>\n\nstd::string progress_bar(int percent, int width = 20);\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        std::istringstream in(line);\n        int percent, width;\n        if (!(in >> percent)) {\n            continue;\n        }\n        std::cout << (in >> width ? progress_bar(percent, width) : progress_bar(percent)) << '\\n';\n    }\n    return 0;\n}\n\nstd::string progress_bar(int percent, int width) {\n    int filled = percent * width / 100;\n    return \"[\" + std::string(static_cast<std::size_t>(filled), '#') +\n           std::string(static_cast<std::size_t>(width - filled), '.') + \"] \" + std::to_string(percent) + \"%\";\n}\n",
+      "solutionExplanation": "Функция объявлена в начале файла, чтобы `main` могла её вызвать, а определена после `main`. Значение по умолчанию указано в обоих местах — и это ошибка компиляции, даже если значения совпадают: `default argument given for parameter 2 of ...`.\n\nЗначение должно быть в **объявлении**: компилятор подставляет его при компиляции вызова, а вызов видит только объявление. В настоящем проекте объявление лежит в заголовке, определение — в `.cpp`-файле, и значение по умолчанию живёт в заголовке.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-default-arguments-task-4",
+      "title": "Рамка",
+      "description": "Каждая строка ввода — до трёх полей через `|`: текст, отступ и символ рамки, например `Hello|2|#`. Отсутствующие поля берутся по умолчанию: отступ 1, символ `*`. Нарисуйте рамку из трёх строк:\n\n```text\n###########\n#  Hello  #\n###########\n```\n\nНапишите функцию `void draw_box(const std::string &text, int padding = 1, char border = '*')`. Верхняя и нижняя строки — символ рамки длиной `длина текста + 2 · отступ + 2`; средняя — символ рамки, отступ из пробелов, текст, отступ, символ рамки.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "Hello|2|#\n",
+          "output": "###########\n#  Hello  #\n###########\n"
+        },
+        {
+          "input": "C++\n",
+          "output": "*******\n* C++ *\n*******\n"
+        }
+      ],
+      "constraints": [
+        "Текст — ASCII до 60 символов, может содержать пробелы, не содержит |; 0 ≤ отступ ≤ 10; строк не больше 20."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Разбейте строку по |: std::getline(in, part, '|') читает до разделителя. Сохраните части в вектор.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Вызов зависит от числа частей: draw_box(t), draw_box(t, std::stoi(p)) или draw_box(t, std::stoi(p), b[0]).",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Строку из повторяющихся символов создаёт конструктор std::string(n, c).",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "Hello|2|#\n",
+          "expected": "###########\n#  Hello  #\n###########\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "C++\n",
+          "expected": "*******\n* C++ *\n*******\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Без отступа",
+          "stdin": "x|0\n",
+          "expected": "***\n*x*\n***\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Пробел в тексте",
+          "stdin": "hello world|3\n",
+          "expected": "*******************\n*   hello world   *\n*******************\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Свой символ",
+          "stdin": "abc|1|=\n",
+          "expected": "=======\n= abc =\n=======\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Большой отступ",
+          "stdin": "A|10|+\n",
+          "expected": "+++++++++++++++++++++++\n+          A          +\n+++++++++++++++++++++++\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Две рамки",
+          "stdin": "one\ntwo|0|-\n",
+          "expected": "*******\n* one *\n*******\n-----\n-two-\n-----\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "По умолчанию",
+          "stdin": "Box\n",
+          "expected": "*******\n* Box *\n*******\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Длинный текст",
+          "stdin": "long text with several words|2|@\n",
+          "expected": "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n@  long text with several words  @\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Только отступ",
+          "stdin": "z|5\n",
+          "expected": "*************\n*     z     *\n*************\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <sstream>\n#include <string>\n#include <vector>\n\nvoid draw_box(const std::string &text, int padding = 1, char border = '*') {\n    std::string edge(text.size() + 2 * static_cast<std::size_t>(padding) + 2, border);\n    std::string space(static_cast<std::size_t>(padding), ' ');\n    std::cout << edge << '\\n' << border << space << text << space << border << '\\n' << edge << '\\n';\n}\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        std::istringstream in(line);\n        std::vector<std::string> parts;\n        std::string part;\n        while (std::getline(in, part, '|')) {\n            parts.push_back(part);\n        }\n        if (parts.size() == 1) {\n            draw_box(parts[0]);\n        } else if (parts.size() == 2) {\n            draw_box(parts[0], std::stoi(parts[1]));\n        } else if (parts.size() >= 3) {\n            draw_box(parts[0], std::stoi(parts[1]), parts[2][0]);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Три вызова `draw_box` с одним, двумя и тремя аргументами обслуживает одна функция: недостающие аргументы подставляет компилятор. Порядок параметров выбран по частоте изменения: текст нужен всегда, отступ меняют чаще, чем символ, — поэтому символ последний. Если бы часто меняли только символ, пришлось бы каждый раз указывать и отступ.\n\n`std::getline(in, part, '|')` — та же функция, что читает строки, но с другим разделителем: так строку удобно разрезать по любому символу. `std::string(n, c)` строит строку из `n` одинаковых символов — это и края рамки, и отступы.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-default-arguments-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «Default arguments»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "Значение по умолчанию сокращает повторяющиеся вызовы. Оно подставляется в месте компиляции, поэтому меняйте декларации осторожно в публичных заголовках."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n\nint volume(int a, int b = 2, int c = 3) {\n    return a * b * c;\n}\n\nint main() {\n    std::cout << volume(1) << ' ' << volume(1, 5) << ' ' << volume(1, 5, 7) << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Недостающие аргументы берутся из значений по умолчанию: 1·2·3, 1·5·3, 1·5·7.",
+        "type": "text",
+        "answers": ["6 15 35"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
+        "id": "q2",
+        "question": "Какое объявление корректно?",
+        "explanation": "Если у параметра есть значение по умолчанию, оно должно быть и у всех параметров правее.",
         "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
+          "void f(int a, int b = 0, int c = 0);",
+          "void f(int a = 0, int b, int c);",
+          "void f(int a = 0, int b, int c = 0);",
+          "void f(int a, int b = 0, int c);"
         ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "correct": 0
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Где указывают значение по умолчанию, если функция объявлена в заголовке, а определена в .cpp-файле?",
+        "explanation": "Значение подставляется при компиляции вызова, поэтому его должны видеть все вызывающие — через заголовок. Повторение в определении — ошибка.",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "Только в объявлении в заголовке",
+          "Только в определении",
+          "И там, и там",
+          "В месте вызова"
         ],
-        "correct": 0,
-        "explanation": "Используйте Default arguments как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Можно ли вызвать функцию void line(char symbol = '-', int length = 10), указав только length?",
+        "explanation": "В C++ нет именованных аргументов. line(5) скомпилируется, но 5 станет значением symbol — символом с кодом 5.",
+        "options": [
+          "Нет: аргументы опускаются только с конца",
+          "Да: line(, 5)",
+          "Да: line(length = 5)",
+          "Да: line(5) — компилятор поймёт по типу"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <string>\n\nstd::string wrap(const std::string &s, const std::string &left = \"[\", const std::string &right = \"]\") {\n    return left + s + right;\n}\n\nint main() {\n    std::cout << wrap(\"a\") << wrap(\"b\", \"<\", \">\") << wrap(\"c\", \"(\") << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "В третьем вызове указан только left, а right остаётся по умолчанию — «]».",
+        "type": "text",
+        "answers": ["[a]<b>(c]"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Когда значение по умолчанию лучше перегрузки?",
+        "explanation": "Значения по умолчанию — короткая запись одинаковых перегрузок. Разная логика — повод для перегрузки.",
+        "options": [
+          "Когда логика функции одна, а меняется только значение параметра",
+          "Когда для разных типов нужна разная логика",
+          "Когда нужно различать функции по возвращаемому типу",
+          "Всегда"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Почему вызов save(\"a.txt\", true, false) — плохой стиль?",
+        "explanation": "Понятнее перечисление с говорящими именами или отдельные функции.",
+        "options": [
+          "По вызову не понять, что означают true и false — нужно смотреть объявление",
+          "Логические параметры запрещены",
+          "Значения по умолчанию нельзя задавать для bool",
+          "Это не плохой стиль"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n\nint counter = 0;\n\nint next_id() {\n    return ++counter;\n}\n\nvoid show(int id = next_id()) {\n    std::cout << id << ' ';\n}\n\nint main() {\n    show();\n    show(10);\n    show();\n    std::cout << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Значение по умолчанию вычисляется в момент каждого вызова без аргумента. Во втором вызове аргумент указан, и next_id не вызывается.",
+        "type": "text",
+        "answers": ["1 10 2"],
+        "placeholder": "Вывод программы"
       }
     ]
   }

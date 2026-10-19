@@ -15,7 +15,7 @@
   ],
   "tags": ["Старт", "Отладка", "Тесты", "Логические ошибки"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "runtime-errors-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf(\"%d %d\", &a, &b);\n    int average = a + b / 2;\n    printf(\"%d\\n\", average);\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -123,7 +123,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int total;\n    scanf(\"%d\", &total);\n    int hours = total / 60;\n    int minutes = total - hours * 6;\n    printf(\"%d %d\\n\", hours, minutes);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -221,7 +221,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int price, count, discount;\n    scanf(\"%d %d %d\", &price, &count, &discount);\n    int total = price * count;\n    price = price - discount;\n    printf(\"%d\\n\", total);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -313,7 +313,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int c;\n    scanf(\"%d\", &c);\n    int f = c * (9 / 5) + 32;\n    printf(\"%d\\n\", f);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

@@ -44,8 +44,8 @@ export default {
     'Читать значения из байтовых буферов через memcpy без невыровненного доступа',
     'Округлять размеры и адреса вверх до кратного степени двойки',
   ],
-  tags: ['C17', 'Память', 'Выравнивание', 'alignof', 'memcpy'],
-  standard: 'c17',
+  tags: ['C23', 'Память', 'Выравнивание', 'alignof', 'memcpy'],
+  standard: 'c23',
   diagnostics: 'sanitizers',
   quiz: [
     {
@@ -63,7 +63,6 @@ export default {
     {
       q: 'Что выведет программа?',
       code: String.raw`
-#include <stdalign.h>
 #include <stdio.h>
 
 int main(void) {

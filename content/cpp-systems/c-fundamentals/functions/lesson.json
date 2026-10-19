@@ -14,9 +14,9 @@
     "Объявлять функции до вызова: определением выше или прототипом",
     "Разбивать программу на функции с одной задачей"
   ],
-  "tags": ["C17", "Функции", "return", "void"],
+  "tags": ["C23", "Функции", "return", "void"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-functions-task-1",
@@ -25,7 +25,7 @@
     "difficulty": "beginner",
     "starterCode": "int cube(int x) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -136,7 +136,7 @@
       "difficulty": "beginner",
       "starterCode": "int max2(int a, int b) {\n    // Вспомогательная функция: большее из двух.\n    return 0;\n}\n\nint max3(int a, int b, int c) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -242,7 +242,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nvoid print_row(char symbol, int count) {\n    // Напечатайте symbol count раз и переведите строку.\n}\n\nint main(void) {\n    int n;\n    char symbol;\n    scanf(\"%d %c\", &n, &symbol);\n    for (int i = 1; i <= n; i++) {\n        print_row(symbol, i);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -339,7 +339,7 @@
       "difficulty": "beginner",
       "starterCode": "int digit_sum(long long n) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -439,11 +439,11 @@
     {
       "id": "c17-functions-task-5",
       "title": "Високосный год",
-      "description": "Напишите функцию `bool is_leap(int year)`, которая возвращает `true` для високосного года и `false` для обычного. Тип `bool` подключается заголовком `<stdbool.h>` — он уже есть в заготовке.\n\nПроверяющая система напечатает результат как 1 или 0.",
+      "description": "Напишите функцию `bool is_leap(int year)`, которая возвращает `true` для високосного года и `false` для обычного. Тип `bool` и значения `true`/`false` встроены в язык (с C23), подключать для них ничего не нужно.\n\nПроверяющая система напечатает результат как 1 или 0.",
       "difficulty": "beginner",
-      "starterCode": "#include <stdbool.h>\n\nbool is_leap(int year) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return false;\n}\n",
+      "starterCode": "bool is_leap(int year) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return false;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -520,7 +520,7 @@
           "expected": "0\n"
         }
       ],
-      "referenceSolution": "#include <stdbool.h>\n\nbool is_leap(int year) {\n    return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;\n}\n",
+      "referenceSolution": "bool is_leap(int year) {\n    return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;\n}\n",
       "solutionExplanation": "Функция, отвечающая «да/нет», обычно возвращает `bool`, а её имя начинается с `is_` или `has_`: `is_leap`, `is_prime`, `has_digit`. Тогда вызов читается как вопрос: `if (is_leap(year))`.\n\nТеперь правило високосного года записано один раз. Если оно понадобится в задаче о датах, достаточно вызвать функцию — не нужно копировать формулу.",
       "checking": {
         "type": "function",

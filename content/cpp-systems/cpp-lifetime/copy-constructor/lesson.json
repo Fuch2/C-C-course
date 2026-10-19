@@ -1,154 +1,534 @@
 {
   "id": "lifetime-copy-constructor",
-  "title": "Конструктор копирования — Copy constructor",
-  "description": "Конструктор копирования создаёт новый объект из существующего; стандартная сигнатура — T(const T& other).",
+  "title": "Конструктор копирования",
+  "description": "Когда вызывается конструктор копирования: инициализация, передача по значению, вставка в контейнер, захват в лямбду; гарантированное устранение копий C++17; неявный почленный конструктор копирования и типы-значения; свой конструктор копирования T(const T &) и почему параметр — константная ссылка; забытые поля; = default и = delete.",
   "moduleId": "cpp-lifetime",
   "order": 6,
-  "difficulty": "advanced",
-  "estimatedMinutes": 55,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
   "prerequisites": ["lifetime-ownership"],
   "objectives": [
-    "Отличать инициализацию копированием от присваивания по наличию объекта назначения.",
-    "Проследить на MemoryDiagram создание независимого блока при глубокой копии.",
-    "Реализовать глубоко копирующий конструктор и обосновать запрет присваивания."
+    "Находить места, где объект копируется",
+    "Полагаться на неявное почленное копирование для типов-значений",
+    "Писать конструктор копирования с особой семантикой",
+    "Не терять поля в собственном конструкторе копирования"
   ],
-  "tags": [
-    "C++20",
-    "время жизни",
-    "управление ресурсами",
-    "Конструктор копирования — Copy constructor"
-  ],
+  "tags": ["C++23", "Время жизни", "Копирование", "Конструкторы"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "lifetime-copy-constructor-exercise",
-    "title": "Практика: Конструктор копирования — Copy constructor",
-    "description": "Создайте Measurement с владеющим unique_ptr<int>, конструктором от int и глубоко копирующим конструктором; присваивание запретите. solve создаёт first(a), копию second(first), меняет значение second на b и возвращает сумму значений двух объектов.",
-    "difficulty": "advanced",
+    "title": "Счётчик копий",
+    "description": "Структура `Probe` считает свои копии: конструктор копирования увеличивает статический счётчик `copies`. В начале программы создайте объект `Probe a`. Затем выполните команды:\n\n- `copy` — `Probe b = a;`\n- `value` — вызвать `void by_value(Probe)`;\n- `ref` — вызвать `void by_ref(const Probe &)`;\n- `make` — `Probe c = make();`, где `make` возвращает `Probe()`;\n- `store` — добавить `a` в вектор, у которого заранее зарезервировано место на 100 элементов.\n\nПосле каждой команды напечатайте `команда: копий N` — общее число копий с начала программы.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 7)",
-        "output": "10\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "copy\nref\nvalue\nmake\nstore\n",
+        "output": "copy: копий 1\nref: копий 1\nvalue: копий 2\nmake: копий 2\nstore: копий 3\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "ref\nref\n",
+        "output": "ref: копий 0\nref: копий 0\n"
       }
     ],
-    "constraints": [
-      "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Команд не больше 100."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Сравните адреса ресурсов оригинала и копии. Одинаковый адрес у двух владельцев — признак поверхностной копии."
+        "id": "hint-1",
+        "text": "static inline int copies = 0; внутри структуры — один счётчик на все объекты.",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "У значения (измерение, строка) изменение копии не должно менять оригинал — нужна глубокая копия. У дескриптора общего объекта копия может намеренно разделять состояние. У исключительного владельца копирование запрещают через = delete. В примере Measurement владеет одним int: её копирующий конструктор выделяет новый int и копирует значение. Если выделение бросит, новый объект не создан, а источник не изменён — это сильная гарантия. Присваивание здесь запрещено: хороший конструктор копирования не исправляет автоматически опасный operator=, это отдельная операция.\n\nСигнатура T(T other) невозможна как конструктор копирования: передача параметра сама потребовала бы копирования. Передачу больших объектов только для чтения выполняйте через const T&.\n\nПосле создания копии b измените её значение, затем уничтожьте b во вложенном блоке и прочитайте a. Проверка наблюдает одновременно независимость значений и освобождение разных блоков."
+        "id": "hint-2",
+        "text": "reserve(100) до первого store гарантирует, что вектор не будет переезжать и копировать старые элементы.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 7],
-        "expected": "10\n"
+        "stdin": "copy\nref\nvalue\nmake\nstore\n",
+        "expected": "copy: копий 1\nref: копий 1\nvalue: копий 2\nmake: копий 2\nstore: копий 3\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "ref\nref\n",
+        "expected": "ref: копий 0\nref: копий 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный случай 1",
-        "arguments": [-8, 3],
-        "expected": "-5\n"
+        "id": "hidden-1",
+        "name": "Пусто",
+        "stdin": "",
+        "expected": ""
       },
       {
-        "id": "case-4",
-        "name": "Граничный случай 2",
-        "arguments": [5, -9],
-        "expected": "-4\n"
+        "id": "hidden-2",
+        "name": "Только make",
+        "stdin": "make\nmake\nmake\n",
+        "expected": "make: копий 0\nmake: копий 0\nmake: копий 0\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный случай 3",
-        "arguments": [-1000, 1000],
-        "expected": "0\n"
+        "id": "hidden-3",
+        "name": "Четыре вставки",
+        "stdin": "store\nstore\nstore\nstore\n",
+        "expected": "store: копий 1\nstore: копий 2\nstore: копий 3\nstore: копий 4\n"
       },
       {
-        "id": "case-6",
-        "name": "Граничный случай 4",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-4",
+        "name": "Одна передача по значению",
+        "stdin": "value\n",
+        "expected": "value: копий 1\n"
       },
       {
-        "id": "case-7",
-        "name": "Граничный случай 5",
-        "arguments": [4, 4],
-        "expected": "8\n"
+        "id": "hidden-5",
+        "name": "Две копии",
+        "stdin": "copy\ncopy\n",
+        "expected": "copy: копий 1\ncopy: копий 2\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Чередование",
+        "stdin": "ref\nvalue\nref\nvalue\n",
+        "expected": "ref: копий 0\nvalue: копий 1\nref: копий 1\nvalue: копий 2\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Все команды",
+        "stdin": "store\nmake\ncopy\nref\nvalue\n",
+        "expected": "store: копий 1\nmake: копий 1\ncopy: копий 2\nref: копий 2\nvalue: копий 3\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Двузначный счётчик",
+        "stdin": "copy\nvalue\nstore\ncopy\nvalue\nstore\ncopy\nvalue\nstore\ncopy\nvalue\nstore\n",
+        "expected": "copy: копий 1\nvalue: копий 2\nstore: копий 3\ncopy: копий 4\nvalue: копий 5\nstore: копий 6\ncopy: копий 7\nvalue: копий 8\nstore: копий 9\ncopy: копий 10\nvalue: копий 11\nstore: копий 12\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct Measurement { std::unique_ptr<int> value; explicit Measurement(int v): value(std::make_unique<int>(v)) {} Measurement(const Measurement& other): value(std::make_unique<int>(*other.value)) {} Measurement& operator=(const Measurement&) = delete; };\nint solve(int a, int b) { Measurement first{a}; Measurement second{first}; *second.value = b; return *first.value + *second.value; }",
-    "solutionExplanation": "У значения (измерение, строка) изменение копии не должно менять оригинал — нужна глубокая копия. У дескриптора общего объекта копия может намеренно разделять состояние. У исключительного владельца копирование запрещают через = delete. В примере Measurement владеет одним int: её копирующий конструктор выделяет новый int и копирует значение. Если выделение бросит, новый объект не создан, а источник не изменён — это сильная гарантия. Присваивание здесь запрещено: хороший конструктор копирования не исправляет автоматически опасный operator=, это отдельная операция.\n\nСигнатура T(T other) невозможна как конструктор копирования: передача параметра сама потребовала бы копирования. Передачу больших объектов только для чтения выполняйте через const T&.\n\nПосле создания копии b измените её значение, затем уничтожьте b во вложенном блоке и прочитайте a. Проверка наблюдает одновременно независимость значений и освобождение разных блоков.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <vector>\n\nstruct Probe {\n    static inline int copies = 0;\n    Probe() = default;\n    Probe(const Probe &) {\n        ++copies;\n    }\n};\n\nvoid by_value(Probe) {}\n\nvoid by_ref(const Probe &) {}\n\nProbe make() {\n    return Probe();\n}\n\nint main() {\n    const Probe a;\n    std::vector<Probe> stored;\n    stored.reserve(100);\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"copy\") {\n            [[maybe_unused]] const Probe b = a;\n        } else if (command == \"value\") {\n            by_value(a);\n        } else if (command == \"ref\") {\n            by_ref(a);\n        } else if (command == \"make\") {\n            [[maybe_unused]] const Probe c = make();\n        } else {\n            stored.push_back(a);\n        }\n        std::println(\"{}: копий {}\", command, Probe::copies);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Копируют инициализация другим объектом, передача по значению и вставка в контейнер. Ссылка копий не создаёт, а возврат временного объекта с C++17 строит его прямо на месте `c` — конструктор копирования не вызывается вовсе, это гарантия языка, а не оптимизация компилятора.\n\nБез `reserve` вектор при росте переезжал бы в новый буфер и копировал старые элементы — счётчик рос бы скачками.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "lifetime-copy-constructor-task-2",
+      "title": "Билеты",
+      "description": "Класс `Ticket` хранит уникальный номер (1, 2, 3, … по порядку создания), событие и номер билета, с которого он скопирован (0 — оригинал). Конструктор копирования создаёт билет на то же событие с **новым** номером и запоминает номер оригинала.\n\nБилеты хранятся в `std::deque<Ticket>`. Команды:\n\n- `new событие` — создать билет (через `emplace_back`);\n- `copy N` — добавить копию билета N (`push_back` существующего);\n- `show N` — напечатать `№N событие` и, если билет — копия, ` (копия №M)`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "new Концерт\ncopy 1\nnew Театр\ncopy 2\nshow 1\nshow 2\nshow 3\nshow 4\n",
+          "output": "№1 Концерт\n№2 Концерт (копия №1)\n№3 Театр\n№4 Концерт (копия №2)\n"
+        },
+        {
+          "input": "new Матч\nshow 1\n",
+          "output": "№1 Матч\n"
+        }
+      ],
+      "constraints": ["Команд не больше 200; copy и show ссылаются на существующие билеты."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "static inline int next_id_ = 1; конструкторы берут next_id_++.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "std::deque не переносит элементы при push_back в конец — копирования «сами собой» не будет. В std::vector при росте билеты копировались бы и получали новые номера.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "new Концерт\ncopy 1\nnew Театр\ncopy 2\nshow 1\nshow 2\nshow 3\nshow 4\n",
+          "expected": "№1 Концерт\n№2 Концерт (копия №1)\n№3 Театр\n№4 Концерт (копия №2)\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "new Матч\nshow 1\n",
+          "expected": "№1 Матч\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-2",
+          "name": "Много копий одного",
+          "stdin": "new a\ncopy 1\ncopy 1\ncopy 1\nshow 4\n",
+          "expected": "№4 a (копия №1)\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Цепочка копий",
+          "stdin": "new a\ncopy 1\ncopy 2\ncopy 3\nshow 4\n",
+          "expected": "№4 a (копия №3)\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Без копий",
+          "stdin": "new x\nnew y\nshow 2\nshow 1\n",
+          "expected": "№2 y\n№1 x\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Новый после копии",
+          "stdin": "new e\ncopy 1\nshow 2\nnew f\nshow 3\n",
+          "expected": "№2 e (копия №1)\n№3 f\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Оригинал не меняется",
+          "stdin": "new Выставка\ncopy 1\nshow 1\nshow 2\n",
+          "expected": "№1 Выставка\n№2 Выставка (копия №1)\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Обратный порядок копий",
+          "stdin": "new a\nnew b\nnew c\ncopy 3\ncopy 2\ncopy 1\nshow 4\nshow 5\nshow 6\n",
+          "expected": "№4 c (копия №3)\n№5 b (копия №2)\n№6 a (копия №1)\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Две копии копии",
+          "stdin": "new q\ncopy 1\ncopy 2\ncopy 2\nshow 3\nshow 4\n",
+          "expected": "№3 q (копия №2)\n№4 q (копия №2)\n"
+        }
+      ],
+      "referenceSolution": "#include <deque>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Ticket {\npublic:\n    explicit Ticket(std::string event) : id_(next_id_++), event_(std::move(event)) {}\n    Ticket(const Ticket &other) : id_(next_id_++), event_(other.event_), source_(other.id_) {}\n\n    void show() const {\n        if (source_ == 0) {\n            std::println(\"№{} {}\", id_, event_);\n        } else {\n            std::println(\"№{} {} (копия №{})\", id_, event_, source_);\n        }\n    }\n\nprivate:\n    static inline int next_id_ = 1;\n    int id_;\n    std::string event_;\n    int source_ = 0;\n};\n\nint main() {\n    std::deque<Ticket> tickets;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"new\") {\n            std::string event;\n            std::cin >> event;\n            tickets.emplace_back(event);\n        } else {\n            std::size_t n;\n            std::cin >> n;\n            if (command == \"copy\") {\n                tickets.push_back(tickets[n - 1]);\n            } else {\n                tickets[n - 1].show();\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Копия здесь — осмысленная операция предметной области: новый билет на то же событие. Конструктор копирования явно перечисляет, что берётся из оригинала (событие), а что задаётся заново (номер и ссылка на источник).\n\nНомера выдаются в порядке создания объектов, поэтому важно, чтобы копий «за кулисами» не было. `std::deque` при добавлении в конец не переносит старые элементы. В `std::vector` без `reserve` при росте билеты копировались бы в новый буфер и получали новые номера.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-copy-constructor-task-3",
+      "title": "Найди ошибку: потерянная тема",
+      "description": "Первая строка ввода — базовые настройки: тема, размер шрифта и признак тёмной темы (0 или 1). Дальше — размеры шрифта. Программа печатает базовые настройки, а для каждого размера создаёт копию базовых настроек, меняет в ней шрифт и печатает её.\n\nКопии иногда «теряют» тёмную тему. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n\nstruct Settings {\n    std::string theme;\n    int font = 12;\n    bool dark = false;\n\n    Settings() = default;\n    Settings(const Settings &other) : theme(other.theme), font(other.font) {\n        std::println(\"копия настроек\");\n    }\n};\n\nvoid show(const Settings &s) {\n    std::println(\"{}, шрифт {}, тёмная: {}\", s.theme, s.font, s.dark ? \"да\" : \"нет\");\n}\n\nint main() {\n    Settings base;\n    std::cin >> base.theme >> base.font >> base.dark;\n    show(base);\n    int font;\n    while (std::cin >> font) {\n        Settings derived = base;\n        derived.font = font;\n        show(derived);\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "ночь 14 1\n16\n",
+          "output": "ночь, шрифт 14, тёмная: да\nкопия настроек\nночь, шрифт 16, тёмная: да\n"
+        },
+        {
+          "input": "день 12 0\n10\n20\n",
+          "output": "день, шрифт 12, тёмная: нет\nкопия настроек\nдень, шрифт 10, тёмная: нет\nкопия настроек\nдень, шрифт 20, тёмная: нет\n"
+        }
+      ],
+      "constraints": ["Размеров не больше 50."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сравните поля Settings с тем, что копирует её конструктор копирования.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Скопируйте все поля. Если журнал «копия настроек» не нужен, лучше удалить свой конструктор и положиться на неявный.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "ночь 14 1\n16\n",
+          "expected": "ночь, шрифт 14, тёмная: да\nкопия настроек\nночь, шрифт 16, тёмная: да\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "день 12 0\n10\n20\n",
+          "expected": "день, шрифт 12, тёмная: нет\nкопия настроек\nдень, шрифт 10, тёмная: нет\nкопия настроек\nдень, шрифт 20, тёмная: нет\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "dark 12 1\n12\n",
+          "expected": "dark, шрифт 12, тёмная: да\nкопия настроек\ndark, шрифт 12, тёмная: да\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "a 1 1\n2\n3\n",
+          "expected": "a, шрифт 1, тёмная: да\nкопия настроек\na, шрифт 2, тёмная: да\nкопия настроек\na, шрифт 3, тёмная: да\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "b 9 0\n",
+          "expected": "b, шрифт 9, тёмная: нет\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "контраст 30 1\n8\n",
+          "expected": "контраст, шрифт 30, тёмная: да\nкопия настроек\nконтраст, шрифт 8, тёмная: да\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "x 10 1\n10\n11\n12\n",
+          "expected": "x, шрифт 10, тёмная: да\nкопия настроек\nx, шрифт 10, тёмная: да\nкопия настроек\nx, шрифт 11, тёмная: да\nкопия настроек\nx, шрифт 12, тёмная: да\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "y 5 0\n6\n",
+          "expected": "y, шрифт 5, тёмная: нет\nкопия настроек\ny, шрифт 6, тёмная: нет\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "z 7 1\n70\n",
+          "expected": "z, шрифт 7, тёмная: да\nкопия настроек\nz, шрифт 70, тёмная: да\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "тема 15 1\n15\n",
+          "expected": "тема, шрифт 15, тёмная: да\nкопия настроек\nтема, шрифт 15, тёмная: да\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nstruct Settings {\n    std::string theme;\n    int font = 12;\n    bool dark = false;\n\n    Settings() = default;\n    Settings(const Settings &other) : theme(other.theme), font(other.font), dark(other.dark) {\n        std::println(\"копия настроек\");\n    }\n};\n\nvoid show(const Settings &s) {\n    std::println(\"{}, шрифт {}, тёмная: {}\", s.theme, s.font, s.dark ? \"да\" : \"нет\");\n}\n\nint main() {\n    Settings base;\n    std::cin >> base.theme >> base.font >> base.dark;\n    show(base);\n    int font;\n    while (std::cin >> font) {\n        Settings derived = base;\n        derived.font = font;\n        show(derived);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Свой конструктор копирования копирует только `theme` и `font`. Поле `dark` не упомянуто в списке инициализации и получает значение по умолчанию — `false`. Компилятор не предупреждает: для него это обычный конструктор, который инициализирует поле по умолчанию.\n\nКаждый раз, добавляя поле в класс со своим конструктором копирования, нужно обновить и его. Самый надёжный способ избежать ошибки — не писать конструктор копирования без необходимости.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-copy-constructor-task-4",
+      "title": "Родословная копий",
+      "description": "Класс `Specimen` (образец) хранит номер (1, 2, 3, … в порядке создания), название, номер родителя (0 у оригинала) и поколение (0 у оригинала). Конструктор копирования создаёт образец с новым номером, тем же названием, родителем — номером копируемого и поколением на 1 больше. Глобальный счётчик считает вызовы конструктора копирования.\n\nОбразцы хранятся в `std::deque<Specimen>`. Команды:\n\n- `new название` — создать оригинал;\n- `clone N` — добавить копию образца N;\n- `info N` — напечатать `#N название, поколение G, родитель #P` или `…, поколение 0, оригинал`;\n- `root N` — напечатать номер оригинала, от которого произошёл N, пройдя по родителям: `#N ← #P ← … ← #R`;\n- `copies` — напечатать `копий N`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "new мох\nclone 1\nclone 2\ninfo 1\ninfo 3\nroot 3\ncopies\n",
+          "output": "#1 мох, поколение 0, оригинал\n#3 мох, поколение 2, родитель #2\n#3 ← #2 ← #1\nкопий 2\n"
+        },
+        {
+          "input": "new a\nroot 1\ncopies\n",
+          "output": "#1\nкопий 0\n"
+        }
+      ],
+      "constraints": ["Команд не больше 300; ссылки только на существующие образцы."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Номера совпадают с позицией в deque плюс один, поэтому родителя по номеру найти легко: specimens[parent - 1].",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "root: начните с N и двигайтесь к родителю, пока он не равен 0, собирая строку через \" ← \".",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "new мох\nclone 1\nclone 2\ninfo 1\ninfo 3\nroot 3\ncopies\n",
+          "expected": "#1 мох, поколение 0, оригинал\n#3 мох, поколение 2, родитель #2\n#3 ← #2 ← #1\nкопий 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "new a\nroot 1\ncopies\n",
+          "expected": "#1\nкопий 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-2",
+          "name": "Братья",
+          "stdin": "new a\nclone 1\nclone 1\ninfo 3\nroot 3\n",
+          "expected": "#3 a, поколение 1, родитель #1\n#3 ← #1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Второй оригинал",
+          "stdin": "new a\nnew b\nclone 2\nclone 3\nroot 4\ninfo 4\n",
+          "expected": "#4 ← #3 ← #2\n#4 b, поколение 2, родитель #3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Длинная цепочка",
+          "stdin": "new x\nclone 1\nclone 2\nclone 3\nclone 4\nclone 5\nroot 6\ninfo 6\n",
+          "expected": "#6 ← #5 ← #4 ← #3 ← #2 ← #1\n#6 x, поколение 5, родитель #5\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Нет копий",
+          "stdin": "copies\n",
+          "expected": "копий 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Смешанные",
+          "stdin": "new p\nclone 1\nnew q\nclone 3\nclone 2\ninfo 5\nroot 5\ncopies\n",
+          "expected": "#5 p, поколение 2, родитель #2\n#5 ← #2 ← #1\nкопий 3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Только оригинал",
+          "stdin": "new ель\ninfo 1\n",
+          "expected": "#1 ель, поколение 0, оригинал\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Две ветви",
+          "stdin": "new a\nclone 1\nclone 2\nclone 1\nroot 3\nroot 4\ncopies\n",
+          "expected": "#3 ← #2 ← #1\n#4 ← #1\nкопий 3\n"
+        }
+      ],
+      "referenceSolution": "#include <deque>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Specimen {\npublic:\n    static inline int copies = 0;\n\n    explicit Specimen(std::string name) : id_(next_id_++), name_(std::move(name)) {}\n    Specimen(const Specimen &other)\n        : id_(next_id_++), name_(other.name_), parent_(other.id_), generation_(other.generation_ + 1) {\n        ++copies;\n    }\n\n    int id() const {\n        return id_;\n    }\n    int parent() const {\n        return parent_;\n    }\n\n    void info() const {\n        if (parent_ == 0) {\n            std::println(\"#{} {}, поколение 0, оригинал\", id_, name_);\n        } else {\n            std::println(\"#{} {}, поколение {}, родитель #{}\", id_, name_, generation_, parent_);\n        }\n    }\n\nprivate:\n    static inline int next_id_ = 1;\n    int id_;\n    std::string name_;\n    int parent_ = 0;\n    int generation_ = 0;\n};\n\nint main() {\n    std::deque<Specimen> specimens;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"new\") {\n            std::string name;\n            std::cin >> name;\n            specimens.emplace_back(name);\n        } else if (command == \"copies\") {\n            std::println(\"копий {}\", Specimen::copies);\n        } else {\n            std::size_t n;\n            std::cin >> n;\n            if (command == \"clone\") {\n                specimens.push_back(specimens[n - 1]);\n            } else if (command == \"info\") {\n                specimens[n - 1].info();\n            } else {\n                std::string path = \"#\" + std::to_string(n);\n                int current = specimens[n - 1].parent();\n                while (current != 0) {\n                    path += \" ← #\" + std::to_string(current);\n                    current = specimens[current - 1].parent();\n                }\n                std::println(\"{}\", path);\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Конструктор копирования здесь описывает «рождение потомка»: часть полей берётся у оригинала (название), часть вычисляется из него (родитель, поколение), часть задаётся заново (номер). Неявный конструктор скопировал бы всё один в один — получились бы два образца с одинаковым номером.\n\nСчётчик копий подтверждает, что лишних копий нет: каждая команда `clone` — ровно один вызов. `std::deque` при добавлении в конец не переносит старые элементы, поэтому номера и связи остаются верными.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "lifetime-copy-constructor-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Какая операция выполняется в записи Measurement b = a?",
+        "id": "q1",
+        "question": "Какие строки вызывают конструктор копирования для объекта a типа T? Выберите все.",
+        "explanation": "Передача по константной ссылке объект не копирует.",
+        "type": "multiple",
         "options": [
-          "Копирующее присваивание: объект b уже существует",
-          "Конструктор копирования: объект b создаётся"
+          "T b = a;",
+          "f(a); где void f(T)",
+          "g(a); где void g(const T &)",
+          "v.push_back(a);"
         ],
-        "correct": 1,
-        "explanation": "У значения (измерение, строка) изменение копии не должно менять оригинал — нужна глубокая копия. У дескриптора общего объекта копия может намеренно разделять состояние. У исключительного владельца копирование запрещают через = delete. В примере Measurement владеет одним int: её копирующий конструктор выделяет новый int и копирует значение. Если выделение бросит, новый объект не создан, а источник не изменён — это сильная гарантия. Присваивание здесь запрещено: хороший конструктор копирования не исправляет автоматически опасный operator=, это отдельная операция."
+        "correct": [0, 1, 3]
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["10 25", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "a.value ──> блок A: 10\nMeasurement b = a: выделить блок B; скопировать 10 в B\nb.value ──> блок B: 10\n*b.value = 25: блок B хранит 25; блок A остаётся 10"
+        "id": "q2",
+        "question": "Почему параметр конструктора копирования — ссылка?",
+        "explanation": "T(T other) — ошибка компиляции.",
+        "options": [
+          "Передача по значению сама требовала бы копирования — бесконечная рекурсия",
+          "Так быстрее, но можно и по значению",
+          "Чтобы конструктор мог менять оригинал",
+          "Ссылка не обязательна"
+        ],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q3",
+        "question": "Что делает неявный конструктор копирования?",
+        "explanation": "Для std::string и std::vector это создаёт независимые копии данных.",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Сигнатура T(T other) невозможна как конструктор копирования: передача параметра сама потребовала бы копирования. Передачу больших объектов только для чтения выполняйте через const T&."
+          "Копирует базы и поля по очереди их собственными конструкторами копирования",
+          "Копирует байты объекта функцией memcpy",
+          "Ничего — его нужно писать всегда",
+          "Создаёт объект по умолчанию"
         ],
-        "correct": 1,
-        "explanation": "После создания копии b измените её значение, затем уничтожьте b во вложенном блоке и прочитайте a. Проверка наблюдает одновременно независимость значений и освобождение разных блоков."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct C {\n    static inline int n = 0;\n    C() = default;\n    C(const C &) { ++n; }\n};\n\nC make() {\n    return C();\n}\n\nvoid take(C) {}\n\nint main() {\n    C a;\n    C b = a;\n    C c = make();\n    take(b);\n    std::println(\"{}\", C::n);\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Копии: b из a и параметр take. make() возвращает временный объект — с C++17 копии нет.",
+        "type": "text",
+        "answers": ["2"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "В своём конструкторе копирования вы скопировали два поля из трёх. Что получит третье поле?",
+        "explanation": "Компилятор не знает, что вы забыли поле, — и молчит.",
+        "options": [
+          "Значение по умолчанию (инициализатор поля или конструктор по умолчанию)",
+          "Значение из оригинала автоматически",
+          "Ошибку компиляции",
+          "Предупреждение -Wall"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Как запретить копирование класса?",
+        "explanation": "Копирующее присваивание обычно запрещают вместе с ним: T &operator=(const T &) = delete;",
+        "options": [
+          "T(const T &) = delete;",
+          "T(const T &) = default;",
+          "private: T();",
+          "Сделать все поля const"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Объект типа Playlist { std::string title; std::vector<std::string> songs; } скопирован в другой. Изменение songs у копии…",
+        "explanation": "Вектор копирует свои элементы — копии независимы.",
+        "options": [
+          "не затрагивает оригинал",
+          "меняет оригинал",
+          "приводит к двойному освобождению",
+          "запрещено"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Как называется оптимизация, при которой временный объект строится сразу на месте переменной без вызова конструктора копирования? (англ. термин из двух слов)",
+        "explanation": "С C++17 для временных значений она гарантирована стандартом.",
+        "type": "text",
+        "answers": ["copy elision", "устранение копии", "устранение копирования"],
+        "placeholder": "Термин"
       }
     ]
   }

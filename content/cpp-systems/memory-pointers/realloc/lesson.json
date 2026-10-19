@@ -13,9 +13,9 @@
     "Объяснять, почему удвоение даёт амортизированно O(1) на добавление",
     "Избегать указателей в старый блок после realloc"
   ],
-  "tags": ["C17", "Память", "realloc", "Динамический массив", "Амортизация"],
+  "tags": ["C23", "Память", "realloc", "Динамический массив", "Амортизация"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-realloc-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -135,7 +135,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -246,7 +246,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -350,7 +350,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    int *data = NULL;\n    size_t count = 0, capacity = 0;\n    int *max_ptr = NULL;\n    int x;\n    while (scanf(\"%d\", &x) == 1) {\n        if (count == capacity) {\n            size_t new_capacity = capacity ? capacity * 2 : 2;\n            int *bigger = realloc(data, new_capacity * sizeof *data);\n            if (bigger == NULL) {\n                free(data);\n                return 1;\n            }\n            data = bigger;\n            capacity = new_capacity;\n        }\n        data[count] = x;\n        if (max_ptr == NULL || x > *max_ptr) {\n            max_ptr = &data[count];\n        }\n        count++;\n    }\n    if (count > 0) {\n        printf(\"%zu %d %td\\n\", count, *max_ptr, max_ptr - data);\n    }\n    free(data);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

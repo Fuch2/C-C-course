@@ -1,131 +1,534 @@
 {
   "id": "oop-virtual-destructor",
   "title": "Виртуальный деструктор и полиморфное владение",
-  "description": "Если объект удаляют через указатель на базу обычным delete, базовый деструктор должен быть виртуальным. Иначе удаление производного объекта через такую базу имеет неопределённое поведение. unique_ptr<Base> по умолчанию тоже использует delete через Base*, поэтому умный указатель не исправляет ошибочный интерфейс базы.",
+  "description": "Как владеть объектами разных классов: std::unique_ptr и std::make_unique, вектор умных указателей на базу; удаление через указатель на базу и почему без виртуального деструктора не вызывается деструктор наследника; new-delete-type-mismatch в AddressSanitizer; правило «public virtual или protected невиртуальный»; момент уничтожения элементов.",
   "moduleId": "cpp-oop",
-  "order": 20,
-  "difficulty": "advanced",
-  "estimatedMinutes": 60,
-  "prerequisites": ["oop-runtime-polymorphism"],
+  "order": 21,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
+  "prerequisites": ["oop-abstract-classes"],
   "objectives": [
-    "Применить Виртуальный деструктор и полиморфное владение в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Хранить объекты разных классов в std::vector<std::unique_ptr<База>>",
+    "Объявлять виртуальный деструктор полиморфной базы",
+    "Предсказывать момент и порядок уничтожения элементов владеющего контейнера"
   ],
-  "tags": ["C++20", "ООП", "Виртуальный деструктор и полиморфное владение"],
+  "tags": ["C++23", "ООП", "Виртуальный деструктор", "unique_ptr", "Владение"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-virtual-destructor-exercise",
-    "title": "Практика: Виртуальный деструктор и полиморфное владение",
-    "description": "Base имеет виртуальный деструктор. Probe(int& count,int delta) хранит ссылку и delta, в ~Probe() override прибавляет delta к count. solve(a,b) создаёт count=0, во вложенной области два unique_ptr<Base> на Probe(count,a) и Probe(count,b), после области возвращает count. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Зоопарк",
+    "description": "Абстрактный класс `Animal` (кличка, чисто виртуальные `kind()` и `sound()`, виртуальный деструктор) и наследники `Cat` (`кошка`, `мяу`), `Dog` (`собака`, `гав`), `Parrot` (`попугай`, `привет`). Каждая строка ввода — вид (`cat`, `dog`, `parrot`) и кличка. Сложите всех животных в `std::vector<std::unique_ptr<Animal>>`, затем напечатайте для каждого `кличка (вид): звук` и в конце `животных N`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(2, 5)",
-        "output": "7\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "cat Мурка\ndog Шарик\nparrot Кеша\n",
+        "output": "Мурка (кошка): мяу\nШарик (собака): гав\nКеша (попугай): привет\nживотных 3\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "",
+        "output": "животных 0\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Строк не больше 50."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "zoo.push_back(std::make_unique<Cat>(name)); — объект создаётся в куче, владеет им вектор.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Обход: for (const auto &a : zoo) — a имеет тип const std::unique_ptr<Animal> &, методы вызываются через ->.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [2, 5],
-        "expected": "7\n"
+        "stdin": "cat Мурка\ndog Шарик\nparrot Кеша\n",
+        "expected": "Мурка (кошка): мяу\nШарик (собака): гав\nКеша (попугай): привет\nживотных 3\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "",
+        "expected": "животных 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [-3, 8],
-        "expected": "5\n"
+        "id": "hidden-1",
+        "name": "Одна кошка",
+        "stdin": "cat a\n",
+        "expected": "a (кошка): мяу\nживотных 1\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-2",
+        "name": "Три собаки",
+        "stdin": "dog a\ndog b\ndog c\n",
+        "expected": "a (собака): гав\nb (собака): гав\nc (собака): гав\nживотных 3\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Два вида",
+        "stdin": "parrot Гоша\ncat Барсик\n",
+        "expected": "Гоша (попугай): привет\nБарсик (кошка): мяу\nживотных 2\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Латиница",
+        "stdin": "cat Tom\ndog Spike\n",
+        "expected": "Tom (кошка): мяу\nSpike (собака): гав\nживотных 2\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Попугаи",
+        "stdin": "parrot p\nparrot q\n",
+        "expected": "p (попугай): привет\nq (попугай): привет\nживотных 2\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Одинаковые клички",
+        "stdin": "dog Рекс\ncat Рекс\n",
+        "expected": "Рекс (собака): гав\nРекс (кошка): мяу\nживотных 2\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Четыре",
+        "stdin": "cat 1\ndog 2\nparrot 3\ncat 4\n",
+        "expected": "1 (кошка): мяу\n2 (собака): гав\n3 (попугай): привет\n4 (кошка): мяу\nживотных 4\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Один попугай",
+        "stdin": "parrot x\n",
+        "expected": "x (попугай): привет\nживотных 1\n"
       }
     ],
-    "referenceSolution": "#include <memory>\nstruct Base { virtual ~Base() = default; };\nclass Probe : public Base { int& count_; int delta_; public: Probe(int& count,int delta) : count_(count), delta_(delta) {} ~Probe() override { count_+=delta_; } };\nint solve(int a,int b) { int count=0; { std::unique_ptr<Base> x=std::make_unique<Probe>(count,a); std::unique_ptr<Base> y=std::make_unique<Probe>(count,b); } return count; }",
-    "solutionExplanation": "Base имеет виртуальный деструктор. Probe(int& count,int delta) хранит ссылку и delta, в ~Probe() override прибавляет delta к count. solve(a,b) создаёт count=0, во вложенной области два unique_ptr<Base> на Probe(count,a) и Probe(count,b), после области возвращает count. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не проверяйте невиртуальное удаление экспериментом «на моей машине работает». Исправьте контракт; такой пример нельзя запускать как нормальное безопасное решение. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Animal {\npublic:\n    explicit Animal(std::string name) : name_(std::move(name)) {}\n    virtual ~Animal() = default;\n\n    const std::string &name() const {\n        return name_;\n    }\n\n    virtual std::string kind() const = 0;\n    virtual std::string sound() const = 0;\n\nprivate:\n    std::string name_;\n};\n\nclass Cat : public Animal {\npublic:\n    using Animal::Animal;\n\n    std::string kind() const override {\n        return \"кошка\";\n    }\n\n    std::string sound() const override {\n        return \"мяу\";\n    }\n};\n\nclass Dog : public Animal {\npublic:\n    using Animal::Animal;\n\n    std::string kind() const override {\n        return \"собака\";\n    }\n\n    std::string sound() const override {\n        return \"гав\";\n    }\n};\n\nclass Parrot : public Animal {\npublic:\n    using Animal::Animal;\n\n    std::string kind() const override {\n        return \"попугай\";\n    }\n\n    std::string sound() const override {\n        return \"привет\";\n    }\n};\n\nint main() {\n    std::vector<std::unique_ptr<Animal>> zoo;\n    std::string kind, name;\n    while (std::cin >> kind >> name) {\n        if (kind == \"cat\") {\n            zoo.push_back(std::make_unique<Cat>(name));\n        } else if (kind == \"dog\") {\n            zoo.push_back(std::make_unique<Dog>(name));\n        } else {\n            zoo.push_back(std::make_unique<Parrot>(name));\n        }\n    }\n    for (const auto &a : zoo) {\n        std::println(\"{} ({}): {}\", a->name(), a->kind(), a->sound());\n    }\n    std::println(\"животных {}\", zoo.size());\n    return 0;\n}\n",
+    "solutionExplanation": "Один вектор владеет животными всех видов: `unique_ptr<Animal>` одинакового размера, а сами объекты лежат в куче. Ни одного `delete` в программе нет — каждый умный указатель удаляет своё животное при уничтожении вектора. Виртуальный деструктор `Animal` гарантирует, что удаление через указатель на базу уничтожит объект целиком, вместе со строкой клички.\n\nПо сравнению с прошлыми уроками исчезли и векторы для каждого вида, и `reserve`: указатели на объекты в куче не портятся, когда вектор `unique_ptr` перевыделяет память.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-virtual-destructor-task-2",
+      "title": "Порядок уничтожения",
+      "description": "Базовый класс `Job` (имя) с **виртуальным** деструктором, печатающим `~Job имя`. Наследники `Backup` и `Report` печатают в своих деструкторах `~Backup имя` и `~Report имя`. Задания хранятся в `std::vector<std::unique_ptr<Job>>`.\n\nКоманды: `backup имя`, `report имя`, `job имя` — добавить задание; `done i` — удалить задание номер `i` (с 1) или напечатать `нет задания i`; `stop` — напечатать `остановка` и удалить все задания (`clear`). После ввода программа печатает `конец`; оставшиеся задания уничтожаются после этого — при уничтожении вектора.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "backup db\nreport week\ndone 1\n",
+          "output": "~Backup db\n~Job db\nконец\n~Report week\n~Job week\n"
+        },
+        {
+          "input": "job x\ndone 5\nstop\n",
+          "output": "нет задания 5\nостановка\n~Job x\nконец\n"
+        }
+      ],
+      "constraints": ["Команд не больше 50."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Деструктор наследника печатает своё, а после него автоматически вызывается деструктор базы — печатать «~Job» вручную в наследнике не нужно.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Удаление по номеру: jobs.erase(jobs.begin() + (i - 1)); проверьте 1 ≤ i ≤ size.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "backup db\nreport week\ndone 1\n",
+          "expected": "~Backup db\n~Job db\nконец\n~Report week\n~Job week\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "job x\ndone 5\nstop\n",
+          "expected": "нет задания 5\nостановка\n~Job x\nконец\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": "конец\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Одно задание",
+          "stdin": "report a\n",
+          "expected": "конец\n~Report a\n~Job a\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Удалить все",
+          "stdin": "job a\njob b\ndone 2\ndone 1\n",
+          "expected": "~Job b\n~Job a\nконец\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Стоп и продолжение",
+          "stdin": "backup a\nreport b\njob c\nstop\nbackup d\n",
+          "expected": "остановка\n~Backup a\n~Job a\n~Report b\n~Job b\n~Job c\nконец\n~Backup d\n~Job d\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Номер ноль",
+          "stdin": "done 0\n",
+          "expected": "нет задания 0\nконец\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Две копии",
+          "stdin": "backup x\nbackup y\ndone 2\n",
+          "expected": "~Backup y\n~Job y\nконец\n~Backup x\n~Job x\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Отчёт удалён",
+          "stdin": "report r\njob j\ndone 1\n",
+          "expected": "~Report r\n~Job r\nконец\n~Job j\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Уничтожение в конце",
+          "stdin": "job a\nreport b\nbackup c\n",
+          "expected": "конец\n~Job a\n~Report b\n~Job b\n~Backup c\n~Job c\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Job {\npublic:\n    explicit Job(std::string name) : name_(std::move(name)) {}\n\n    virtual ~Job() {\n        std::println(\"~Job {}\", name_);\n    }\n\nprotected:\n    const std::string &name() const {\n        return name_;\n    }\n\nprivate:\n    std::string name_;\n};\n\nclass Backup : public Job {\npublic:\n    using Job::Job;\n\n    ~Backup() override {\n        std::println(\"~Backup {}\", name());\n    }\n};\n\nclass Report : public Job {\npublic:\n    using Job::Job;\n\n    ~Report() override {\n        std::println(\"~Report {}\", name());\n    }\n};\n\nint main() {\n    std::vector<std::unique_ptr<Job>> jobs;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"stop\") {\n            std::println(\"остановка\");\n            jobs.clear();\n            continue;\n        }\n        if (command == \"done\") {\n            long long i;\n            std::cin >> i;\n            if (i < 1 || i > static_cast<long long>(jobs.size())) {\n                std::println(\"нет задания {}\", i);\n            } else {\n                jobs.erase(jobs.begin() + (i - 1));\n            }\n            continue;\n        }\n        std::string name;\n        std::cin >> name;\n        if (command == \"backup\") {\n            jobs.push_back(std::make_unique<Backup>(name));\n        } else if (command == \"report\") {\n            jobs.push_back(std::make_unique<Report>(name));\n        } else {\n            jobs.push_back(std::make_unique<Job>(name));\n        }\n    }\n    std::println(\"конец\");\n    return 0;\n}\n",
+      "solutionExplanation": "Удаление через `unique_ptr<Job>` вызывает деструктор настоящего объекта благодаря `virtual ~Job()`. После тела деструктора наследника автоматически работает деструктор базы — поэтому для резервной копии печатаются две строки, сначала `~Backup`, затем `~Job`.\n\nВремя жизни объектов связано с вектором: `erase` и `clear` уничтожают задания сразу, а оставшиеся к концу программы — при уничтожении вектора, уже после строки «конец».",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-virtual-destructor-task-3",
+      "title": "Найди ошибку: невиртуальный деструктор",
+      "description": "Очередь уведомлений хранит письма и SMS в `std::vector<std::unique_ptr<Notice>>`. Строки ввода: `email адресат тема` или `sms номер`. Программа печатает каждое уведомление и `отправлено N`:\n\n```text\nписьмо для ada@example.com: отчёт\nотправлено 1\n```\n\nВывод правильный, но проверка с AddressSanitizer отклоняет решение. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Notice {\npublic:\n    ~Notice() {}\n    virtual std::string text() const = 0;\n};\n\nclass Email : public Notice {\npublic:\n    Email(std::string to, std::string subject) : to_(std::move(to)), subject_(std::move(subject)) {}\n\n    std::string text() const override {\n        return \"письмо для \" + to_ + \": \" + subject_;\n    }\n\nprivate:\n    std::string to_;\n    std::string subject_;\n};\n\nclass Sms : public Notice {\npublic:\n    explicit Sms(std::string phone) : phone_(std::move(phone)) {}\n\n    std::string text() const override {\n        return \"SMS на \" + phone_;\n    }\n\nprivate:\n    std::string phone_;\n};\n\nint main() {\n    std::vector<std::unique_ptr<Notice>> queue;\n    std::string kind;\n    while (std::cin >> kind) {\n        if (kind == \"email\") {\n            std::string to, subject;\n            std::cin >> to >> subject;\n            queue.push_back(std::make_unique<Email>(to, subject));\n        } else {\n            std::string phone;\n            std::cin >> phone;\n            queue.push_back(std::make_unique<Sms>(phone));\n        }\n    }\n    for (const auto &n : queue) {\n        std::println(\"{}\", n->text());\n    }\n    std::println(\"отправлено {}\", queue.size());\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "email ada@example.com отчёт\n",
+          "output": "письмо для ada@example.com: отчёт\nотправлено 1\n"
+        },
+        {
+          "input": "sms +79001234567\n",
+          "output": "SMS на +79001234567\nотправлено 1\n"
+        }
+      ],
+      "constraints": ["Уведомлений не больше 20."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Прочитайте отчёт AddressSanitizer: new-delete-type-mismatch. Какой деструктор вызывает unique_ptr<Notice>?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Деструктор Notice не виртуальный — удаление через базу не вызывает деструктор Email и Sms, их строки не освобождаются. Объявите virtual ~Notice() = default;.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "email ada@example.com отчёт\n",
+          "expected": "письмо для ada@example.com: отчёт\nотправлено 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "sms +79001234567\n",
+          "expected": "SMS на +79001234567\nотправлено 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "email a b\n",
+          "expected": "письмо для a: b\nотправлено 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "sms 1\nsms 2\n",
+          "expected": "SMS на 1\nSMS на 2\nотправлено 2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "email boss@company.org квартальный_отчёт\nsms +70000000000\n",
+          "expected": "письмо для boss@company.org: квартальный_отчёт\nSMS на +70000000000\nотправлено 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "email x@y.z тема\nemail q@w.e другая\n",
+          "expected": "письмо для x@y.z: тема\nписьмо для q@w.e: другая\nотправлено 2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "sms 112\n",
+          "expected": "SMS на 112\nотправлено 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "email user@mail.ru напоминание\n",
+          "expected": "письмо для user@mail.ru: напоминание\nотправлено 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "sms 1\nemail a b\nsms 2\n",
+          "expected": "SMS на 1\nписьмо для a: b\nSMS на 2\nотправлено 3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "email long.address.for.testing@example.com очень_длинная_тема_письма\n",
+          "expected": "письмо для long.address.for.testing@example.com: очень_длинная_тема_письма\nотправлено 1\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Notice {\npublic:\n    virtual ~Notice() = default;\n    virtual std::string text() const = 0;\n};\n\nclass Email : public Notice {\npublic:\n    Email(std::string to, std::string subject) : to_(std::move(to)), subject_(std::move(subject)) {}\n\n    std::string text() const override {\n        return \"письмо для \" + to_ + \": \" + subject_;\n    }\n\nprivate:\n    std::string to_;\n    std::string subject_;\n};\n\nclass Sms : public Notice {\npublic:\n    explicit Sms(std::string phone) : phone_(std::move(phone)) {}\n\n    std::string text() const override {\n        return \"SMS на \" + phone_;\n    }\n\nprivate:\n    std::string phone_;\n};\n\nint main() {\n    std::vector<std::unique_ptr<Notice>> queue;\n    std::string kind;\n    while (std::cin >> kind) {\n        if (kind == \"email\") {\n            std::string to, subject;\n            std::cin >> to >> subject;\n            queue.push_back(std::make_unique<Email>(to, subject));\n        } else {\n            std::string phone;\n            std::cin >> phone;\n            queue.push_back(std::make_unique<Sms>(phone));\n        }\n    }\n    for (const auto &n : queue) {\n        std::println(\"{}\", n->text());\n    }\n    std::println(\"отправлено {}\", queue.size());\n    return 0;\n}\n",
+      "solutionExplanation": "`unique_ptr<Notice>` удаляет объект через указатель на `Notice`. Деструктор `Notice` не виртуальный, поэтому вызывается только он — деструкторы `Email` и `Sms` не работают, и их строки-поля не уничтожаются. Вдобавок память объекта размером `Email` освобождается как память размера `Notice` — неопределённое поведение, которое AddressSanitizer называет `new-delete-type-mismatch`.\n\nОдно слово `virtual` у деструктора базы делает удаление через базу правильным. Правило простое: в классе с виртуальными функциями всегда объявляйте `virtual ~Класс() = default;`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-virtual-destructor-task-4",
+      "title": "Редактор фигур",
+      "description": "Редактор хранит фигуры в `std::vector<std::unique_ptr<Shape>>`. Абстрактный `Shape` — с чисто виртуальными `area()` и `name()` и виртуальным деструктором; наследники `Circle` (`круг`), `Rect` (`прямоугольник`), `Square` (`квадрат`).\n\nКоманды:\n\n- `circle r`, `rect w h`, `square s` — добавить фигуру;\n- `remove i` — удалить фигуру номер `i` (с 1) или напечатать `нет фигуры i`;\n- `list` — для каждой фигуры `i. имя: площадь` с двумя знаками или `пусто`;\n- `largest` — `самая большая: имя площадь` (первая из равных) или `пусто`;\n- `total` — `всего: S` с двумя знаками.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "circle 1\nrect 2 3\nlist\nlargest\nremove 2\ntotal\n",
+          "output": "1. круг: 3.14\n2. прямоугольник: 6.00\nсамая большая: прямоугольник 6.00\nвсего: 3.14\n"
+        },
+        {
+          "input": "list\nremove 1\ntotal\n",
+          "output": "пусто\nнет фигуры 1\nвсего: 0.00\n"
+        }
+      ],
+      "constraints": ["Команд не больше 100; размеры от 0.1 до 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Самую большую удобно искать через std::ranges::max_element(shapes, {}, [](const auto &s) { return s->area(); }) — с проекцией.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Square можно сделать отдельным классом со своей площадью; наследоваться от Rect не обязательно.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "circle 1\nrect 2 3\nlist\nlargest\nremove 2\ntotal\n",
+          "expected": "1. круг: 3.14\n2. прямоугольник: 6.00\nсамая большая: прямоугольник 6.00\nвсего: 3.14\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "list\nremove 1\ntotal\n",
+          "expected": "пусто\nнет фигуры 1\nвсего: 0.00\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Равные площади",
+          "stdin": "square 2\nrect 1 4\nlargest\n",
+          "expected": "самая большая: квадрат 4.00\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Большой круг",
+          "stdin": "circle 1000\ntotal\n",
+          "expected": "всего: 3141592.65\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Удалить единственную",
+          "stdin": "square 1\nremove 1\nlist\nlargest\n",
+          "expected": "пусто\nпусто\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Маленькая",
+          "stdin": "rect 0.1 0.1\nlist\n",
+          "expected": "1. прямоугольник: 0.01\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Удаление из середины",
+          "stdin": "circle 1\ncircle 2\ncircle 3\nremove 2\nlist\n",
+          "expected": "1. круг: 3.14\n2. круг: 28.27\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Неверные номера",
+          "stdin": "square 3\nremove 0\nremove 2\nlist\n",
+          "expected": "нет фигуры 0\nнет фигуры 2\n1. квадрат: 9.00\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смесь",
+          "stdin": "rect 2 5\nsquare 3\ncircle 1\nlargest\ntotal\n",
+          "expected": "самая большая: прямоугольник 10.00\nвсего: 22.14\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пустой итог",
+          "stdin": "total\n",
+          "expected": "всего: 0.00\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <memory>\n#include <numbers>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Shape {\npublic:\n    virtual ~Shape() = default;\n    virtual double area() const = 0;\n    virtual std::string name() const = 0;\n};\n\nclass Circle final : public Shape {\npublic:\n    explicit Circle(double r) : r_(r) {}\n\n    double area() const override {\n        return std::numbers::pi * r_ * r_;\n    }\n\n    std::string name() const override {\n        return \"круг\";\n    }\n\nprivate:\n    double r_;\n};\n\nclass Rect final : public Shape {\npublic:\n    Rect(double w, double h) : w_(w), h_(h) {}\n\n    double area() const override {\n        return w_ * h_;\n    }\n\n    std::string name() const override {\n        return \"прямоугольник\";\n    }\n\nprivate:\n    double w_;\n    double h_;\n};\n\nclass Square final : public Shape {\npublic:\n    explicit Square(double s) : s_(s) {}\n\n    double area() const override {\n        return s_ * s_;\n    }\n\n    std::string name() const override {\n        return \"квадрат\";\n    }\n\nprivate:\n    double s_;\n};\n\nint main() {\n    std::vector<std::unique_ptr<Shape>> shapes;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"circle\") {\n            double r;\n            std::cin >> r;\n            shapes.push_back(std::make_unique<Circle>(r));\n        } else if (command == \"rect\") {\n            double w, h;\n            std::cin >> w >> h;\n            shapes.push_back(std::make_unique<Rect>(w, h));\n        } else if (command == \"square\") {\n            double s;\n            std::cin >> s;\n            shapes.push_back(std::make_unique<Square>(s));\n        } else if (command == \"remove\") {\n            long long i;\n            std::cin >> i;\n            if (i < 1 || i > static_cast<long long>(shapes.size())) {\n                std::println(\"нет фигуры {}\", i);\n            } else {\n                shapes.erase(shapes.begin() + (i - 1));\n            }\n        } else if (shapes.empty() && (command == \"list\" || command == \"largest\")) {\n            std::println(\"пусто\");\n        } else if (command == \"list\") {\n            for (std::size_t i = 0; i < shapes.size(); i++) {\n                std::println(\"{}. {}: {:.2f}\", i + 1, shapes[i]->name(), shapes[i]->area());\n            }\n        } else if (command == \"largest\") {\n            const auto &best = *std::ranges::max_element(shapes, {}, [](const auto &s) { return s->area(); });\n            std::println(\"самая большая: {} {:.2f}\", best->name(), best->area());\n        } else {\n            double total = 0;\n            for (const auto &s : shapes) {\n                total += s->area();\n            }\n            std::println(\"всего: {:.2f}\", total);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Редактор владеет фигурами через один вектор умных указателей: добавление — `make_unique`, удаление — `erase`, который сразу уничтожает фигуру. Код команд не знает формул площадей: все вызовы виртуальные. Новая фигура — новый класс и одна ветка разбора ввода.\n\n`std::ranges::max_element` с проекцией сравнивает фигуры по площади; при равенстве возвращает первую из максимальных. Конкретные фигуры объявлены `final` — это листья иерархии.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-virtual-destructor-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Исправит ли unique_ptr<Base> отсутствие виртуального деструктора?",
-        "options": [
-          "Нет, стандартный deleter удаляет через Base*",
-          "Да, он всегда сам узнаёт производный тип"
-        ],
-        "correct": 0,
-        "explanation": "Для общедоступного полиморфного владения используйте public virtual ~Base() = default. Альтернатива для интерфейса, через который удаление запрещено, — protected невиртуальный деструктор; она не подходит нашему vector<unique_ptr<Sensor>>. В примере счётчик фиксирует разрушение конкретного объекта. При разрушении сначала выполняется тело деструктора наследника, затем разрушаются его члены и база. Проверять только отсутствие утечки недостаточно: тип обязан иметь корректный контракт удаления."
+        "id": "q1",
+        "question": "Что выведет программа? Запишите вывод в одну строку через пробел.",
+        "code": "#include <memory>\n#include <print>\n\nstruct A {\n    virtual ~A() { std::print(\"~A \"); }\n};\n\nstruct B : A {\n    ~B() override { std::print(\"~B \"); }\n};\n\nint main() {\n    {\n        std::unique_ptr<A> p = std::make_unique<B>();\n    }\n    std::println();\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "С виртуальным деструктором удаление через A вызывает деструктор настоящего объекта, а он — деструктор базы.",
+        "type": "text",
+        "answers": ["~B ~A"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "1", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 1. Если объект удаляют через указатель на базу обычным delete, базовый деструктор должен быть виртуальным. Иначе удаление производного объекта через такую базу имеет неопределённое поведение. unique_ptr<Base> по умолчанию тоже использует delete через Base*, поэтому умный указатель не исправляет ошибочный интерфейс базы."
+        "id": "q2",
+        "question": "Что произойдёт, если в предыдущей программе убрать virtual у ~A()?",
+        "explanation": "Удаление через базу выбирает деструктор по статическому типу.",
+        "options": [
+          "Деструктор B не вызовется: неопределённое поведение, ASan сообщит new-delete-type-mismatch",
+          "Ничего не изменится",
+          "Ошибка компиляции",
+          "Деструкторы вызовутся дважды"
+        ],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
-        "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Не проверяйте невиртуальное удаление экспериментом «на моей машине работает». Исправьте контракт; такой пример нельзя запускать как нормальное безопасное решение."
+        "id": "q3",
+        "question": "Как создать объект Circle(1) в куче и сразу передать владение умному указателю на базу Shape?",
+        "explanation": "make_unique создаёт объект и возвращает unique_ptr<Circle>, который превращается в unique_ptr<Shape>.",
+        "type": "text",
+        "answers": [
+          "std::unique_ptr<Shape> p = std::make_unique<Circle>(1);",
+          "std::unique_ptr<Shape> p = std::make_unique<Circle>(1)",
+          "auto p = std::unique_ptr<Shape>(std::make_unique<Circle>(1));"
         ],
-        "correct": 1,
-        "explanation": "Проверьте ровно одно разрушение каждого производного объекта, включая случай исключения после добавления первого датчика. Внешний счётчик должен жить дольше всей коллекции. ASan помогает обнаруживать ошибки памяти, но доказательство виртуального контракта даёт также проверка типа."
+        "placeholder": "Объявление"
+      },
+      {
+        "id": "q4",
+        "question": "Почему нельзя хранить фигуры разных видов в std::vector<Shape>?",
+        "explanation": "Полиморфными объектами владеют через указатели — std::unique_ptr<Shape>.",
+        "options": [
+          "Абстрактный класс нельзя хранить по значению, а неабстрактная база обрезала бы наследников",
+          "Векторы не хранят классы",
+          "Можно, если Shape имеет виртуальный деструктор",
+          "Вектор не умеет вызывать виртуальные функции"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Каким должен быть деструктор базового класса по правилу C++ Core Guidelines?",
+        "explanation": "Защищённый невиртуальный деструктор запрещает удаление через базу на этапе компиляции.",
+        "options": [
+          "Открытым и виртуальным — или защищённым и невиртуальным",
+          "Всегда закрытым",
+          "Всегда невиртуальным ради скорости",
+          "Чисто виртуальным"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа? Запишите вывод в одну строку через пробел.",
+        "code": "#include <memory>\n#include <print>\n#include <vector>\n\nstruct T {\n    int id;\n    explicit T(int id) : id(id) {}\n    virtual ~T() { std::print(\"{} \", id); }\n};\n\nint main() {\n    std::vector<std::unique_ptr<T>> v;\n    for (int i = 1; i <= 3; i++) {\n        v.push_back(std::make_unique<T>(i));\n    }\n    v.erase(v.begin());\n    std::print(\"| \");\n    v.clear();\n    std::println();\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "erase сразу уничтожает первый объект; clear уничтожает оставшиеся.",
+        "type": "text",
+        "answers": ["1 | 2 3"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Сколько стоит виртуальный деструктор в классе, где уже есть виртуальные функции?",
+        "explanation": "Поэтому в полиморфных классах его объявляют всегда.",
+        "options": [
+          "Практически ничего: указатель на таблицу виртуальных функций в объекте уже есть",
+          "Плюс 8 байт на каждый объект",
+          "Каждое удаление в 10 раз медленнее",
+          "Запрещает копирование"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Кто удаляет объекты в std::vector<std::unique_ptr<Shape>> при уничтожении вектора?",
+        "explanation": "Умный указатель владеет объектом: это RAII для памяти в куче.",
+        "options": [
+          "Каждый unique_ptr удаляет свой объект в деструкторе",
+          "Программист вызывает delete для каждого",
+          "Объекты не удаляются — утечка",
+          "Удаляется только первый объект"
+        ],
+        "correct": 0
       }
     ]
   }

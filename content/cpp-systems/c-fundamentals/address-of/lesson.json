@@ -13,9 +13,9 @@
     "Хранить и изменять элемент массива через указатель на него",
     "Различать сравнение указателей и сравнение значений"
   ],
-  "tags": ["C17", "Указатели", "Массивы", "Адреса"],
+  "tags": ["C23", "Указатели", "Массивы", "Адреса"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-address-of-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "intermediate",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -116,7 +116,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -207,7 +207,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

@@ -78,7 +78,6 @@ int main(void) {
 
 ```c
 #include <stdio.h>
-#include <stdbool.h>
 
 bool safe_divide(int a, int b, int *result) {
     if (b == 0) {
@@ -185,7 +184,7 @@ int main(void) {
 
 <CommonMistake title="Забыли & при вызове">
 
-`swap(x, y)` вместо `swap(&x, &y)` — функция получит числа вместо адресов. Компилятор предупредит: `passing argument 1 of ‘swap’ makes pointer from integer without a cast`. Это всегда ошибка.
+`swap(x, y)` вместо `swap(&x, &y)` — функция получит числа вместо адресов. Компилятор предупредит: `passing argument 1 of 'swap' makes pointer from integer without a cast`. Это всегда ошибка.
 
 </CommonMistake>
 

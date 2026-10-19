@@ -1,0 +1,553 @@
+{
+  "id": "cpp23-string-view",
+  "title": "Представление строки std::string_view",
+  "description": "Лишние копии строк; std::string_view — указатель и длина без владения; параметр функции по значению; substr, remove_prefix и remove_suffix без копирования; starts_with, ends_with, contains; разбор строки на части; std::from_chars; висячие представления и отсутствие нуля в конце; выбор между string и string_view.",
+  "moduleId": "cpp-fundamentals",
+  "order": 9,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
+  "prerequisites": ["cpp20-const-references"],
+  "objectives": [
+    "Принимать текст в функциях через std::string_view без копирования",
+    "Выделять части строки substr, remove_prefix и remove_suffix",
+    "Разбирать строку на поля и числа через std::from_chars",
+    "Распознавать висячие представления и выбирать между string и string_view"
+  ],
+  "tags": ["C++17", "C++23", "string_view", "Строки", "from_chars"],
+  "published": true,
+  "standard": "c++23",
+  "completion": "practice",
+  "exercise": {
+    "id": "cpp23-string-view-task-1",
+    "title": "Расширение файла",
+    "description": "Для каждого имени файла из ввода напечатайте строку `имя: расширение`. Расширение — часть после **последней** точки. Если расширения нет, вместо него напечатайте `нет`. Расширения нет, если:\n\n- в имени нет точки;\n- единственная точка стоит в начале (`.bashrc` — скрытый файл без расширения);\n- точка — последний символ имени.\n\nНапишите функцию `std::string_view extension(std::string_view name)`, которая возвращает расширение или пустое представление.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "cpp",
+    "standard": "c++23",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "report.pdf\narchive.tar.gz\nREADME\n",
+        "output": "report.pdf: pdf\narchive.tar.gz: gz\nREADME: нет\n"
+      },
+      {
+        "input": ".bashrc\n",
+        "output": ".bashrc: нет\n"
+      }
+    ],
+    "constraints": ["Имена без пробелов, до 100 символов; их не больше 20."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Последнюю точку находит rfind('.'). Если результат — npos, 0 или последний индекс, расширения нет.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Расширение — name.substr(dot + 1): новое представление внутри того же имени, без копирования.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "report.pdf\narchive.tar.gz\nREADME\n",
+        "expected": "report.pdf: pdf\narchive.tar.gz: gz\nREADME: нет\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": ".bashrc\n",
+        "expected": ".bashrc: нет\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Точка в конце",
+        "stdin": "file.\n",
+        "expected": "file.: нет\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Короткое",
+        "stdin": "a.b\n",
+        "expected": "a.b: b\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Заглавные",
+        "stdin": "photo.JPG\n",
+        "expected": "photo.JPG: JPG\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Только точки",
+        "stdin": "...\n",
+        "expected": "...: нет\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый с расширением",
+        "stdin": ".config.json\n",
+        "expected": ".config.json: json\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Один символ",
+        "stdin": "x\n",
+        "expected": "x: нет\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Несколько точек",
+        "stdin": "my.file.name.txt\nmain.cpp\n",
+        "expected": "my.file.name.txt: txt\nmain.cpp: cpp\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Пустой ввод",
+        "stdin": "",
+        "expected": ""
+      }
+    ],
+    "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <string_view>\n\nstd::string_view extension(std::string_view name) {\n    std::size_t dot = name.rfind('.');\n    if (dot == std::string_view::npos || dot == 0 || dot + 1 == name.size()) {\n        return {};\n    }\n    return name.substr(dot + 1);\n}\n\nint main() {\n    std::string name;\n    while (std::cin >> name) {\n        std::string_view ext = extension(name);\n        std::println(\"{}: {}\", name, ext.empty() ? std::string_view(\"нет\") : ext);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "`rfind` ищет с конца, поэтому у `archive.tar.gz` расширением оказывается `gz`. Три особых случая — нет точки (`npos`), точка в начале (`0`) и точка в конце — проверяются одним условием до вызова `substr`.\n\nФункция возвращает `std::string_view`, и это безопасно: результат указывает внутрь аргумента, а аргумент смотрит на строку `name` из `main`, которая жива всё время, пока результат используется. `return {};` создаёт пустое представление.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "cpp23-string-view-task-2",
+      "title": "Поля через запятую",
+      "description": "Каждая строка ввода — запись, поля которой разделены запятыми. Пробелы в начале и конце каждого поля не значимы. Для каждой строки напечатайте число полей, двоеточие и поля в квадратных скобках через пробел:\n\n```text\n3: [Ада] [Лавлейс] [1815]\n```\n\nПустые поля (между соседними запятыми или в конце строки) сохраняются: `[]`. Пустая строка — одна запись из одного пустого поля.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "  Ада , Лавлейс,1815 \n",
+          "output": "3: [Ада] [Лавлейс] [1815]\n"
+        },
+        {
+          "input": "a,,b,\n\n",
+          "output": "4: [a] [] [b] []\n1: []\n"
+        }
+      ],
+      "constraints": ["Строк не больше 20, каждая до 200 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Читайте строки через std::getline. Разбивайте представление строки: find(','), substr(0, pos), remove_prefix(pos + 1) — пока find не вернёт npos.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Обрезка пробелов: пока первый символ — пробел, remove_prefix(1); пока последний — remove_suffix(1). Не забудьте проверять empty().",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "  Ада , Лавлейс,1815 \n",
+          "expected": "3: [Ада] [Лавлейс] [1815]\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "a,,b,\n\n",
+          "expected": "4: [a] [] [b] []\n1: []\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одно поле",
+          "stdin": "один\n",
+          "expected": "1: [один]\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Только запятая",
+          "stdin": ",\n",
+          "expected": "2: [] []\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Пробелы",
+          "stdin": "   ,   ,   \n",
+          "expected": "3: [] [] []\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Две строки",
+          "stdin": "x , y , z\n1,2\n",
+          "expected": "3: [x] [y] [z]\n2: [1] [2]\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Города",
+          "stdin": "Москва,  Санкт-Петербург ,Казань\n",
+          "expected": "3: [Москва] [Санкт-Петербург] [Казань]\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Пробел внутри поля",
+          "stdin": "a b,c d\n",
+          "expected": "2: [a b] [c d]\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Пять пустых",
+          "stdin": ",,,,\n",
+          "expected": "5: [] [] [] [] []\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Таблица",
+          "stdin": "id,name,score\n7,Ada,99\n",
+          "expected": "3: [id] [name] [score]\n3: [7] [Ada] [99]\n"
+        }
+      ],
+      "referenceSolution": "#include <format>\n#include <iostream>\n#include <print>\n#include <string>\n#include <string_view>\n#include <vector>\n\nstd::string_view trim(std::string_view text) {\n    while (!text.empty() && text.front() == ' ') {\n        text.remove_prefix(1);\n    }\n    while (!text.empty() && text.back() == ' ') {\n        text.remove_suffix(1);\n    }\n    return text;\n}\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        std::vector<std::string_view> fields;\n        std::string_view rest = line;\n        while (true) {\n            std::size_t comma = rest.find(',');\n            fields.push_back(trim(rest.substr(0, comma)));\n            if (comma == std::string_view::npos) {\n                break;\n            }\n            rest.remove_prefix(comma + 1);\n        }\n        std::string out = std::format(\"{}:\", fields.size());\n        for (std::string_view field : fields) {\n            out += std::format(\" [{}]\", field);\n        }\n        std::println(\"{}\", out);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Все поля — представления внутри `line`: ни разбиение, ни обрезка не копируют символы. Вектор `fields` создаётся заново для каждой строки и используется, пока `line` не изменилась, — представления не успевают «повиснуть».\n\nЦикл разбиения завершается после поля, за которым запятой нет: `substr(0, npos)` берёт остаток целиком. Поэтому строка без запятых — одно поле, а запятая в конце даёт ещё одно пустое поле.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp23-string-view-task-3",
+      "title": "Найди ошибку: висячее представление",
+      "description": "Программа читает пары «имя фамилия» и для каждой печатает строку `Фамилия, Имя (N байт)`, где N — длина результата в байтах UTF-8:\n\n```text\nЛавлейс, Ада (22 байт)\n```\n\nИногда она печатает мусор, а под AddressSanitizer аварийно завершается. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n#include <string_view>\n\n// Возвращает «Фамилия, Имя».\nstd::string_view full_name(std::string_view first, std::string_view last) {\n    std::string result(last);\n    result += \", \";\n    result += first;\n    return result;\n}\n\nint main() {\n    std::string first, last;\n    while (std::cin >> first >> last) {\n        std::string_view name = full_name(first, last);\n        std::println(\"{} ({} байт)\", name, name.size());\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "Ада Лавлейс\n",
+          "output": "Лавлейс, Ада (22 байт)\n"
+        },
+        {
+          "input": "Alan Turing\n",
+          "output": "Turing, Alan (12 байт)\n"
+        }
+      ],
+      "constraints": ["Имена и фамилии — по одному слову до 30 символов; пар не больше 10."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Посмотрите, что возвращает full_name и на что указывает этот результат после выхода из функции.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Функция создаёт новую строку result — значит, она должна отдать вызывающему коду владение строкой, то есть вернуть std::string. Переменная в main тоже должна быть std::string.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "Ада Лавлейс\n",
+          "expected": "Лавлейс, Ада (22 байт)\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "Alan Turing\n",
+          "expected": "Turing, Alan (12 байт)\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "Грейс Хоппер\n",
+          "expected": "Хоппер, Грейс (24 байт)\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "Linus Torvalds\nKen Thompson\n",
+          "expected": "Torvalds, Linus (15 байт)\nThompson, Ken (13 байт)\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "Деннис Ритчи\n",
+          "expected": "Ритчи, Деннис (24 байт)\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "Бьёрн Страуструп\n",
+          "expected": "Страуструп, Бьёрн (32 байт)\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "Ada Lovelace\nAlan Turing\nGrace Hopper\n",
+          "expected": "Lovelace, Ada (13 байт)\nTuring, Alan (12 байт)\nHopper, Grace (13 байт)\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "Эдсгер Дейкстра\n",
+          "expected": "Дейкстра, Эдсгер (30 байт)\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "Margaret Hamilton\n",
+          "expected": "Hamilton, Margaret (18 байт)\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "Дональд Кнут\nНиклаус Вирт\n",
+          "expected": "Кнут, Дональд (24 байт)\nВирт, Никлаус (24 байт)\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <string_view>\n\n// Возвращает «Фамилия, Имя».\nstd::string full_name(std::string_view first, std::string_view last) {\n    std::string result(last);\n    result += \", \";\n    result += first;\n    return result;\n}\n\nint main() {\n    std::string first, last;\n    while (std::cin >> first >> last) {\n        std::string name = full_name(first, last);\n        std::println(\"{} ({} байт)\", name, name.size());\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`full_name` собирает текст в локальной строке `result` и возвращает `std::string_view` на неё. При выходе из функции `result` уничтожается, память освобождается, и представление указывает в никуда. AddressSanitizer сообщает `heap-use-after-free`; без него программа может случайно напечатать правильный текст, а может — мусор. Clang предупреждает уже при компиляции, GCC 14 молчит.\n\nПараметры `first` и `last` — представления, и это правильно: функция их только читает. А **созданный** текст нужно вернуть владельцем — `std::string`. Правило: `string_view` на вход — нормально, `string_view` на выход — только если он указывает внутрь входных данных.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp23-string-view-task-4",
+      "title": "Сумма чисел из строки",
+      "description": "Каждая строка ввода — слова, разделённые одним или несколькими пробелами. Для каждой строки найдите сумму слов, которые целиком являются целыми числами типа `int`, и число остальных слов («ошибок»). Напечатайте:\n\n```text\nсумма 30, ошибок 2\n```\n\nЧисло — это необязательный минус и цифры; `+5`, `12a`, `-`, `3.5` — ошибки. Число, которое не помещается в `int`, — тоже ошибка. Пустая строка даёт `сумма 0, ошибок 0`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "10 abc 20 12a\n",
+          "output": "сумма 30, ошибок 2\n"
+        },
+        {
+          "input": "\n   -5   5  \n",
+          "output": "сумма 0, ошибок 0\nсумма 0, ошибок 0\n"
+        }
+      ],
+      "constraints": ["Строк не больше 20, каждая до 300 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Разбейте строку на слова: пропускайте пробелы, затем находите конец слова через find(' '). Пустые слова не считаются.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "std::from_chars(word.data(), word.data() + word.size(), value): слово — число, только если ошибки нет (std::errc{}) и прочитаны все символы (end == word.data() + word.size()). Сумму копите в long long.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "10 abc 20 12a\n",
+          "expected": "сумма 30, ошибок 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "\n   -5   5  \n",
+          "expected": "сумма 0, ошибок 0\nсумма 0, ошибок 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Знаки без чисел",
+          "stdin": "+5 -\n",
+          "expected": "сумма 0, ошибок 2\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Максимум int",
+          "stdin": "2147483647 2147483647\n",
+          "expected": "сумма 4294967294, ошибок 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "За границей",
+          "stdin": "2147483648 -2147483648\n",
+          "expected": "сумма -2147483648, ошибок 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Дробное и нули",
+          "stdin": "3.5 007 -0\n",
+          "expected": "сумма 7, ошибок 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Только слова",
+          "stdin": "один два три\n",
+          "expected": "сумма 0, ошибок 3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Десять чисел",
+          "stdin": "1 2 3 4 5 6 7 8 9 10\n",
+          "expected": "сумма 55, ошибок 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Две строки",
+          "stdin": "  42  \n--1 1-\n",
+          "expected": "сумма 42, ошибок 0\nсумма 0, ошибок 2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Очень длинное",
+          "stdin": "99999999999999999999 1\n",
+          "expected": "сумма 1, ошибок 1\n"
+        }
+      ],
+      "referenceSolution": "#include <charconv>\n#include <iostream>\n#include <print>\n#include <string>\n#include <string_view>\n\nbool parse_int(std::string_view word, int &value) {\n    auto [end, error] = std::from_chars(word.data(), word.data() + word.size(), value);\n    return error == std::errc{} && end == word.data() + word.size();\n}\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        std::string_view rest = line;\n        long long sum = 0;\n        int errors = 0;\n        while (true) {\n            std::size_t start = rest.find_first_not_of(' ');\n            if (start == std::string_view::npos) {\n                break;\n            }\n            rest.remove_prefix(start);\n            std::size_t stop = rest.find(' ');\n            std::string_view word = rest.substr(0, stop);\n            int value = 0;\n            if (parse_int(word, value)) {\n                sum += value;\n            } else {\n                errors++;\n            }\n            if (stop == std::string_view::npos) {\n                break;\n            }\n            rest.remove_prefix(stop);\n        }\n        std::println(\"сумма {}, ошибок {}\", sum, errors);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Строка разбирается двумя поисками: `find_first_not_of(' ')` пропускает пробелы до начала слова, `find(' ')` находит его конец. Каждое слово — представление внутри строки, без копий.\n\nПроверка числа опирается на два результата `from_chars`: код ошибки говорит, удалось ли прочитать число и поместилось ли оно в `int`, а указатель `end` — прочитано ли слово **целиком**. Без второй проверки `12a` считалось бы числом 12. Сумма хранится в `long long`: двадцать чисел около двух миллиардов не помещаются в `int`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "cpp23-string-view-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <string_view>\n\nint main() {\n    std::string_view path = \"/home/ada/notes.txt\";\n    std::size_t slash = path.rfind('/');\n    std::println(\"{} {}\", path.substr(slash + 1), path.substr(1, 4));\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "rfind находит последнюю косую черту; после неё — имя файла. substr(1, 4) — четыре символа с позиции 1.",
+        "type": "text",
+        "answers": ["notes.txt home"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что хранит объект std::string_view?",
+        "explanation": "Представление — два числа: где начинаются символы и сколько их. Символами владеет кто-то другой.",
+        "options": [
+          "Указатель на первый символ и длину",
+          "Собственную копию всех символов",
+          "Указатель на std::string и номер версии",
+          "Только указатель: длину он находит по нулевому символу"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Какие вызовы компилируются, если функция объявлена как void show(std::string_view text);? Выберите все.",
+        "explanation": "string_view создаётся из std::string, литерала и массива char без копирования символов. Из числа — нет.",
+        "type": "multiple",
+        "options": [
+          "show(std::string(\"abc\"))",
+          "show(\"literal\")",
+          "char buf[] = \"array\"; show(buf);",
+          "show(42)"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <string_view>\n\nint main() {\n    std::string_view v = \"[[data]]\";\n    v.remove_prefix(2);\n    v.remove_suffix(2);\n    std::println(\"{} {}\", v, v.size());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "remove_prefix и remove_suffix сужают представление с краёв; сам литерал не меняется.",
+        "type": "text",
+        "answers": ["data 4"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Какая из функций безопасна?",
+        "explanation": "first_word возвращает часть аргумента — память принадлежит вызывающему коду. Остальные возвращают представление на строку, которая уничтожается при выходе из функции.",
+        "options": [
+          "std::string_view first_word(std::string_view s) { return s.substr(0, s.find(' ')); }",
+          "std::string_view greet(std::string_view n) { std::string s = \"Hi, \"; s += n; return s; }",
+          "std::string_view read() { std::string line; std::getline(std::cin, line); return line; }",
+          "std::string_view twice(std::string_view s) { return std::string(s) + std::string(s); }"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <charconv>\n#include <print>\n#include <string_view>\n\nint main() {\n    std::string_view text = \"125kg\";\n    int value = 0;\n    auto [end, error] = std::from_chars(text.data(), text.data() + text.size(), value);\n    std::println(\"{} {}\", value, end - text.data());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "from_chars читает цифры и останавливается на k: прочитано три символа. Ошибки нет, но end показывает, что строка разобрана не целиком.",
+        "type": "text",
+        "answers": ["125 3"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Почему нельзя писать printf(\"%s\", view.data()) для std::string_view view?",
+        "explanation": "Конец представления задан длиной. Если это часть строки, после неё нет \\0 — printf печатает до первого нуля в памяти.",
+        "options": [
+          "Представление не обязано заканчиваться нулевым символом, и printf прочитает лишнее",
+          "data() возвращает копию строки, которую никто не освободит",
+          "printf не умеет печатать русские буквы",
+          "Можно: это то же самое, что c_str()"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <string_view>\n\nint main() {\n    std::string_view name = \"test_parser.cpp\";\n    std::println(\"{} {} {}\", name.starts_with(\"test\"), name.ends_with(\".h\"), name.contains(\"pars\"));\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Имя начинается с test, заканчивается на .cpp, а не на .h, и содержит pars.",
+        "type": "text",
+        "answers": ["true false true"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q9",
+        "question": "Что не так в строке std::string_view v = first + second; где first и second — std::string?",
+        "explanation": "string_view не владеет символами и не продлевает жизнь объекту. Результат сложения сохраняют в std::string.",
+        "options": [
+          "Сумма — временная строка, она уничтожается в конце строки кода, и v сразу висит",
+          "Строки нельзя складывать",
+          "Нужно явное приведение к string_view",
+          "Ничего: представление продлевает жизнь временной строке"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q10",
+        "question": "Как получить std::string из std::string_view v?",
+        "explanation": "Преобразование в std::string — явное, потому что копирует символы. Обратное преобразование неявное и бесплатное.",
+        "type": "text",
+        "answers": ["std::string(v)", "std::string s(v);", "std::string s{v};", "std::string{v}"],
+        "placeholder": "Выражение"
+      }
+    ]
+  }
+}

@@ -1,128 +1,536 @@
 {
   "id": "oop-inheritance",
   "title": "Наследование: базовая часть объекта",
-  "description": "Производный объект содержит базовый подобъект и собственные поля. Конструктор производного класса сначала создаёт базовую часть, затем свои поля. Деструктор выполняет обратный путь. Это позволяет расширять контракт, но одновременно связывает представление и правила времени жизни двух типов. Наследование не делает методы виртуальными автоматически.",
+  "description": "Общее — в базовом классе, добавленное — в производном: class D : public B; базовый подобъект и доступ к закрытым членам базы; порядок конструирования и уничтожения; вызов конструктора базы и наследование конструкторов using B::B; метод с тем же именем скрывает базовый, вызов B::метод(); отношение «является».",
   "moduleId": "cpp-oop",
-  "order": 12,
-  "difficulty": "advanced",
+  "order": 13,
+  "difficulty": "intermediate",
   "estimatedMinutes": 45,
   "prerequisites": ["oop-aggregation"],
   "objectives": [
-    "Применить Наследование: базовая часть объекта в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Выносить общее в базовый класс",
+    "Передавать данные конструктору базы и наследовать конструкторы",
+    "Предсказывать порядок конструирования и уничтожения",
+    "Дополнять поведение базы, вызывая её методы"
   ],
-  "tags": ["C++20", "ООП", "Наследование: базовая часть объекта"],
+  "tags": ["C++23", "ООП", "Наследование"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-inheritance-exercise",
-    "title": "Практика: Наследование: базовая часть объекта",
-    "description": "Реализуйте Identified(int id) с закрытым id_ и public id() const. Derived : public Identified хранит private value_, создаётся Derived(int id,int value), имеет public total() const = id()+value_. solve(a,b) возвращает Derived{a,b}.total(). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Сотрудники",
+    "description": "Опишите класс `Employee` (имя, оклад) с методами `name()` и `salary()` и наследника `Manager`, который добавляет размер команды и метод `total_pay()` — оклад плюс 5000 за каждого подчинённого. Каждая строка ввода — `e имя оклад` (сотрудник) или `m имя оклад команда` (руководитель). Напечатайте `имя: выплата` (у сотрудника выплата равна окладу), а в конце — `фонд S`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(2, 8)",
-        "output": "10\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "e Ада 120000\nm Алан 150000 4\n",
+        "output": "Ада: 120000\nАлан: 170000\nфонд 290000\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "",
+        "output": "фонд 0\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Строк не больше 30; оклады до 10⁷, команда до 100."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "Конструктор Manager: Manager(std::string name, long long salary, int team) : Employee(std::move(name), salary), team_(team) {}.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "total_pay использует открытый метод базы salary() — к полю salary_ наследник доступа не имеет.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [2, 8],
-        "expected": "10\n"
+        "stdin": "e Ада 120000\nm Алан 150000 4\n",
+        "expected": "Ада: 120000\nАлан: 170000\nфонд 290000\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "",
+        "expected": "фонд 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [-2, 5],
-        "expected": "3\n"
+        "id": "hidden-1",
+        "name": "Пустая команда",
+        "stdin": "m A 0 0\n",
+        "expected": "A: 0\nфонд 0\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-2",
+        "name": "Максимум",
+        "stdin": "m A 10000000 100\n",
+        "expected": "A: 10500000\nфонд 10500000\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Только сотрудники",
+        "stdin": "e a 1\ne b 2\ne c 3\n",
+        "expected": "a: 1\nb: 2\nc: 3\nфонд 6\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Только руководители",
+        "stdin": "m a 100 1\nm b 100 2\n",
+        "expected": "a: 5100\nb: 10100\nфонд 15200\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Отдел",
+        "stdin": "e Иван 50000\nm Ольга 90000 10\ne Пётр 55000\n",
+        "expected": "Иван: 50000\nОльга: 140000\nПётр: 55000\nфонд 245000\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Нулевой оклад",
+        "stdin": "e x 0\n",
+        "expected": "x: 0\nфонд 0\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Большая команда",
+        "stdin": "m boss 1 99\n",
+        "expected": "boss: 495001\nфонд 495001\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Вперемешку",
+        "stdin": "e a 7\nm b 8 1\ne c 9\nm d 10 2\n",
+        "expected": "a: 7\nb: 5008\nc: 9\nd: 10010\nфонд 15034\n"
       }
     ],
-    "referenceSolution": "class Identified { int id_; public: explicit Identified(int id) : id_(id) {} int id() const { return id_; } };\nclass Derived : public Identified { int value_; public: Derived(int id,int value) : Identified(id), value_(value) {} int total() const { return id()+value_; } };\nint solve(int a,int b) { return Derived{a,b}.total(); }",
-    "solutionExplanation": "Реализуйте Identified(int id) с закрытым id_ и public id() const. Derived : public Identified хранит private value_, создаётся Derived(int id,int value), имеет public total() const = id()+value_. solve(a,b) возвращает Derived{a,b}.total(). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не дублируйте поле базы в наследнике с тем же именем: это два разных состояния. Не пытайтесь присваиванием в теле конструктора заменить правильное создание базовой части. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Employee {\npublic:\n    Employee(std::string name, long long salary) : name_(std::move(name)), salary_(salary) {}\n\n    const std::string &name() const {\n        return name_;\n    }\n\n    long long salary() const {\n        return salary_;\n    }\n\nprivate:\n    std::string name_;\n    long long salary_;\n};\n\nclass Manager : public Employee {\npublic:\n    Manager(std::string name, long long salary, int team)\n        : Employee(std::move(name), salary), team_(team) {}\n\n    long long total_pay() const {\n        return salary() + 5000LL * team_;\n    }\n\nprivate:\n    int team_;\n};\n\nint main() {\n    std::string kind, name;\n    long long salary;\n    long long fund = 0;\n    while (std::cin >> kind >> name >> salary) {\n        if (kind == \"m\") {\n            int team;\n            std::cin >> team;\n            Manager m(name, salary, team);\n            std::println(\"{}: {}\", m.name(), m.total_pay());\n            fund += m.total_pay();\n        } else {\n            Employee e(name, salary);\n            std::println(\"{}: {}\", e.name(), e.salary());\n            fund += e.salary();\n        }\n    }\n    std::println(\"фонд {}\", fund);\n    return 0;\n}\n",
+    "solutionExplanation": "Имя и оклад описаны один раз — в `Employee`. `Manager` добавляет только своё: размер команды и формулу выплаты. Методы `name()` и `salary()` наследник получает готовыми, а закрытые поля базы остаются под её охраной.\n\nБазовая часть инициализируется в списке инициализации конструктора `Manager`: она создаётся раньше поля `team_`.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-inheritance-task-2",
+      "title": "Устройства",
+      "description": "Опишите базовый класс `Device` (название, мощность в ваттах) с методом `double energy(double hours) const` — потребление в кВт·ч (`мощность · часы / 1000`) и двух наследников:\n\n- `Lamp` — с яркостью в процентах: потребление умножается на `яркость / 100`;\n- `Heater` — с долей времени работы термостата в процентах: так же умножается на `доля / 100`.\n\nНаследники вычисляют потребление через базовый метод (`Device::energy`). Каждая строка ввода — `lamp имя ватты яркость часы` или `heater имя ватты доля часы`. Напечатайте `имя: X кВт·ч` с двумя знаками и в конце `всего Y кВт·ч`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "lamp люстра 100 50 10\nheater печь 2000 25 8\n",
+          "output": "люстра: 0.50 кВт·ч\nпечь: 4.00 кВт·ч\nвсего 4.50 кВт·ч\n"
+        },
+        {
+          "input": "",
+          "output": "всего 0.00 кВт·ч\n"
+        }
+      ],
+      "constraints": ["Строк не больше 30; мощность до 5000, проценты от 0 до 100, часы до 744."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "double Lamp::energy(double hours) const { return Device::energy(hours) * brightness_ / 100.0; }",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Используйте using Device::Device не получится — у наследников есть своё поле. Пишите конструктор: Lamp(std::string name, int watts, int brightness) : Device(std::move(name), watts), brightness_(brightness) {}.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "lamp люстра 100 50 10\nheater печь 2000 25 8\n",
+          "expected": "люстра: 0.50 кВт·ч\nпечь: 4.00 кВт·ч\nвсего 4.50 кВт·ч\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "всего 0.00 кВт·ч\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Выключенная лампа",
+          "stdin": "lamp a 60 0 24\n",
+          "expected": "a: 0.00 кВт·ч\nвсего 0.00 кВт·ч\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Максимум",
+          "stdin": "heater b 5000 100 744\n",
+          "expected": "b: 3720.00 кВт·ч\nвсего 3720.00 кВт·ч\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Маленькая лампа",
+          "stdin": "lamp c 9 100 1\n",
+          "expected": "c: 0.01 кВт·ч\nвсего 0.01 кВт·ч\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Дробные часы",
+          "stdin": "heater d 1500 33 2.5\n",
+          "expected": "d: 1.24 кВт·ч\nвсего 1.24 кВт·ч\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Две лампы",
+          "stdin": "lamp a 40 80 5\nlamp b 40 80 5\n",
+          "expected": "a: 0.16 кВт·ч\nb: 0.16 кВт·ч\nвсего 0.32 кВт·ч\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Ноль часов",
+          "stdin": "heater x 1000 50 0\n",
+          "expected": "x: 0.00 кВт·ч\nвсего 0.00 кВт·ч\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Квартира",
+          "stdin": "lamp ночник 5 10 720\nheater конвектор 1200 40 300\nlamp торшер 60 70 90\n",
+          "expected": "ночник: 0.36 кВт·ч\nконвектор: 144.00 кВт·ч\nторшер: 3.78 кВт·ч\nвсего 148.14 кВт·ч\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Минимум",
+          "stdin": "heater h 1 1 1\n",
+          "expected": "h: 0.00 кВт·ч\nвсего 0.00 кВт·ч\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Device {\npublic:\n    Device(std::string name, int watts) : name_(std::move(name)), watts_(watts) {}\n\n    const std::string &name() const {\n        return name_;\n    }\n\n    double energy(double hours) const {\n        return watts_ * hours / 1000;\n    }\n\nprivate:\n    std::string name_;\n    int watts_;\n};\n\nclass Lamp : public Device {\npublic:\n    Lamp(std::string name, int watts, int brightness) : Device(std::move(name), watts), brightness_(brightness) {}\n\n    double energy(double hours) const {\n        return Device::energy(hours) * brightness_ / 100.0;\n    }\n\nprivate:\n    int brightness_;\n};\n\nclass Heater : public Device {\npublic:\n    Heater(std::string name, int watts, int duty) : Device(std::move(name), watts), duty_(duty) {}\n\n    double energy(double hours) const {\n        return Device::energy(hours) * duty_ / 100.0;\n    }\n\nprivate:\n    int duty_;\n};\n\nint main() {\n    std::string kind, name;\n    int watts, percent;\n    double hours;\n    double total = 0;\n    while (std::cin >> kind >> name >> watts >> percent >> hours) {\n        double e = kind == \"lamp\" ? Lamp(name, watts, percent).energy(hours)\n                                  : Heater(name, watts, percent).energy(hours);\n        std::println(\"{}: {:.2f} кВт·ч\", name, e);\n        total += e;\n    }\n    std::println(\"всего {:.2f} кВт·ч\", total);\n    return 0;\n}\n",
+      "solutionExplanation": "Формула «мощность × часы» записана один раз — в `Device::energy`. Наследники не повторяют её, а уточняют: вызывают базовую версию явно, через имя класса, и умножают на свой коэффициент. Если когда-нибудь появятся потери в проводке, их добавят в одном месте.\n\nМетод `energy` наследника скрывает базовый. Здесь это нормально: объекты используются как `Lamp` и `Heater`, и версия выбирается по типу в коде. В уроке о `virtual` вы увидите, как сложить лампы и обогреватели в один список и считать их потребление одним циклом.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-inheritance-task-3",
+      "title": "Найди ошибку: два имени",
+      "description": "Класс `Pet` хранит имя и умеет поздороваться: `Привет, имя!`. Наследник `Dog` добавляет породу. Каждая строка ввода — кличка и порода собаки; программа печатает:\n\n```text\nПривет, Шарик!\nПорода: дворняга\n```\n\nВместо клички программа здоровается с «без имени». Найдите и исправьте ошибку в классе `Dog`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Pet {\npublic:\n    Pet() : name_(\"без имени\") {}\n    explicit Pet(std::string name) : name_(std::move(name)) {}\n\n    void greet() const {\n        std::println(\"Привет, {}!\", name_);\n    }\n\nprivate:\n    std::string name_;\n};\n\nclass Dog : public Pet {\npublic:\n    Dog(std::string name, std::string breed) : name_(std::move(name)), breed_(std::move(breed)) {}\n\n    void describe() const {\n        greet();\n        std::println(\"Порода: {}\", breed_);\n    }\n\nprivate:\n    std::string name_;\n    std::string breed_;\n};\n\nint main() {\n    std::string name, breed;\n    while (std::cin >> name >> breed) {\n        Dog dog(name, breed);\n        dog.describe();\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "Шарик дворняга\n",
+          "output": "Привет, Шарик!\nПорода: дворняга\n"
+        },
+        {
+          "input": "Rex shepherd\n",
+          "output": "Привет, Rex!\nПорода: shepherd\n"
+        }
+      ],
+      "constraints": ["Строк не больше 20."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сколько полей name_ в объекте Dog и какое из них читает метод greet базового класса?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Уберите лишнее поле из Dog и передайте кличку конструктору базы: Dog(…) : Pet(std::move(name)), breed_(…) {}.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "Шарик дворняга\n",
+          "expected": "Привет, Шарик!\nПорода: дворняга\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "Rex shepherd\n",
+          "expected": "Привет, Rex!\nПорода: shepherd\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "Бобик такса\n",
+          "expected": "Привет, Бобик!\nПорода: такса\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "Жучка лайка\nТузик пудель\n",
+          "expected": "Привет, Жучка!\nПорода: лайка\nПривет, Тузик!\nПорода: пудель\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "Max beagle\n",
+          "expected": "Привет, Max!\nПорода: beagle\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "Белка хаски\n",
+          "expected": "Привет, Белка!\nПорода: хаски\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "a b\n",
+          "expected": "Привет, a!\nПорода: b\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "Лорд доберман\n",
+          "expected": "Привет, Лорд!\nПорода: доберман\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "Найда овчарка\nРекс колли\n",
+          "expected": "Привет, Найда!\nПорода: овчарка\nПривет, Рекс!\nПорода: колли\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "Dog dog\n",
+          "expected": "Привет, Dog!\nПорода: dog\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Pet {\npublic:\n    Pet() : name_(\"без имени\") {}\n    explicit Pet(std::string name) : name_(std::move(name)) {}\n\n    void greet() const {\n        std::println(\"Привет, {}!\", name_);\n    }\n\nprivate:\n    std::string name_;\n};\n\nclass Dog : public Pet {\npublic:\n    Dog(std::string name, std::string breed) : Pet(std::move(name)), breed_(std::move(breed)) {}\n\n    void describe() const {\n        greet();\n        std::println(\"Порода: {}\", breed_);\n    }\n\nprivate:\n    std::string breed_;\n};\n\nint main() {\n    std::string name, breed;\n    while (std::cin >> name >> breed) {\n        Dog dog(name, breed);\n        dog.describe();\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`Dog` объявил своё поле `name_` и записал кличку в него. Но `greet` — метод базы, и он читает поле `name_` **базы**, а оно было инициализировано конструктором `Pet()` без аргументов: «без имени». В объекте оказалось два имени, и каждое видит свою половину кода.\n\nДанные базы передаются её конструктору: `: Pet(std::move(name))`. Дублирующее поле нужно убрать совсем — тогда ошибиться будет негде. Если бы у `Pet` не было конструктора по умолчанию, компилятор сразу указал бы на проблему; «удобный» конструктор без аргументов здесь её спрятал.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-inheritance-task-4",
+      "title": "Сберегательный счёт",
+      "description": "Опишите класс `Account` с методами `deposit(n)`, `bool withdraw(n)` (отказ при нехватке средств) и `balance()`, и наследника `SavingsAccount` со ставкой в процентах в месяц. Наследник:\n\n- **ограничивает** снятия: не больше трёх успешных за месяц — его `withdraw` проверяет счётчик и вызывает базовый `Account::withdraw`;\n- добавляет метод `end_month()`: начисляет проценты (`баланс · ставка / 100`, целочисленно) вкладом и обнуляет счётчик снятий.\n\nПервая строка — ставка. Команды: `dep n`, `wd n` (`ок` или `отказ`), `month`, `show` (баланс).",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\ndep 1000\nwd 100\nwd 100\nwd 100\nwd 100\nmonth\nshow\n",
+          "output": "ок\nок\nок\nотказ\n714\n"
+        },
+        {
+          "input": "5\nwd 1\nshow\n",
+          "output": "отказ\n0\n"
+        }
+      ],
+      "constraints": ["Ставка от 0 до 10; команд не больше 50; суммы от 1 до 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "bool SavingsAccount::withdraw(long long n) { if (withdrawals_ == 3 || !Account::withdraw(n)) return false; withdrawals_++; return true; }",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "end_month: deposit(balance() * rate_ / 100); withdrawals_ = 0;. Метод deposit унаследован от базы.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\ndep 1000\nwd 100\nwd 100\nwd 100\nwd 100\nmonth\nshow\n",
+          "expected": "ок\nок\nок\nотказ\n714\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5\nwd 1\nshow\n",
+          "expected": "отказ\n0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Сложные проценты",
+          "stdin": "10\ndep 100\nmonth\nmonth\nshow\n",
+          "expected": "121\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Неудача не считается",
+          "stdin": "0\ndep 50\nwd 60\nwd 10\nwd 10\nwd 10\nwd 10\nshow\n",
+          "expected": "отказ\nок\nок\nок\nотказ\n20\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Большой вклад",
+          "stdin": "1\ndep 1000000000\nmonth\nshow\n",
+          "expected": "1010000000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Новый месяц",
+          "stdin": "3\ndep 300\nwd 1\nwd 1\nwd 1\nmonth\nwd 1\nshow\n",
+          "expected": "ок\nок\nок\nок\n304\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Меньше копейки",
+          "stdin": "2\ndep 49\nmonth\nshow\n",
+          "expected": "49\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Пустой счёт",
+          "stdin": "5\nshow\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "До нуля",
+          "stdin": "7\ndep 1000\nwd 1000\nwd 1\nmonth\nshow\n",
+          "expected": "ок\nотказ\n0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Лимит после месяца",
+          "stdin": "4\ndep 500\nwd 100\nmonth\nwd 100\nwd 100\nwd 100\nwd 100\nshow\n",
+          "expected": "ок\nок\nок\nок\nотказ\n116\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nclass Account {\npublic:\n    void deposit(long long n) {\n        balance_ += n;\n    }\n\n    bool withdraw(long long n) {\n        if (n > balance_) {\n            return false;\n        }\n        balance_ -= n;\n        return true;\n    }\n\n    long long balance() const {\n        return balance_;\n    }\n\nprivate:\n    long long balance_ = 0;\n};\n\nclass SavingsAccount : public Account {\npublic:\n    explicit SavingsAccount(int rate) : rate_(rate) {}\n\n    bool withdraw(long long n) {\n        if (withdrawals_ == 3 || !Account::withdraw(n)) {\n            return false;\n        }\n        withdrawals_++;\n        return true;\n    }\n\n    void end_month() {\n        deposit(balance() * rate_ / 100);\n        withdrawals_ = 0;\n    }\n\nprivate:\n    int rate_;\n    int withdrawals_ = 0;\n};\n\nint main() {\n    int rate;\n    std::cin >> rate;\n    SavingsAccount account(rate);\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"dep\") {\n            long long n;\n            std::cin >> n;\n            account.deposit(n);\n        } else if (command == \"wd\") {\n            long long n;\n            std::cin >> n;\n            std::println(\"{}\", account.withdraw(n) ? \"ок\" : \"отказ\");\n        } else if (command == \"month\") {\n            account.end_month();\n        } else {\n            std::println(\"{}\", account.balance());\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`SavingsAccount` не переписывает правила обычного счёта, а дополняет их: его `withdraw` проверяет своё ограничение и делегирует остальное базовому `Account::withdraw`, который охраняет «не уходить в минус». Счётчик увеличивается, только если снятие действительно прошло, — неудачная попытка не съедает лимит.\n\nБаланс закрыт в базовом классе, поэтому наследник начисляет проценты через открытый `deposit` — и не может обойти проверки базы. `balance() * rate_ / 100` считается целочисленно, дробная часть копейки отбрасывается.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-inheritance-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Что создаётся первым в конструкторе Derived?",
-        "options": ["Базовый подобъект Identified", "Поле value_ производного класса"],
-        "correct": 0,
-        "explanation": "Пример наследует идентификатор и добавляет номер канала. База предоставляет чтение id, оставляя поле закрытым. Производный конструктор явно вызывает конструктор базы, потому что база требует аргумент. При отсутствии такого вызова компилятор попытался бы создать базу без аргументов. Проверяйте смысл связи: каждый Channel является идентифицируемым объектом, однако не всякая пара похожих полей требует иерархии."
+        "id": "q1",
+        "question": "Что выведет программа? Запишите вывод в одну строку через пробел.",
+        "code": "#include <print>\n\nstruct A {\n    A() { std::print(\"A \"); }\n    ~A() { std::print(\"~A \"); }\n};\n\nstruct B : A {\n    B() { std::print(\"B \"); }\n    ~B() { std::print(\"~B \"); }\n};\n\nint main() {\n    {\n        B b;\n    }\n    std::println();\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Базовая часть создаётся первой и уничтожается последней.",
+        "type": "text",
+        "answers": ["A B ~B ~A"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "4 7", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 4 7. Производный объект содержит базовый подобъект и собственные поля. Конструктор производного класса сначала создаёт базовую часть, затем свои поля. Деструктор выполняет обратный путь. Это позволяет расширять контракт, но одновременно связывает представление и правила времени жизни двух типов. Наследование не делает методы виртуальными автоматически."
-      },
-      {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q2",
+        "question": "Может ли метод наследника обратиться к закрытому (private) полю базового класса?",
+        "explanation": "Так база охраняет свой инвариант. Для узкого доступа наследникам есть protected — следующие уроки.",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Не дублируйте поле базы в наследнике с тем же именем: это два разных состояния. Не пытайтесь присваиванием в теле конструктора заменить правильное создание базовой части."
+          "Нет: закрытые члены базы недоступны и наследнику — он пользуется открытыми методами",
+          "Да, наследник видит всё",
+          "Только в конструкторе",
+          "Только через this"
         ],
-        "correct": 1,
-        "explanation": "Добавьте в базу и наследника сообщения конструктора и деструктора, выпишите ожидаемый порядок до запуска в sandbox. Не удаляйте объект через базовый указатель, пока контракт удаления не изучен. Обычный локальный Channel уничтожается как полный конкретный объект."
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Как передать аргументы конструктору базового класса Employee из конструктора Manager?",
+        "explanation": "Базовая часть создаётся раньше тела, поэтому её конструктор вызывают в списке инициализации.",
+        "options": [
+          "В списке инициализации: Manager(…) : Employee(name, salary), team_(team) {}",
+          "Присвоить поля базы в теле конструктора",
+          "Вызвать Employee(name, salary); первой строкой тела",
+          "Никак: база создаётся без аргументов"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что делает строка using Message::Message; внутри class Warning : public Message?",
+        "explanation": "Удобно, когда наследник не добавляет полей, требующих инициализации.",
+        "options": [
+          "Наследует конструкторы базы: Warning можно создать с теми же аргументами",
+          "Делает Message закрытым",
+          "Скрывает конструктор Message",
+          "Создаёт поле типа Message"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct Base {\n    int f() const { return 1; }\n};\n\nstruct Derived : Base {\n    int f() const { return 2 + Base::f(); }\n};\n\nint main() {\n    Derived d;\n    const Base &b = d;\n    std::println(\"{} {}\", d.f(), b.f());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "d.f() вызывает метод наследника, который добавляет к базовому результату 2. Через ссылку на Base вызывается базовая версия: без virtual решает тип в коде.",
+        "type": "text",
+        "answers": ["3 1"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Какие пары подходят для наследования («является»)? Выберите все.",
+        "explanation": "Машина содержит двигатель (композиция), а стек не является вектором — у него другой интерфейс.",
+        "type": "multiple",
+        "options": [
+          "Manager и Employee",
+          "Warning и Message",
+          "Car и Engine",
+          "Stack и std::vector"
+        ],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q7",
+        "question": "Что произойдёт, если в конструкторе наследника не вызвать конструктор базы, а у базы нет конструктора без параметров?",
+        "explanation": "Компилятор пытается вызвать конструктор базы без аргументов и не находит его.",
+        "options": [
+          "Ошибка компиляции",
+          "Поля базы получат нули",
+          "Поля базы останутся мусором",
+          "Вызовется конструктор копирования"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Наследник объявил своё поле name_, хотя такое же закрытое поле есть в базе, и заполнил его. Что увидит метод базы greet(), печатающий name_?",
+        "explanation": "В объекте два разных поля. Данные для базы передают в её конструктор.",
+        "options": [
+          "Поле базы — не то, что заполнил наследник",
+          "Поле наследника",
+          "Ошибку компиляции",
+          "Оба значения через пробел"
+        ],
+        "correct": 0
       }
     ]
   }

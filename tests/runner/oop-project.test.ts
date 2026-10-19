@@ -84,7 +84,7 @@ const wrap = (source: string) =>
   `#define main telemetry_console_main\n${source}\n#undef main\n${contract}`;
 const run = (source: string, cases = [{ stdin: '' }]) =>
   executeSandbox(
-    { source, compiler: 'clang', standard: 'c++20', stdin: '', cases, timeoutMs: 10000 },
+    { source, compiler: 'clang', standard: 'c++23', stdin: '', cases, timeoutMs: 10000 },
     'sanitizers',
   );
 describe.skipIf(process.env.RUN_DOCKER_TESTS !== '1')('Контракты ООП в Docker', () => {

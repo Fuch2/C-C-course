@@ -13,9 +13,9 @@
     "Возвращать логические значения напрямую из выражений",
     "Сообщать об отсутствии результата специальным значением"
   ],
-  "tags": ["C17", "Функции", "return", "bool"],
+  "tags": ["C23", "Функции", "return", "bool"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-return-values-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "int sign(long long x) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -129,7 +129,7 @@
       "difficulty": "beginner",
       "starterCode": "int is_leap(int year) {\n    // Вспомогательная функция: 1 для високосного года, 0 для обычного.\n    return 0;\n}\n\nint days_in_month(int month, int year) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -243,7 +243,7 @@
       "difficulty": "beginner",
       "starterCode": "int first_digit(long long n) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -341,7 +341,7 @@
       "difficulty": "beginner",
       "starterCode": "int digit_position(long long n, int digit) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return -1;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -454,7 +454,7 @@
       "difficulty": "beginner",
       "starterCode": "int triangle_code(long long a, long long b, long long c) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

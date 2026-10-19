@@ -1,204 +1,441 @@
 {
   "id": "lifetime-shallow-copy",
-  "title": "Поверхностное копирование — Shallow copy",
-  "description": "Поверхностная копия переносит непосредственные поля: для указателя копируется адрес, а не объект по адресу.",
+  "title": "Поверхностное копирование",
+  "description": "Неявное копирование указателя копирует адрес; поверхностная копия правильна для заёмщиков и разрушительна для владельцев: двойное освобождение и висячие указатели после передачи по значению; правило диагностики «одно new — два права на delete»; лечение глубокой копией, запретом копирования, общим владением или полями, которые копируются сами.",
   "moduleId": "cpp-lifetime",
   "order": 8,
-  "difficulty": "advanced",
-  "estimatedMinutes": 75,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
   "prerequisites": ["lifetime-copy-assignment"],
   "objectives": [
-    "Связать неявное копирование адреса с появлением второго права на освобождение.",
-    "Проследить на MemoryDiagram порядок разрушения двух владельцев одного блока.",
-    "Диагностировать double delete по фрагментам и исправить Box глубокой копией."
+    "Понимать, что копирование указателя копирует адрес",
+    "Отличать допустимую поверхностную копию заёмщика от ошибочной копии владельца",
+    "Диагностировать двойное освобождение после копирования",
+    "Выбирать лечение по смыслу типа"
   ],
-  "tags": [
-    "C++20",
-    "время жизни",
-    "управление ресурсами",
-    "Поверхностное копирование — Shallow copy",
-    "диагностика",
-    "исправление ошибок",
-    "Повторное удаление (double delete)"
-  ],
+  "tags": ["C++23", "Время жизни", "Копирование", "double free", "Указатели"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "lifetime-shallow-copy-diagnose",
-    "title": "1. Диагностика: Повторное удаление (double delete)",
-    "description": "Сначала диагностируйте четыре независимых фрагмента по номерам 0–3; не исполняйте их. solve(a,b) принимает номер фрагмента a; b не используется. Верните код первичного дефекта: 0 — безопасно в показанных границах; 1 — double delete; 2 — use-after-free; 3 — dangling reference при возврате; 4 — нарушение заявленного договора заимствования; 5 — цикл сильного владения; 6 — move constructor оставил двух владельцев. Для 4 и 6 выбирайте причину, а не последующий double delete. В комментарии к решению укажите строку, событие окончания жизни и владельца. После проверки диагноза перейдите к заданию 2 и исправьте исходник.\n\nФрагмент 0:\nstruct Buf { int* p; explicit Buf(int n):p(new int[n]){} ~Buf(){delete[] p;} };\nBuf a(4); Buf b = a;\n\nФрагмент 1:\nstruct Buf { std::vector<int> p; };\nBuf a; Buf b = a;\n\nФрагмент 2:\nstruct Pair { int* a; int* b; ~Pair(){delete a; delete b;} };\nint* shared = new int(1); Pair p{shared, shared};\n\nФрагмент 3:\nint* p = new int(3); int* q = p; p = nullptr; delete p; delete q;",
-    "difficulty": "advanced",
+    "id": "lifetime-shallow-copy-exercise",
+    "title": "Наблюдатели счёта",
+    "description": "Счёт `Account { long long balance; }` — один, им владеет `main`. Наблюдатель `View` хранит метку и указатель `const Account *`; копирование наблюдателя поверхностное (неявное) — копия смотрит на тот же счёт.\n\nКоманды:\n\n- `view имя` — создать наблюдателя;\n- `copy новое старое` — новый наблюдатель — копия старого с другой меткой;\n- `deposit x` / `withdraw x` — изменить баланс счёта;\n- `show имя` — напечатать `имя: баланс B`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(0, 0)",
-        "output": "1\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "view a\ncopy b a\ndeposit 500\nshow a\nwithdraw 200\nshow b\n",
+        "output": "a: баланс 500\nb: баланс 300\n"
       },
       {
-        "input": "solve(1, 0)",
-        "output": "0\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "view x\nshow x\n",
+        "output": "x: баланс 0\n"
       }
     ],
-    "constraints": [
-      "Аргумент a — номер фрагмента 0…3; b=0. Возвращайте код 0…6 согласно условию.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Команд не больше 200; суммы до 10⁹; баланс может быть отрицательным."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Не исполняйте фрагменты. Для каждого найдите объект, чьё время жизни заканчивается раньше использования, и сопоставьте событие с кодами 0–6. Если дефектов два, выбирайте первопричину: нарушение договора или неверный move, а не их следствие в виде double delete."
+        "id": "hint-1",
+        "text": "Наблюдателей храните в std::map<std::string, View>; копия: View v = views.at(old); v.label = name; views.insert_or_assign(name, v);",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "В варианте 0 неявный копирующий конструктор дублирует адрес: два Buf владеют одним буфером, и оба деструктора вызовут delete[] — повторное удаление. В варианте 1 vector сам реализует глубокое копирование: у b собственный буфер. В варианте 2 одно поле shared записано в два владеющих поля Pair: деструктор удалит один блок дважды. В варианте 3 delete nullptr безопасен (no-op), а delete q освобождает блок ровно один раз. У исправленного Box глубокий копирующий конструктор: каждая копия владеет отдельным int, поэтому разрушение second не затрагивает first."
+        "id": "hint-2",
+        "text": "Указатель на счёт остаётся действительным: Account живёт в main дольше всех наблюдателей.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
-        "id": "fragment-0",
-        "name": "Фрагмент 0",
-        "arguments": [0, 0],
-        "expected": "1\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "view a\ncopy b a\ndeposit 500\nshow a\nwithdraw 200\nshow b\n",
+        "expected": "a: баланс 500\nb: баланс 300\n"
       },
       {
-        "id": "fragment-1",
-        "name": "Фрагмент 1",
-        "arguments": [1, 0],
-        "expected": "0\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "view x\nshow x\n",
+        "expected": "x: баланс 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "fragment-2",
-        "name": "Фрагмент 2",
-        "arguments": [2, 0],
-        "expected": "1\n"
+        "id": "hidden-1",
+        "name": "Пусто",
+        "stdin": "",
+        "expected": ""
       },
       {
-        "id": "fragment-3",
-        "name": "Фрагмент 3",
-        "arguments": [3, 0],
-        "expected": "0\n"
+        "id": "hidden-2",
+        "name": "Отрицательный баланс",
+        "stdin": "view a\nwithdraw 50\nshow a\n",
+        "expected": "a: баланс -50\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Копия копии",
+        "stdin": "view a\ncopy b a\ncopy c b\ndeposit 1\nshow c\n",
+        "expected": "c: баланс 1\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Большие суммы",
+        "stdin": "deposit 1000000000\ndeposit 1000000000\nview z\nshow z\n",
+        "expected": "z: баланс 2000000000\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Копия видит новые изменения",
+        "stdin": "view a\ndeposit 5\ncopy b a\ndeposit 5\nshow a\nshow b\n",
+        "expected": "a: баланс 10\nb: баланс 10\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Повторное создание",
+        "stdin": "view a\nview a\nshow a\n",
+        "expected": "a: баланс 0\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Два наблюдателя",
+        "stdin": "view p\ncopy q p\nwithdraw 1\ndeposit 2\nshow p\nshow q\n",
+        "expected": "p: баланс 1\nq: баланс 1\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Копия в себя",
+        "stdin": "view a\ncopy a a\nshow a\n",
+        "expected": "a: баланс 0\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint solve(int a,int b){(void)b; const int diagnosis[4]={1,0,1,0}; return diagnosis[a];}",
-    "solutionExplanation": "В варианте 0 неявный копирующий конструктор дублирует адрес: два Buf владеют одним буфером, и оба деструктора вызовут delete[] — повторное удаление. В варианте 1 vector сам реализует глубокое копирование: у b собственный буфер. В варианте 2 одно поле shared записано в два владеющих поля Pair: деструктор удалит один блок дважды. В варианте 3 delete nullptr безопасен (no-op), а delete q освобождает блок ровно один раз. У исправленного Box глубокий копирующий конструктор: каждая копия владеет отдельным int, поэтому разрушение second не затрагивает first.",
+    "referenceSolution": "#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n\nstruct Account {\n    long long balance = 0;\n};\n\nstruct View {\n    std::string label;\n    const Account *account;\n\n    void show() const {\n        std::println(\"{}: баланс {}\", label, account->balance);\n    }\n};\n\nint main() {\n    Account account;\n    std::map<std::string, View> views;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"view\") {\n            std::string name;\n            std::cin >> name;\n            views.insert_or_assign(name, View{name, &account});\n        } else if (command == \"copy\") {\n            std::string name, old;\n            std::cin >> name >> old;\n            View copy = views.at(old);\n            copy.label = name;\n            views.insert_or_assign(name, copy);\n        } else if (command == \"deposit\" || command == \"withdraw\") {\n            long long x;\n            std::cin >> x;\n            account.balance += command == \"deposit\" ? x : -x;\n        } else {\n            std::string name;\n            std::cin >> name;\n            views.at(name).show();\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Копия наблюдателя получает свою метку (строка копируется глубоко), но указатель на счёт — тот же адрес. Поэтому все наблюдатели видят одно и то же состояние, и это правильно: наблюдатель ничем не владеет и ничего не удаляет. Поверхностная копия становится ошибкой только у владельцев.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
   "additionalExercises": [
     {
-      "id": "lifetime-shallow-copy-exercise",
-      "title": "2. Исправление: Повторное удаление (double delete)",
-      "description": "Исправьте Box с сырым int* и деструктором: копия должна владеть отдельным int. Добавьте глубокий копирующий конструктор и запретите копирующее присваивание. solve создаёт first(a), во вложенном блоке копию second, меняет её значение на b и сохраняет его; после уничтожения second возвращает сохранённое.",
-      "difficulty": "advanced",
+      "id": "lifetime-shallow-copy-task-2",
+      "title": "Документы и стили",
+      "description": "Стили `Style { std::string name; int font; }` хранятся в таблице стилей `std::map<std::string, Style>` — она ими владеет. Документ `Doc` хранит строки `std::vector<std::string>` и указатель `const Style *` на свой стиль. Неявное копирование документа копирует строки **глубоко**, а стиль — **поверхностно**.\n\nКоманды:\n\n- `style S F` — создать стиль S или изменить его шрифт на F;\n- `doc D S` — создать пустой документ D со стилем S;\n- `copy D2 D1` — документ D2 становится копией D1;\n- `line D текст` — добавить строку (одно слово);\n- `show D` — `D: N строк, стиль S, шрифт F`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "cpp",
-      "standard": "c++20",
-      "compiler": "clang",
+      "standard": "c++23",
+      "compiler": "gcc",
       "diagnostics": "sanitizers",
-      "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct Box {int* p; explicit Box(int x):p(new int(x)){} ~Box(){delete p;}};\nint solve(int a,int b){Box first{a}; int saved; {Box second=first; *second.p=b; saved=*first.p+*second.p;} return saved;}",
       "examples": [
         {
-          "input": "solve(3, 7)",
-          "output": "10\n",
-          "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+          "input": "style main 12\ndoc a main\nline a привет\ncopy b a\nline b мир\nstyle main 14\nshow a\nshow b\n",
+          "output": "a: 1 строк, стиль main, шрифт 14\nb: 2 строк, стиль main, шрифт 14\n"
         },
         {
-          "input": "solve(0, 0)",
-          "output": "0\n",
-          "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+          "input": "style s 10\ndoc d s\nshow d\n",
+          "output": "d: 0 строк, стиль s, шрифт 10\n"
         }
       ],
       "constraints": [
-        "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-        "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-        "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
+        "Команд не больше 200; doc ссылается на существующий стиль; copy, line и show — на существующие документы."
       ],
       "hints": [
         {
-          "id": "owners",
-          "order": 1,
-          "text": "Посчитайте количество new и количество деструкторов, вызывающих delete. Если их не поровну на каждый блок — найдите строку, где появляется лишнее право."
+          "id": "hint-1",
+          "text": "Адрес элемента std::map не меняется при вставке других элементов, поэтому указатель на стиль остаётся действительным.",
+          "order": 1
         },
         {
-          "id": "boundary",
-          "order": 2,
-          "text": "Сначала определите смысл типа, затем способ копирования. Представление — уберите удаление и гарантируйте внешнего владельца. Самостоятельное значение — создавайте глубокую копию. Исключительный владелец — запретите копирование и разрешите перемещение. Обнуление p только в одном экземпляре не лечит вторую копию; удаление одного delete вручную в main оставляет класс ошибочным при другом порядке разрушения. Диагностическая таблица: один new и два права на освобождение — красный флаг; два new и два владельца — корректная глубокая копия; один new, один владелец и несколько заёмщиков — тоже корректно.\n\nНельзя лечить double delete удалением всех деструкторов: вместе с падением исчезает и освобождение ресурса. Исправление должно объяснять единственного владельца либо независимость копий.\n\nВ варианте 0 неявный копирующий конструктор дублирует адрес: два Buf владеют одним буфером, и оба деструктора вызовут delete[] — повторное удаление. В варианте 1 vector сам реализует глубокое копирование: у b собственный буфер. В варианте 2 одно поле shared записано в два владеющих поля Pair: деструктор удалит один блок дважды. В варианте 3 delete nullptr безопасен (no-op), а delete q освобождает блок ровно один раз. У исправленного Box глубокий копирующий конструктор: каждая копия владеет отдельным int, поэтому разрушение second не затрагивает first."
+          "id": "hint-2",
+          "text": "Изменение шрифта: styles[S] — найдёт существующий стиль или создаст новый; все документы со стилем S сразу увидят новый шрифт.",
+          "order": 2
         }
       ],
       "publicTests": [
         {
           "id": "case-1",
           "name": "Пример 1",
-          "arguments": [3, 7],
-          "expected": "10\n"
+          "stdin": "style main 12\ndoc a main\nline a привет\ncopy b a\nline b мир\nstyle main 14\nshow a\nshow b\n",
+          "expected": "a: 1 строк, стиль main, шрифт 14\nb: 2 строк, стиль main, шрифт 14\n"
         },
         {
           "id": "case-2",
           "name": "Пример 2",
-          "arguments": [0, 0],
-          "expected": "0\n"
+          "stdin": "style s 10\ndoc d s\nshow d\n",
+          "expected": "d: 0 строк, стиль s, шрифт 10\n"
         }
       ],
       "hiddenTests": [
         {
-          "id": "case-3",
-          "name": "Граничный случай 1",
-          "arguments": [-8, 3],
-          "expected": "-5\n"
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": ""
         },
         {
-          "id": "case-4",
-          "name": "Граничный случай 2",
-          "arguments": [5, -9],
-          "expected": "-4\n"
+          "id": "hidden-2",
+          "name": "Копия меняет стиль",
+          "stdin": "style a 1\nstyle b 2\ndoc x a\ndoc y b\ncopy y x\nshow y\n",
+          "expected": "y: 0 строк, стиль a, шрифт 1\n"
         },
         {
-          "id": "case-5",
-          "name": "Граничный случай 3",
-          "arguments": [-1000, 1000],
-          "expected": "0\n"
+          "id": "hidden-3",
+          "name": "Строки независимы",
+          "stdin": "style s 10\ndoc d s\nline d 1\nline d 2\ncopy e d\nline d 3\nshow d\nshow e\n",
+          "expected": "d: 3 строк, стиль s, шрифт 10\ne: 2 строк, стиль s, шрифт 10\n"
         },
         {
-          "id": "case-6",
-          "name": "Граничный случай 4",
-          "arguments": [1000, -1000],
-          "expected": "0\n"
+          "id": "hidden-4",
+          "name": "Стиль общий",
+          "stdin": "style s 10\ndoc d s\ncopy e d\nstyle s 20\nshow d\nshow e\n",
+          "expected": "d: 0 строк, стиль s, шрифт 20\ne: 0 строк, стиль s, шрифт 20\n"
         },
         {
-          "id": "case-7",
-          "name": "Граничный случай 5",
-          "arguments": [4, 4],
-          "expected": "8\n"
+          "id": "hidden-5",
+          "name": "Копия в себя",
+          "stdin": "style s 1\ndoc d s\ncopy d d\nshow d\n",
+          "expected": "d: 0 строк, стиль s, шрифт 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Цепочка копий",
+          "stdin": "style s 5\ndoc a s\ncopy b a\ncopy c b\nstyle s 7\nshow c\n",
+          "expected": "c: 0 строк, стиль s, шрифт 7\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Новые стили не портят указатель",
+          "stdin": "style a 1\ndoc d a\nstyle b 2\nstyle c 3\nshow d\n",
+          "expected": "d: 0 строк, стиль a, шрифт 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пересоздание документа",
+          "stdin": "style s 9\ndoc d s\nline d x\ndoc d s\nshow d\n",
+          "expected": "d: 0 строк, стиль s, шрифт 9\n"
         }
       ],
-      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct Box { int* p; explicit Box(int x): p(new int(x)) {} Box(const Box& x): p(new int(*x.p)) {} Box& operator=(const Box&) = delete; ~Box() { delete p; } };\nint solve(int a, int b) { int saved; { Box first{a}; { Box second = first; *second.p = b; saved = *second.p; } } return saved + a - b + b; }",
-      "solutionExplanation": "Сначала определите смысл типа, затем способ копирования. Представление — уберите удаление и гарантируйте внешнего владельца. Самостоятельное значение — создавайте глубокую копию. Исключительный владелец — запретите копирование и разрешите перемещение. Обнуление p только в одном экземпляре не лечит вторую копию; удаление одного delete вручную в main оставляет класс ошибочным при другом порядке разрушения. Диагностическая таблица: один new и два права на освобождение — красный флаг; два new и два владельца — корректная глубокая копия; один new, один владелец и несколько заёмщиков — тоже корректно.\n\nНельзя лечить double delete удалением всех деструкторов: вместе с падением исчезает и освобождение ресурса. Исправление должно объяснять единственного владельца либо независимость копий.\n\nВ варианте 0 неявный копирующий конструктор дублирует адрес: два Buf владеют одним буфером, и оба деструктора вызовут delete[] — повторное удаление. В варианте 1 vector сам реализует глубокое копирование: у b собственный буфер. В варианте 2 одно поле shared записано в два владеющих поля Pair: деструктор удалит один блок дважды. В варианте 3 delete nullptr безопасен (no-op), а delete q освобождает блок ровно один раз. У исправленного Box глубокий копирующий конструктор: каждая копия владеет отдельным int, поэтому разрушение second не затрагивает first.",
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <vector>\n\nstruct Style {\n    std::string name;\n    int font = 0;\n};\n\nstruct Doc {\n    std::vector<std::string> lines;\n    const Style *style = nullptr;\n};\n\nint main() {\n    std::map<std::string, Style> styles;\n    std::map<std::string, Doc> docs;\n    std::string command, a;\n    while (std::cin >> command >> a) {\n        if (command == \"style\") {\n            int font;\n            std::cin >> font;\n            Style &s = styles[a];\n            s.name = a;\n            s.font = font;\n        } else if (command == \"doc\") {\n            std::string s;\n            std::cin >> s;\n            docs.insert_or_assign(a, Doc{{}, &styles.at(s)});\n        } else if (command == \"copy\") {\n            std::string from;\n            std::cin >> from;\n            const Doc copy = docs.at(from);\n            docs.insert_or_assign(a, copy);\n        } else if (command == \"line\") {\n            std::string text;\n            std::cin >> text;\n            docs.at(a).lines.push_back(text);\n        } else {\n            const Doc &d = docs.at(a);\n            std::println(\"{}: {} строк, стиль {}, шрифт {}\", a, d.lines.size(), d.style->name, d.style->font);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Один и тот же неявный конструктор копирования делает разное для разных полей: вектор строк копирует элементы, указатель — только адрес. Поэтому строки у копии свои, а стиль общий — и именно этого мы хотим: стиль принадлежит таблице стилей, документы только ссылаются на него.\n\nКогда вы смотрите на класс, задавайте вопрос для каждого поля-указателя: это владение или заимствование? От ответа зависит, правильна ли неявная копия.",
       "checking": {
-        "type": "function",
-        "functionName": "solve",
-        "returnType": "int",
-        "parameters": [
-          { "name": "a", "type": "int" },
-          { "name": "b", "type": "int" }
-        ]
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-shallow-copy-task-3",
+      "title": "Найди ошибку: изображение по значению",
+      "description": "Первая строка — ширина, высота и начальная яркость пикселей. Дальше команды: `paint x y v` — записать яркость пикселя, `report` — напечатать `WxH, средняя яркость B` (целая часть среднего).\n\nПосле первого же `report` следующие команды работают с испорченными данными, а в конце AddressSanitizer сообщает об ошибке. Исправьте класс так, чтобы подобная ошибка стала **ошибкой компиляции**, а затем — место вызова.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <algorithm>\n#include <iostream>\n#include <print>\n#include <string>\n\nclass Image {\npublic:\n    Image(int w, int h, int fill) : w_(w), h_(h), pixels_(new int[w * h]) {\n        std::fill_n(pixels_, w_ * h_, fill);\n    }\n    ~Image() {\n        delete[] pixels_;\n    }\n\n    void paint(int x, int y, int value) {\n        pixels_[y * w_ + x] = value;\n    }\n\n    int width() const {\n        return w_;\n    }\n    int height() const {\n        return h_;\n    }\n\n    long long brightness() const {\n        long long sum = 0;\n        for (int i = 0; i < w_ * h_; ++i) {\n            sum += pixels_[i];\n        }\n        return sum / (w_ * h_);\n    }\n\nprivate:\n    int w_, h_;\n    int *pixels_;\n};\n\nvoid report(Image img) {\n    std::println(\"{}x{}, средняя яркость {}\", img.width(), img.height(), img.brightness());\n}\n\nint main() {\n    int w, h, fill;\n    std::cin >> w >> h >> fill;\n    Image img(w, h, fill);\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"paint\") {\n            int x, y, v;\n            std::cin >> x >> y >> v;\n            img.paint(x, y, v);\n        } else {\n            report(img);\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2 2 10\nreport\npaint 0 0 50\nreport\n",
+          "output": "2x2, средняя яркость 10\n2x2, средняя яркость 20\n"
+        },
+        {
+          "input": "1 1 0\npaint 0 0 255\nreport\n",
+          "output": "1x1, средняя яркость 255\n"
+        }
+      ],
+      "constraints": ["1 ≤ W, H ≤ 100; яркость от 0 до 255; координаты корректны."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сколько объектов Image владеют одним массивом пикселей после вызова report(img)?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Запретите копирование: Image(const Image &) = delete; и то же для присваивания. Компилятор укажет на report — передавайте изображение по константной ссылке.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2 2 10\nreport\npaint 0 0 50\nreport\n",
+          "expected": "2x2, средняя яркость 10\n2x2, средняя яркость 20\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 1 0\npaint 0 0 255\nreport\n",
+          "expected": "1x1, средняя яркость 255\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "3 3 100\nreport\n",
+          "expected": "3x3, средняя яркость 100\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "2 1 0\nreport\nreport\n",
+          "expected": "2x1, средняя яркость 0\n2x1, средняя яркость 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "4 4 1\npaint 3 3 17\nreport\npaint 0 0 17\nreport\n",
+          "expected": "4x4, средняя яркость 2\n4x4, средняя яркость 3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "100 100 255\nreport\n",
+          "expected": "100x100, средняя яркость 255\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1 2 7\nreport\npaint 0 1 9\nreport\n",
+          "expected": "1x2, средняя яркость 7\n1x2, средняя яркость 8\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "5 1 2\npaint 4 0 3\nreport\n",
+          "expected": "5x1, средняя яркость 2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "2 2 0\nreport\npaint 1 1 4\nreport\nreport\n",
+          "expected": "2x2, средняя яркость 0\n2x2, средняя яркость 1\n2x2, средняя яркость 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "3 1 9\nreport\n",
+          "expected": "3x1, средняя яркость 9\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <print>\n#include <string>\n\nclass Image {\npublic:\n    Image(int w, int h, int fill) : w_(w), h_(h), pixels_(new int[w * h]) {\n        std::fill_n(pixels_, w_ * h_, fill);\n    }\n    ~Image() {\n        delete[] pixels_;\n    }\n    Image(const Image &) = delete;\n    Image &operator=(const Image &) = delete;\n\n    void paint(int x, int y, int value) {\n        pixels_[y * w_ + x] = value;\n    }\n\n    int width() const {\n        return w_;\n    }\n    int height() const {\n        return h_;\n    }\n\n    long long brightness() const {\n        long long sum = 0;\n        for (int i = 0; i < w_ * h_; ++i) {\n            sum += pixels_[i];\n        }\n        return sum / (w_ * h_);\n    }\n\nprivate:\n    int w_, h_;\n    int *pixels_;\n};\n\nvoid report(const Image &img) {\n    std::println(\"{}x{}, средняя яркость {}\", img.width(), img.height(), img.brightness());\n}\n\nint main() {\n    int w, h, fill;\n    std::cin >> w >> h >> fill;\n    Image img(w, h, fill);\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"paint\") {\n            int x, y, v;\n            std::cin >> x >> y >> v;\n            img.paint(x, y, v);\n        } else {\n            report(img);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`report` принимает изображение по значению, и неявный конструктор копирования создаёт копию с тем же указателем `pixels_`. Деструктор копии при выходе из `report` освобождает массив, а оригинал продолжает им пользоваться: следующий `paint` или `report` — `heap-use-after-free`, а в конце `main` — повторный `delete[]`.\n\nЗапрет копирования выражает смысл класса: изображение — единственный владелец своих пикселей. После этого передача по значению не компилируется, и единственный правильный вариант — константная ссылка.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-shallow-copy-task-4",
+      "title": "Аудит указателей",
+      "description": "Смоделируйте сырые указатели и найдите ошибки владения. Блоки памяти нумеруются 1, 2, 3, … в порядке выделения. Команды:\n\n- `new X` — переменная X указывает на новый блок;\n- `copy Y X` — Y указывает туда же, куда X (поверхностная копия);\n- `null X` — X = nullptr;\n- `delete X` — если X пуст: `delete X: nullptr, ничего не делает`; если блок жив: освободить и напечатать `освобождён блок N`; если уже освобождён: `двойное освобождение блока N`;\n- `use X` — `X: блок N`, `X: обращение к освобождённому блоку N` или `X: разыменование nullptr`.\n\nВ конце напечатайте `утечка блока N` для каждого неосвобождённого блока в порядке номеров или `утечек нет`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "new p\ncopy q p\ndelete p\nuse q\ndelete q\nnew r\n",
+          "output": "освобождён блок 1\nq: обращение к освобождённому блоку 1\nдвойное освобождение блока 1\nутечка блока 2\n"
+        },
+        {
+          "input": "new a\nuse a\ndelete a\nnull a\ndelete a\n",
+          "output": "a: блок 1\nосвобождён блок 1\ndelete a: nullptr, ничего не делает\nутечек нет\n"
+        }
+      ],
+      "constraints": [
+        "Команд не больше 300; copy, delete и use применяются только к переменным, которым уже что-то присвоено."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Переменная хранит номер блока (0 — nullptr): std::map<std::string, int>. Блоки: std::vector<bool> freed, индекс — номер блока.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "delete не меняет саму переменную: после delete X переменная X по-прежнему хранит номер освобождённого блока — так же, как настоящий указатель.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "new p\ncopy q p\ndelete p\nuse q\ndelete q\nnew r\n",
+          "expected": "освобождён блок 1\nq: обращение к освобождённому блоку 1\nдвойное освобождение блока 1\nутечка блока 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "new a\nuse a\ndelete a\nnull a\ndelete a\n",
+          "expected": "a: блок 1\nосвобождён блок 1\ndelete a: nullptr, ничего не делает\nутечек нет\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": "утечек нет\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Перезапись указателя — утечка",
+          "stdin": "new a\nnew a\ndelete a\n",
+          "expected": "освобождён блок 2\nутечка блока 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Разыменование nullptr",
+          "stdin": "null a\nuse a\n",
+          "expected": "a: разыменование nullptr\nутечек нет\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Три псевдонима",
+          "stdin": "new a\ncopy b a\ncopy c b\ndelete c\nuse a\nuse b\n",
+          "expected": "освобождён блок 1\na: обращение к освобождённому блоку 1\nb: обращение к освобождённому блоку 1\nутечек нет\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Две утечки",
+          "stdin": "new a\nnew b\nnew c\ndelete b\n",
+          "expected": "освобождён блок 2\nутечка блока 1\nутечка блока 3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Тройное освобождение",
+          "stdin": "new a\ndelete a\ndelete a\ndelete a\n",
+          "expected": "освобождён блок 1\nдвойное освобождение блока 1\nдвойное освобождение блока 1\nутечек нет\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Потерянный блок и двойное",
+          "stdin": "new a\nnew b\ncopy a b\ndelete a\ndelete b\n",
+          "expected": "освобождён блок 2\nдвойное освобождение блока 2\nутечка блока 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Повторное выделение",
+          "stdin": "new x\ndelete x\nnew x\nuse x\ndelete x\n",
+          "expected": "освобождён блок 1\nx: блок 2\nосвобождён блок 2\nутечек нет\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <vector>\n\nint main() {\n    std::map<std::string, int> vars;\n    std::vector<bool> freed{false};\n    std::string command, x;\n    while (std::cin >> command >> x) {\n        if (command == \"new\") {\n            freed.push_back(false);\n            vars[x] = static_cast<int>(freed.size()) - 1;\n        } else if (command == \"copy\") {\n            std::string from;\n            std::cin >> from;\n            vars[x] = vars.at(from);\n        } else if (command == \"null\") {\n            vars[x] = 0;\n        } else {\n            const int block = vars.at(x);\n            if (command == \"delete\") {\n                if (block == 0) {\n                    std::println(\"delete {}: nullptr, ничего не делает\", x);\n                } else if (freed[block]) {\n                    std::println(\"двойное освобождение блока {}\", block);\n                } else {\n                    freed[block] = true;\n                    std::println(\"освобождён блок {}\", block);\n                }\n            } else if (block == 0) {\n                std::println(\"{}: разыменование nullptr\", x);\n            } else if (freed[block]) {\n                std::println(\"{}: обращение к освобождённому блоку {}\", x, block);\n            } else {\n                std::println(\"{}: блок {}\", x, block);\n            }\n        }\n    }\n    bool leaks = false;\n    for (std::size_t i = 1; i < freed.size(); ++i) {\n        if (!freed[i]) {\n            std::println(\"утечка блока {}\", i);\n            leaks = true;\n        }\n    }\n    if (!leaks) {\n        std::println(\"утечек нет\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Модель показывает три классические ошибки сырых указателей. Двойное освобождение — два «владельца» одного блока после поверхностной копии. Обращение к освобождённому блоку — указатель пережил блок, и `delete` его не обнулил. Утечка — блок, который никто не освободил, например потому что последний указатель на него перезаписали.\n\nНастоящая программа такой бухгалтерии не ведёт — поэтому ошибки и опасны. AddressSanitizer ведёт похожий учёт во время выполнения, а умные указатели и RAII делают эти ошибки невозможными по построению.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
       }
     }
   ],
@@ -207,31 +444,95 @@
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Когда поверхностная копия указателя допустима?",
+        "id": "q1",
+        "question": "Что копирует неявный конструктор копирования для поля int *p?",
+        "explanation": "Это и есть поверхностная копия.",
         "options": [
-          "Всегда, если адрес ненулевой",
-          "У невладеющего заёмщика с гарантированным внешним владельцем"
+          "Адрес: копия указывает на тот же int",
+          "Сам int в новый блок памяти",
+          "Ничего — поле остаётся пустым",
+          "Зависит от компилятора"
         ],
-        "correct": 1,
-        "explanation": "Сначала определите смысл типа, затем способ копирования. Представление — уберите удаление и гарантируйте внешнего владельца. Самостоятельное значение — создавайте глубокую копию. Исключительный владелец — запретите копирование и разрешите перемещение. Обнуление p только в одном экземпляре не лечит вторую копию; удаление одного delete вручную в main оставляет класс ошибочным при другом порядке разрушения. Диагностическая таблица: один new и два права на освобождение — красный флаг; два new и два владельца — корректная глубокая копия; один new, один владелец и несколько заёмщиков — тоже корректно."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["11 11", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "До копии: a.p → блок A(7)\nПосле неявной копии: a.p → A(7) ← b.p; два права на один блок\n~b освобождает A\n~a повторяет delete A — double delete"
+        "id": "q2",
+        "question": "Когда поверхностная копия правильна?",
+        "explanation": "Наблюдатель, представление, итератор — типичные заёмщики.",
+        "options": [
+          "Когда указатель — заёмщик и копии должны видеть один объект",
+          "Когда класс удаляет указатель в деструкторе",
+          "Никогда",
+          "Когда объект маленький"
+        ],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q3",
+        "question": "Класс выделяет int в конструкторе и удаляет в деструкторе, своих операций копирования нет. Что произойдёт после Box b = a; в конце блока?",
+        "explanation": "Оба деструктора вызовут delete для одного адреса.",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Нельзя лечить double delete удалением всех деструкторов: вместе с падением исчезает и освобождение ресурса. Исправление должно объяснять единственного владельца либо независимость копий."
+          "Двойное освобождение одного блока",
+          "Утечка",
+          "Ничего особенного",
+          "Ошибка компиляции"
         ],
-        "correct": 1,
-        "explanation": "Для View безопасно изменить объект через владельца и увидеть изменение через обе копии представления. Для владеющего Box ожидается противоположный тест: изменение копии не затрагивает оригинал."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что сообщит AddressSanitizer при повторном delete того же адреса?",
+        "explanation": "Обращение к памяти между двумя delete — heap-use-after-free.",
+        "options": [
+          "attempting double-free",
+          "heap-buffer-overflow",
+          "stack-use-after-scope",
+          "memory leak"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какие способы действительно исправляют класс-владелец с сырым указателем? Выберите все.",
+        "explanation": "Удаление delete меняет двойное освобождение на утечку.",
+        "type": "multiple",
+        "options": [
+          "Глубокое копирование в конструкторе копирования и присваивании",
+          "Запрет копирования через = delete",
+          "Замена поля на std::unique_ptr или значение",
+          "Удаление delete из деструктора"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct Pair {\n    int *a;\n    int *b;\n};\n\nint main() {\n    int x = 1, y = 2;\n    Pair p{&x, &y};\n    Pair q = p;\n    *q.a = 10;\n    q.b = &x;\n    std::println(\"{} {} {}\", x, *p.b, *q.b);\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "q.a указывает на тот же x, поэтому *q.a = 10 меняет x. Перенаправление q.b не затрагивает p.b.",
+        "type": "text",
+        "answers": ["10 2 10"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Почему поле std::unique_ptr<int> лучше поля int * для владельца?",
+        "explanation": "unique_ptr некопируем, поэтому и класс с таким полем некопируем по умолчанию.",
+        "options": [
+          "Неявное копирование класса становится запрещённым — ошибка ловится при компиляции",
+          "unique_ptr копирует объект глубоко",
+          "unique_ptr быстрее",
+          "unique_ptr можно не освобождать — он в стеке"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Как по-английски называется ошибка повторного освобождения одной и той же памяти?",
+        "explanation": "Неопределённое поведение, часто проявляется далеко от причины.",
+        "type": "text",
+        "answers": ["double free", "double-free", "double delete"],
+        "placeholder": "Два слова"
       }
     ]
   }

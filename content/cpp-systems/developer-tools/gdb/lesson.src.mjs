@@ -15,7 +15,7 @@ export default {
     'Находить момент изменения переменной точкой наблюдения',
   ],
   tags: ['GDB', 'Отладка', 'Точки останова', 'Стек вызовов', 'watch'],
-  standard: 'c17',
+  standard: 'c23',
   diagnostics: 'sanitizers',
   quiz: [
     {

@@ -13,9 +13,9 @@
     "Обходить и изменять строку посимвольно",
     "Безопасно читать слово с ограничением ширины и строку через fgets"
   ],
-  "tags": ["C17", "Строки", "fgets", "Нуль-терминатор"],
+  "tags": ["C23", "Строки", "fgets", "Нуль-терминатор"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-c-strings-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -116,7 +116,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -207,7 +207,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -298,7 +298,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -389,7 +389,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

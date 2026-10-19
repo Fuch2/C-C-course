@@ -1,204 +1,439 @@
 {
   "id": "lifetime-scope-lifetime",
-  "title": "Область видимости и время жизни — Scope и lifetime",
-  "description": "Scope отвечает на вопрос, где в исходном тексте разрешено употреблять имя.",
+  "title": "Область видимости и время жизни",
+  "description": "Область видимости имени и затенение; объявление в самом узком блоке; инициализаторы в if, switch и цикле for по диапазону; объекты в теле цикла создаются на каждой итерации; лямбды, переживающие свою область, захват по значению и по ссылке, висячий захват и stack-use-after-return; объекты, срабатывающие при выходе из области.",
   "moduleId": "cpp-lifetime",
   "order": 2,
-  "difficulty": "advanced",
-  "estimatedMinutes": 75,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
   "prerequisites": ["lifetime-object-lifetime"],
   "objectives": [
-    "Различать scope имени и lifetime объекта на примерах затенения и static.",
-    "Проследить на MemoryDiagram независимость двух объектов с одним именем.",
-    "Диагностировать висячую ссылку при возврате и исправить функцию на возврат по значению."
+    "Различать область видимости имени и время жизни объекта",
+    "Сужать область переменных инициализаторами в if и for",
+    "Выбирать захват по значению для лямбд, переживающих свою область",
+    "Выполнять действия при выходе из области через деструктор"
   ],
-  "tags": [
-    "C++20",
-    "время жизни",
-    "управление ресурсами",
-    "Область видимости и время жизни — Scope и lifetime",
-    "диагностика",
-    "исправление ошибок",
-    "Висячая ссылка (dangling reference)"
-  ],
+  "tags": ["C++23", "Время жизни", "Область видимости", "Лямбды", "Захват"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "lifetime-scope-lifetime-diagnose",
-    "title": "1. Диагностика: Висячая ссылка (dangling reference)",
-    "description": "Сначала диагностируйте четыре независимых фрагмента по номерам 0–3; не исполняйте их. solve(a,b) принимает номер фрагмента a; b не используется. Верните код первичного дефекта: 0 — безопасно в показанных границах; 1 — double delete; 2 — use-after-free; 3 — dangling reference при возврате; 4 — нарушение заявленного договора заимствования; 5 — цикл сильного владения; 6 — move constructor оставил двух владельцев. Для 4 и 6 выбирайте причину, а не последующий double delete. В комментарии к решению укажите строку, событие окончания жизни и владельца. После проверки диагноза перейдите к заданию 2 и исправьте исходник.\n\nФрагмент 0:\nconst int& factory(int a) { int local = a * 2; return local; }\n\nФрагмент 1:\nint value = 5; const int& ref = value; int result = ref;\n\nФрагмент 2:\nstd::string_view sv = std::string{\"temp\"}; char c = sv[0];\n\nФрагмент 3:\nint* p = new int(4); delete p; int result = *p;",
-    "difficulty": "advanced",
+    "id": "lifetime-scope-lifetime-exercise",
+    "title": "Словарь",
+    "description": "Словарь `std::map<std::string, std::string>` и команды:\n\n- `set ключ значение` — записать (перезаписать) значение, ничего не печатать;\n- `get ключ` — напечатать `ключ: значение` или `ключ: нет`;\n- `del ключ` — удалить и напечатать `удалено ключ` или `ключ: нет`.\n\nИщите ключ один раз и объявляйте итератор в инициализаторе `if`, чтобы он не был виден за его пределами.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(0, 0)",
-        "output": "3\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "set кот cat\nget кот\nget пёс\ndel кот\nget кот\n",
+        "output": "кот: cat\nпёс: нет\nудалено кот\nкот: нет\n"
       },
       {
-        "input": "solve(1, 0)",
-        "output": "0\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "del x\n",
+        "output": "x: нет\n"
       }
     ],
-    "constraints": [
-      "Аргумент a — номер фрагмента 0…3; b=0. Возвращайте код 0…6 согласно условию.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Команд не больше 200; ключи и значения — слова без пробелов."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Не исполняйте фрагменты. Для каждого найдите объект, чьё время жизни заканчивается раньше использования, и сопоставьте событие с кодами 0–6. Если дефектов два, выбирайте первопричину: нарушение договора или неверный move, а не их следствие в виде double delete."
+        "id": "hint-1",
+        "text": "if (auto it = dict.find(key); it != dict.end()) { … it->second … } else { … }",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "В варианте 0 ссылка возвращается на локальный объект, который уничтожается при возврате из функции: классическая висячая ссылка. В варианте 1 ref живёт, пока жив value, чтение законно. В варианте 2 временная строка разрушается в конце полного выражения инициализации, а string_view не продлевает её жизнь — обращение к sv[0] идёт в освобождённый буфер. В варианте 3 чтение выполняется после delete — это use-after-free. Исправленный factory возвращает int по значению: результат принадлежит вызывающему коду и не зависит от кадра стека функции."
+        "id": "hint-2",
+        "text": "Удаление по найденному итератору: dict.erase(it) — без повторного поиска.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
-        "id": "fragment-0",
-        "name": "Фрагмент 0",
-        "arguments": [0, 0],
-        "expected": "3\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "set кот cat\nget кот\nget пёс\ndel кот\nget кот\n",
+        "expected": "кот: cat\nпёс: нет\nудалено кот\nкот: нет\n"
       },
       {
-        "id": "fragment-1",
-        "name": "Фрагмент 1",
-        "arguments": [1, 0],
-        "expected": "0\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "del x\n",
+        "expected": "x: нет\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "fragment-2",
-        "name": "Фрагмент 2",
-        "arguments": [2, 0],
-        "expected": "2\n"
+        "id": "hidden-1",
+        "name": "Без команд",
+        "stdin": "",
+        "expected": ""
       },
       {
-        "id": "fragment-3",
-        "name": "Фрагмент 3",
-        "arguments": [3, 0],
-        "expected": "2\n"
+        "id": "hidden-2",
+        "name": "Перезапись",
+        "stdin": "set a 1\nset a 2\nget a\n",
+        "expected": "a: 2\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Двойное удаление",
+        "stdin": "set a 1\ndel a\ndel a\n",
+        "expected": "удалено a\na: нет\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Два ключа",
+        "stdin": "set k v\nset l w\nget l\nget k\n",
+        "expected": "l: w\nk: v\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Поиск в пустом словаре",
+        "stdin": "get пусто\n",
+        "expected": "пусто: нет\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Запись после удаления",
+        "stdin": "set x 1\ndel x\nset x 2\nget x\n",
+        "expected": "удалено x\nx: 2\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Регистр важен",
+        "stdin": "set A a\nget a\n",
+        "expected": "a: нет\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Удаление одного из двух",
+        "stdin": "set дом house\nset дым smoke\ndel дом\nget дым\nget дом\n",
+        "expected": "удалено дом\nдым: smoke\nдом: нет\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint solve(int a,int b){(void)b; const int diagnosis[4]={3,0,2,2}; return diagnosis[a];}",
-    "solutionExplanation": "В варианте 0 ссылка возвращается на локальный объект, который уничтожается при возврате из функции: классическая висячая ссылка. В варианте 1 ref живёт, пока жив value, чтение законно. В варианте 2 временная строка разрушается в конце полного выражения инициализации, а string_view не продлевает её жизнь — обращение к sv[0] идёт в освобождённый буфер. В варианте 3 чтение выполняется после delete — это use-after-free. Исправленный factory возвращает int по значению: результат принадлежит вызывающему коду и не зависит от кадра стека функции.",
+    "referenceSolution": "#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n\nint main() {\n    std::map<std::string, std::string> dict;\n    std::string command, key;\n    while (std::cin >> command >> key) {\n        if (command == \"set\") {\n            std::string value;\n            std::cin >> value;\n            dict[key] = value;\n        } else if (command == \"get\") {\n            if (auto it = dict.find(key); it != dict.end()) {\n                std::println(\"{}: {}\", key, it->second);\n            } else {\n                std::println(\"{}: нет\", key);\n            }\n        } else {\n            if (auto it = dict.find(key); it != dict.end()) {\n                dict.erase(it);\n                std::println(\"удалено {}\", key);\n            } else {\n                std::println(\"{}: нет\", key);\n            }\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Инициализатор в `if` объявляет итератор ровно там, где он нужен: в условии и в обеих ветках. В ветках `get` и `del` это два разных итератора с одинаковым именем, и ни один не виден снаружи, поэтому их нельзя перепутать или использовать после `erase`, когда итератор уже недействителен.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
   "additionalExercises": [
     {
-      "id": "lifetime-scope-lifetime-exercise",
-      "title": "2. Исправление: Висячая ссылка (dangling reference)",
-      "description": "Исправьте factory: результат a+b должен безопасно пережить возврат из функции. solve вызывает factory и возвращает полученное значение. Сохраните factory отдельной функцией.",
-      "difficulty": "advanced",
+      "id": "lifetime-scope-lifetime-task-2",
+      "title": "Счётчики",
+      "description": "Функция `std::function<int()> make_counter(int start, int step)` возвращает лямбду, которая при каждом вызове прибавляет `step` к своему значению (начиная со `start`) и возвращает результат. Счётчики хранятся в `std::map<std::string, std::function<int()>>`.\n\nКоманды:\n\n- `new имя start step` — создать счётчик; если имя занято — напечатать `имя занято`;\n- `next имя` — напечатать `имя = V` или `имя: нет такого счётчика`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "cpp",
-      "standard": "c++20",
-      "compiler": "clang",
+      "standard": "c++23",
+      "compiler": "gcc",
       "diagnostics": "sanitizers",
-      "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nconst int& factory(int a,int b){int value=a+b;return value;}\nint solve(int a,int b){const int& value=factory(a,b); volatile int observed=value; return observed;}",
       "examples": [
         {
-          "input": "solve(3, 7)",
-          "output": "10\n",
-          "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+          "input": "new a 10 5\nnext a\nnext a\nnew b 0 1\nnext b\nnext c\n",
+          "output": "a = 15\na = 20\nb = 1\nc: нет такого счётчика\n"
         },
         {
-          "input": "solve(0, 0)",
-          "output": "0\n",
-          "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+          "input": "new a 1 1\nnew a 2 2\nnext a\n",
+          "output": "a занято\na = 2\n"
         }
       ],
-      "constraints": [
-        "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-        "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-        "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-      ],
+      "constraints": ["Команд не больше 200; |start|, |step| ≤ 1000; значения помещаются в int."],
       "hints": [
         {
-          "id": "owners",
-          "order": 1,
-          "text": "Для каждой ссылки назовите объект, на который она указывает, и событие, завершающее жизнь этого объекта. Затенение влияет на имена, а не на объекты."
+          "id": "hint-1",
+          "text": "Лямбда выходит из make_counter, поэтому захватывайте по значению: [value = start, step]() mutable { … }.",
+          "order": 1
         },
         {
-          "id": "boundary",
-          "order": 2,
-          "text": "Ссылка — дополнительное имя существующего объекта, а не владелец. Локальная const-ссылка, напрямую привязанная к временному объекту, продлевает его жизнь до конца своей области: const std::string& s = std::string{\"ok\"} законно. Но продление не передаётся через возвраты: если функция приняла const T& и вернула её же, временный объект вызывающего умрёт в конце полного выражения. std::string_view и std::span не продлевают жизнь данным никогда. В C++20 временные объекты разрушаются в конце полного выражения; для результата вычисления надёжнее всего возвращать владеющее значение — NRVO и устранение копий делают это бесплатным.\n\nНе возвращайте const int& на локальную переменную: const запрещает изменение через ссылку, но не хранит объект. Тот же дефект встречается у string_view на временную строку, у span на временный vector и у ссылок на элементы возвращённого по значению контейнера.\n\nВ варианте 0 ссылка возвращается на локальный объект, который уничтожается при возврате из функции: классическая висячая ссылка. В варианте 1 ref живёт, пока жив value, чтение законно. В варианте 2 временная строка разрушается в конце полного выражения инициализации, а string_view не продлевает её жизнь — обращение к sv[0] идёт в освобождённый буфер. В варианте 3 чтение выполняется после delete — это use-after-free. Исправленный factory возвращает int по значению: результат принадлежит вызывающему коду и не зависит от кадра стека функции."
+          "id": "hint-2",
+          "text": "try_emplace(name, make_counter(…)) вставляет, только если имени ещё нет, и возвращает пару, второй элемент которой — признак вставки.",
+          "order": 2
         }
       ],
       "publicTests": [
         {
           "id": "case-1",
           "name": "Пример 1",
-          "arguments": [3, 7],
-          "expected": "10\n"
+          "stdin": "new a 10 5\nnext a\nnext a\nnew b 0 1\nnext b\nnext c\n",
+          "expected": "a = 15\na = 20\nb = 1\nc: нет такого счётчика\n"
         },
         {
           "id": "case-2",
           "name": "Пример 2",
-          "arguments": [0, 0],
-          "expected": "0\n"
+          "stdin": "new a 1 1\nnew a 2 2\nnext a\n",
+          "expected": "a занято\na = 2\n"
         }
       ],
       "hiddenTests": [
         {
-          "id": "case-3",
-          "name": "Граничный случай 1",
-          "arguments": [-8, 3],
-          "expected": "-5\n"
+          "id": "hidden-1",
+          "name": "Без команд",
+          "stdin": "",
+          "expected": ""
         },
         {
-          "id": "case-4",
-          "name": "Граничный случай 2",
-          "arguments": [5, -9],
-          "expected": "-4\n"
+          "id": "hidden-2",
+          "name": "Нет счётчиков",
+          "stdin": "next x\n",
+          "expected": "x: нет такого счётчика\n"
         },
         {
-          "id": "case-5",
-          "name": "Граничный случай 3",
-          "arguments": [-1000, 1000],
-          "expected": "0\n"
+          "id": "hidden-3",
+          "name": "Отрицательный шаг",
+          "stdin": "new d 0 -3\nnext d\nnext d\nnext d\n",
+          "expected": "d = -3\nd = -6\nd = -9\n"
         },
         {
-          "id": "case-6",
-          "name": "Граничный случай 4",
-          "arguments": [1000, -1000],
-          "expected": "0\n"
+          "id": "hidden-4",
+          "name": "Нулевой шаг",
+          "stdin": "new z 7 0\nnext z\nnext z\n",
+          "expected": "z = 7\nz = 7\n"
         },
         {
-          "id": "case-7",
-          "name": "Граничный случай 5",
-          "arguments": [4, 4],
-          "expected": "8\n"
+          "id": "hidden-5",
+          "name": "Независимые счётчики",
+          "stdin": "new p 1 1\nnew q 100 100\nnext q\nnext p\nnext q\nnext p\n",
+          "expected": "q = 200\np = 2\nq = 300\np = 3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Большие шаги",
+          "stdin": "new big 1000 1000\nnext big\nnext big\nnext big\n",
+          "expected": "big = 2000\nbig = 3000\nbig = 4000\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Повторное создание не сбрасывает",
+          "stdin": "new a 0 1\nnext a\nnew a 50 50\nnext a\n",
+          "expected": "a = 1\na занято\na = 2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Отрицательный старт",
+          "stdin": "new m -1000 1\nnext m\n",
+          "expected": "m = -999\n"
         }
       ],
-      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint factory(int a, int b) { int value = a + b; return value; }\nint solve(int a, int b) { return factory(a, b); }",
-      "solutionExplanation": "Ссылка — дополнительное имя существующего объекта, а не владелец. Локальная const-ссылка, напрямую привязанная к временному объекту, продлевает его жизнь до конца своей области: const std::string& s = std::string{\"ok\"} законно. Но продление не передаётся через возвраты: если функция приняла const T& и вернула её же, временный объект вызывающего умрёт в конце полного выражения. std::string_view и std::span не продлевают жизнь данным никогда. В C++20 временные объекты разрушаются в конце полного выражения; для результата вычисления надёжнее всего возвращать владеющее значение — NRVO и устранение копий делают это бесплатным.\n\nНе возвращайте const int& на локальную переменную: const запрещает изменение через ссылку, но не хранит объект. Тот же дефект встречается у string_view на временную строку, у span на временный vector и у ссылок на элементы возвращённого по значению контейнера.\n\nВ варианте 0 ссылка возвращается на локальный объект, который уничтожается при возврате из функции: классическая висячая ссылка. В варианте 1 ref живёт, пока жив value, чтение законно. В варианте 2 временная строка разрушается в конце полного выражения инициализации, а string_view не продлевает её жизнь — обращение к sv[0] идёт в освобождённый буфер. В варианте 3 чтение выполняется после delete — это use-after-free. Исправленный factory возвращает int по значению: результат принадлежит вызывающему коду и не зависит от кадра стека функции.",
+      "referenceSolution": "#include <functional>\n#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n\nstd::function<int()> make_counter(int start, int step) {\n    return [value = start, step]() mutable {\n        value += step;\n        return value;\n    };\n}\n\nint main() {\n    std::map<std::string, std::function<int()>> counters;\n    std::string command, name;\n    while (std::cin >> command >> name) {\n        if (command == \"new\") {\n            int start, step;\n            std::cin >> start >> step;\n            if (!counters.try_emplace(name, make_counter(start, step)).second) {\n                std::println(\"{} занято\", name);\n            }\n        } else if (auto it = counters.find(name); it != counters.end()) {\n            std::println(\"{} = {}\", name, it->second());\n        } else {\n            std::println(\"{}: нет такого счётчика\", name);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Каждая лямбда — отдельный объект с собственными копиями `value` и `step`. Они живут столько же, сколько сама лямбда в словаре, — давно после того, как `make_counter` вернулась. `mutable` разрешает менять копию `value` при вызове.\n\nЗахват `[&]` здесь был бы ошибкой: параметры `start` и `step` умирают при выходе из `make_counter`.",
       "checking": {
-        "type": "function",
-        "functionName": "solve",
-        "returnType": "int",
-        "parameters": [
-          { "name": "a", "type": "int" },
-          { "name": "b", "type": "int" }
-        ]
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-scope-lifetime-task-3",
+      "title": "Найди ошибку: забытое приветствие",
+      "description": "Первое слово ввода — приветствие, остальные — имена. Для каждого имени программа печатает `приветствие, имя!`. Функция `make_greeter` возвращает лямбду, которая строит такую строку.\n\nПод AddressSanitizer программа аварийно завершается при первом же вызове лямбды. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <functional>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nstd::function<std::string(const std::string &)> make_greeter(std::string greeting) {\n    return [&greeting](const std::string &name) {\n        return greeting + \", \" + name + \"!\";\n    };\n}\n\nint main() {\n    std::string word;\n    std::cin >> word;\n    const auto greet = make_greeter(word);\n    std::string name;\n    while (std::cin >> name) {\n        std::println(\"{}\", greet(name));\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "Привет Ада Алан\n",
+          "output": "Привет, Ада!\nПривет, Алан!\n"
+        },
+        {
+          "input": "Здравствуйте Мир\n",
+          "output": "Здравствуйте, Мир!\n"
+        }
+      ],
+      "constraints": ["Слов не больше 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Где живёт параметр greeting и когда он умирает?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Перенесите строку внутрь лямбды: [greeting = std::move(greeting)].",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "Привет Ада Алан\n",
+          "expected": "Привет, Ада!\nПривет, Алан!\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "Здравствуйте Мир\n",
+          "expected": "Здравствуйте, Мир!\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "Hi Bob\n",
+          "expected": "Hi, Bob!\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "Добрый-день-уважаемые-коллеги-и-друзья мир\n",
+          "expected": "Добрый-день-уважаемые-коллеги-и-друзья, мир!\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "Ой а б в\n",
+          "expected": "Ой, а!\nОй, б!\nОй, в!\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "Hello\nWorld\n",
+          "expected": "Hello, World!\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "Салют Гагарин\n",
+          "expected": "Салют, Гагарин!\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "Привет Привет\n",
+          "expected": "Привет, Привет!\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "Хей 1 2 3 4 5\n",
+          "expected": "Хей, 1!\nХей, 2!\nХей, 3!\nХей, 4!\nХей, 5!\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "Bonjour Мари Пьер\n",
+          "expected": "Bonjour, Мари!\nBonjour, Пьер!\n"
+        }
+      ],
+      "referenceSolution": "#include <functional>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nstd::function<std::string(const std::string &)> make_greeter(std::string greeting) {\n    return [greeting = std::move(greeting)](const std::string &name) {\n        return greeting + \", \" + name + \"!\";\n    };\n}\n\nint main() {\n    std::string word;\n    std::cin >> word;\n    const auto greet = make_greeter(word);\n    std::string name;\n    while (std::cin >> name) {\n        std::println(\"{}\", greet(name));\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Параметр `greeting`, переданный по значению, — локальная переменная `make_greeter`. Лямбда захватила его по ссылке, и после возврата из функции ссылка указывает в освобождённый кадр стека: `stack-use-after-return`.\n\nЗахват с инициализацией `[greeting = std::move(greeting)]` переносит строку внутрь лямбды без копирования. Теперь лямбда владеет своими данными и может жить сколько угодно.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-scope-lifetime-task-4",
+      "title": "Отмена действий",
+      "description": "Класс `ScopeGuard` хранит `std::function<void()>` и вызывает её в деструкторе, если до этого не был вызван `dismiss()`. Копирование запрещено.\n\nКоманды:\n\n- `begin` — открыть транзакцию (транзакции могут быть вложенными);\n- `do x` — напечатать `сделано x` и зарегистрировать в текущей транзакции страж, печатающий `откат x`;\n- `commit` — отменить срабатывание всех стражей текущей транзакции, напечатать `подтверждено N` (N — число действий в ней) и закрыть её;\n- `abort` — закрыть текущую транзакцию: её стражи срабатывают в порядке, обратном регистрации.\n\nВ конце ввода все незакрытые транзакции закрываются как при `abort`, начиная с самой внутренней.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "begin\ndo a\ndo b\nabort\nbegin\ndo c\ncommit\n",
+          "output": "сделано a\nсделано b\nоткат b\nоткат a\nсделано c\nподтверждено 1\n"
+        },
+        {
+          "input": "begin\ndo x\nbegin\ndo y\n",
+          "output": "сделано x\nсделано y\nоткат y\nоткат x\n"
+        }
+      ],
+      "constraints": [
+        "Команд не больше 200; do, commit и abort встречаются только внутри транзакции; x — слово."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Храните стражей в std::deque<ScopeGuard>, а транзакции — в std::deque<std::deque<ScopeGuard>>: emplace_back в deque не перемещает существующие элементы, а ScopeGuard некопируем.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Порядок срабатывания задайте сами: удаляйте стражей по одному через pop_back — деструктор контейнера порядок уничтожения элементов не гарантирует.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "begin\ndo a\ndo b\nabort\nbegin\ndo c\ncommit\n",
+          "expected": "сделано a\nсделано b\nоткат b\nоткат a\nсделано c\nподтверждено 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "begin\ndo x\nbegin\ndo y\n",
+          "expected": "сделано x\nсделано y\nоткат y\nоткат x\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустая транзакция",
+          "stdin": "begin\ncommit\n",
+          "expected": "подтверждено 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Вложенная подтверждена, внешняя отменена",
+          "stdin": "begin\ndo a\nbegin\ndo b\ncommit\nabort\n",
+          "expected": "сделано a\nсделано b\nподтверждено 1\nоткат a\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Три действия подтверждены",
+          "stdin": "begin\ndo 1\ndo 2\ndo 3\ncommit\n",
+          "expected": "сделано 1\nсделано 2\nсделано 3\nподтверждено 3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Незакрытая транзакция",
+          "stdin": "begin\ndo a\n",
+          "expected": "сделано a\nоткат a\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Глубокая вложенность",
+          "stdin": "begin\nbegin\nbegin\ndo deep\n",
+          "expected": "сделано deep\nоткат deep\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Две отмены",
+          "stdin": "begin\ndo a\nabort\nbegin\ndo b\nabort\n",
+          "expected": "сделано a\nоткат a\nсделано b\nоткат b\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Без команд",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-8",
+          "name": "Отмена внутри и подтверждение снаружи",
+          "stdin": "begin\ndo p\nbegin\ndo q\nabort\ndo r\ncommit\n",
+          "expected": "сделано p\nсделано q\nоткат q\nсделано r\nподтверждено 2\n"
+        }
+      ],
+      "referenceSolution": "#include <deque>\n#include <functional>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass ScopeGuard {\npublic:\n    explicit ScopeGuard(std::function<void()> action) : action_(std::move(action)) {}\n    ScopeGuard(const ScopeGuard &) = delete;\n    ScopeGuard &operator=(const ScopeGuard &) = delete;\n    ~ScopeGuard() {\n        if (action_) {\n            action_();\n        }\n    }\n\n    void dismiss() {\n        action_ = nullptr;\n    }\n\nprivate:\n    std::function<void()> action_;\n};\n\nusing Transaction = std::deque<ScopeGuard>;\n\nvoid abort_last(std::deque<Transaction> &transactions) {\n    Transaction &t = transactions.back();\n    while (!t.empty()) {\n        t.pop_back();\n    }\n    transactions.pop_back();\n}\n\nint main() {\n    std::deque<Transaction> transactions;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"begin\") {\n            transactions.emplace_back();\n        } else if (command == \"do\") {\n            std::string x;\n            std::cin >> x;\n            std::println(\"сделано {}\", x);\n            transactions.back().emplace_back([x] { std::println(\"откат {}\", x); });\n        } else if (command == \"commit\") {\n            Transaction &t = transactions.back();\n            for (ScopeGuard &guard : t) {\n                guard.dismiss();\n            }\n            std::println(\"подтверждено {}\", t.size());\n            transactions.pop_back();\n        } else {\n            abort_last(transactions);\n        }\n    }\n    while (!transactions.empty()) {\n        abort_last(transactions);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Страж связывает действие с концом жизни объекта: когда объект уничтожается, откат выполняется сам. `commit` «отпускает» стражей, и их уничтожение ничего не делает. Лямбда захватывает `x` по значению — страж переживает итерацию цикла, в которой был создан.\n\nЭтот приём — частный случай RAII, о котором следующий урок. В стандарт его пока не включили, но `scope_exit` есть в Library Fundamentals TS и во многих библиотеках.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
       }
     }
   ],
@@ -207,31 +442,80 @@
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Уничтожает ли затенение имени внешний объект?",
-        "options": [
-          "Да: внутреннее объявление заменяет внешний объект",
-          "Нет: внешний объект жив, скрыто только его имя"
-        ],
-        "correct": 1,
-        "explanation": "Ссылка — дополнительное имя существующего объекта, а не владелец. Локальная const-ссылка, напрямую привязанная к временному объекту, продлевает его жизнь до конца своей области: const std::string& s = std::string{\"ok\"} законно. Но продление не передаётся через возвраты: если функция приняла const T& и вернула её же, временный объект вызывающего умрёт в конце полного выражения. std::string_view и std::span не продлевают жизнь данным никогда. В C++20 временные объекты разрушаются в конце полного выражения; для результата вычисления надёжнее всего возвращать владеющее значение — NRVO и устранение копий делают это бесплатным."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nint main() {\n    int x = 1;\n    {\n        int x = 2;\n        x += 10;\n    }\n    std::println(\"{}\", x);\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Внутренний x затеняет внешний и умирает в конце блока. Внешний не менялся.",
+        "type": "text",
+        "answers": ["1"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["9 4", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "1. Внешний value = 4 создан\n2. Вход в блок: внутренний value = 9 создан; внешнее ИМЯ затенено, внешний ОБЪЕКТ жив\n3. Вывод 9 через внутреннее имя\n4. Выход из блока: внутренний value уничтожен\n5. Имя value снова обозначает внешний объект; вывод 4"
+        "id": "q2",
+        "question": "Где видна переменная it в if (auto it = m.find(k); it != m.end()) { … } else { … }?",
+        "explanation": "Инициализатор действует на весь оператор if, включая else.",
+        "options": [
+          "В условии и в обеих ветках",
+          "Только в условии",
+          "Только в ветке if",
+          "До конца функции"
+        ],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q3",
+        "question": "Сколько раз вызовется деструктор std::string s в цикле for (int i = 0; i < 5; i++) { std::string s = \"x\"; }?",
+        "explanation": "Переменная в теле цикла создаётся и уничтожается на каждой итерации.",
+        "options": ["5", "1", "0", "6"],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Лямбда возвращается из функции. Какой захват безопасен?",
+        "explanation": "Ссылки на локальные переменные повиснут после возврата из функции.",
+        "options": ["По значению: [x] или [x = std::move(x)]", "По ссылке: [&x]", "[&]", "Любой"],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что сообщит AddressSanitizer, если лямбда обращается к локальной переменной уже завершившейся функции через захват по ссылке?",
+        "explanation": "Кадр стека функции освобождён, а ссылка указывает в него.",
+        "options": ["stack-use-after-return", "heap-buffer-overflow", "memory leak", "Ничего"],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Зачем mutable в лямбде [value = 0]() mutable { return ++value; }?",
+        "explanation": "operator() лямбды по умолчанию константный.",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Не возвращайте const int& на локальную переменную: const запрещает изменение через ссылку, но не хранит объект. Тот же дефект встречается у string_view на временную строку, у span на временный vector и у ссылок на элементы возвращённого по значению контейнера."
+          "Без него захваченные по значению копии внутри лямбды нельзя менять",
+          "Чтобы захватить по ссылке",
+          "Чтобы лямбду можно было копировать",
+          "Он ничего не меняет"
         ],
-        "correct": 1,
-        "explanation": "Постройте две временные шкалы: для const auto& s = std::string{\"abc\"} и для std::string_view v = std::string{\"abc\"}. В первом случае строка живёт вместе со ссылкой; во втором умирает в конце выражения инициализации, а view остаётся указывать на освобождённый буфер."
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Когда захват [&] безопасен? Выберите все.",
+        "explanation": "Безопасно, пока захваченные переменные живы во время каждого вызова лямбды.",
+        "type": "multiple",
+        "options": [
+          "Лямбда передаётся в std::ranges::sort и вызывается немедленно",
+          "Лямбда используется внутри той же функции до выхода из неё",
+          "Лямбда сохраняется в поле объекта, который живёт дольше функции",
+          "Лямбда возвращается из функции"
+        ],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q8",
+        "question": "Какой флаг GCC и Clang предупреждает о затенении имён?",
+        "explanation": "Он не входит в -Wall и -Wextra, его включают отдельно.",
+        "type": "text",
+        "answers": ["-Wshadow", "Wshadow"],
+        "placeholder": "Флаг"
       }
     ]
   }

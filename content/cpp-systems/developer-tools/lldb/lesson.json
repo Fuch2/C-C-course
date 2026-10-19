@@ -15,7 +15,7 @@
   ],
   "tags": ["LLDB", "Отладка", "macOS", "Clang", "Точки останова"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "advanced-lldb-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -148,7 +148,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -266,7 +266,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nstatic int search(const int *a, int n, int key) {\n    int low = 0;\n    int high = n - 1;\n    while (low < high) {\n        int mid = low + (high - low) / 2;\n        if (a[mid] == key) {\n            return mid;\n        }\n        if (a[mid] < key) {\n            low = mid + 1;\n        } else {\n            high = mid - 1;\n        }\n    }\n    return -1;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int a[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        int key;\n        scanf(\"%d\", &key);\n        printf(\"%d\\n\", search(a, n, key));\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

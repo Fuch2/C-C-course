@@ -1,126 +1,534 @@
 {
   "id": "algo-dfs",
-  "title": "Поиск в глубину — DFS",
-  "description": "DFS сначала углубляется в одного непосещённого соседа, затем возвращается к отложенным ветвям.",
+  "title": "Поиск в глубину",
+  "description": "Обход вглубь с возвратом; рекурсивный DFS и отметка при входе; компоненты связности и заливка; глубина рекурсии и DFS с явным стеком; три цвета и циклы в ориентированном графе; топологическая сортировка зависимостей; выбор между BFS и DFS.",
   "moduleId": "algorithms-structures",
   "order": 28,
-  "difficulty": "intermediate",
+  "difficulty": "advanced",
   "estimatedMinutes": 60,
   "prerequisites": ["algo-bfs"],
   "objectives": [
-    "Объяснить инвариант: Идём по одной тропе до конца, сохраняя развилки, к которым надо вернуться.",
-    "Обосновать время: O(V+E) для полного обхода списков.",
-    "Оценить память и компромиссы: Удобен для структуры зависимостей и postorder, но не гарантирует кратчайший путь."
+    "Реализовывать поиск в глубину рекурсией и с явным стеком",
+    "Находить компоненты связности и заливать области на сетке",
+    "Находить циклы в ориентированном графе тремя цветами",
+    "Строить топологический порядок зависимостей"
   ],
-  "tags": ["алгоритмы", "C17", "Поиск в глубину — DFS", "структуры данных", "cache locality"],
+  "tags": ["Графы", "DFS", "Поиск в глубину", "Топологическая сортировка"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "algo-dfs-exercise",
+    "id": "algo-dfs-task-1",
     "title": "Компоненты связности",
-    "description": "Ввод V (1…32), E (0…128), затем E пар вершин 0…V−1. Граф неориентированный, петли и повторные рёбра допускаются. Храните списки смежности в массиве дуг. Выведите число компонент связности, включая изолированные вершины. Используйте DFS с пометкой до входа к соседям.",
-    "difficulty": "intermediate",
+    "description": "Граф задаётся так: первая строка — число вершин `V` и рёбер `E`, дальше `E` строк `u v`; вершины нумеруются с 1. Граф неориентированный.\n\nНайдите компоненты связности. Пронумеруйте их с 1 в порядке возрастания наименьшей вершины компоненты. Напечатайте число компонент, а на следующей строке — номер компоненты каждой вершины от 1 до `V` через пробел.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "5 2 0 1 2 3",
-        "output": "3\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "7 5\n1 2\n1 3\n2 4\n3 4\n5 6\n",
+        "output": "3\n1 1 1 1 2 2 3\n"
       },
       {
-        "input": "4 0",
-        "output": "4\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "1 0\n",
+        "output": "1\n1\n"
       }
     ],
     "constraints": [
-      "Используйте C17 и диапазоны входа из условия.",
-      "Выводите только требуемый результат.",
-      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
+      "1 ≤ V ≤ 10⁵; 0 ≤ E ≤ 2·10⁵.",
+      "Компонента может быть цепочкой из 10⁵ вершин — рекурсия такой глубины может не поместиться в стек; используйте явный стек."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Идём по одной тропе до конца, сохраняя развилки, к которым надо вернуться."
+        "text": "Перебирайте вершины по возрастанию; каждая ещё не помеченная вершина начинает новую компоненту — запустите из неё DFS и пометьте все достижимые вершины номером компоненты.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Для ориентированного графа такой счётчик запусков не является алгоритмом сильных компонент."
-      },
-      {
-        "id": "hint-3",
-        "order": 3,
-        "text": "Рёбра 0–1 и 2–3 при пяти вершинах дают три запуска: компоненты {0,1}, {2,3}, {4}."
+        "text": "Явный стек: положите стартовую вершину и сразу пометьте её; пока стек не пуст, снимайте вершину и кладите её непомеченных соседей, помечая их при добавлении. Так каждая вершина попадёт в стек один раз.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "5 2 0 1 2 3",
-        "expected": "3\n"
+        "stdin": "7 5\n1 2\n1 3\n2 4\n3 4\n5 6\n",
+        "expected": "3\n1 1 1 1 2 2 3\n"
       },
-      { "id": "case-2", "name": "Пример 2", "stdin": "4 0", "expected": "4\n" }
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1 0\n",
+        "expected": "1\n1\n"
+      }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "3 3 0 1 1 2 2 0",
-        "expected": "1\n"
+        "id": "hidden-1",
+        "name": "Без рёбер",
+        "stdin": "4 0\n",
+        "expected": "4\n1 2 3 4\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "2 2 0 0 0 0",
-        "expected": "2\n"
+        "id": "hidden-2",
+        "name": "Путь",
+        "stdin": "5 4\n1 2\n2 3\n3 4\n4 5\n",
+        "expected": "1\n1 1 1 1 1\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Пары",
+        "stdin": "6 3\n6 5\n4 3\n2 1\n",
+        "expected": "3\n1 1 2 2 3 3\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Вложенные пары",
+        "stdin": "6 3\n1 6\n2 5\n3 4\n",
+        "expected": "3\n1 2 3 3 2 1\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Петля",
+        "stdin": "5 3\n5 4\n4 3\n2 2\n",
+        "expected": "3\n1 2 3 3 3\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Перемешанные",
+        "stdin": "8 6\n1 8\n8 2\n3 7\n7 4\n5 6\n6 5\n",
+        "expected": "3\n1 1 2 2 3 3 2 1\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Полный граф",
+        "stdin": "5 10\n1 2\n1 3\n1 4\n1 5\n2 3\n2 4\n2 5\n3 4\n3 5\n4 5\n",
+        "expected": "1\n1 1 1 1 1\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Номера компонент",
+        "stdin": "10 4\n10 9\n9 1\n2 3\n5 7\n",
+        "expected": "6\n1 2 2 3 4 5 4 6 1 1\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\nenum { MAX_VERTICES=32, MAX_ARCS=256 };\ntypedef struct { int to,next; } Edge;\ntypedef struct { int head[MAX_VERTICES],count; Edge edges[MAX_ARCS]; } Graph;\nstatic void init(Graph *g){for(int i=0;i<MAX_VERTICES;++i)g->head[i]=-1;g->count=0;}\nstatic int connect(Graph *g,int from,int to){\n    if(g->count==MAX_ARCS)return 0;\n    g->edges[g->count]=(Edge){to,g->head[from]};g->head[from]=g->count++;return 1;\n}\nstatic int read_graph(Graph *g,int *vertices){\n    int m;if(scanf(\"%d%d\",vertices,&m)!=2 || *vertices<1 || *vertices>32 || m<0 || m>128)return 0;\n    init(g);\n    for(int i=0;i<m;++i){int a,b;if(scanf(\"%d%d\",&a,&b)!=2 || a<0 || b<0 || a>=*vertices || b>=*vertices)return 0;\n        if(!connect(g,a,b) || !connect(g,b,a))return 0;\n    }return 1;\n}\nstatic void visit(const Graph *g,int v,int *seen){\n    seen[v]=1;\n    for(int e=g->head[v];e!=-1;e=g->edges[e].next){int to=g->edges[e].to;if(!seen[to])visit(g,to,seen);}\n}\nstatic int components(const Graph *g,int n){\n    int seen[MAX_VERTICES]={0},count=0;\n    for(int i=0;i<n;++i)if(!seen[i]){++count;visit(g,i,seen);}\n    return count;\n}\nint main(void) {\nGraph g;int n;if(!read_graph(&g,&n))return 1;printf(\"%d\\n\",components(&g,n));\nreturn 0;\n}\n",
-    "solutionExplanation": "Инвариант: Идём по одной тропе до конца, сохраняя развилки, к которым надо вернуться.\n\nРёбра 0–1 и 2–3 при пяти вершинах дают три запуска: компоненты {0,1}, {2,3}, {4}.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. Для ориентированного графа такой счётчик запусков не является алгоритмом сильных компонент.\n\nВремя: O(V+E) для полного обхода списков.\nПамять: O(V) visited и O(V) стек в худшем случае.\nКомпромисс: Удобен для структуры зависимостей и postorder, но не гарантирует кратчайший путь.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <stdio.h>\n\nstatic int from[200000], to[200000];\nstatic int start[100002], fill[100001], adj[400000];\nstatic int component[100001], stack[100000];\n\nint main(void) {\n    int vertices, edges;\n    if (scanf(\"%d %d\", &vertices, &edges) != 2 || vertices < 1 || vertices > 100000 || edges > 200000) {\n        return 0;\n    }\n    for (int i = 0; i < edges; i++) {\n        scanf(\"%d %d\", &from[i], &to[i]);\n        start[from[i] + 1]++;\n        start[to[i] + 1]++;\n    }\n    for (int v = 1; v <= vertices + 1; v++) {\n        start[v] += start[v - 1];\n    }\n    for (int v = 1; v <= vertices; v++) {\n        fill[v] = start[v];\n    }\n    for (int i = 0; i < edges; i++) {\n        adj[fill[from[i]]++] = to[i];\n        adj[fill[to[i]]++] = from[i];\n    }\n    int count = 0;\n    for (int s = 1; s <= vertices; s++) {\n        if (component[s] != 0) {\n            continue;\n        }\n        count++;\n        int size = 0;\n        component[s] = count;\n        stack[size++] = s;\n        while (size > 0) {\n            int u = stack[--size];\n            for (int k = start[u]; k < start[u + 1]; k++) {\n                int v = adj[k];\n                if (component[v] == 0) {\n                    component[v] = count;\n                    stack[size++] = v;\n                }\n            }\n        }\n    }\n    printf(\"%d\\n\", count);\n    for (int v = 1; v <= vertices; v++) {\n        printf(v < vertices ? \"%d \" : \"%d\\n\", component[v]);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Каждый запуск обхода из непомеченной вершины помечает всю её компоненту и только её: в другие компоненты рёбер нет. Вершины перебираются по возрастанию, поэтому компонента получает номер, когда встречается её наименьшая вершина, — именно этого требует нумерация.\n\nМассив `component` — и ответ, и отметка посещения. Вершина помечается при добавлении в стек, поэтому попадает в него один раз, и стеку хватает `V` ячеек. Порядок обхода здесь не совсем такой, как у рекурсивного DFS, но для компонент порядок не важен — важно только, что обойдены все достижимые вершины. Время — `O(V + E)`, глубина рекурсии не ограничивает размер графа.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "algo-dfs-task-2",
+      "title": "Есть ли цикл",
+      "description": "Граф задаётся так: первая строка — число вершин `V` и рёбер `E`, дальше `E` строк `u v`; вершины нумеруются с 1. Граф **ориентированный**: строка `u v` — ребро `u → v`. Напечатайте `да`, если в графе есть ориентированный цикл (в том числе петля `u → u`), и `нет` иначе.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3 3\n1 2\n2 3\n3 1\n",
+          "output": "да\n"
+        },
+        {
+          "input": "3 3\n1 2\n1 3\n2 3\n",
+          "output": "нет\n"
+        }
+      ],
+      "constraints": ["1 ≤ V ≤ 1000; 0 ≤ E ≤ 5000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Три цвета: 0 — белая, 1 — серая (на текущем пути DFS), 2 — чёрная (обработана). При входе вершина становится серой, при выходе — чёрной.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Ребро из текущей вершины в серую замыкает цикл. Ребро в чёрную — нет. Запускайте DFS из каждой белой вершины: цикл может быть в любой части графа.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 3\n1 2\n2 3\n3 1\n",
+          "expected": "да\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3 3\n1 2\n1 3\n2 3\n",
+          "expected": "нет\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна вершина",
+          "stdin": "1 0\n",
+          "expected": "нет\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Петля",
+          "stdin": "1 1\n1 1\n",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Цикл из двух",
+          "stdin": "2 2\n1 2\n2 1\n",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Путь",
+          "stdin": "4 3\n1 2\n2 3\n3 4\n",
+          "expected": "нет\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Цикл в конце пути",
+          "stdin": "5 5\n1 2\n2 3\n3 4\n4 5\n5 3\n",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Цикл в другой компоненте",
+          "stdin": "6 5\n1 2\n3 4\n4 5\n5 6\n6 4\n",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Ромб без цикла",
+          "stdin": "4 5\n1 2\n1 3\n2 4\n3 4\n1 4\n",
+          "expected": "нет\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Цикл через старт",
+          "stdin": "5 6\n2 1\n3 1\n4 3\n5 4\n2 5\n1 2\n",
+          "expected": "да\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic int from[5000], to[5000];\nstatic int start[1002], fill[1001], adj[5000];\nstatic int color[1001];\n\nstatic bool dfs(int u) {\n    color[u] = 1;\n    for (int k = start[u]; k < start[u + 1]; k++) {\n        int v = adj[k];\n        if (color[v] == 1) {\n            return true;\n        }\n        if (color[v] == 0 && dfs(v)) {\n            return true;\n        }\n    }\n    color[u] = 2;\n    return false;\n}\n\nint main(void) {\n    int vertices, edges;\n    if (scanf(\"%d %d\", &vertices, &edges) != 2 || vertices < 1 || vertices > 1000 || edges > 5000) {\n        return 0;\n    }\n    for (int i = 0; i < edges; i++) {\n        scanf(\"%d %d\", &from[i], &to[i]);\n        start[from[i] + 1]++;\n    }\n    for (int v = 1; v <= vertices + 1; v++) {\n        start[v] += start[v - 1];\n    }\n    for (int v = 1; v <= vertices; v++) {\n        fill[v] = start[v];\n    }\n    for (int i = 0; i < edges; i++) {\n        adj[fill[from[i]]++] = to[i];\n    }\n    bool cycle = false;\n    for (int u = 1; u <= vertices && !cycle; u++) {\n        if (color[u] == 0) {\n            cycle = dfs(u);\n        }\n    }\n    printf(\"%s\\n\", cycle ? \"да\" : \"нет\");\n    return 0;\n}\n",
+      "solutionExplanation": "Серые вершины — это ровно путь от стартовой вершины DFS до текущей. Ребро в серую вершину ведёт назад по этому пути и вместе с ним образует цикл. Обратно: если цикл есть, DFS рано или поздно войдёт в одну из его вершин первой, а затем, пройдя по циклу, найдёт ребро обратно в неё, пока она ещё серая.\n\nРебро в чёрную вершину цикла не даёт: из неё всё уже исследовано, и пути обратно в текущую вершину не нашлось бы — иначе текущая вершина была бы обнаружена раньше. Двух цветов поэтому мало: граф `1 → 2, 1 → 3, 2 → 3` без цикла, но вторая встреча с вершиной 3 случается. Петля `u → u` — ребро в саму себя, серую.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-dfs-task-3",
+      "title": "Найди ошибку: заливка",
+      "description": "Первая строка — `R` и `C`, дальше `R` строк карты: `#` — суша, `.` — вода. Программа считает острова — связные по сторонам области суши — рекурсивной заливкой.\n\nНа картах, где острова больше одной клетки, программа аварийно завершается. Найдите и исправьте ошибку.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nstatic char map[100][102];\nstatic int rows, cols;\n\nstatic void flood(int r, int c) {\n    if (r < 0 || r >= rows || c < 0 || c >= cols || map[r][c] != '#') {\n        return;\n    }\n    flood(r - 1, c);\n    flood(r + 1, c);\n    flood(r, c - 1);\n    flood(r, c + 1);\n    map[r][c] = '*';\n}\n\nint main(void) {\n    if (scanf(\"%d %d\", &rows, &cols) != 2 || rows < 1 || rows > 100 || cols < 1 || cols > 100) {\n        return 0;\n    }\n    for (int r = 0; r < rows; r++) {\n        scanf(\"%101s\", map[r]);\n    }\n    int islands = 0;\n    for (int r = 0; r < rows; r++) {\n        for (int c = 0; c < cols; c++) {\n            if (map[r][c] == '#') {\n                flood(r, c);\n                islands++;\n            }\n        }\n    }\n    printf(\"%d\\n\", islands);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3 3\n#.#\n...\n#.#\n",
+          "output": "4\n"
+        },
+        {
+          "input": "4 6\n##..#.\n#...##\n..#...\n##..##\n",
+          "output": "5\n"
+        }
+      ],
+      "constraints": ["1 ≤ R, C ≤ 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Проследите вызовы для двух соседних клеток суши: что делает flood для второй клетки, когда вызывает flood для первой?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Клетка помечается залитой только после рекурсивных вызовов, поэтому соседи считают её ещё не залитой и вызывают flood обратно — без конца. Пометьте клетку до рекурсии.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 3\n#.#\n...\n#.#\n",
+          "expected": "4\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "4 6\n##..#.\n#...##\n..#...\n##..##\n",
+          "expected": "5\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 1\n#\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1 1\n.\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "2 2\n##\n##\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "3 5\n#####\n#...#\n#####\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "3 3\n#.#\n.#.\n#.#\n",
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "5 5\n#...#\n.#.#.\n..#..\n.#.#.\n#...#\n",
+          "expected": "9\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "4 4\n#..#\n#..#\n#..#\n####\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "6 6\n######\n#....#\n#.##.#\n#.##.#\n#....#\n######\n",
+          "expected": "2\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic char map[100][102];\nstatic int rows, cols;\n\nstatic void flood(int r, int c) {\n    if (r < 0 || r >= rows || c < 0 || c >= cols || map[r][c] != '#') {\n        return;\n    }\n    map[r][c] = '*';\n    flood(r - 1, c);\n    flood(r + 1, c);\n    flood(r, c - 1);\n    flood(r, c + 1);\n}\n\nint main(void) {\n    if (scanf(\"%d %d\", &rows, &cols) != 2 || rows < 1 || rows > 100 || cols < 1 || cols > 100) {\n        return 0;\n    }\n    for (int r = 0; r < rows; r++) {\n        scanf(\"%101s\", map[r]);\n    }\n    int islands = 0;\n    for (int r = 0; r < rows; r++) {\n        for (int c = 0; c < cols; c++) {\n            if (map[r][c] == '#') {\n                flood(r, c);\n                islands++;\n            }\n        }\n    }\n    printf(\"%d\\n\", islands);\n    return 0;\n}\n",
+      "solutionExplanation": "Отметка «уже залито» — то, что останавливает рекурсию. Заготовка ставит её после рекурсивных вызовов: `flood(r, c)` вызывает `flood` для соседней клетки суши, та — снова для `(r, c)`, которая всё ещё `#`, — и так бесконечно. Стек вызовов переполняется, AddressSanitizer сообщает `stack-overflow`.\n\nОстров из одной клетки ошибку не показывает: у него нет соседей-суши, и рекурсия сразу заканчивается. Это то же правило, что для графов: вершина отмечается **при входе**, до обхода соседей. Для карты 100 × 100 глубина рекурсии всё равно может достичь 10⁴ кадров — это допустимо, но для больших карт заливку пишут с явным стеком.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-dfs-task-4",
+      "title": "Порядок сборки",
+      "description": "Проект состоит из `V` целей. Строка `u v` означает, что цель `u` нужно собрать раньше цели `v` (ребро `u → v`). Граф задаётся так: первая строка — число вершин `V` и рёбер `E`, дальше `E` строк `u v`; вершины нумеруются с 1.\n\nПостройте топологический порядок поиском в глубину по строгим правилам:\n\n- запускайте DFS из вершин `1, 2, …, V` по порядку, если вершина ещё белая;\n- соседей каждой вершины перебирайте **по возрастанию номера**;\n- вершина записывается в список в момент выхода; ответ — список в обратном порядке.\n\nНапечатайте вершины через пробел. Если в зависимостях есть цикл, напечатайте `цикл`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "6 7\n1 2\n1 3\n1 4\n2 5\n3 5\n4 5\n5 6\n",
+          "output": "1 4 3 2 5 6\n"
+        },
+        {
+          "input": "3 3\n1 2\n2 3\n3 1\n",
+          "output": "цикл\n"
+        }
+      ],
+      "constraints": ["1 ≤ V ≤ 1000; 0 ≤ E ≤ 5000; одинаковые рёбра могут повторяться."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Чтобы перебирать соседей по возрастанию, отсортируйте каждый список смежности qsort или используйте матрицу смежности V × V.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Цвета: при входе серый, при выходе — чёрный и запись в order. Ребро в серую вершину — цикл.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Глубина рекурсии не больше V = 1000 — рекурсивный DFS здесь безопасен.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "6 7\n1 2\n1 3\n1 4\n2 5\n3 5\n4 5\n5 6\n",
+          "expected": "1 4 3 2 5 6\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3 3\n1 2\n2 3\n3 1\n",
+          "expected": "цикл\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна цель",
+          "stdin": "1 0\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Без зависимостей",
+          "stdin": "3 0\n",
+          "expected": "3 2 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Обратная цепочка",
+          "stdin": "3 2\n3 2\n2 1\n",
+          "expected": "3 2 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Одна общая зависимость",
+          "stdin": "4 3\n1 2\n1 3\n1 4\n",
+          "expected": "1 4 3 2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Общая цель",
+          "stdin": "4 3\n2 1\n3 1\n4 1\n",
+          "expected": "4 3 2 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Две ветки",
+          "stdin": "5 4\n1 2\n2 3\n4 5\n5 3\n",
+          "expected": "4 5 1 2 3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Петля",
+          "stdin": "2 1\n1 1\n",
+          "expected": "цикл\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Длинный цикл",
+          "stdin": "6 7\n5 6\n4 6\n3 4\n2 3\n1 2\n1 2\n6 1\n",
+          "expected": "цикл\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic bool adj[1001][1001];\nstatic int color[1001], order[1000], count;\nstatic int vertices;\nstatic bool cycle;\n\nstatic void dfs(int u) {\n    color[u] = 1;\n    for (int v = 1; v <= vertices && !cycle; v++) {\n        if (!adj[u][v]) {\n            continue;\n        }\n        if (color[v] == 1) {\n            cycle = true;\n        } else if (color[v] == 0) {\n            dfs(v);\n        }\n    }\n    color[u] = 2;\n    order[count++] = u;\n}\n\nint main(void) {\n    int edges;\n    if (scanf(\"%d %d\", &vertices, &edges) != 2 || vertices < 1 || vertices > 1000) {\n        return 0;\n    }\n    for (int i = 0; i < edges; i++) {\n        int u, v;\n        if (scanf(\"%d %d\", &u, &v) != 2) {\n            break;\n        }\n        adj[u][v] = true;\n    }\n    for (int u = 1; u <= vertices && !cycle; u++) {\n        if (color[u] == 0) {\n            dfs(u);\n        }\n    }\n    if (cycle) {\n        printf(\"цикл\\n\");\n        return 0;\n    }\n    for (int i = count - 1; i >= 0; i--) {\n        printf(i > 0 ? \"%d \" : \"%d\\n\", order[i]);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Вершина записывается при выходе, то есть после всех вершин, достижимых из неё. Значит, для любого ребра `u → v` вершина `v` выходит раньше `u`: либо DFS вошёл в `v` из `u`, либо `v` была уже чёрной. (Серой `v` быть не может — это был бы цикл.) В перевёрнутом списке `u` стоит раньше `v` — каждое ребро идёт слева направо.\n\nСтрогие правила делают ответ однозначным: топологических порядков обычно много, и без правил проверить ответ точным сравнением было бы нельзя. Матрица смежности на 1000 × 1000 занимает мегабайт и даёт перебор соседей по возрастанию без сортировки; повторные рёбра в ней просто совпадают. Время — `O(V²)` из-за перебора строк матрицы, для `V = 1000` это миллион операций. Так Make определяет порядок сборки целей и сообщает о циклической зависимости.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "algo-dfs-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "invariant",
-        "question": "Достаточен ли один DFS для всех компонент?",
-        "options": [
-          "Нет, нужны запуски из оставшихся непосещённых вершин",
-          "Да, даже если между компонентами нет рёбер"
-        ],
-        "correct": 0,
-        "explanation": "Идём по одной тропе до конца, сохраняя развилки, к которым надо вернуться. Рёбра 0–1 и 2–3 при пяти вершинах дают три запуска: компоненты {0,1}, {2,3}, {4}."
+        "id": "q1",
+        "question": "Граф: рёбра 1–2, 1–3, 2–4, 3–4. DFS из 1 перебирает соседей по возрастанию номера. В каком порядке он войдёт в вершины?",
+        "explanation": "Из 1 — в 2, из 2 — в 4, из 4 — в 3 (вершина 2 уже посещена). Затем возвраты: из 1 вершина 3 уже посещена.",
+        "type": "text",
+        "answers": ["1 2 4 3"],
+        "placeholder": "Вершины через пробел"
       },
       {
-        "id": "complexity",
-        "question": "Какая оценка соответствует рассмотренной реализации?",
-        "options": [
-          "Всегда O(1), потому что все тесты ограничены по размеру.",
-          "O(V+E) для полного обхода списков."
-        ],
-        "correct": 1,
-        "explanation": "Удобен для структуры зависимостей и postorder, но не гарантирует кратчайший путь."
+        "id": "q2",
+        "question": "Какая структура данных лежит в основе DFS?",
+        "explanation": "Возврат к последней развилке — это LIFO. Рекурсия использует стек вызовов, итеративная версия — явный стек.",
+        "options": ["Стек (явный или стек вызовов)", "Очередь", "Куча", "Хеш-таблица"],
+        "correct": 0
       },
       {
-        "id": "engineering",
-        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "id": "q3",
+        "question": "Почему вершину отмечают посещённой при входе в DFS, а не при выходе?",
+        "explanation": "Соседи вершины, ещё не отмеченной, могут вызвать DFS обратно для неё — и так без конца, пока не переполнится стек.",
         "options": [
-          "Для ориентированного графа такой счётчик запусков не является алгоритмом сильных компонент.",
-          "Совпадение Big O гарантирует одинаковое время на любой машине."
+          "Иначе в графе с циклом DFS будет ходить по кругу бесконечно",
+          "Так быстрее",
+          "Иначе DFS станет BFS",
+          "Это не важно"
         ],
-        "correct": 0,
-        "explanation": "Глубокий путь может переходить по разным участкам графа; предвыборка менее предсказуема, чем линейный массив. O(V) visited и O(V) стек в худшем случае."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Сколько островов (связных областей из # по сторонам) на карте?",
+        "code": "#.#\n.#.\n#.#",
+        "codeLanguage": "text",
+        "explanation": "Клетки соприкасаются только углами, а соседство считается по сторонам — каждая клетка суши отдельный остров.",
+        "type": "text",
+        "answers": ["5"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q5",
+        "question": "Ориентированный граф: 1 → 2, 2 → 3, 1 → 3. Есть ли в нём цикл?",
+        "explanation": "Когда DFS из 1 проверяет ребро 1 → 3, вершина 3 уже полностью обработана (через 2) — чёрная. Цикл даёт только ребро в серую вершину.",
+        "options": [
+          "Нет: ребро 1 → 3 ведёт в уже чёрную вершину 3",
+          "Да: из 1 в 3 есть два пути",
+          "Да: ребро 1 → 3 ведёт в посещённую вершину",
+          "Нельзя определить без весов"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nstatic int adj[5][5], color[5], order[5], count;\n\nstatic void dfs(int u) {\n    color[u] = 1;\n    for (int v = 0; v < 5; v++) {\n        if (adj[u][v] && color[v] == 0) {\n            dfs(v);\n        }\n    }\n    color[u] = 2;\n    order[count++] = u;\n}\n\nint main(void) {\n    adj[0][2] = adj[1][2] = adj[2][3] = adj[1][4] = 1;\n    for (int u = 0; u < 5; u++) {\n        if (color[u] == 0) {\n            dfs(u);\n        }\n    }\n    for (int i = count - 1; i >= 0; i--) {\n        printf(\"%d \", order[i]);\n    }\n    printf(\"\\n\");\n    return 0;\n}",
+        "explanation": "DFS из 0: выход из 3, 2, 0. DFS из 1: 2 уже чёрная, выход из 4, затем 1. Порядок выхода 3 2 0 4 1, перевёрнутый — 1 4 0 2 3; все рёбра идут слева направо.",
+        "type": "text",
+        "answers": ["1 4 0 2 3"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Когда у ориентированного графа существует топологический порядок?",
+        "explanation": "Цикл 1 → 2 → 1 требует, чтобы 1 было раньше 2 и 2 раньше 1 одновременно — это невозможно.",
+        "options": [
+          "Когда в нём нет ориентированных циклов",
+          "Всегда",
+          "Когда он связный",
+          "Когда у каждой вершины не больше двух соседей"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какие задачи лучше решать поиском в ширину, а не в глубину?",
+        "explanation": "BFS обходит граф слоями и даёт расстояния. Циклы и топологический порядок находит DFS через цвета и порядок выхода.",
+        "type": "multiple",
+        "options": [
+          "Кратчайший путь по числу рёбер",
+          "Расстояние до ближайшего из нескольких источников",
+          "Поиск цикла в ориентированном графе",
+          "Топологическая сортировка"
+        ],
+        "correct": [0, 1]
       }
     ]
   }

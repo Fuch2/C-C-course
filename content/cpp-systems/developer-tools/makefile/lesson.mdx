@@ -29,26 +29,26 @@ calc: main.o lexer.o parser.o
 	gcc main.o lexer.o parser.o -o calc
 
 main.o: main.c lexer.h parser.h
-	gcc -std=c17 -Wall -Wextra -c main.c
+	gcc -std=c23 -Wall -Wextra -c main.c
 
 lexer.o: lexer.c lexer.h
-	gcc -std=c17 -Wall -Wextra -c lexer.c
+	gcc -std=c23 -Wall -Wextra -c lexer.c
 
 parser.o: parser.c parser.h lexer.h
-	gcc -std=c17 -Wall -Wextra -c parser.c
+	gcc -std=c23 -Wall -Wextra -c parser.c
 ```
 
 ```text
 $ make
-gcc -std=c17 -Wall -Wextra -c main.c
-gcc -std=c17 -Wall -Wextra -c lexer.c
-gcc -std=c17 -Wall -Wextra -c parser.c
+gcc -std=c23 -Wall -Wextra -c main.c
+gcc -std=c23 -Wall -Wextra -c lexer.c
+gcc -std=c23 -Wall -Wextra -c parser.c
 gcc main.o lexer.o parser.o -o calc
 $ make
 make: 'calc' is up to date.
 $ touch parser.c          # «изменили» parser.c
 $ make
-gcc -std=c17 -Wall -Wextra -c parser.c
+gcc -std=c23 -Wall -Wextra -c parser.c
 gcc main.o lexer.o parser.o -o calc
 ```
 
@@ -72,7 +72,7 @@ Make строит граф: цель → её зависимости → их з
 | Переменная | Смысл               | Пример                      |
 | ---------- | ------------------- | --------------------------- |
 | `CC`       | компилятор C        | `gcc`                       |
-| `CFLAGS`   | флаги компиляции    | `-std=c17 -Wall -Wextra -g` |
+| `CFLAGS`   | флаги компиляции    | `-std=c23 -Wall -Wextra -g` |
 | `CPPFLAGS` | флаги препроцессора | `-Iinclude -DDEBUG`         |
 | `LDFLAGS`  | флаги линковки      | `-L/opt/lib`                |
 | `LDLIBS`   | библиотеки          | `-lm`                       |
@@ -89,7 +89,7 @@ Make строит граф: цель → её зависимости → их з
 
 ```text
 CC = gcc
-CFLAGS = -std=c17 -Wall -Wextra -g
+CFLAGS = -std=c23 -Wall -Wextra -g
 CPPFLAGS = -Iinclude
 LDLIBS = -lm
 
@@ -113,7 +113,7 @@ clean:
 Разберём новое:
 
 - `$(wildcard src/*.c)` — список всех `.c` в `src/`; `$(SRC:src/%.c=build/%.o)` заменяет в каждом имени `src/….c` на `build/….o`.
-- Для `build/lexer.o` рецепт раскроется в `gcc -Iinclude -std=c17 -Wall -Wextra -g -MMD -MP -c src/lexer.c -o build/lexer.o`.
+- Для `build/lexer.o` рецепт раскроется в `gcc -Iinclude -std=c23 -Wall -Wextra -g -MMD -MP -c src/lexer.c -o build/lexer.o`.
 - `@` в начале строки рецепта скрывает саму команду из вывода.
 - `-MMD -MP` — флаги, знакомые по уроку о препроцессоре: при компиляции gcc попутно пишет файл `build/lexer.d` с правилом зависимостей от заголовков. `-include` подключает эти файлы (минус — «не ругаться, если их ещё нет»). Теперь зависимости от заголовков поддерживаются **автоматически**.
 

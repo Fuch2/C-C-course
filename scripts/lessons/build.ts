@@ -136,7 +136,12 @@ const trimCode = (code: string) => code.replace(/^\n+/, '').replace(/\s+$/, '') 
 
 // LESSON_JOBS уменьшает число одновременных запусков на медленном Docker: лимиты sandbox не меняются.
 const jobs = Math.max(1, Number(process.env.LESSON_JOBS) || 4);
-const queue = new JobQueue(jobs, 100_000, 3_600_000);
+// Весь модуль ставится в очередь сразу: на медленном Docker задания ждут часами.
+const queue = new JobQueue(jobs, 100_000, 86_400_000);
+const flaky = (result: SandboxResult) =>
+  result.compilation.status === 'timeout' || result.runs.some((run) => run.status === 'timeout');
+// Перегруженный Docker изредка не укладывается в лимит или не отвечает. Одна повторная попытка
+// отличает такой сбой от медленного решения: настоящее превышение лимита повторится. Лимиты не меняются.
 async function sandbox(
   source: string,
   standard: Standard,
@@ -145,19 +150,27 @@ async function sandbox(
   sanitizers: boolean | DiagnosticMode = false,
 ): Promise<SandboxResult> {
   const mode = sanitizers === true ? 'sanitizers' : sanitizers || 'none';
-  return queue.run(() =>
-    executeSandbox(
-      {
-        source,
-        standard,
-        compiler,
-        stdin: '',
-        cases: stdins.map((stdin) => ({ stdin })),
-        ...(mode === 'none' ? {} : { timeoutMs: 10_000 }),
-      },
-      mode,
-    ),
-  );
+  const attempt = () =>
+    queue.run(() =>
+      executeSandbox(
+        {
+          source,
+          standard,
+          compiler,
+          stdin: '',
+          cases: stdins.map((stdin) => ({ stdin })),
+          ...(mode === 'none' ? {} : { timeoutMs: 10_000 }),
+        },
+        mode,
+      ),
+    );
+  try {
+    const result = await attempt();
+    return flaky(result) ? await attempt() : result;
+  } catch (error) {
+    if (/лимит проверки|передать исходник/.test(String(error))) return attempt();
+    throw error;
+  }
 }
 const problems: string[] = [];
 function fail(where: string, message: string) {
@@ -324,7 +337,7 @@ async function verifyExamples(lesson: LessonSource, mdxPath: string) {
   await Promise.all(
     examples.map(async (example, index) => {
       const where = `${lesson.id} пример ${index + 1}`;
-      const standard: Standard = example.lang === 'cpp' ? 'c++20' : 'c17';
+      const standard: Standard = example.lang === 'cpp' ? 'c++23' : 'c23';
       // В уроках с диагностикой памяти пример дополнительно собирается Clang с ASan/UBSan.
       const diagnose = Boolean(lesson.diagnostics) && example.marker !== 'compile';
       const key = sha({
@@ -410,7 +423,7 @@ async function buildQuiz(lesson: LessonSource) {
       if (item.answers) {
         const runnable = item.code && /\bmain\s*\(/.test(item.code) && !item.noRun;
         if (runnable) {
-          const standard: Standard = item.lang === 'cpp' ? 'c++20' : 'c17';
+          const standard: Standard = item.lang === 'cpp' ? 'c++23' : 'c23';
           const key = sha({
             quiz: item.code,
             stdin: item.stdin ?? '',

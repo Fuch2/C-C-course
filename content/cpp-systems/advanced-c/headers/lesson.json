@@ -1,120 +1,455 @@
 {
   "id": "advanced-headers",
-  "title": "Header files",
-  "description": "Заголовок — текстовый контракт модуля.",
+  "title": "Заголовочные файлы: интерфейс модуля",
+  "description": "Заголовок как интерфейс модуля и #include как вставка текста; кавычки и угловые скобки; что кладут в заголовок и почему туда не кладут определения; реализация подключает свой заголовок; самодостаточные заголовки; неполные и непрозрачные типы; префиксы имён.",
   "moduleId": "advanced-c",
   "order": 2,
-  "difficulty": "advanced",
-  "estimatedMinutes": 40,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 60,
   "prerequisites": ["advanced-translation-units"],
   "objectives": [
-    "Объяснить: Header files",
-    "Различать корректный контракт и ошибку: Определение int counter = 0 в заголовке создаёт отдельное внешнее определение в каждом клиенте.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Разделять модуль на заголовок и реализацию",
+    "Решать, что можно положить в заголовок, а что нельзя",
+    "Писать самодостаточные заголовки и подключать свой заголовок в реализации",
+    "Скрывать устройство структуры за непрозрачным типом"
   ],
-  "tags": ["C17", "углублённый C", "Header files"],
+  "tags": ["Заголовок", "#include", "Интерфейс", "Неполный тип", "Непрозрачный тип"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-headers-exercise",
-    "title": "Практика: Header files",
-    "description": "Опишите тип Sample с полями int value и int offset. Функция corrected принимает Sample и возвращает сумму. Ввод — два числа −1000…1000; вывод — исправленное измерение.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-headers-task-1",
+    "title": "Модуль рациональных чисел",
+    "description": "В заготовке есть заголовок модуля рациональных чисел и функция `main`, которая им пользуется. Напишите реализацию модуля — раздел `rational.c`.\n\nСтруктура `Rational` открыта, но у неё есть инвариант: **знаменатель положителен, а дробь несократима**. Его поддерживают все функции модуля:\n- `rational_make(num, den)` создаёт дробь `num/den` (`den ≠ 0`): переносит знак в числитель и сокращает на наибольший общий делитель; нулевая дробь — `0/1`;\n- `rational_add`, `rational_sub`, `rational_mul`, `rational_div` возвращают результат в той же форме (делитель в `rational_div` не равен нулю — это проверяет `main`);\n- `rational_print` печатает дробь как `num/den`, а при знаменателе 1 — только числитель, без перевода строки.\n\nКаждая строка ввода — выражение `a/b op c/d`; программа печатает результат.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\n// ---- rational.h ----\ntypedef struct {\n    long long num;      // числитель\n    long long den;      // знаменатель: всегда > 0, дробь несократима\n} Rational;\n\nRational rational_make(long long num, long long den);\nRational rational_add(Rational a, Rational b);\nRational rational_sub(Rational a, Rational b);\nRational rational_mul(Rational a, Rational b);\nRational rational_div(Rational a, Rational b);\nvoid rational_print(Rational r);\n\n// ---- main.c ----\nint main(void) {\n    long long a, b, c, d;\n    char op;\n    while (scanf(\"%lld/%lld %c %lld/%lld\", &a, &b, &op, &c, &d) == 5) {\n        Rational x = rational_make(a, b);\n        Rational y = rational_make(c, d);\n        if (op == '/' && y.num == 0) {\n            printf(\"деление на ноль\\n\");\n            continue;\n        }\n        Rational r = op == '+'   ? rational_add(x, y)\n                     : op == '-' ? rational_sub(x, y)\n                     : op == '*' ? rational_mul(x, y)\n                                 : rational_div(x, y);\n        rational_print(r);\n        putchar('\\n');\n    }\n    return 0;\n}\n\n// ---- rational.c ----\n// Напишите здесь функции модуля.\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "12 -2",
-        "output": "10\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "1/2 + 1/3\n3/4 * 4/3\n",
+        "output": "5/6\n1\n"
       },
       {
-        "input": "0 0",
-        "output": "0\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "1/-2 - 1/2\n2/4 / -1/2\n1/3 / 0/5\n",
+        "output": "-1\n-1\nделение на ноль\n"
       }
     ],
     "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+      "Числители и знаменатели по модулю не больше 10⁶, знаменатели не равны нулю.",
+      "Операции: + - * /."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Заголовок похож на разъём: клиенту нужны форма контактов и правила использования, а не внутренние провода."
+        "text": "Напишите вспомогательную функцию gcd по алгоритму Евклида для неотрицательных чисел и вызывайте её из rational_make.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Определение int counter = 0 в заголовке создаёт отдельное внешнее определение в каждом клиенте."
+        "text": "Все арифметические функции сводятся к rational_make: a/b + c/d = rational_make(a*d + c*b, b*d), a/b ÷ c/d = rational_make(a*d, b*c).",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "В rational_make: если den < 0, смените знаки обоих чисел; затем разделите оба на gcd(|num|, den). Для num = 0 получится 0/1.",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "12 -2",
-        "expected": "10\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "1/2 + 1/3\n3/4 * 4/3\n",
+        "expected": "5/6\n1\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "0 0",
-        "expected": "0\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1/-2 - 1/2\n2/4 / -1/2\n1/3 / 0/5\n",
+        "expected": "-1\n-1\nделение на ноль\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "-100 30",
-        "expected": "-70\n"
+        "id": "hidden-1",
+        "name": "Ноль",
+        "stdin": "0/5 + 0/3\n",
+        "expected": "0\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Сокращение одной дроби",
+        "stdin": "6/8 + 0/1\n",
+        "expected": "3/4\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Два минуса",
+        "stdin": "-3/-9 * 1/1\n",
+        "expected": "1/3\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Отрицательный результат",
+        "stdin": "1/6 - 1/2\n",
+        "expected": "-1/3\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Большие числа",
+        "stdin": "1000000/999999 * 999999/1000000\n",
+        "expected": "1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Целые числа",
+        "stdin": "7/1 / 2/1\n-7/1 / 2/1\n",
+        "expected": "7/2\n-7/2\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Все операции",
+        "stdin": "1/2 + 1/2\n1/2 - 1/2\n1/2 * 1/2\n1/2 / 1/2\n",
+        "expected": "1\n0\n1/4\n1\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Общий знаменатель",
+        "stdin": "-5/12 + 7/-18\n",
+        "expected": "-29/36\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\ntypedef struct { int value; int offset; } Sample;\nstatic int corrected(Sample s) { return s.value + s.offset; }\nint main(void) {\n    Sample s;\n    if (scanf(\"%d%d\", &s.value, &s.offset) != 2) return 1;\n    printf(\"%d\\n\", corrected(s));\n    return 0;\n}\n",
-    "solutionExplanation": "Заголовок похож на разъём: клиенту нужны форма контактов и правила использования, а не внутренние провода.\n\nОпределение int counter = 0 в заголовке создаёт отдельное внешнее определение в каждом клиенте.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '12 -2' → '10\\n'; '0 0' → '0\\n'; '-100 30' → '-70\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <stdio.h>\n\n// ---- rational.h ----\ntypedef struct {\n    long long num;      // числитель\n    long long den;      // знаменатель: всегда > 0, дробь несократима\n} Rational;\n\nRational rational_make(long long num, long long den);\nRational rational_add(Rational a, Rational b);\nRational rational_sub(Rational a, Rational b);\nRational rational_mul(Rational a, Rational b);\nRational rational_div(Rational a, Rational b);\nvoid rational_print(Rational r);\n\n// ---- main.c ----\nint main(void) {\n    long long a, b, c, d;\n    char op;\n    while (scanf(\"%lld/%lld %c %lld/%lld\", &a, &b, &op, &c, &d) == 5) {\n        Rational x = rational_make(a, b);\n        Rational y = rational_make(c, d);\n        if (op == '/' && y.num == 0) {\n            printf(\"деление на ноль\\n\");\n            continue;\n        }\n        Rational r = op == '+'   ? rational_add(x, y)\n                     : op == '-' ? rational_sub(x, y)\n                     : op == '*' ? rational_mul(x, y)\n                                 : rational_div(x, y);\n        rational_print(r);\n        putchar('\\n');\n    }\n    return 0;\n}\n\n// ---- rational.c ----\nlong long gcd(long long a, long long b) {\n    while (b != 0) {\n        long long r = a % b;\n        a = b;\n        b = r;\n    }\n    return a;\n}\n\nRational rational_make(long long num, long long den) {\n    if (den < 0) {\n        num = -num;\n        den = -den;\n    }\n    long long g = gcd(num < 0 ? -num : num, den);\n    Rational r = {num / g, den / g};\n    return r;\n}\n\nRational rational_add(Rational a, Rational b) {\n    return rational_make(a.num * b.den + b.num * a.den, a.den * b.den);\n}\n\nRational rational_sub(Rational a, Rational b) {\n    return rational_make(a.num * b.den - b.num * a.den, a.den * b.den);\n}\n\nRational rational_mul(Rational a, Rational b) {\n    return rational_make(a.num * b.num, a.den * b.den);\n}\n\nRational rational_div(Rational a, Rational b) {\n    return rational_make(a.num * b.den, a.den * b.num);\n}\n\nvoid rational_print(Rational r) {\n    if (r.den == 1) {\n        printf(\"%lld\", r.num);\n    } else {\n        printf(\"%lld/%lld\", r.num, r.den);\n    }\n}\n",
+    "solutionExplanation": "Инвариант сосредоточен в одной функции: `rational_make` переносит знак в числитель и сокращает дробь. Остальные функции вычисляют «сырые» числитель и знаменатель по школьным формулам и отдают их в `rational_make`, поэтому результат всегда в канонической форме. Благодаря этому `main` может проверять делитель простым `y.num == 0`, а `rational_print` — сравнивать знаменатель с единицей.\n\n`gcd(0, den)` возвращает `den`, так что ноль превращается в `0/1` без отдельной ветки. Вспомогательная функция `gcd` не объявлена в заголовке: это внутреннее дело модуля, пользователям она не нужна. В уроке о `static` вы узнаете, как скрыть её и от линковщика.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-headers-task-2",
+      "title": "Непрозрачная очередь",
+      "description": "В заготовке — заголовок модуля очереди целых чисел (FIFO: первым пришёл — первым ушёл) и функция `main`, которая обрабатывает команды до конца ввода:\n- `push x` — добавить число в конец очереди;\n- `pop` — извлечь и напечатать число из начала очереди;\n- `front` — напечатать число в начале очереди, не извлекая его;\n- `size` — напечатать количество элементов, `cap` — вместимость.\n\nДля `pop` и `front` на пустой очереди `main` печатает `пусто`.\n\nНапишите раздел `queue.c`: определение `struct Queue` и функции модуля. Тип `Queue` непрозрачен — `main` стоит выше определения структуры и видит только указатель.\n\nОчередь устроена как **кольцевой буфер** в куче: элементы лежат в массиве, начиная с индекса `head`, и за концом массива продолжаются с его начала. Начальная вместимость — 4; когда буфер заполнен, вместимость удваивается, а элементы переписываются в новый массив по порядку. Вместимость никогда не уменьшается.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n// ---- queue.h ----\ntypedef struct Queue Queue;\n\nQueue *queue_create(void);\nvoid queue_destroy(Queue *q);\nint queue_push(Queue *q, int value);         // 1 — успех, 0 — не хватило памяти\nint queue_pop(Queue *q, int *out);           // 1 — успех, 0 — очередь пуста\nint queue_front(const Queue *q, int *out);   // 1 — успех, 0 — очередь пуста\nsize_t queue_size(const Queue *q);\nsize_t queue_capacity(const Queue *q);\n\n// ---- main.c ----\nint main(void) {\n    Queue *q = queue_create();\n    if (q == NULL) {\n        return 1;\n    }\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        int value;\n        if (strcmp(command, \"push\") == 0 && scanf(\"%d\", &value) == 1) {\n            if (!queue_push(q, value)) {\n                break;\n            }\n        } else if (strcmp(command, \"pop\") == 0) {\n            if (queue_pop(q, &value)) {\n                printf(\"%d\\n\", value);\n            } else {\n                printf(\"пусто\\n\");\n            }\n        } else if (strcmp(command, \"front\") == 0) {\n            if (queue_front(q, &value)) {\n                printf(\"%d\\n\", value);\n            } else {\n                printf(\"пусто\\n\");\n            }\n        } else if (strcmp(command, \"size\") == 0) {\n            printf(\"%zu\\n\", queue_size(q));\n        } else if (strcmp(command, \"cap\") == 0) {\n            printf(\"%zu\\n\", queue_capacity(q));\n        }\n    }\n    queue_destroy(q);\n    return 0;\n}\n\n// ---- queue.c ----\n// Напишите здесь определение struct Queue и функции модуля.\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "push 1\npush 2\npush 3\npop\nfront\nsize\n",
+          "output": "1\n2\n2\n"
+        },
+        {
+          "input": "pop\nfront\nsize\ncap\n",
+          "output": "пусто\nпусто\n0\n4\n",
+          "explanation": "Пустая очередь."
+        }
+      ],
+      "constraints": ["Команд не больше 2000, числа — int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Поля структуры: int *data; size_t head; size_t count; size_t capacity;. Элемент номер i (от начала очереди) лежит в data[(head + i) % capacity].",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "push: если count == capacity, выделите новый массив вдвое больше, перепишите в него элементы по порядку от 0 до count − 1 и поставьте head = 0. Затем запишите значение в data[(head + count) % capacity].",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "pop: значение берётся из data[head], затем head = (head + 1) % capacity и count уменьшается. queue_destroy освобождает и массив, и саму структуру.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "push 1\npush 2\npush 3\npop\nfront\nsize\n",
+          "expected": "1\n2\n2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "pop\nfront\nsize\ncap\n",
+          "expected": "пусто\nпусто\n0\n4\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Рост до 8",
+          "stdin": "push 1\npush 2\npush 3\npush 4\ncap\npush 5\ncap\nsize\n",
+          "expected": "4\n8\n5\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Рост после заворота",
+          "stdin": "push 1\npush 2\npush 3\npop\npop\npush 4\npush 5\npush 6\npush 7\ncap\npop\npop\npop\npop\npop\npop\n",
+          "expected": "1\n2\n8\n3\n4\n5\n6\n7\nпусто\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Чередование",
+          "stdin": "push 10\npop\npush 20\npop\npush 30\npop\npush 40\npop\npush 50\npop\ncap\nsize\n",
+          "expected": "10\n20\n30\n40\n50\n4\n0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "front не извлекает",
+          "stdin": "push -5\nfront\nfront\nsize\npop\npop\n",
+          "expected": "-5\n-5\n1\n-5\nпусто\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Рост до 16",
+          "stdin": "push 1\npush 2\npush 3\npush 4\npush 5\npush 6\npush 7\npush 8\npush 9\ncap\npop\npop\npop\npop\npop\npop\npop\npop\npop\npop\n",
+          "expected": "16\n1\n2\n3\n4\n5\n6\n7\n8\n9\nпусто\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Полный буфер с заворотом",
+          "stdin": "push 1\npush 2\npush 3\npush 4\npop\npop\npop\npush 5\npush 6\npush 7\npush 8\npush 9\nsize\ncap\nfront\n",
+          "expected": "1\n2\n3\n6\n8\n4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Начальная вместимость",
+          "stdin": "cap\nsize\n",
+          "expected": "4\n0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Крайние значения int",
+          "stdin": "push 2147483647\npush -2147483648\npop\npop\n",
+          "expected": "2147483647\n-2147483648\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n// ---- queue.h ----\ntypedef struct Queue Queue;\n\nQueue *queue_create(void);\nvoid queue_destroy(Queue *q);\nint queue_push(Queue *q, int value);         // 1 — успех, 0 — не хватило памяти\nint queue_pop(Queue *q, int *out);           // 1 — успех, 0 — очередь пуста\nint queue_front(const Queue *q, int *out);   // 1 — успех, 0 — очередь пуста\nsize_t queue_size(const Queue *q);\nsize_t queue_capacity(const Queue *q);\n\n// ---- main.c ----\nint main(void) {\n    Queue *q = queue_create();\n    if (q == NULL) {\n        return 1;\n    }\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        int value;\n        if (strcmp(command, \"push\") == 0 && scanf(\"%d\", &value) == 1) {\n            if (!queue_push(q, value)) {\n                break;\n            }\n        } else if (strcmp(command, \"pop\") == 0) {\n            if (queue_pop(q, &value)) {\n                printf(\"%d\\n\", value);\n            } else {\n                printf(\"пусто\\n\");\n            }\n        } else if (strcmp(command, \"front\") == 0) {\n            if (queue_front(q, &value)) {\n                printf(\"%d\\n\", value);\n            } else {\n                printf(\"пусто\\n\");\n            }\n        } else if (strcmp(command, \"size\") == 0) {\n            printf(\"%zu\\n\", queue_size(q));\n        } else if (strcmp(command, \"cap\") == 0) {\n            printf(\"%zu\\n\", queue_capacity(q));\n        }\n    }\n    queue_destroy(q);\n    return 0;\n}\n\n// ---- queue.c ----\nstruct Queue {\n    int *data;\n    size_t head;\n    size_t count;\n    size_t capacity;\n};\n\nQueue *queue_create(void) {\n    Queue *q = malloc(sizeof *q);\n    if (q == NULL) {\n        return NULL;\n    }\n    q->data = malloc(4 * sizeof *q->data);\n    if (q->data == NULL) {\n        free(q);\n        return NULL;\n    }\n    q->head = 0;\n    q->count = 0;\n    q->capacity = 4;\n    return q;\n}\n\nvoid queue_destroy(Queue *q) {\n    if (q != NULL) {\n        free(q->data);\n        free(q);\n    }\n}\n\nint queue_push(Queue *q, int value) {\n    if (q->count == q->capacity) {\n        size_t bigger = q->capacity * 2;\n        int *data = malloc(bigger * sizeof *data);\n        if (data == NULL) {\n            return 0;\n        }\n        for (size_t i = 0; i < q->count; i++) {\n            data[i] = q->data[(q->head + i) % q->capacity];\n        }\n        free(q->data);\n        q->data = data;\n        q->head = 0;\n        q->capacity = bigger;\n    }\n    q->data[(q->head + q->count) % q->capacity] = value;\n    q->count++;\n    return 1;\n}\n\nint queue_pop(Queue *q, int *out) {\n    if (q->count == 0) {\n        return 0;\n    }\n    *out = q->data[q->head];\n    q->head = (q->head + 1) % q->capacity;\n    q->count--;\n    return 1;\n}\n\nint queue_front(const Queue *q, int *out) {\n    if (q->count == 0) {\n        return 0;\n    }\n    *out = q->data[q->head];\n    return 1;\n}\n\nsize_t queue_size(const Queue *q) {\n    return q->count;\n}\n\nsize_t queue_capacity(const Queue *q) {\n    return q->capacity;\n}\n",
+      "solutionExplanation": "Кольцевой буфер позволяет извлекать из начала за O(1) без сдвига элементов: извлечение лишь передвигает `head`, а добавление пишет за последним элементом, «заворачивая» индекс через остаток от деления.\n\nПри росте нельзя просто вызвать `realloc`: если очередь «перелилась» через конец массива, её хвост лежит в начале блока, и после увеличения порядок сломается. Поэтому элементы переписываются в новый массив в логическом порядке, начиная с нулевого индекса.\n\nИнвариант модуля — `count <= capacity` и `head < capacity`. Поскольку `struct Queue` определена только в разделе реализации, `main` не может его нарушить: она видит неполный тип и пользуется только функциями из заголовка.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-headers-task-3",
+      "title": "Таблица рекордов",
+      "description": "В заготовке есть только функция `main`. Напишите для неё модуль `Leaderboard` — **и заголовок, и реализацию**, так, чтобы `main` скомпилировалась без изменений и без предупреждений.\n\n`main` обрабатывает команды до конца ввода:\n- `add имя очки` — `board_add` прибавляет очки игроку (новый игрок появляется с нулём очков); возвращает 1 при успехе и 0, если не хватило памяти;\n- `score имя` — `board_score` возвращает очки игрока или 0 для неизвестного имени;\n- `top k` — `board_print_top` печатает `k` лучших игроков (или всех, если их меньше) строками `место. имя очки`: по убыванию очков, при равенстве — по алфавиту (`strcmp`);\n- `count` — `board_count` возвращает число игроков (`size_t`).\n\nТип `Leaderboard` должен быть непрозрачным: в разделе заголовка — только неполный тип и прототипы, определение структуры — в разделе реализации.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n// ---- leaderboard.h ----\n// Напишите здесь интерфейс модуля: неполный тип Leaderboard и прототипы\n// всех функций, которые вызывает main.\n\n// ---- main.c ----\nint main(void) {\n    Leaderboard *board = board_create();\n    if (board == NULL) {\n        return 1;\n    }\n    char command[16], name[32];\n    int points, k;\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"add\") == 0 && scanf(\"%31s %d\", name, &points) == 2) {\n            if (!board_add(board, name, points)) {\n                break;\n            }\n        } else if (strcmp(command, \"score\") == 0 && scanf(\"%31s\", name) == 1) {\n            printf(\"%s: %d\\n\", name, board_score(board, name));\n        } else if (strcmp(command, \"top\") == 0 && scanf(\"%d\", &k) == 1) {\n            board_print_top(board, k);\n        } else if (strcmp(command, \"count\") == 0) {\n            printf(\"%zu\\n\", board_count(board));\n        }\n    }\n    board_destroy(board);\n    return 0;\n}\n\n// ---- leaderboard.c ----\n// Напишите здесь определение структуры и функции модуля.\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "add ann 10\nadd bob 15\nadd ann 7\ntop 2\nscore ann\ncount\n",
+          "output": "1. ann 17\n2. bob 15\nann: 17\n2\n"
+        },
+        {
+          "input": "top 3\nscore zoe\ncount\n",
+          "output": "zoe: 0\n0\n",
+          "explanation": "Пустая таблица: top ничего не печатает."
+        }
+      ],
+      "constraints": [
+        "Имена — не длиннее 31 символа без пробелов; очки — int, суммы помещаются в int.",
+        "Игроков не больше 500, команд не больше 1000."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Типы параметров и результатов выводите из вызовов в main: например, board_score(board, name) используется в printf с %d, значит, возвращает int и принимает (const Leaderboard *, const char *).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Храните игроков в динамическом массиве структур { char name[32]; int points; } с полями count и capacity и расширяйте его через realloc.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Для top скопируйте массив во временный, отсортируйте qsort с функцией сравнения «очки по убыванию, затем strcmp» и напечатайте первые k. Так порядок в самой таблице не меняется.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add ann 10\nadd bob 15\nadd ann 7\ntop 2\nscore ann\ncount\n",
+          "expected": "1. ann 17\n2. bob 15\nann: 17\n2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "top 3\nscore zoe\ncount\n",
+          "expected": "zoe: 0\n0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Равные очки по алфавиту",
+          "stdin": "add bob 5\nadd amy 5\nadd cid 5\ntop 3\n",
+          "expected": "1. amy 5\n2. bob 5\n3. cid 5\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "k больше числа игроков",
+          "stdin": "add a 1\nadd b 2\ntop 10\n",
+          "expected": "1. b 2\n2. a 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Отрицательные очки",
+          "stdin": "add max 10\nadd max -15\nscore max\ntop 1\n",
+          "expected": "max: -5\n1. max -5\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Рост массива",
+          "stdin": "add p1 1\nadd p2 2\nadd p3 3\nadd p4 4\nadd p5 5\nadd p6 6\nadd p7 7\nadd p8 8\nadd p9 9\nadd p10 10\ncount\ntop 3\n",
+          "expected": "10\n1. p10 10\n2. p9 9\n3. p8 8\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "top 0",
+          "stdin": "add x 3\ntop 0\ncount\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Порядок меняется со временем",
+          "stdin": "add zed 4\nadd al 9\ntop 2\nadd zed 10\ntop 2\n",
+          "expected": "1. al 9\n2. zed 4\n1. zed 14\n2. al 9\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Регистр в именах",
+          "stdin": "add Ann 1\nadd ann 1\ncount\ntop 2\n",
+          "expected": "2\n1. Ann 1\n2. ann 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Имя из 31 символа",
+          "stdin": "add verylongname_abcdefghijklmnopq 100\nscore verylongname_abcdefghijklmnopq\ntop 1\n",
+          "expected": "verylongname_abcdefghijklmnopq: 100\n1. verylongname_abcdefghijklmnopq 100\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n// ---- leaderboard.h ----\ntypedef struct Leaderboard Leaderboard;\n\nLeaderboard *board_create(void);\nvoid board_destroy(Leaderboard *board);\nint board_add(Leaderboard *board, const char *name, int points);\nint board_score(const Leaderboard *board, const char *name);\nvoid board_print_top(const Leaderboard *board, int k);\nsize_t board_count(const Leaderboard *board);\n\n// ---- main.c ----\nint main(void) {\n    Leaderboard *board = board_create();\n    if (board == NULL) {\n        return 1;\n    }\n    char command[16], name[32];\n    int points, k;\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"add\") == 0 && scanf(\"%31s %d\", name, &points) == 2) {\n            if (!board_add(board, name, points)) {\n                break;\n            }\n        } else if (strcmp(command, \"score\") == 0 && scanf(\"%31s\", name) == 1) {\n            printf(\"%s: %d\\n\", name, board_score(board, name));\n        } else if (strcmp(command, \"top\") == 0 && scanf(\"%d\", &k) == 1) {\n            board_print_top(board, k);\n        } else if (strcmp(command, \"count\") == 0) {\n            printf(\"%zu\\n\", board_count(board));\n        }\n    }\n    board_destroy(board);\n    return 0;\n}\n\n// ---- leaderboard.c ----\ntypedef struct {\n    char name[32];\n    int points;\n} Entry;\n\nstruct Leaderboard {\n    Entry *entries;\n    size_t count;\n    size_t capacity;\n};\n\nLeaderboard *board_create(void) {\n    Leaderboard *board = malloc(sizeof *board);\n    if (board != NULL) {\n        board->entries = NULL;\n        board->count = 0;\n        board->capacity = 0;\n    }\n    return board;\n}\n\nvoid board_destroy(Leaderboard *board) {\n    if (board != NULL) {\n        free(board->entries);\n        free(board);\n    }\n}\n\nEntry *find_entry(const Leaderboard *board, const char *name) {\n    for (size_t i = 0; i < board->count; i++) {\n        if (strcmp(board->entries[i].name, name) == 0) {\n            return &board->entries[i];\n        }\n    }\n    return NULL;\n}\n\nint board_add(Leaderboard *board, const char *name, int points) {\n    Entry *entry = find_entry(board, name);\n    if (entry == NULL) {\n        if (board->count == board->capacity) {\n            size_t bigger = board->capacity == 0 ? 8 : board->capacity * 2;\n            Entry *grown = realloc(board->entries, bigger * sizeof *grown);\n            if (grown == NULL) {\n                return 0;\n            }\n            board->entries = grown;\n            board->capacity = bigger;\n        }\n        entry = &board->entries[board->count++];\n        strcpy(entry->name, name);\n        entry->points = 0;\n    }\n    entry->points += points;\n    return 1;\n}\n\nint board_score(const Leaderboard *board, const char *name) {\n    const Entry *entry = find_entry(board, name);\n    return entry != NULL ? entry->points : 0;\n}\n\nint compare_entries(const void *pa, const void *pb) {\n    const Entry *a = pa;\n    const Entry *b = pb;\n    if (a->points != b->points) {\n        return (b->points > a->points) - (b->points < a->points);\n    }\n    return strcmp(a->name, b->name);\n}\n\nvoid board_print_top(const Leaderboard *board, int k) {\n    if (board->count == 0 || k <= 0) {\n        return;\n    }\n    Entry *sorted = malloc(board->count * sizeof *sorted);\n    if (sorted == NULL) {\n        return;\n    }\n    memcpy(sorted, board->entries, board->count * sizeof *sorted);\n    qsort(sorted, board->count, sizeof *sorted, compare_entries);\n    for (size_t i = 0; i < board->count && i < (size_t)k; i++) {\n        printf(\"%zu. %s %d\\n\", i + 1, sorted[i].name, sorted[i].points);\n    }\n    free(sorted);\n}\n\nsize_t board_count(const Leaderboard *board) {\n    return board->count;\n}\n",
+      "solutionExplanation": "Заголовок восстанавливается по местам использования: `board_create()` возвращает указатель, который сравнивается с `NULL`; `board_add` возвращает значение, проверяемое `!`; `board_score` печатается через `%d`; `board_count` — через `%zu`, значит, возвращает `size_t`. Функции, которые только читают таблицу, принимают `const Leaderboard *` — это часть договора.\n\nТип `Entry` и функции `find_entry` и `compare_entries` в заголовок не попали: пользователю модуля они не нужны. Определение `struct Leaderboard` стоит ниже `main`, поэтому `main` физически не может обратиться к полям — непрозрачность проверяет компилятор.\n\n`board_print_top` сортирует копию: функция, принимающая `const`-указатель, не должна менять порядок самой таблицы, а следующие команды `add` продолжают работать с исходным массивом.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-headers-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Почему реализация включает свой заголовок?",
+        "id": "q1",
+        "question": "Что делает директива #include \"stats.h\"?",
+        "explanation": "Препроцессор буквально подставляет содержимое файла. Код функций в заголовке нет — его приносит stats.c, переданный в команду сборки.",
         "options": [
-          "Чтобы проверить согласованность объявления и определения",
-          "Чтобы линкер автоматически нашёл все файлы"
+          "Вставляет текст файла stats.h на место директивы",
+          "Подключает к программе скомпилированный код модуля stats",
+          "Сообщает линковщику, где искать функции модуля",
+          "Компилирует stats.c вместе с текущим файлом"
         ],
-        "correct": 0,
-        "explanation": "Заголовок — текстовый контракт модуля. В нём размещают прототипы, типы и необходимые константы; определения общих объектов обычно остаются в .c. Заголовок должен быть самодостаточным: если интерфейс использует size_t, он сам включает stddef.h. Тогда порядок чужих include не меняет работоспособность клиента."
+        "correct": 0
       },
       {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q2",
+        "question": "Что можно поместить в заголовок, который подключают несколько .c файлов? Выберите все.",
+        "explanation": "Объявления и описания типов не создают ни кода, ни памяти, их можно повторять в каждом файле. Определения переменной и функции попадут в каждый объектный файл — линковщик сообщит multiple definition.",
+        "type": "multiple",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "Определение int counter = 0 в заголовке создаёт отдельное внешнее определение в каждом клиенте."
+          "Прототип int stats_max(const int *values, int count);",
+          "Определение struct Point { int x, y; };",
+          "Определение переменной int counter = 0;",
+          "typedef unsigned long long u64;",
+          "Функцию с телом int twice(int x) { return 2 * x; }"
         ],
-        "correct": 1,
-        "explanation": "Заголовок похож на разъём: клиенту нужны форма контактов и правила использования, а не внутренние провода."
+        "correct": [0, 1, 3]
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["12", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: Reading r={12}; printf(\"%d\\n\",r.raw); Ожидаемый результат: 12"
+        "id": "q3",
+        "question": "Зачем stats.c подключает собственный заголовок stats.h?",
+        "explanation": "Если определение разойдётся с прототипом, при сборке stats.c появится ошибка conflicting types. Без этого include несовпадение обнаружится только как странное поведение программы.",
+        "options": [
+          "Чтобы компилятор сверил каждое определение с объявлением из заголовка",
+          "Без этого линковщик не найдёт функции модуля",
+          "Это требование синтаксиса: .c файл без своего заголовка не компилируется",
+          "Чтобы функции модуля стали видны только внутри stats.c"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Какие операции допустимы в файле, который видит только typedef struct Stack Stack; без определения структуры? Выберите все.",
+        "explanation": "struct Stack — неполный тип: размер и поля неизвестны. Указатель на неполный тип можно хранить и передавать, а создавать объекты и обращаться к полям нельзя.",
+        "type": "multiple",
+        "options": [
+          "Объявить указатель Stack *s;",
+          "Передать указатель в функцию stack_push(s, 5)",
+          "Создать переменную Stack local;",
+          "Вычислить sizeof(Stack)",
+          "Прочитать поле s->size"
+        ],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\n// ---- score.h ----\nvoid score_add(int points);\nint score_get(void);\n\n// ---- main.c ----\nint main(void) {\n    score_add(10);\n    score_add(score_get() * 2);\n    printf(\"%d\\n\", score_get());\n    return 0;\n}\n\n// ---- score.c ----\nint score = 0;\n\nvoid score_add(int points) {\n    score += points;\n}\n\nint score_get(void) {\n    return score;\n}",
+        "explanation": "После первого вызова счёт 10, затем добавляется 10 * 2 = 20, итого 30. main знает функции модуля только по прототипам из раздела score.h.",
+        "type": "text",
+        "answers": ["30"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Заголовок buffer.h объявляет size_t buffer_used(void); и ничего не подключает. Файл a.c подключает сначала <stdio.h>, потом buffer.h, и компилируется. Файл b.c подключает только buffer.h и не компилируется. В чём ошибка?",
+        "explanation": "a.c работает случайно: size_t пришёл из stdio.h. Заголовок должен сам подключать всё, что использует. Проверка — подключать свой заголовок первым в его .c файле.",
+        "options": [
+          "buffer.h не самодостаточен: в нём нужен #include <stddef.h>",
+          "b.c должен подключать buffer.h в угловых скобках",
+          "В b.c нужно добавить определение size_t",
+          "Тип size_t доступен только в файлах, где есть main"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Как подключить свой заголовок config.h, лежащий рядом с main.c?",
+        "explanation": "Кавычки: поиск начинается с каталога текущего файла. Угловые скобки предназначены для стандартных и сторонних библиотек.",
+        "type": "text",
+        "answers": ["#include \"config.h\""],
+        "placeholder": "Директива"
+      },
+      {
+        "id": "q8",
+        "question": "Почему в C к внешним именам модуля добавляют префикс, например stack_push вместо push?",
+        "explanation": "В C нет пространств имён. Функция init в двух модулях — конфликт при линковке, поэтому имена делают уникальными префиксом модуля.",
+        "options": [
+          "Все внешние имена программы и библиотек находятся в одном общем пространстве; одинаковые имена дадут multiple definition",
+          "Компилятор требует, чтобы имя функции начиналось с имени файла",
+          "Префикс ускоряет вызов функции",
+          "Без префикса функция не видна из других файлов"
+        ],
+        "correct": 0
       }
     ]
   }

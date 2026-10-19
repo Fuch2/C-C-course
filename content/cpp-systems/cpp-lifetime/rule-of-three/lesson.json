@@ -1,149 +1,536 @@
 {
   "id": "lifetime-rule-of-three",
-  "title": "Правило трёх — Rule of Three",
-  "description": "Если тип вручную управляет ресурсом и ему нужен собственный деструктор, вместе с ним необходимо рассмотреть конструктор копирования и копирующее присваивание.",
+  "title": "Правило трёх",
+  "description": "Деструктор, конструктор копирования и копирующее присваивание пишут вместе: причина у них одна — класс сам управляет ресурсом. Что ломается при неполном наборе; устаревшее неявное копирование при пользовательском деструкторе и предупреждения компиляторов; полный класс строки по правилу трёх; запрет копирования как выполнение правила; путь к правилам пяти и нуля.",
   "moduleId": "cpp-lifetime",
   "order": 10,
-  "difficulty": "advanced",
-  "estimatedMinutes": 55,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
   "prerequisites": ["lifetime-deep-copy"],
   "objectives": [
-    "Сформулировать инвариант владельца до написания трёх специальных операций.",
-    "Проследить на MemoryDiagram transitions блоков при копии, присваивании и разрушении.",
-    "Реализовать Cell по правилу трёх, переживающий самоприсваивание и bad_alloc."
+    "Объяснять, почему три специальные функции связаны",
+    "Предсказывать последствия неполного набора",
+    "Писать класс-владелец по правилу трёх",
+    "Выбирать между реализацией и запретом копирования"
   ],
-  "tags": ["C++20", "время жизни", "управление ресурсами", "Правило трёх — Rule of Three"],
+  "tags": ["C++23", "Время жизни", "Правило трёх", "Копирование", "Деструкторы"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "lifetime-rule-of-three-exercise",
-    "title": "Практика: Правило трёх — Rule of Three",
-    "description": "Реализуйте Cell по правилу трёх: деструктор, глубокий копирующий конструктор, присваивание с подготовкой замены до удаления старого блока. solve создаёт x(a), копию y, объект z(b), выполняет z = y и самоприсваивание z через алиас, меняет y на b и возвращает *z.p + *y.p.",
-    "difficulty": "advanced",
+    "title": "Стек на массиве",
+    "description": "Класс `IntStack` хранит элементы в массиве `int`, выделенном `new[]`; когда места нет, массив заменяется вдвое большим (начальная ёмкость — 4). Реализуйте всё по правилу трёх: деструктор, глубокий конструктор копирования и присваивание.\n\nСтеки хранятся в `std::map<std::string, IntStack>` (`operator[]` создаёт пустой). Команды:\n\n- `push S x`;\n- `pop S` — напечатать снятое значение или `S: пусто`;\n- `copy T S` — T становится копией S;\n- `size S` — `S: размер N`.",
+    "difficulty": "intermediate",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 7)",
-        "output": "10\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "push A 1\npush A 2\ncopy B A\npush B 3\npop A\npop B\nsize A\nsize B\n",
+        "output": "2\n3\nA: размер 1\nB: размер 2\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "pop X\nsize X\n",
+        "output": "X: пусто\nX: размер 0\n"
       }
     ],
-    "constraints": [
-      "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Команд не больше 2000; значения помещаются в int."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Проверьте каждую операцию как переход между допустимыми состояниями: копия не меняет источник, присваивание освобождает старое, деструктор удаляет ровно свой блок."
+        "id": "hint-1",
+        "text": "При росте: выделить новый массив, скопировать size_ элементов, delete[] старый, заменить указатель и ёмкость.",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "Инвариант учебного Cell прост: p всегда указывает на один собственный int. Деструктор удаляет его; копирующий конструктор выделяет другой int; присваивание сначала выделяет новый блок, затем удаляет старый. Такой порядок переживает самоприсваивание и сохраняет сильную гарантию при bad_alloc. Ручной new показан для понимания механики: в прикладном коде такой Cell лучше выразить готовым владеющим членом. Не добавляйте специальные операции классу, у которого нет соответствующей ответственности.\n\nОдна корректная операция не компенсирует другую опасную. Проверяйте все пути: copy construction, copy assignment после неё и самоприсваивание через алиас.\n\nПостройте цепочку y = x; z = y; затем измените x. Значения y и z должны остаться прежними. Отдельно оцените цену хранения одного int динамически: это учебный способ увидеть владение, а не рекомендация."
+        "id": "hint-2",
+        "text": "Копия может выделить ровно capacity_ элементов оригинала (или size_, если он больше нуля) — главное, чтобы буфер был свой.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 7],
-        "expected": "10\n"
+        "stdin": "push A 1\npush A 2\ncopy B A\npush B 3\npop A\npop B\nsize A\nsize B\n",
+        "expected": "2\n3\nA: размер 1\nB: размер 2\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "pop X\nsize X\n",
+        "expected": "X: пусто\nX: размер 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный случай 1",
-        "arguments": [-8, 3],
-        "expected": "-5\n"
+        "id": "hidden-1",
+        "name": "Рост массива",
+        "stdin": "push A 1\npush A 2\npush A 3\npush A 4\npush A 5\npush A 6\npop A\npop A\npop A\npop A\npop A\npop A\npop A\n",
+        "expected": "6\n5\n4\n3\n2\n1\nA: пусто\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный случай 2",
-        "arguments": [5, -9],
-        "expected": "-4\n"
+        "id": "hidden-2",
+        "name": "Копия в себя",
+        "stdin": "push A 1\ncopy A A\npop A\npop A\n",
+        "expected": "1\nA: пусто\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный случай 3",
-        "arguments": [-1000, 1000],
-        "expected": "0\n"
+        "id": "hidden-3",
+        "name": "Копия пустого",
+        "stdin": "copy B A\npush B 5\nsize A\nsize B\n",
+        "expected": "A: размер 0\nB: размер 1\n"
       },
       {
-        "id": "case-6",
-        "name": "Граничный случай 4",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-4",
+        "name": "Цепочка копий",
+        "stdin": "push A 7\ncopy B A\ncopy C B\npop C\npop B\npop A\n",
+        "expected": "7\n7\n7\n"
       },
       {
-        "id": "case-7",
-        "name": "Граничный случай 5",
-        "arguments": [4, 4],
-        "expected": "8\n"
+        "id": "hidden-5",
+        "name": "Крайние значения",
+        "stdin": "push A -2147483648\npush A 2147483647\npop A\npop A\n",
+        "expected": "2147483647\n-2147483648\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Присваивание поверх непустого",
+        "stdin": "push A 1\npush B 9\npush B 8\ncopy B A\npop B\npop B\n",
+        "expected": "1\nB: пусто\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Копия после роста",
+        "stdin": "push A 1\npush A 2\npush A 3\npush A 4\npush A 5\ncopy B A\npush B 6\nsize B\npop B\n",
+        "expected": "B: размер 6\n6\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Ноль в стеке",
+        "stdin": "size A\npush A 0\nsize A\npop A\nsize A\n",
+        "expected": "A: размер 0\nA: размер 1\n0\nA: размер 0\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct Cell { int* p; explicit Cell(int x): p(new int(x)) {} ~Cell() { delete p; } Cell(const Cell& x): p(new int(*x.p)) {} Cell& operator=(const Cell& x) { int* next = new int(*x.p); delete p; p = next; return *this; } };\nint solve(int a, int b) { Cell x{a}, y = x, z{b}; z = y; Cell& alias = z; z = alias; *y.p = b; return *z.p + *y.p; }",
-    "solutionExplanation": "Инвариант учебного Cell прост: p всегда указывает на один собственный int. Деструктор удаляет его; копирующий конструктор выделяет другой int; присваивание сначала выделяет новый блок, затем удаляет старый. Такой порядок переживает самоприсваивание и сохраняет сильную гарантию при bad_alloc. Ручной new показан для понимания механики: в прикладном коде такой Cell лучше выразить готовым владеющим членом. Не добавляйте специальные операции классу, у которого нет соответствующей ответственности.\n\nОдна корректная операция не компенсирует другую опасную. Проверяйте все пути: copy construction, copy assignment после неё и самоприсваивание через алиас.\n\nПостройте цепочку y = x; z = y; затем измените x. Значения y и z должны остаться прежними. Отдельно оцените цену хранения одного int динамически: это учебный способ увидеть владение, а не рекомендация.",
+    "referenceSolution": "#include <algorithm>\n#include <cstddef>\n#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <utility>\n\nclass IntStack {\npublic:\n    IntStack() = default;\n    IntStack(const IntStack &other)\n        : size_(other.size_), capacity_(other.capacity_), data_(other.capacity_ ? new int[other.capacity_] : nullptr) {\n        std::copy_n(other.data_, size_, data_);\n    }\n    IntStack &operator=(const IntStack &other) {\n        IntStack copy(other);\n        std::swap(size_, copy.size_);\n        std::swap(capacity_, copy.capacity_);\n        std::swap(data_, copy.data_);\n        return *this;\n    }\n    ~IntStack() {\n        delete[] data_;\n    }\n\n    void push(int x) {\n        if (size_ == capacity_) {\n            const std::size_t bigger = capacity_ ? capacity_ * 2 : 4;\n            int *fresh = new int[bigger];\n            std::copy_n(data_, size_, fresh);\n            delete[] data_;\n            data_ = fresh;\n            capacity_ = bigger;\n        }\n        data_[size_++] = x;\n    }\n\n    bool empty() const {\n        return size_ == 0;\n    }\n\n    int pop() {\n        return data_[--size_];\n    }\n\n    std::size_t size() const {\n        return size_;\n    }\n\nprivate:\n    std::size_t size_ = 0;\n    std::size_t capacity_ = 0;\n    int *data_ = nullptr;\n};\n\nint main() {\n    std::map<std::string, IntStack> stacks;\n    std::string command, s;\n    while (std::cin >> command >> s) {\n        if (command == \"push\") {\n            int x;\n            std::cin >> x;\n            stacks[s].push(x);\n        } else if (command == \"pop\") {\n            IntStack &st = stacks[s];\n            if (st.empty()) {\n                std::println(\"{}: пусто\", s);\n            } else {\n                std::println(\"{}\", st.pop());\n            }\n        } else if (command == \"copy\") {\n            std::string from;\n            std::cin >> from;\n            stacks[s] = stacks[from];\n        } else {\n            std::println(\"{}: размер {}\", s, stacks[s].size());\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Стек владеет массивом, поэтому ему нужны все три функции. Деструктор освобождает массив, конструктор копирования создаёт свой, присваивание выражено через конструктор копирования и обмен — так логика копирования написана один раз. Копия пустого стека не выделяет память: `nullptr` и нулевая ёмкость.\n\nРост массива — та же схема «сначала новое, потом удалить старое», что и в copy-and-swap: если `new` бросит, стек останется прежним.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "lifetime-rule-of-three-task-2",
+      "title": "Кто вызван?",
+      "description": "Структура `Tracked` хранит строку `v` и печатает каждое событие своей жизни: конструктор — `+v`, конструктор копирования — `копия v`, копирующее присваивание — `присваивание старое ← новое`, деструктор — `-v`.\n\nОбъекты хранятся в `std::map<std::string, Tracked>`. Выполняйте команды **ровно так**:\n\n- `new X v` — если X нет: `try_emplace(X, v)`; если есть: `objects.at(X) = Tracked(v)`;\n- `copy Y X` — если Y нет: `try_emplace(Y, objects.at(X))`; если есть: `objects.at(Y) = objects.at(X)`;\n- `drop X` — `erase(X)`.\n\nВ конце удаляйте оставшиеся объекты по одному, начиная с последнего по имени.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "new a 1\ncopy b a\nnew a 2\ncopy b a\ndrop a\n",
+          "output": "+1\nкопия 1\n+2\nприсваивание 1 ← 2\n-2\nприсваивание 1 ← 2\n-2\n-2\n"
+        },
+        {
+          "input": "new x q\n",
+          "output": "+q\n-q\n"
+        }
+      ],
+      "constraints": ["Команд не больше 100; copy и drop ссылаются на существующие объекты."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Присваивание печатает до изменения: std::println(\"присваивание {} ← {}\", v, other.v); v = other.v;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Удаление с конца: while (!objects.empty()) objects.erase(std::prev(objects.end()));",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "new a 1\ncopy b a\nnew a 2\ncopy b a\ndrop a\n",
+          "expected": "+1\nкопия 1\n+2\nприсваивание 1 ← 2\n-2\nприсваивание 1 ← 2\n-2\n-2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "new x q\n",
+          "expected": "+q\n-q\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-2",
+          "name": "Порядок удаления в конце",
+          "stdin": "new a 1\nnew b 2\nnew c 3\n",
+          "expected": "+1\n+2\n+3\n-3\n-2\n-1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Самоприсваивание",
+          "stdin": "new a 1\ncopy a a\n",
+          "expected": "+1\nприсваивание 1 ← 1\n-1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Цепочка копий",
+          "stdin": "new a 1\ncopy b a\ncopy c b\ndrop b\n",
+          "expected": "+1\nкопия 1\nкопия 1\n-1\n-1\n-1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Многократное присваивание",
+          "stdin": "new a 1\nnew a 2\nnew a 3\n",
+          "expected": "+1\n+2\nприсваивание 1 ← 2\n-2\n+3\nприсваивание 2 ← 3\n-3\n-3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Повторное создание",
+          "stdin": "new a x\ndrop a\nnew a y\n",
+          "expected": "+x\n-x\n+y\n-y\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Присваивание по имени",
+          "stdin": "new z 1\nnew a 2\ncopy z a\n",
+          "expected": "+1\n+2\nприсваивание 1 ← 2\n-2\n-2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Всё удалено вручную",
+          "stdin": "new a 1\ncopy b a\ncopy a b\ndrop a\ndrop b\n",
+          "expected": "+1\nкопия 1\nприсваивание 1 ← 1\n-1\n-1\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <iterator>\n#include <map>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Tracked {\n    std::string v;\n\n    explicit Tracked(std::string value) : v(std::move(value)) {\n        std::println(\"+{}\", v);\n    }\n    Tracked(const Tracked &other) : v(other.v) {\n        std::println(\"копия {}\", v);\n    }\n    Tracked &operator=(const Tracked &other) {\n        std::println(\"присваивание {} ← {}\", v, other.v);\n        v = other.v;\n        return *this;\n    }\n    ~Tracked() {\n        std::println(\"-{}\", v);\n    }\n};\n\nint main() {\n    std::map<std::string, Tracked> objects;\n    std::string command, x;\n    while (std::cin >> command >> x) {\n        if (command == \"new\") {\n            std::string v;\n            std::cin >> v;\n            if (objects.contains(x)) {\n                objects.at(x) = Tracked(v);\n            } else {\n                objects.try_emplace(x, v);\n            }\n        } else if (command == \"copy\") {\n            std::string from;\n            std::cin >> from;\n            if (objects.contains(x)) {\n                objects.at(x) = objects.at(from);\n            } else {\n                objects.try_emplace(x, objects.at(from));\n            }\n        } else {\n            objects.erase(x);\n        }\n    }\n    while (!objects.empty()) {\n        objects.erase(std::prev(objects.end()));\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Каждая операция вызывает свою специальную функцию. Новый объект на месте (`try_emplace` с аргументами конструктора) — обычный конструктор, без копий. Новый объект из существующего — конструктор копирования. Существующий объект из другого — присваивание. Присваивание временного `Tracked(v)` порождает три события: создание временного, присваивание и уничтожение временного на точке с запятой.\n\nПеремещающих операций у `Tracked` нет: пользовательский конструктор копирования и деструктор подавляют их. Поэтому даже временное значение присваивается копированием — это исправит правило пяти.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-rule-of-three-task-3",
+      "title": "Найди ошибку: один деструктор",
+      "description": "Программа хранит ряды измерений. Команда `series имя n v₁ … vₙ` создаёт ряд и добавляет его в вектор; `mean имя` печатает `имя: среднее` с двумя знаками после точки (среднее пустого ряда — 0).\n\nС первым же рядом что-то идёт не так: AddressSanitizer сообщает об ошибке. Найдите причину и исправьте класс `Series`, не меняя `main`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <algorithm>\n#include <cstddef>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Series {\npublic:\n    Series(std::string name, std::size_t size) : name_(std::move(name)), size_(size), values_(new double[size]()) {}\n    ~Series() {\n        delete[] values_;\n    }\n\n    void set(std::size_t i, double v) {\n        values_[i] = v;\n    }\n\n    const std::string &name() const {\n        return name_;\n    }\n\n    double mean() const {\n        double sum = 0;\n        for (std::size_t i = 0; i < size_; ++i) {\n            sum += values_[i];\n        }\n        return size_ ? sum / static_cast<double>(size_) : 0;\n    }\n\nprivate:\n    std::string name_;\n    std::size_t size_;\n    double *values_;\n};\n\nint main() {\n    std::vector<Series> all;\n    std::string command, name;\n    while (std::cin >> command >> name) {\n        if (command == \"series\") {\n            std::size_t n;\n            std::cin >> n;\n            Series s(name, n);\n            for (std::size_t i = 0; i < n; ++i) {\n                double v;\n                std::cin >> v;\n                s.set(i, v);\n            }\n            all.push_back(s);\n        } else {\n            for (const Series &s : all) {\n                if (s.name() == name) {\n                    std::println(\"{}: {:.2f}\", name, s.mean());\n                }\n            }\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "series t 3 1 2 3\nmean t\n",
+          "output": "t: 2.00\n"
+        },
+        {
+          "input": "series a 2 1 2\nseries b 1 10\nmean a\nmean b\n",
+          "output": "a: 1.50\nb: 10.00\n"
+        }
+      ],
+      "constraints": ["Рядов не больше 30; n от 0 до 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что делает all.push_back(s) с объектом s и что происходит с s в конце итерации?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Деструктор в классе есть, а копирования нет. Добавьте глубокий конструктор копирования и присваивание по правилу трёх.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "series t 3 1 2 3\nmean t\n",
+          "expected": "t: 2.00\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "series a 2 1 2\nseries b 1 10\nmean a\nmean b\n",
+          "expected": "a: 1.50\nb: 10.00\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "series z 0\nmean z\n",
+          "expected": "z: 0.00\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "series a 1 5\nseries a 1 7\nmean a\n",
+          "expected": "a: 5.00\na: 7.00\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "series x 4 -1 -2 -3 -4\nmean x\n",
+          "expected": "x: -2.50\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "series p 2 0.25 0.75\nmean p\n",
+          "expected": "p: 0.50\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "series a 1 1\nseries b 1 2\nseries c 1 3\nseries d 1 4\nseries e 1 5\nmean c\n",
+          "expected": "c: 3.00\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "series big 3 1000000 2000000 3000000\nmean big\n",
+          "expected": "big: 2000000.00\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "mean none\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "series q 5 1 1 1 1 6\nmean q\n",
+          "expected": "q: 2.00\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <cstddef>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Series {\npublic:\n    Series(std::string name, std::size_t size) : name_(std::move(name)), size_(size), values_(new double[size]()) {}\n    Series(const Series &other) : name_(other.name_), size_(other.size_), values_(new double[other.size_]) {\n        std::copy_n(other.values_, size_, values_);\n    }\n    Series &operator=(const Series &other) {\n        Series copy(other);\n        std::swap(name_, copy.name_);\n        std::swap(size_, copy.size_);\n        std::swap(values_, copy.values_);\n        return *this;\n    }\n    ~Series() {\n        delete[] values_;\n    }\n\n    void set(std::size_t i, double v) {\n        values_[i] = v;\n    }\n\n    const std::string &name() const {\n        return name_;\n    }\n\n    double mean() const {\n        double sum = 0;\n        for (std::size_t i = 0; i < size_; ++i) {\n            sum += values_[i];\n        }\n        return size_ ? sum / static_cast<double>(size_) : 0;\n    }\n\nprivate:\n    std::string name_;\n    std::size_t size_;\n    double *values_;\n};\n\nint main() {\n    std::vector<Series> all;\n    std::string command, name;\n    while (std::cin >> command >> name) {\n        if (command == \"series\") {\n            std::size_t n;\n            std::cin >> n;\n            Series s(name, n);\n            for (std::size_t i = 0; i < n; ++i) {\n                double v;\n                std::cin >> v;\n                s.set(i, v);\n            }\n            all.push_back(s);\n        } else {\n            for (const Series &s : all) {\n                if (s.name() == name) {\n                    std::println(\"{}: {:.2f}\", name, s.mean());\n                }\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`all.push_back(s)` копирует ряд неявным, поверхностным конструктором копирования: элемент вектора получает тот же указатель `values_`. В конце итерации `s` уничтожается и освобождает массив, а элемент вектора продолжает на него указывать. Следующее обращение — `heap-use-after-free`, а при росте вектора и в конце программы — повторные освобождения.\n\nКласс с собственным деструктором нуждается и в собственном копировании: это правило трёх. Ещё лучше было бы хранить значения в `std::vector<double>` — тогда не нужна ни одна из трёх функций.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-rule-of-three-task-4",
+      "title": "Кольцевой буфер",
+      "description": "Кольцевой буфер фиксированной ёмкости хранит последние значения: когда он полон, новое значение вытесняет самое старое. Класс `Ring` хранит массив `new int[capacity]`, индекс самого старого элемента и число элементов; реализуйте его по правилу трёх.\n\nБуферы хранятся в `std::map<std::string, Ring>`. Команды:\n\n- `make X c` — создать (пересоздать) пустой буфер ёмкости c через `insert_or_assign`;\n- `push X v` — добавить; если буфер был полон, напечатать `X: вытеснено старое`;\n- `pop X` — удалить самый старый и напечатать его, или `X: пусто`;\n- `copy Y X` — Y становится копией X;\n- `print X` — `X: элементы от старых к новым` или `X: пусто`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "make A 3\npush A 1\npush A 2\npush A 3\npush A 4\ncopy B A\npush B 5\nprint A\nprint B\npop A\nprint A\n",
+          "output": "A: вытеснено 1\nB: вытеснено 2\nA: 2 3 4\nB: 3 4 5\n2\nA: 3 4\n"
+        },
+        {
+          "input": "make Z 1\npop Z\nprint Z\n",
+          "output": "Z: пусто\nZ: пусто\n"
+        }
+      ],
+      "constraints": [
+        "Команд не больше 500; 1 ≤ c ≤ 100; push, pop, copy и print — только для созданных буферов."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Позиция i-го по старшинству элемента: (head_ + i) % capacity_. Добавление в неполный буфер — в позицию (head_ + size_) % capacity_.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Копия должна сохранить порядок: проще всего скопировать массив целиком вместе с head_ и size_.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "make A 3\npush A 1\npush A 2\npush A 3\npush A 4\ncopy B A\npush B 5\nprint A\nprint B\npop A\nprint A\n",
+          "expected": "A: вытеснено 1\nB: вытеснено 2\nA: 2 3 4\nB: 3 4 5\n2\nA: 3 4\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "make Z 1\npop Z\nprint Z\n",
+          "expected": "Z: пусто\nZ: пусто\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ёмкость 1",
+          "stdin": "make A 1\npush A 1\npush A 2\npush A 3\nprint A\n",
+          "expected": "A: вытеснено 1\nA: вытеснено 2\nA: 3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Копия в себя",
+          "stdin": "make A 2\npush A 1\ncopy A A\nprint A\n",
+          "expected": "A: 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Перенос через край",
+          "stdin": "make A 3\npush A 1\npush A 2\npop A\npush A 3\npush A 4\npush A 5\nprint A\n",
+          "expected": "1\nA: вытеснено 2\nA: 3 4 5\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Пересоздание",
+          "stdin": "make A 2\npush A 1\nmake A 3\nprint A\n",
+          "expected": "A: пусто\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Копия меняет ёмкость",
+          "stdin": "make A 4\nmake B 2\npush B 7\ncopy B A\npush B 1\npush B 2\npush B 3\npush B 4\npush B 5\nprint B\n",
+          "expected": "B: вытеснено 1\nB: 2 3 4 5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Опустошение",
+          "stdin": "make A 3\npush A 1\npush A 2\npush A 3\npop A\npop A\npop A\npop A\n",
+          "expected": "1\n2\n3\nA: пусто\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Независимость копий",
+          "stdin": "make A 2\npush A -5\npush A 5\ncopy B A\npop B\nprint A\nprint B\n",
+          "expected": "-5\nA: -5 5\nB: 5\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Копия после переноса",
+          "stdin": "make A 5\npush A 1\npush A 2\npush A 3\npush A 4\npush A 5\npush A 6\npush A 7\ncopy B A\npop B\npop B\nprint B\nprint A\n",
+          "expected": "A: вытеснено 1\nA: вытеснено 2\n3\n4\nB: 5 6 7\nA: 3 4 5 6 7\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <cstddef>\n#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Ring {\npublic:\n    explicit Ring(std::size_t capacity) : capacity_(capacity), data_(new int[capacity]()) {}\n    Ring(const Ring &other)\n        : capacity_(other.capacity_), head_(other.head_), size_(other.size_), data_(new int[other.capacity_]) {\n        std::copy_n(other.data_, capacity_, data_);\n    }\n    Ring &operator=(const Ring &other) {\n        Ring copy(other);\n        std::swap(capacity_, copy.capacity_);\n        std::swap(head_, copy.head_);\n        std::swap(size_, copy.size_);\n        std::swap(data_, copy.data_);\n        return *this;\n    }\n    ~Ring() {\n        delete[] data_;\n    }\n\n    bool push(int v, int &evicted) {\n        if (size_ < capacity_) {\n            data_[(head_ + size_) % capacity_] = v;\n            ++size_;\n            return false;\n        }\n        evicted = data_[head_];\n        data_[head_] = v;\n        head_ = (head_ + 1) % capacity_;\n        return true;\n    }\n\n    bool empty() const {\n        return size_ == 0;\n    }\n\n    int pop() {\n        const int v = data_[head_];\n        head_ = (head_ + 1) % capacity_;\n        --size_;\n        return v;\n    }\n\n    std::string text() const {\n        std::string s;\n        for (std::size_t i = 0; i < size_; ++i) {\n            s += (i ? \" \" : \"\") + std::to_string(data_[(head_ + i) % capacity_]);\n        }\n        return s.empty() ? \"пусто\" : s;\n    }\n\nprivate:\n    std::size_t capacity_;\n    std::size_t head_ = 0;\n    std::size_t size_ = 0;\n    int *data_;\n};\n\nint main() {\n    std::map<std::string, Ring> rings;\n    std::string command, x;\n    while (std::cin >> command >> x) {\n        if (command == \"make\") {\n            std::size_t c;\n            std::cin >> c;\n            rings.insert_or_assign(x, Ring(c));\n        } else if (command == \"push\") {\n            int v, evicted = 0;\n            std::cin >> v;\n            if (rings.at(x).push(v, evicted)) {\n                std::println(\"{}: вытеснено {}\", x, evicted);\n            }\n        } else if (command == \"pop\") {\n            Ring &r = rings.at(x);\n            if (r.empty()) {\n                std::println(\"{}: пусто\", x);\n            } else {\n                std::println(\"{}\", r.pop());\n            }\n        } else if (command == \"copy\") {\n            std::string from;\n            std::cin >> from;\n            rings.insert_or_assign(x, rings.at(from));\n        } else {\n            std::println(\"{}: {}\", x, rings.at(x).text());\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Логический порядок кольцевого буфера задаётся не только массивом, но и индексом начала. Глубокая копия переносит всё состояние — массив, `head_` и `size_`, — поэтому копия продолжает вытеснять элементы в том же порядке, что и оригинал, но уже в собственном массиве.\n\nКонструктор копирования копирует весь массив, включая ячейки, где ещё ничего не записано. Поэтому конструктор заполняет массив нулями (`new int[capacity]()`): копировать неинициализированные `int` — неопределённое поведение, даже если их потом никто не читает.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "lifetime-rule-of-three-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Что правило трёх разрешает сделать с копированием исключительного владельца?",
+        "id": "q1",
+        "question": "Какие функции входят в правило трёх? Выберите все.",
+        "explanation": "Конструктор по умолчанию к ресурсной тройке не относится.",
+        "type": "multiple",
         "options": [
-          "Оставить неявную поверхностную копию владеющего указателя",
-          "Явно запретить обе копирующие операции через = delete"
+          "Деструктор",
+          "Конструктор копирования",
+          "Оператор копирующего присваивания",
+          "Конструктор по умолчанию"
         ],
-        "correct": 1,
-        "explanation": "Инвариант учебного Cell прост: p всегда указывает на один собственный int. Деструктор удаляет его; копирующий конструктор выделяет другой int; присваивание сначала выделяет новый блок, затем удаляет старый. Такой порядок переживает самоприсваивание и сохраняет сильную гарантию при bad_alloc. Ручной new показан для понимания механики: в прикладном коде такой Cell лучше выразить готовым владеющим членом. Не добавляйте специальные операции классу, у которого нет соответствующей ответственности."
+        "correct": [0, 1, 2]
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["4", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "Конструирование: один Cell → один блок\nКопия: два Cell → два разных блока\nПрисваивание: подготовить новый блок → заменить → удалить старый\nРазрушение: каждый Cell удаляет только свой блок"
+        "id": "q2",
+        "question": "Почему эти функции связаны?",
+        "explanation": "Ресурс нужно освобождать, копировать при создании и заменять при присваивании.",
+        "options": [
+          "Все три нужны по одной причине: класс сам управляет ресурсом",
+          "Компилятор не создаёт их по отдельности",
+          "Так требует синтаксис",
+          "Они не связаны"
+        ],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q3",
+        "question": "В классе есть только деструктор с delete[]. Что произойдёт после v.push_back(obj) и выхода obj из области видимости?",
+        "explanation": "push_back сделал поверхностную копию.",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Одна корректная операция не компенсирует другую опасную. Проверяйте все пути: copy construction, copy assignment после неё и самоприсваивание через алиас."
+          "Элемент вектора укажет на освобождённую память, в конце — двойное освобождение",
+          "Всё корректно",
+          "Ошибка компиляции",
+          "Утечка"
         ],
-        "correct": 1,
-        "explanation": "Постройте цепочку y = x; z = y; затем измените x. Значения y и z должны остаться прежними. Отдельно оцените цену хранения одного int динамически: это учебный способ увидеть владение, а не рекомендация."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Класс владеет ресурсом, копия которого не имеет смысла. Как выполнить правило трёх?",
+        "explanation": "Ответ «копировать нельзя» — тоже полный ответ.",
+        "options": [
+          "Запретить копирование: конструктор и присваивание = delete; деструктор освобождает",
+          "Не писать ничего",
+          "Написать только деструктор",
+          "Сделать конструктор копирования пустым"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что изменилось в C++11 для класса с пользовательским деструктором?",
+        "explanation": "Компиляторы предупреждают: -Wdeprecated-copy-dtor, -Wdeprecated-copy.",
+        "options": [
+          "Неявное создание копирования для него объявлено устаревшим",
+          "Копирование стало запрещено",
+          "Деструктор стал виртуальным",
+          "Ничего"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct T {\n    T() { std::print(\"c\"); }\n    T(const T &) { std::print(\"C\"); }\n    T &operator=(const T &) { std::print(\"=\"); return *this; }\n    ~T() { std::print(\"d\"); }\n};\n\nint main() {\n    T a;\n    T b = a;\n    b = a;\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Создание a, копия b, присваивание, затем два деструктора.",
+        "type": "text",
+        "answers": ["cC=dd"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Классу Report { std::string title; std::vector<int> data; } нужны свои деструктор и копирование?",
+        "explanation": "Это правило нуля — тема отдельного урока.",
+        "options": [
+          "Нет: поля сами управляют ресурсами",
+          "Да, все три",
+          "Только деструктор",
+          "Только копирование"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Назовите правило, которое добавляет к правилу трёх перемещающий конструктор и перемещающее присваивание: правило …",
+        "explanation": "Перемещение позволяет передавать ресурс без копирования.",
+        "type": "text",
+        "answers": ["пяти", "правило пяти", "five", "rule of five"],
+        "placeholder": "Одно слово"
       }
     ]
   }

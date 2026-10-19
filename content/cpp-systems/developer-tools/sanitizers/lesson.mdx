@@ -63,7 +63,7 @@ main.c:7:17: runtime error: signed integer overflow: 2147483647 + 1 cannot be re
 ```text
 BUILD ?= debug
 
-CFLAGS = -std=c17 -Wall -Wextra
+CFLAGS = -std=c23 -Wall -Wextra
 ifeq ($(BUILD),debug)
   CFLAGS += -g -O0
 else ifeq ($(BUILD),asan)

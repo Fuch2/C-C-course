@@ -1,128 +1,535 @@
 {
   "id": "oop-composition",
-  "title": "Композиция: объект владеет частями",
-  "description": "Композиция означает владение частью. Если Calibration хранится полем Sensor, она создаётся и уничтожается вместе с ним. Такой объект физически содержит подобъект, а доступ к его поведению осуществляется обычным вызовом метода. Наследование для этого не требуется: датчик имеет калибровку, но не является калибровкой.",
+  "title": "Композиция: объект из объектов",
+  "description": "Композиция — объекты-части как поля; распределение ответственности между классами; владение: части создаются, копируются и уничтожаются вместе с целым; делегирование и закон Деметры; инвариант, связывающий части, охраняет внешний класс.",
   "moduleId": "cpp-oop",
-  "order": 10,
-  "difficulty": "advanced",
+  "order": 11,
+  "difficulty": "intermediate",
   "estimatedMinutes": 45,
-  "prerequisites": ["oop-encapsulation"],
+  "prerequisites": ["oop-printing"],
   "objectives": [
-    "Применить Композиция: объект владеет частями в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Собирать классы из объектов-частей",
+    "Распределять ответственность между целым и частями",
+    "Делегировать операции частям, не раскрывая их клиентам",
+    "Охранять инвариант, связывающий части"
   ],
-  "tags": ["C++20", "ООП", "Композиция: объект владеет частями"],
+  "tags": ["C++23", "ООП", "Композиция", "Делегирование"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-composition-exercise",
-    "title": "Практика: Композиция: объект владеет частями",
-    "description": "Реализуйте Calibration{int offset} с int apply(int) const, возвращающим raw+offset. Meter владеет private Calibration по значению; explicit Meter(int offset) создаёт её, read(int) const делегирует apply. solve(a,b) возвращает Meter{b}.read(a). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Заказ",
+    "description": "Опишите класс `Line` (товар, цена, количество) с методом `int cost() const` и класс `Order`, который хранит позиции в векторе и умеет `add(Line)`, `total()` и `size()`. Каждая строка ввода — позиция: товар, цена и количество. Напечатайте для каждой позиции `товар: стоимость`, затем `позиций N, итого S`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(5, 2)",
-        "output": "7\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "книга 450 2\nлампа 1200 1\n",
+        "output": "книга: 900\nлампа: 1200\nпозиций 2, итого 2100\n"
       },
       {
-        "input": "solve(-5, 2)",
-        "output": "-3\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "",
+        "output": "позиций 0, итого 0\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Позиций не больше 30; цены до 10⁶, количество до 100."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "Order не читает поля Line — он вызывает line.cost().",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Печатать позиции удобно в main, сразу при чтении; итог — через order.size() и order.total().",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [5, 2],
-        "expected": "7\n"
+        "stdin": "книга 450 2\nлампа 1200 1\n",
+        "expected": "книга: 900\nлампа: 1200\nпозиций 2, итого 2100\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [-5, 2],
-        "expected": "-3\n"
+        "stdin": "",
+        "expected": "позиций 0, итого 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "id": "hidden-1",
+        "name": "Одна позиция",
+        "stdin": "a 1 1\n",
+        "expected": "a: 1\nпозиций 1, итого 1\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-2",
+        "name": "Большая сумма",
+        "stdin": "x 1000000 100\n",
+        "expected": "x: 100000000\nпозиций 1, итого 100000000\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Нули",
+        "stdin": "a 0 5\nb 5 0\n",
+        "expected": "a: 0\nb: 0\nпозиций 2, итого 0\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Повтор товара",
+        "stdin": "чай 100 3\nчай 100 2\n",
+        "expected": "чай: 300\nчай: 200\nпозиций 2, итого 500\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Четыре",
+        "stdin": "p 1 1\nq 2 2\nr 3 3\ns 4 4\n",
+        "expected": "p: 1\nq: 4\nr: 9\ns: 16\nпозиций 4, итого 30\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Техника",
+        "stdin": "ноутбук 99999 1\nмышь 999 2\n",
+        "expected": "ноутбук: 99999\nмышь: 1998\nпозиций 2, итого 101997\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Количество 100",
+        "stdin": "a 7 100\n",
+        "expected": "a: 700\nпозиций 1, итого 700\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Почти максимум",
+        "stdin": "z 999999 99\ny 1 1\n",
+        "expected": "z: 98999901\ny: 1\nпозиций 2, итого 98999902\n"
       }
     ],
-    "referenceSolution": "struct Calibration { int offset; int apply(int raw) const { return raw+offset; } };\nclass Meter { Calibration calibration_; public: explicit Meter(int offset) : calibration_{offset} {} int read(int raw) const { return calibration_.apply(raw); } };\nint solve(int a,int b) { return Meter{b}.read(a); }",
-    "solutionExplanation": "Реализуйте Calibration{int offset} с int apply(int) const, возвращающим raw+offset. Meter владеет private Calibration по значению; explicit Meter(int offset) создаёт её, read(int) const делегирует apply. solve(a,b) возвращает Meter{b}.read(a). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не используйте указатель лишь потому, что объект «сложный». Поле по значению уже имеет автоматическое время жизни и не требует ручного delete. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Line {\npublic:\n    Line(std::string item, long long price, int quantity)\n        : item_(std::move(item)), price_(price), quantity_(quantity) {}\n\n    long long cost() const {\n        return price_ * quantity_;\n    }\n\n    const std::string &item() const {\n        return item_;\n    }\n\nprivate:\n    std::string item_;\n    long long price_;\n    int quantity_;\n};\n\nclass Order {\npublic:\n    void add(Line line) {\n        lines_.push_back(std::move(line));\n    }\n\n    long long total() const {\n        long long sum = 0;\n        for (const Line &line : lines_) {\n            sum += line.cost();\n        }\n        return sum;\n    }\n\n    std::size_t size() const {\n        return lines_.size();\n    }\n\nprivate:\n    std::vector<Line> lines_;\n};\n\nint main() {\n    Order order;\n    std::string item;\n    long long price;\n    int quantity;\n    while (std::cin >> item >> price >> quantity) {\n        Line line(item, price, quantity);\n        std::println(\"{}: {}\", line.item(), line.cost());\n        order.add(std::move(line));\n    }\n    std::println(\"позиций {}, итого {}\", order.size(), order.total());\n    return 0;\n}\n",
+    "solutionExplanation": "Позиция знает свою стоимость, заказ — свою сумму. `Order::total` не умножает цену на количество сам, а спрашивает у каждой позиции `cost()`: правила расчёта позиции живут в одном месте.\n\nЗаказ владеет позициями — они лежат в его векторе и исчезнут вместе с ним. `std::move` передаёт позицию в вектор без копирования строки; после этого `line` в `main` больше не используется.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-composition-task-2",
+      "title": "Плеер",
+      "description": "Опишите класс `Playlist` (песни и номер текущей) и класс `Player`, который **содержит** плейлист и делегирует ему операции. Клиент работает только с `Player`:\n\n- `add название` — добавить песню (первая добавленная становится текущей);\n- `next`, `prev` — следующая или предыдущая песня по кругу;\n- `play` — напечатать `играет: название` или `плейлист пуст`.\n\n`next` и `prev` для пустого плейлиста ничего не делают.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "add a\nadd b\nadd c\nplay\nnext\nnext\nnext\nplay\nprev\nplay\n",
+          "output": "играет: a\nиграет: a\nиграет: c\n"
+        },
+        {
+          "input": "play\nnext\nplay\n",
+          "output": "плейлист пуст\nплейлист пуст\n"
+        }
+      ],
+      "constraints": ["Команд не больше 100; названия — одно слово."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Playlist: std::vector<std::string> songs_ и std::size_t current_ = 0. next: current_ = (current_ + 1) % size; prev: (current_ + size - 1) % size.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Player хранит поле Playlist list_ и открывает add, next, prev, play — каждый вызывает соответствующий метод плейлиста. Метод const std::string *current() const у плейлиста может вернуть nullptr для пустого.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add a\nadd b\nadd c\nplay\nnext\nnext\nnext\nplay\nprev\nplay\n",
+          "expected": "играет: a\nиграет: a\nиграет: c\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "play\nnext\nplay\n",
+          "expected": "плейлист пуст\nплейлист пуст\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна песня",
+          "stdin": "add x\nnext\nprev\nplay\n",
+          "expected": "играет: x\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Назад с первой",
+          "stdin": "add a\nadd b\nprev\nplay\n",
+          "expected": "играет: b\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Вперёд",
+          "stdin": "add a\nadd b\nadd c\nnext\nplay\nnext\nplay\n",
+          "expected": "играет: b\nиграет: c\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Назад в пустом",
+          "stdin": "prev\nadd a\nplay\n",
+          "expected": "играет: a\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Добавление на ходу",
+          "stdin": "add a\nplay\nadd b\nplay\nnext\nplay\n",
+          "expected": "играет: a\nиграет: a\nиграет: b\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Без команд",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-7",
+          "name": "Полный круг",
+          "stdin": "add один\nadd два\nnext\nnext\nplay\n",
+          "expected": "играет: один\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Много назад",
+          "stdin": "add a\nadd b\nadd c\nprev\nprev\nprev\nprev\nplay\n",
+          "expected": "играет: c\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Playlist {\npublic:\n    void add(const std::string &song) {\n        songs_.push_back(song);\n    }\n\n    void next() {\n        if (!songs_.empty()) {\n            current_ = (current_ + 1) % songs_.size();\n        }\n    }\n\n    void prev() {\n        if (!songs_.empty()) {\n            current_ = (current_ + songs_.size() - 1) % songs_.size();\n        }\n    }\n\n    const std::string *current() const {\n        return songs_.empty() ? nullptr : &songs_[current_];\n    }\n\nprivate:\n    std::vector<std::string> songs_;\n    std::size_t current_ = 0;\n};\n\nclass Player {\npublic:\n    void add(const std::string &song) {\n        list_.add(song);\n    }\n\n    void next() {\n        list_.next();\n    }\n\n    void prev() {\n        list_.prev();\n    }\n\n    void play() const {\n        if (const std::string *song = list_.current()) {\n            std::println(\"играет: {}\", *song);\n        } else {\n            std::println(\"плейлист пуст\");\n        }\n    }\n\nprivate:\n    Playlist list_;\n};\n\nint main() {\n    Player player;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"add\") {\n            std::string song;\n            std::cin >> song;\n            player.add(song);\n        } else if (command == \"next\") {\n            player.next();\n        } else if (command == \"prev\") {\n            player.prev();\n        } else {\n            player.play();\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`Player` ничего не делает сам — он делегирует. Это не лишний слой: клиент знает только о плеере, а устройство плейлиста можно менять (перемешивание, история прослушивания), не трогая клиентов. Плеер мог бы добавить и своё поведение — громкость, паузу, — не смешивая его с хранением песен.\n\n`current()` возвращает указатель, а не ссылку: он может быть `nullptr`, если песен нет. Возвращается указатель на константу — клиент не может изменить песню через него. Переход «назад по кругу» записан как `(current + size − 1) % size`: у беззнаковых чисел вычитание единицы из нуля дало бы огромное значение.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-composition-task-3",
+      "title": "Найди ошибку: целое не охраняет инвариант",
+      "description": "Команда хранит игроков и обещает: **суммарный фонд зарплат не превышает лимит**. Первое число — лимит. Команды:\n\n- `hire имя зарплата` — нанять (`принят` или `отказ`);\n- `raise i сумма` — повысить зарплату игрока номер `i` (с нуля) на сумму (`повышено` или `отказ`, если номер неверный или лимит будет превышен).\n\nВ конце печатается `фонд F из L`. После повышений фонд превышает лимит. Найдите ошибку в устройстве классов и исправьте её так, чтобы нарушить инвариант снаружи было невозможно.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Player {\npublic:\n    Player(std::string name, int salary) : name_(std::move(name)), salary_(salary) {}\n\n    int salary() const {\n        return salary_;\n    }\n\n    void set_salary(int value) {\n        salary_ = value;\n    }\n\nprivate:\n    std::string name_;\n    int salary_;\n};\n\n// Инвариант: сумма зарплат игроков не превышает лимит команды.\nclass Team {\npublic:\n    explicit Team(int cap) : cap_(cap) {}\n\n    bool hire(Player p) {\n        if (payroll() + p.salary() > cap_) {\n            return false;\n        }\n        players_.push_back(std::move(p));\n        return true;\n    }\n\n    Player &player(std::size_t i) {\n        return players_[i];\n    }\n\n    std::size_t size() const {\n        return players_.size();\n    }\n\n    int payroll() const {\n        int sum = 0;\n        for (const Player &p : players_) {\n            sum += p.salary();\n        }\n        return sum;\n    }\n\nprivate:\n    int cap_;\n    std::vector<Player> players_;\n};\n\nint main() {\n    int cap;\n    std::cin >> cap;\n    Team team(cap);\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"hire\") {\n            std::string name;\n            int salary;\n            std::cin >> name >> salary;\n            std::println(\"{}\", team.hire(Player(name, salary)) ? \"принят\" : \"отказ\");\n        } else {\n            std::size_t i;\n            int amount;\n            std::cin >> i >> amount;\n            if (i < team.size()) {\n                Player &p = team.player(i);\n                p.set_salary(p.salary() + amount);\n                std::println(\"повышено\");\n            } else {\n                std::println(\"отказ\");\n            }\n        }\n    }\n    std::println(\"фонд {} из {}\", team.payroll(), cap);\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "100\nhire Ада 60\nhire Алан 30\nraise 1 20\n",
+          "output": "принят\nпринят\nотказ\nфонд 90 из 100\n"
+        },
+        {
+          "input": "50\nhire A 10\nraise 0 40\nraise 5 1\n",
+          "output": "принят\nповышено\nотказ\nфонд 50 из 50\n"
+        }
+      ],
+      "constraints": ["Лимит до 10⁶; команд не больше 50; зарплаты и суммы от 1 до 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Через какой метод main меняет зарплату и проверяет ли кто-нибудь лимит?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Team отдаёт игрока по неконстантной ссылке, и изменение проходит мимо команды. Уберите player(i) и добавьте Team::raise(i, amount), который проверяет лимит до изменения.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "100\nhire Ада 60\nhire Алан 30\nraise 1 20\n",
+          "expected": "принят\nпринят\nотказ\nфонд 90 из 100\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "50\nhire A 10\nraise 0 40\nraise 5 1\n",
+          "expected": "принят\nповышено\nотказ\nфонд 50 из 50\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "10\nhire a 5\nraise 0 6\n",
+          "expected": "принят\nотказ\nфонд 5 из 10\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "100\nhire a 50\nhire b 50\nraise 0 1\n",
+          "expected": "принят\nпринят\nотказ\nфонд 100 из 100\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1000\nhire a 1\nraise 0 999\nraise 0 1\n",
+          "expected": "принят\nповышено\nотказ\nфонд 1000 из 1000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "30\nhire a 10\nhire b 10\nraise 0 5\nraise 1 6\n",
+          "expected": "принят\nпринят\nповышено\nотказ\nфонд 25 из 30\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "5\nhire a 6\nraise 0 1\n",
+          "expected": "отказ\nотказ\nфонд 0 из 5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "100\nhire a 40\nraise 0 30\nraise 0 30\n",
+          "expected": "принят\nповышено\nповышено\nфонд 100 из 100\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "1000000\nhire a 999999\nraise 0 2\n",
+          "expected": "принят\nотказ\nфонд 999999 из 1000000\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "20\nhire a 5\nhire b 5\nraise 1 10\nraise 0 1\n",
+          "expected": "принят\nпринят\nповышено\nотказ\nфонд 20 из 20\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Player {\npublic:\n    Player(std::string name, int salary) : name_(std::move(name)), salary_(salary) {}\n\n    int salary() const {\n        return salary_;\n    }\n\n    void set_salary(int value) {\n        salary_ = value;\n    }\n\nprivate:\n    std::string name_;\n    int salary_;\n};\n\n// Инвариант: сумма зарплат игроков не превышает лимит команды.\nclass Team {\npublic:\n    explicit Team(int cap) : cap_(cap) {}\n\n    bool hire(Player p) {\n        if (payroll() + p.salary() > cap_) {\n            return false;\n        }\n        players_.push_back(std::move(p));\n        return true;\n    }\n\n    bool raise(std::size_t i, int amount) {\n        if (i >= players_.size() || payroll() + amount > cap_) {\n            return false;\n        }\n        players_[i].set_salary(players_[i].salary() + amount);\n        return true;\n    }\n\n    int payroll() const {\n        int sum = 0;\n        for (const Player &p : players_) {\n            sum += p.salary();\n        }\n        return sum;\n    }\n\nprivate:\n    int cap_;\n    std::vector<Player> players_;\n};\n\nint main() {\n    int cap;\n    std::cin >> cap;\n    Team team(cap);\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"hire\") {\n            std::string name;\n            int salary;\n            std::cin >> name >> salary;\n            std::println(\"{}\", team.hire(Player(name, salary)) ? \"принят\" : \"отказ\");\n        } else {\n            std::size_t i;\n            int amount;\n            std::cin >> i >> amount;\n            std::println(\"{}\", team.raise(i, amount) ? \"повышено\" : \"отказ\");\n        }\n    }\n    std::println(\"фонд {} из {}\", team.payroll(), cap);\n    return 0;\n}\n",
+      "solutionExplanation": "Каждая часть — `Player` — допустима сама по себе: у неё любая положительная зарплата. Правило «фонд не больше лимита» связывает всех игроков, и охранять его может только `Team`. Но `Team` отдавал игрока по неконстантной ссылке, и `main` повышал зарплату напрямую — команда даже не знала об изменении.\n\nИсправление — операция на уровне целого: `Team::raise` проверяет номер и лимит **до** изменения и только потом меняет зарплату. Ссылки на части наружу больше не уходят, и обойти проверку нельзя.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-composition-task-4",
+      "title": "Расписание поездов",
+      "description": "Ввод: число маршрутов, затем каждый маршрут — название, число остановок `k` и `k` строк `станция ЧЧ:ММ` (время прибытия, по возрастанию, в пределах суток). После маршрутов идут запросы:\n\n- `show маршрут` — остановки маршрута в виде `ЧЧ:ММ станция`;\n- `trip маршрут A B` — время в пути от станции A до станции B в минутах (`N мин`) или `нет такого участка`, если какой-то станции нет на маршруте или A не раньше B.\n\nНеизвестный маршрут — `нет маршрута`. Постройте композицию из трёх уровней: `Time` → `Stop` (станция и время) → `Route` (остановки) → `Schedule` (маршруты по названию).",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "1\nR1 3\nМосква 08:00\nТверь 09:45\nПетербург 12:10\nshow R1\ntrip R1 Москва Петербург\ntrip R1 Тверь Москва\n",
+          "output": "08:00 Москва\n09:45 Тверь\n12:10 Петербург\n250 мин\nнет такого участка\n"
+        },
+        {
+          "input": "0\nshow X\ntrip X a b\n",
+          "output": "нет маршрута\nнет маршрута\n"
+        }
+      ],
+      "constraints": ["Маршрутов до 10, остановок до 20, запросов до 30; названия — одно слово."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Time хранит минуты от полуночи и умеет minutes(); Route умеет find(station) → индекс или −1 и duration(a, b) через find; Schedule — std::map<std::string, Route> с методом const Route *find(name) const.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Запрос trip: маршрут найден → индексы обеих станций найдены и i < j → разница времени j и i.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1\nR1 3\nМосква 08:00\nТверь 09:45\nПетербург 12:10\nshow R1\ntrip R1 Москва Петербург\ntrip R1 Тверь Москва\n",
+          "expected": "08:00 Москва\n09:45 Тверь\n12:10 Петербург\n250 мин\nнет такого участка\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0\nshow X\ntrip X a b\n",
+          "expected": "нет маршрута\nнет маршрута\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Целые сутки",
+          "stdin": "1\nA 2\nx 00:00\ny 23:59\ntrip A x y\n",
+          "expected": "1439 мин\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Та же станция",
+          "stdin": "1\nA 2\nx 10:00\ny 10:30\ntrip A x x\n",
+          "expected": "нет такого участка\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Нет станции",
+          "stdin": "1\nA 2\nx 10:00\ny 10:30\ntrip A x z\n",
+          "expected": "нет такого участка\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Два маршрута",
+          "stdin": "2\nA 2\nx 10:00\ny 11:00\nB 2\ny 12:00\nz 12:05\ntrip B y z\nshow A\n",
+          "expected": "5 мин\n10:00 x\n11:00 y\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Одна остановка",
+          "stdin": "1\nA 1\nx 06:07\nshow A\n",
+          "expected": "06:07 x\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Внутренние участки",
+          "stdin": "1\nA 4\na 01:00\nb 02:00\nc 03:30\nd 05:00\ntrip A b d\ntrip A a c\n",
+          "expected": "180 мин\n150 мин\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Неизвестный маршрут",
+          "stdin": "1\nA 2\nx 10:00\ny 11:00\nshow B\n",
+          "expected": "нет маршрута\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Кириллица",
+          "stdin": "1\nЛасточка 3\nМосква 09:00\nКлин 10:05\nТверь 10:50\ntrip Ласточка Клин Тверь\n",
+          "expected": "45 мин\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <optional>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Time {\npublic:\n    Time(int h, int m) : minutes_(h * 60 + m) {}\n\n    int minutes() const {\n        return minutes_;\n    }\n\n    int hours_part() const {\n        return minutes_ / 60;\n    }\n\n    int minutes_part() const {\n        return minutes_ % 60;\n    }\n\nprivate:\n    int minutes_;\n};\n\nstruct Stop {\n    std::string station;\n    Time arrival;\n};\n\nclass Route {\npublic:\n    void add(Stop stop) {\n        stops_.push_back(std::move(stop));\n    }\n\n    void print() const {\n        for (const Stop &s : stops_) {\n            std::println(\"{:02}:{:02} {}\", s.arrival.hours_part(), s.arrival.minutes_part(), s.station);\n        }\n    }\n\n    std::optional<int> duration(const std::string &from, const std::string &to) const {\n        int i = find(from), j = find(to);\n        if (i < 0 || j < 0 || i >= j) {\n            return std::nullopt;\n        }\n        return stops_[static_cast<std::size_t>(j)].arrival.minutes() -\n               stops_[static_cast<std::size_t>(i)].arrival.minutes();\n    }\n\nprivate:\n    int find(const std::string &station) const {\n        for (std::size_t i = 0; i < stops_.size(); i++) {\n            if (stops_[i].station == station) {\n                return static_cast<int>(i);\n            }\n        }\n        return -1;\n    }\n\n    std::vector<Stop> stops_;\n};\n\nclass Schedule {\npublic:\n    void add(const std::string &name, Route route) {\n        routes_[name] = std::move(route);\n    }\n\n    const Route *find(const std::string &name) const {\n        auto it = routes_.find(name);\n        return it == routes_.end() ? nullptr : &it->second;\n    }\n\nprivate:\n    std::map<std::string, Route> routes_;\n};\n\nint main() {\n    Schedule schedule;\n    int count;\n    std::cin >> count;\n    for (int r = 0; r < count; r++) {\n        std::string name;\n        int k;\n        std::cin >> name >> k;\n        Route route;\n        for (int i = 0; i < k; i++) {\n            std::string station;\n            int h, m;\n            char colon;\n            std::cin >> station >> h >> colon >> m;\n            route.add({station, Time(h, m)});\n        }\n        schedule.add(name, std::move(route));\n    }\n    std::string command, name;\n    while (std::cin >> command >> name) {\n        const Route *route = schedule.find(name);\n        if (command == \"show\") {\n            if (route) {\n                route->print();\n            } else {\n                std::println(\"нет маршрута\");\n            }\n            continue;\n        }\n        std::string a, b;\n        std::cin >> a >> b;\n        if (!route) {\n            std::println(\"нет маршрута\");\n        } else if (auto minutes = route->duration(a, b)) {\n            std::println(\"{} мин\", *minutes);\n        } else {\n            std::println(\"нет такого участка\");\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Каждый уровень знает ровно своё: `Time` — как хранить и печатать время, `Route` — как искать станции и считать время в пути, `Schedule` — как находить маршрут по имени. `main` не заглядывает ни в вектор остановок, ни в словарь маршрутов: он спрашивает `schedule.find` и `route->duration`.\n\n`Schedule::find` возвращает указатель на константу: маршрута может не быть (`nullptr`), а найденный нельзя изменить снаружи. `duration` возвращает `std::optional<int>` — ответа может не быть, и тип говорит об этом прямо. Поиск станции закрыт: это деталь реализации маршрута.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-composition-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Кто управляет временем жизни поля Calibration?",
-        "options": ["Содержащий его Meter", "Внешний клиент обязан вызвать delete"],
-        "correct": 0,
-        "explanation": "Поля создаются после баз и разрушаются до баз, в обратном порядке объявления. Владение значением обычно проще динамического выделения: нет отдельного new, меньше косвенных обращений и ясна независимость копий. Если часть крупная или полиморфная, композиция может использовать unique_ptr; смысл владения сохраняется. В проекте TelemetryProcessor будет владеть фильтром и коллекцией датчиков. Пока достаточно обычного поля, чтобы отработать направление зависимостей."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <vector>\n\nclass Bag {\npublic:\n    void add(int w) { items_.push_back(w); }\n    int weight() const {\n        int s = 0;\n        for (int w : items_) s += w;\n        return s;\n    }\n\nprivate:\n    std::vector<int> items_;\n};\n\nint main() {\n    Bag a;\n    a.add(3);\n    Bag b = a;\n    b.add(4);\n    std::println(\"{} {}\", a.weight(), b.weight());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Копия владеет своими частями: вектор копируется вместе с объектом, и изменения b не затрагивают a.",
+        "type": "text",
+        "answers": ["3 7"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "21", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 21. Композиция означает владение частью. Если Calibration хранится полем Sensor, она создаётся и уничтожается вместе с ним. Такой объект физически содержит подобъект, а доступ к его поведению осуществляется обычным вызовом метода. Наследование для этого не требуется: датчик имеет калибровку, но не является калибровкой."
-      },
-      {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q2",
+        "question": "Что означает композиция?",
+        "explanation": "Части создаются и уничтожаются вместе с целым.",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Не используйте указатель лишь потому, что объект «сложный». Поле по значению уже имеет автоматическое время жизни и не требует ручного delete."
+          "Объект содержит другие объекты как поля и владеет ими",
+          "Класс наследует другой класс",
+          "Объект хранит указатель на чужой объект, не владея им",
+          "Функция вызывает другую функцию"
         ],
-        "correct": 1,
-        "explanation": "Скопируйте Meter и измените калибровку копии через новую контролируемую операцию. Исходный Meter должен остаться независимым. Это семантика значения. Если заменить поле на разделяемый указатель, ожидаемая независимость исчезнет и потребуется другой договор с клиентом."
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа? Запишите вывод в одну строку через пробел.",
+        "code": "#include <print>\n\nstruct Part {\n    char n;\n    explicit Part(char n) : n(n) { std::print(\"+{} \", n); }\n    ~Part() { std::print(\"-{} \", n); }\n};\n\nstruct Whole {\n    Part a{'a'};\n    Part b{'b'};\n};\n\nint main() {\n    {\n        Whole w;\n    }\n    std::println();\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Части создаются в порядке объявления и уничтожаются в обратном — вместе с целым.",
+        "type": "text",
+        "answers": ["+a +b -b -a"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Класс Car содержит поле Engine engine_. Какой интерфейс лучше?",
+        "explanation": "Клиент работает с машиной, а не с её деталями; двигатель можно заменить, не трогая клиентов.",
+        "options": [
+          "void refuel(int) и void start(), которые делегируют работу двигателю",
+          "Engine &engine(), чтобы клиент сам управлял двигателем",
+          "Открытое поле engine_",
+          "Engine *engine() с возвратом указателя"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что говорит закон Деметры?",
+        "explanation": "car.engine().refuel() нарушает его, car.refuel() — нет.",
+        "options": [
+          "Разговаривай только с непосредственными друзьями: не тянись через объект к его частям",
+          "Каждый класс должен иметь деструктор",
+          "Поля нужно делать открытыми",
+          "Наследование лучше композиции"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Кто должен охранять инвариант «сумма площадей комнат не больше площади квартиры»?",
+        "explanation": "Инвариант, связывающий части, охраняет целое.",
+        "options": [
+          "Класс квартиры: только он видит все комнаты",
+          "Каждая комната",
+          "Клиентский код",
+          "Деструктор квартиры"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Почему Order::total лучше считать через line.cost(), а не через поля позиции?",
+        "explanation": "Каждый класс отвечает за своё: позиция знает свою стоимость.",
+        "options": [
+          "Если у позиции появится скидка, изменится только Line::cost, а Order останется прежним",
+          "Поля позиции всё равно закрыты, иначе нельзя",
+          "Так быстрее",
+          "Иначе не скомпилируется"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Почему часть, которая не нужна отдельно от целого, лучше хранить полем, а не указателем new?",
+        "explanation": "Классы из стандартных частей копируются и освобождаются сами.",
+        "options": [
+          "Поле создаётся и уничтожается автоматически и правильно копируется; указатель требует delete и ломает копирование",
+          "Указатели запрещены в классах",
+          "Поле занимает меньше памяти, чем указатель",
+          "Без указателя нельзя делегировать"
+        ],
+        "correct": 0
       }
     ]
   }

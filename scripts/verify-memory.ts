@@ -122,7 +122,7 @@ const checks = await Promise.all(
           {
             source: task.source,
             compiler: task.mode === 'valgrind' ? 'gcc' : 'clang',
-            standard: 'c17',
+            standard: 'c23',
             stdin: '',
             cases: task.cases,
             timeoutMs: 10_000,

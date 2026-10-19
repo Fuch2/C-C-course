@@ -1,139 +1,532 @@
 {
   "id": "cpp20-cin",
-  "title": "std::cin",
-  "description": "Потоковый ввод сообщает об ошибках через состояние потока. Это позволяет строить проверяемый конвейер, но требует явно проверять fail и eof.",
+  "title": "Ввод: std::cin",
+  "description": "Ввод по типу переменной оператором >>; чтение до конца ввода; состояние ошибки, clear и пропуск мешающих символов; std::getline и ловушка после >>; std::ws и ignore; разбор строк через std::istringstream; ускорение ввода.",
   "moduleId": "cpp-fundamentals",
-  "order": 4,
+  "order": 5,
   "difficulty": "beginner",
-  "estimatedMinutes": 35,
-  "prerequisites": ["cpp20-cout"],
+  "estimatedMinutes": 45,
+  "prerequisites": ["cpp23-format"],
   "objectives": [
-    "Объяснить, зачем появился std::cin и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Читать значения разных типов и читать до конца ввода",
+    "Обнаруживать ошибку чтения и восстанавливать поток",
+    "Читать строки целиком и сочетать getline с >>",
+    "Разбирать строки строковым потоком"
   ],
-  "tags": ["C++20", "основы C++", "std::cin"],
+  "tags": ["C++", "cin", "getline", "istringstream"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-cin-exercise",
-    "title": "Проверяемый поток измерений",
-    "description": "В stdin от 0 до 100 целых измерений −1000…1000, разделённых пробелами. Если есть некорректный токен, переполнение int или нарушение диапазона/количества, выведите ОШИБКА. Иначе — количество и сумму через пробел. 12x тоже ошибка. Допускается пустой ввод.",
+    "id": "cpp20-cin-task-1",
+    "title": "Анкета",
+    "description": "Ввод — три строки: полное имя (может содержать пробелы), возраст (целое число), город (может содержать пробелы). Напечатайте:\n\n```text\nИмя: <имя>\nВозраст: <возраст>\nГород: <город>\n```",
     "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "10 -2 4\n",
-        "output": "3 12\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "Ада Лавлейс\n36\nЛондон\n",
+        "output": "Имя: Ада Лавлейс\nВозраст: 36\nГород: Лондон\n"
       },
       {
-        "input": "",
-        "output": "0 0\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "Alan\n41\nNew York\n",
+        "output": "Имя: Alan\nВозраст: 41\nГород: New York\n"
       }
     ],
-    "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
-    ],
+    "constraints": ["Имя и город — непустые строки до 100 символов; 0 ≤ возраст ≤ 150."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "Имя — std::getline(std::cin, name); возраст — std::cin >> age.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "После >> в потоке остался перевод строки: город читайте так — std::getline(std::cin >> std::ws, city).",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "10 -2 4\n",
-        "expected": "3 12\n"
+        "stdin": "Ада Лавлейс\n36\nЛондон\n",
+        "expected": "Имя: Ада Лавлейс\nВозраст: 36\nГород: Лондон\n"
       },
-      { "id": "case-2", "name": "Пример 2", "stdin": "", "expected": "0 0\n" }
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "Alan\n41\nNew York\n",
+        "expected": "Имя: Alan\nВозраст: 41\nГород: New York\n"
+      }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "   \n",
-        "expected": "0 0\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "X\n0\nY\n",
+        "expected": "Имя: X\nВозраст: 0\nГород: Y\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "12x",
-        "expected": "ОШИБКА\n"
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "Мария Склодовская-Кюри\n66\nПариж\n",
+        "expected": "Имя: Мария Склодовская-Кюри\nВозраст: 66\nГород: Париж\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный сценарий 3",
-        "stdin": "999999999999999999999",
-        "expected": "ОШИБКА\n"
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "Grace Brewster Murray Hopper\n85\nArlington, Virginia\n",
+        "expected": "Имя: Grace Brewster Murray Hopper\nВозраст: 85\nГород: Arlington, Virginia\n"
       },
       {
-        "id": "case-6",
-        "name": "Граничный сценарий 4",
-        "stdin": "1001",
-        "expected": "ОШИБКА\n"
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "A B\n150\nC D E\n",
+        "expected": "Имя: A B\nВозраст: 150\nГород: C D E\n"
       },
       {
-        "id": "case-7",
-        "name": "Граничный сценарий 5",
-        "stdin": "-1000 1000",
-        "expected": "2 0\n"
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "Linus\n  28\nHelsinki\n",
+        "expected": "Имя: Linus\nВозраст: 28\nГород: Helsinki\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "Ken Thompson\n81\nNew Orleans\n",
+        "expected": "Имя: Ken Thompson\nВозраст: 81\nГород: New Orleans\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "Bjarne\n74\nAarhus\n",
+        "expected": "Имя: Bjarne\nВозраст: 74\nГород: Aarhus\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "Dennis Ritchie\n70\nBerkeley Heights\n",
+        "expected": "Имя: Dennis Ritchie\nВозраст: 70\nГород: Berkeley Heights\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <sstream>\n\nvoid summarize(std::istream& input) {\n    int count = 0;\n    long long sum = 0;\n    while (true) {\n        input >> std::ws;\n        if (input.eof()) break;\n        int value{};\n        if (!(input >> value) || value < -1000 || value > 1000 || count == 100) {\n            std::cout << \"ОШИБКА\\n\";\n            return;\n        }\n        ++count;\n        sum += value;\n    }\n    std::cout << count << ' ' << sum << '\\n';\n}\nint main() {\n    summarize(std::cin);\n}\n",
-    "solutionExplanation": "EOF после пропуска пробелов означает нормальное завершение. Ошибка извлечения числа, даже вместе с eofbit, остаётся ошибкой: это важно для переполнения в конце файла. После чтения 12 из 12x остаётся x, и следующая попытка отвергает его. Сумма печатается после проверки всего входа. Время линейно по длине входа, память O(1).",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <iostream>\n#include <string>\n\nint main() {\n    std::string name, city;\n    int age;\n    std::getline(std::cin, name);\n    std::cin >> age;\n    std::getline(std::cin >> std::ws, city);\n    std::cout << \"Имя: \" << name << '\\n';\n    std::cout << \"Возраст: \" << age << '\\n';\n    std::cout << \"Город: \" << city << '\\n';\n    return 0;\n}\n",
+    "solutionExplanation": "Имя и город могут содержать пробелы, поэтому читаются `std::getline`. Возраст читается `>>`, который останавливается сразу после числа, оставляя в потоке перевод строки. Без `std::ws` следующий `getline` прочитал бы пустой остаток строки с возрастом, и город оказался бы пустым.\n\n`std::cin >> std::ws` пропускает все пробельные символы и возвращает поток — поэтому его можно передать прямо в `getline`.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-cin-task-2",
+      "title": "Суммы по строкам",
+      "description": "Каждая строка ввода содержит ноль или больше целых чисел через пробелы. Для каждой строки напечатайте сумму её чисел, а для строки без чисел — `пусто`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "1 2 3\n10\n",
+          "output": "6\n10\n"
+        },
+        {
+          "input": "\n-5 5\n",
+          "output": "пусто\n0\n"
+        }
+      ],
+      "constraints": ["Строк не больше 50; в строке не больше 100 чисел; |числа| ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Читайте ввод построчно: while (std::getline(std::cin, line)).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Каждую строку разберите строковым потоком: std::istringstream in(line); while (in >> x) … Сумма до 10¹¹ — long long.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1 2 3\n10\n",
+          "expected": "6\n10\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "\n-5 5\n",
+          "expected": "пусто\n0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "7\n",
+          "expected": "7\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "   \n",
+          "expected": "пусто\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1000000000 1000000000 1000000000\n",
+          "expected": "3000000000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "-1 -2 -3\n\n4\n",
+          "expected": "-6\nпусто\n4\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "  12   30  \n",
+          "expected": "42\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "0\n0 0\n",
+          "expected": "0\n0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "1 1 1 1 1 1 1 1 1 1\n2 2\n",
+          "expected": "10\n4\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "\n\n\n",
+          "expected": "пусто\nпусто\nпусто\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <sstream>\n#include <string>\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        std::istringstream in(line);\n        long long sum = 0, x;\n        int count = 0;\n        while (in >> x) {\n            sum += x;\n            count++;\n        }\n        if (count == 0) {\n            std::cout << \"пусто\\n\";\n        } else {\n            std::cout << sum << '\\n';\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Если читать числа прямо из `std::cin`, границы строк потеряются: `>>` считает перевод строки обычным пробелом. Поэтому сначала строка читается целиком, а потом разбирается отдельным потоком `std::istringstream` — он читается тем же оператором `>>` и так же сообщает о конце.\n\nПустая строка или строка из пробелов не содержит чисел — счётчик остаётся нулём, и печатается `пусто`. Сумма считается в `long long`: сто чисел до 10⁹ дают до 10¹¹.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-cin-task-3",
+      "title": "Найди ошибку: нумерация строк",
+      "description": "Первая строка ввода — число `n`, дальше `n` строк текста (строки могут начинаться с пробелов и быть пустыми — печатать их нужно как есть). Программа печатает каждую строку с номером: `1: текст`.\n\nНумерация сбивается: первая строка выводится пустой, а последняя теряется. Найдите и исправьте ошибку.",
+      "difficulty": "beginner",
+      "starterCode": "#include <iostream>\n#include <string>\n\nint main() {\n    int n;\n    if (!(std::cin >> n)) {\n        return 0;\n    }\n    for (int i = 1; i <= n; i++) {\n        std::string line;\n        std::getline(std::cin, line);\n        std::cout << i << \": \" << line << '\\n';\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\nfirst\nsecond\n",
+          "output": "1: first\n2: second\n"
+        },
+        {
+          "input": "1\n  indented\n",
+          "output": "1:   indented\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 50; строки до 200 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что остаётся в потоке после std::cin >> n? Что прочитает первый вызов getline?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Пропустите остаток первой строки один раз, сразу после чтения n: std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\\n'). std::ws здесь не подойдёт — он съест и пустые строки, и пробелы в начале первой строки текста.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\nfirst\nsecond\n",
+          "expected": "1: first\n2: second\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n  indented\n",
+          "expected": "1:   indented\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "3\na\nb\nc\n",
+          "expected": "1: a\n2: b\n3: c\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "2\n\nafter empty\n",
+          "expected": "1: \n2: after empty\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1\nonly\n",
+          "expected": "1: only\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "3\n  one\n   two\nthree  \n",
+          "expected": "1:   one\n2:    two\n3: three  \n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "2\nс пробелами внутри\nещё строка\n",
+          "expected": "1: с пробелами внутри\n2: ещё строка\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "4\n1\n2\n3\n4\n",
+          "expected": "1: 1\n2: 2\n3: 3\n4: 4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "2\n\n\n",
+          "expected": "1: \n2: \n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "3\nx\n\ny\n",
+          "expected": "1: x\n2: \n3: y\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <limits>\n#include <string>\n\nint main() {\n    int n;\n    if (!(std::cin >> n)) {\n        return 0;\n    }\n    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\\n');\n    for (int i = 1; i <= n; i++) {\n        std::string line;\n        std::getline(std::cin, line);\n        std::cout << i << \": \" << line << '\\n';\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`std::cin >> n` останавливается сразу после числа, и перевод строки остаётся в потоке. Первый `getline` читает остаток этой строки — пустой — и программа печатает его как первую строку текста. Все строки сдвигаются, а последняя не успевает прочитаться.\n\nИсправление — пропустить остаток строки с числом: `ignore` с огромным пределом и разделителем `'\\n'`. Здесь важно не использовать `std::ws`: он пропустил бы не только перевод строки, но и пустые строки и пробелы в начале первой строки текста, а по условию их нужно напечатать как есть.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-cin-task-4",
+      "title": "Проверка ввода",
+      "description": "Ввод — слова и числа вперемешку. Читайте целые числа оператором `>>`. Если чтение не удалось, сбросьте ошибку потока, прочитайте мешающее слово в строку и продолжайте.\n\nНапечатайте `сумма S, чисел K, пропущено M`, где `K` — сколько чисел прочитано, `M` — сколько слов пропущено.\n\nОбратите внимание: `>>` читает число, пока может, поэтому из `12abc` прочитается число 12, а слово `abc` будет пропущено отдельно; из `3.5` — число 3, а пропущено `.5`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "12 abc 7 x9 -3\n",
+          "output": "сумма 16, чисел 3, пропущено 2\n"
+        },
+        {
+          "input": "12abc 3.5\n",
+          "output": "сумма 15, чисел 2, пропущено 2\n"
+        }
+      ],
+      "constraints": [
+        "Числа во вводе помещаются в int; слов и чисел не больше 1000.",
+        "Нет одиночных знаков «+» и «-» и слов, начинающихся со знака и не продолжающихся цифрой."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Цикл: while (true) { if (std::cin >> x) { … } else if (std::cin.eof()) break; else { std::cin.clear(); std::string bad; std::cin >> bad; … } }.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Проверка eof() отличает «ввод кончился» от «встретилось не число»: в первом случае восстанавливать нечего.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "12 abc 7 x9 -3\n",
+          "expected": "сумма 16, чисел 3, пропущено 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "12abc 3.5\n",
+          "expected": "сумма 15, чисел 2, пропущено 2\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": "сумма 0, чисел 0, пропущено 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Только слова",
+          "stdin": "один два три\n",
+          "expected": "сумма 0, чисел 0, пропущено 3\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Только числа",
+          "stdin": "1 2 3\n",
+          "expected": "сумма 6, чисел 3, пропущено 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Большие числа",
+          "stdin": "2147483647 1\n",
+          "expected": "сумма 2147483648, чисел 2, пропущено 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Знаки",
+          "stdin": "-5 minus 5 plus\n",
+          "expected": "сумма 0, чисел 2, пропущено 2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Цифры в словах",
+          "stdin": "a1 1a 11\n",
+          "expected": "сумма 12, чисел 2, пропущено 2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Несколько строк",
+          "stdin": "10\nword\n20\n\nmore words 30\n",
+          "expected": "сумма 60, чисел 3, пропущено 3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Дроби",
+          "stdin": "0.5 .5 5.\n",
+          "expected": "сумма 5, чисел 2, пропущено 3\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <string>\n\nint main() {\n    long long sum = 0;\n    int numbers = 0, skipped = 0;\n    while (true) {\n        int x;\n        if (std::cin >> x) {\n            sum += x;\n            numbers++;\n        } else if (std::cin.eof()) {\n            break;\n        } else {\n            std::cin.clear();\n            std::string bad;\n            std::cin >> bad;\n            skipped++;\n        }\n    }\n    std::cout << \"сумма \" << sum << \", чисел \" << numbers << \", пропущено \" << skipped << '\\n';\n    return 0;\n}\n",
+      "solutionExplanation": "Неудачное чтение бывает по двум причинам: ввод кончился или встретилось не число. Метод `eof()` различает их: при конце ввода цикл заканчивается, а иначе нужно восстановиться — `clear()` снимает состояние ошибки, но не убирает символы, поэтому мешающее слово забирается отдельным чтением в строку.\n\nОператор `>>` для `int` жаден: он берёт столько символов, сколько может составить число, и останавливается на первом неподходящем. Поэтому `12abc` разбивается на число 12 и слово `abc`, а `3.5` — на 3 и `.5`. Если нужна проверка «всё слово целиком — число», слово читают в строку и разбирают целиком — например, `std::stoi` с проверкой позиции; об этом в уроке об исключениях.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-cin-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «std::cin»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "Потоковый ввод сообщает об ошибках через состояние потока. Это позволяет строить проверяемый конвейер, но требует явно проверять fail и eof."
+        "id": "q1",
+        "question": "Что выведет программа на вводе «4 abc 5»?",
+        "code": "#include <iostream>\n\nint main() {\n    int sum = 0, x;\n    while (std::cin >> x) {\n        sum += x;\n    }\n    std::cout << sum << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Чтение «abc» как числа не удаётся, поток переходит в состояние ошибки, и цикл заканчивается. Пятёрка не прочитана.",
+        "type": "text",
+        "answers": ["4"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
-        "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
-        ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "id": "q2",
+        "question": "Что прочитает std::cin >> name, где name — std::string, из строки «Анна Петрова»?",
+        "explanation": ">> для строки читает одно слово — до первого пробельного символа. Для строки с пробелами нужен std::getline.",
+        "options": ["Анна", "Анна Петрова", "Пустую строку", "Ошибку чтения"],
+        "correct": 0
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Почему getline сразу после std::cin >> n возвращает пустую строку?",
+        "explanation": "Перед getline нужно пропустить остаток строки: std::cin >> std::ws или std::cin.ignore(…, '\\n').",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          ">> оставляет в потоке перевод строки после числа, и getline читает строку до него — пустую",
+          "getline всегда пропускает первую строку",
+          "n занимает всю строку",
+          "Это ошибка компилятора"
         ],
-        "correct": 0,
-        "explanation": "Используйте std::cin как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что делает std::cin.clear()?",
+        "explanation": "clear не удаляет символы: слово, из-за которого чтение не удалось, остаётся в потоке, и его нужно забрать отдельно.",
+        "options": [
+          "Сбрасывает состояние ошибки потока, чтобы чтение снова работало",
+          "Удаляет из потока все непрочитанные символы",
+          "Очищает экран",
+          "Закрывает ввод"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <sstream>\n#include <string>\n\nint main() {\n    std::istringstream in(\"7 8 x 9\");\n    int a = 0, b = 0, c = 0, d = 0;\n    in >> a >> b >> c >> d;\n    std::cout << a << ' ' << b << ' ' << c << ' ' << d << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "a и b прочитаны. На «x» чтение c не удаётся — c получает 0, поток в ошибке, и чтение d уже не выполняется: d остаётся 0.",
+        "type": "text",
+        "answers": ["7 8 0 0"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Какие способы правильно читают строку текста с пробелами после std::cin >> n?",
+        "explanation": "Оба первых способа убирают перевод строки, оставленный оператором >>. Третий вернёт пустую строку, четвёртый прочитает одно слово.",
+        "type": "multiple",
+        "options": [
+          "std::getline(std::cin >> std::ws, line)",
+          "std::cin.ignore(…, '\\n'); std::getline(std::cin, line)",
+          "std::getline(std::cin, line) сразу после >>",
+          "std::cin >> line"
+        ],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q7",
+        "question": "Что выведет программа на вводе из двух строк «3 4» и «5»?",
+        "code": "#include <iostream>\n#include <sstream>\n#include <string>\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        std::istringstream in(line);\n        int x, count = 0;\n        while (in >> x) {\n            count++;\n        }\n        std::cout << count;\n    }\n    std::cout << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "В первой строке два числа, во второй одно: печатается 2, затем 1 — без разделителя.",
+        "type": "text",
+        "answers": ["21"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q8",
+        "question": "Что дают строки std::ios::sync_with_stdio(false); std::cin.tie(nullptr);?",
+        "explanation": "После отключения синхронизации cin и scanf в одной программе смешивать нельзя.",
+        "options": [
+          "Ускоряют ввод: отключают синхронизацию со scanf и сброс cout перед каждым чтением",
+          "Включают проверку ошибок ввода",
+          "Разрешают смешивать cin и scanf",
+          "Делают ввод небуферизованным"
+        ],
+        "correct": 0
       }
     ]
   }

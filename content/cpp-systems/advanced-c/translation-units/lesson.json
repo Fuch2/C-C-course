@@ -1,117 +1,569 @@
 {
   "id": "advanced-translation-units",
-  "title": "Translation units",
-  "description": "Единица трансляции — исходный файл после обработки директив препроцессора и включения заголовков.",
+  "title": "Программа из нескольких файлов: единицы трансляции",
+  "description": "Зачем делить программу на файлы; единица трансляции и раздельная компиляция; объявление и определение функции, правило одного определения; неявное объявление, пустые скобки и (void); несогласованные объявления в разных файлах; взаимная рекурсия.",
   "moduleId": "advanced-c",
   "order": 1,
-  "difficulty": "advanced",
-  "estimatedMinutes": 40,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 55,
   "prerequisites": [],
   "objectives": [
-    "Объяснить: Translation units",
-    "Различать корректный контракт и ошибку: Вызов без прототипа недопустим в современном C. Подключение реализации через #include может дать несколько определений.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Объяснять, что такое единица трансляции и почему компилятор не видит другие файлы",
+    "Отличать объявление функции от определения и применять правило одного определения",
+    "Находить ошибки неявного объявления и прототипов с пустыми скобками",
+    "Использовать прототипы для взаимно рекурсивных функций"
   ],
-  "tags": ["C17", "углублённый C", "Translation units"],
+  "tags": ["Единица трансляции", "Прототип", "Объявление", "Определение", "Раздельная компиляция"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-translation-units-exercise",
-    "title": "Практика: Translation units",
-    "description": "Прочитайте целую температуру от −100 до 100. Объявите функцию int calibrate(int), определите её после main; выведите температуру с поправкой +3.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-translation-units-task-1",
+    "title": "Последовательности Хофштадтера",
+    "description": "Даглас Хофштадтер придумал две последовательности, которые определяются друг через друга — «женскую» F и «мужскую» M:\n\n```\nF(0) = 1,   F(n) = n − M(F(n − 1))\nM(0) = 0,   M(n) = n − F(M(n − 1))\n```\n\nПрочитайте `n` и напечатайте две строки: `F:` и значения F(0), F(1), …, F(n) через пробел, затем `M:` и значения M(0), …, M(n).\n\nНапишите две рекурсивные функции `int female(int n)` и `int male(int n)`, которые вызывают друг друга, и определите их **после** `main`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "20\n",
-        "output": "23\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "5\n",
+        "output": "F: 1 1 2 2 3 3\nM: 0 0 1 2 2 3\n"
       },
       {
-        "input": "-100\n",
-        "output": "-97\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "0\n",
+        "output": "F: 1\nM: 0\n",
+        "explanation": "Только базовые значения."
       }
     ],
-    "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
-    ],
+    "constraints": ["0 ≤ n ≤ 30."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Представьте отдельные цеха: каждый выпускает объектный файл по известным интерфейсам; линкер соединяет их внешние имена."
+        "text": "Каждая функция вызывает другую, поэтому перед main нужны прототипы обеих: int female(int n); и int male(int n);.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Вызов без прототипа недопустим в современном C. Подключение реализации через #include может дать несколько определений."
+        "text": "Базовые случаи: female(0) возвращает 1, male(0) возвращает 0. Иначе female(n) = n - male(female(n - 1)).",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Печатайте значения в цикле: printf(\" %d\", female(i)) после строки \"F:\", и так же для M.",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "20\n",
-        "expected": "23\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "5\n",
+        "expected": "F: 1 1 2 2 3 3\nM: 0 0 1 2 2 3\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "-100\n",
-        "expected": "-97\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "0\n",
+        "expected": "F: 1\nM: 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "0\n",
-        "expected": "3\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "1\n",
+        "expected": "F: 1 1\nM: 0 0\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "2\n",
+        "expected": "F: 1 1 2\nM: 0 0 1\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "7\n",
+        "expected": "F: 1 1 2 2 3 3 4 5\nM: 0 0 1 2 2 3 4 4\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "10\n",
+        "expected": "F: 1 1 2 2 3 3 4 5 5 6 6\nM: 0 0 1 2 2 3 4 4 5 6 6\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "13\n",
+        "expected": "F: 1 1 2 2 3 3 4 5 5 6 6 7 8 8\nM: 0 0 1 2 2 3 4 4 5 6 6 7 7 8\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "20\n",
+        "expected": "F: 1 1 2 2 3 3 4 5 5 6 6 7 8 8 9 9 10 11 11 12 13\nM: 0 0 1 2 2 3 4 4 5 6 6 7 7 8 9 9 10 11 11 12 12\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "25\n",
+        "expected": "F: 1 1 2 2 3 3 4 5 5 6 6 7 8 8 9 9 10 11 11 12 13 13 14 14 15 16\nM: 0 0 1 2 2 3 4 4 5 6 6 7 7 8 9 9 10 11 11 12 12 13 14 14 15 16\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "30\n",
+        "expected": "F: 1 1 2 2 3 3 4 5 5 6 6 7 8 8 9 9 10 11 11 12 13 13 14 14 15 16 16 17 17 18 19\nM: 0 0 1 2 2 3 4 4 5 6 6 7 7 8 9 9 10 11 11 12 12 13 14 14 15 16 16 17 17 18 19\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\nint calibrate(int value);\nint main(void) {\n    int value;\n    if (scanf(\"%d\", &value) != 1) return 1;\n    printf(\"%d\\n\", calibrate(value));\n    return 0;\n}\n\nint calibrate(int value) { return value + 3; }\n",
-    "solutionExplanation": "Представьте отдельные цеха: каждый выпускает объектный файл по известным интерфейсам; линкер соединяет их внешние имена.\n\nВызов без прототипа недопустим в современном C. Подключение реализации через #include может дать несколько определений.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '20\\n' → '23\\n'; '-100\\n' → '-97\\n'; '0\\n' → '3\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <stdio.h>\n\nint female(int n);\nint male(int n);\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1) {\n        return 0;\n    }\n    printf(\"F:\");\n    for (int i = 0; i <= n; i++) {\n        printf(\" %d\", female(i));\n    }\n    printf(\"\\nM:\");\n    for (int i = 0; i <= n; i++) {\n        printf(\" %d\", male(i));\n    }\n    printf(\"\\n\");\n    return 0;\n}\n\nint female(int n) {\n    return n == 0 ? 1 : n - male(female(n - 1));\n}\n\nint male(int n) {\n    return n == 0 ? 0 : n - female(male(n - 1));\n}\n",
+    "solutionExplanation": "Функции `female` и `male` вызывают друг друга, поэтому как минимум одна из них используется раньше своего определения. Прототипы перед `main` сообщают компилятору типы обеих функций, и порядок определений ниже становится неважен.\n\nРекурсия здесь не самая быстрая: одни и те же значения вычисляются много раз. Для `n ≤ 30` это незаметно, а для больших `n` значения запоминают в массиве — к этому приёму вы ещё вернётесь в уроке о `static`.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-translation-units-task-2",
+      "title": "Генератор прототипов",
+      "description": "Заголовочный файл модуля обычно содержит прототипы его функций. Напишите программу, которая получает прототипы из первых строк определений.\n\nКаждая непустая строка ввода — начало определения функции: тип и имя, список параметров в круглых скобках и, возможно, открывающая фигурная скобка. Между словами может стоять несколько пробелов или табуляций, пробелы могут быть и вокруг скобок и запятых.\n\nДля каждой строки напечатайте прототип:\n- текст до закрывающей скобки списка параметров, в котором каждая группа пробелов и табуляций заменена одним пробелом;\n- без пробелов перед `(`, после `(`, перед `)` и перед запятой; после запятой — ровно один пробел;\n- пустой список параметров заменён на `void`;\n- в конце — точка с запятой.\n\nПустые строки и строки только из пробелов пропускайте.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "int add(int a, int b) {\nvoid   print_menu ( )\n",
+          "output": "int add(int a, int b);\nvoid print_menu(void);\n"
+        },
+        {
+          "input": "char *find_word( char *text ,  const char  *word ) {\n",
+          "output": "char *find_word(char *text, const char *word);\n"
+        }
+      ],
+      "constraints": [
+        "Строка не длиннее 200 символов; в ней ровно одна пара круглых скобок.",
+        "Звёздочки указателей оставляйте на своих местах, меняются только пробелы."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Читайте строки через fgets. Найдите позиции символов ( и ) функцией strchr.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Напишите функцию, которая печатает отрезок строки [from, to), пропуская пробелы в начале и в конце и сжимая внутренние группы пробелов в один.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Параметры разделяйте по запятым и печатайте каждый этой функцией, вставляя \", \" между ними. Если внутри скобок только пробелы — напечатайте void.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "int add(int a, int b) {\nvoid   print_menu ( )\n",
+          "expected": "int add(int a, int b);\nvoid print_menu(void);\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "char *find_word( char *text ,  const char  *word ) {\n",
+          "expected": "char *find_word(char *text, const char *word);\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "void в скобках",
+          "stdin": "int main(void) {\n",
+          "expected": "int main(void);\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Пустые строки",
+          "stdin": "\n   \ndouble mean(const double *v, int n)\n\n",
+          "expected": "double mean(const double *v, int n);\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Табуляции",
+          "stdin": "unsigned   long long\tfactorial(\tunsigned n\t)\t{\n",
+          "expected": "unsigned long long factorial(unsigned n);\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Пустые скобки",
+          "stdin": "void f(  )\nvoid g()\n",
+          "expected": "void f(void);\nvoid g(void);\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Без пробелов после запятых",
+          "stdin": "int clamp(int value,int low,int high){\n",
+          "expected": "int clamp(int value, int low, int high);\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Звёздочки с пробелами",
+          "stdin": "char * duplicate ( const char * s ) {\n",
+          "expected": "char * duplicate(const char * s);\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Пять параметров",
+          "stdin": "void  draw_rect ( int x , int y , int w , int h , char fill )   {\n",
+          "expected": "void draw_rect(int x, int y, int w, int h, char fill);\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Несколько функций",
+          "stdin": "struct Point make_point(int x, int y) {\nint *find(int *a, int n, int key)\nvoid reset(void)\n",
+          "expected": "struct Point make_point(int x, int y);\nint *find(int *a, int n, int key);\nvoid reset(void);\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nint is_blank(char c) {\n    return c == ' ' || c == '\\t' || c == '\\n' || c == '\\r';\n}\n\n// Печатает символы [from, to) без пробелов по краям, группы пробелов — одним пробелом.\nvoid print_squeezed(const char *from, const char *to) {\n    while (from < to && is_blank(*from)) {\n        from++;\n    }\n    while (to > from && is_blank(to[-1])) {\n        to--;\n    }\n    int gap = 0;\n    for (const char *p = from; p < to; p++) {\n        if (is_blank(*p)) {\n            gap = 1;\n            continue;\n        }\n        if (gap) {\n            putchar(' ');\n            gap = 0;\n        }\n        putchar(*p);\n    }\n}\n\nint only_blanks(const char *from, const char *to) {\n    for (const char *p = from; p < to; p++) {\n        if (!is_blank(*p)) {\n            return 0;\n        }\n    }\n    return 1;\n}\n\nint main(void) {\n    char line[256];\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        const char *open = strchr(line, '(');\n        const char *close = strchr(line, ')');\n        if (open == NULL || close == NULL) {\n            continue;\n        }\n        print_squeezed(line, open);\n        putchar('(');\n        if (only_blanks(open + 1, close)) {\n            printf(\"void\");\n        } else {\n            const char *start = open + 1;\n            for (;;) {\n                const char *comma = memchr(start, ',', (size_t)(close - start));\n                const char *end = comma != NULL ? comma : close;\n                print_squeezed(start, end);\n                if (comma == NULL) {\n                    break;\n                }\n                printf(\", \");\n                start = comma + 1;\n            }\n        }\n        printf(\");\\n\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Строка делится на три части: всё до `(` — тип и имя, между скобками — параметры, после `)` — остаток (`{` или ничего), который отбрасывается. Одна функция `print_squeezed` нормализует любой отрезок: срезает пробелы по краям и заменяет внутренние группы одним пробелом. Тогда «нет пробела перед запятой» и «нет пробела после скобки» получаются сами — каждый параметр печатается без краевых пробелов.\n\nПустой список `()` превращается в `(void)`: в C23 это одно и то же, но заголовок могут подключить проекты на C17, где пустые скобки отключают проверку аргументов, поэтому генератор пишет явный `(void)`.\n\nПустые строки отсеиваются проверкой на наличие скобок: в них нет ни `(`, ни `)`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-translation-units-task-3",
+      "title": "Найди ошибку: пустые скобки",
+      "description": "Программа читает целые температуры по Цельсию до конца ввода и для каждой печатает строку `C градусов C = F F` с одним знаком после точки, где F = C × 9 / 5 + 32.\n\nПрограмму написали по правилам C17: там она компилируется без единого предупреждения, но печатает неправильные числа. Компилятор курса работает по C23 и вовсе отказывается её собирать. Прочитайте сообщение компилятора и исправьте объявление функции.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\ndouble to_fahrenheit();\n\nint main(void) {\n    int celsius;\n    while (scanf(\"%d\", &celsius) == 1) {\n        printf(\"%d C = %.1f F\\n\", celsius, to_fahrenheit(celsius));\n    }\n    return 0;\n}\n\ndouble to_fahrenheit(double celsius) {\n    return celsius * 9 / 5 + 32;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "100\n0\n",
+          "output": "100 C = 212.0 F\n0 C = 32.0 F\n"
+        },
+        {
+          "input": "-40\n",
+          "output": "-40 C = -40.0 F\n",
+          "explanation": "Шкалы совпадают при −40 градусах."
+        }
+      ],
+      "constraints": ["−300 ≤ C ≤ 1000; чисел не больше 20."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Компилятор пишет too many arguments to function: в C23 пустые скобки в объявлении означают (void).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Объявление должно совпадать с определением ниже main: укажите в скобках тип и имя параметра.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "100\n0\n",
+          "expected": "100 C = 212.0 F\n0 C = 32.0 F\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "-40\n",
+          "expected": "-40 C = -40.0 F\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "37\n",
+          "expected": "37 C = 98.6 F\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1\n2\n3\n",
+          "expected": "1 C = 33.8 F\n2 C = 35.6 F\n3 C = 37.4 F\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "-273\n",
+          "expected": "-273 C = -459.4 F\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1000\n-300\n",
+          "expected": "1000 C = 1832.0 F\n-300 C = -508.0 F\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "36\n37\n38\n39\n40\n",
+          "expected": "36 C = 96.8 F\n37 C = 98.6 F\n38 C = 100.4 F\n39 C = 102.2 F\n40 C = 104.0 F\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "15\n",
+          "expected": "15 C = 59.0 F\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "-1\n",
+          "expected": "-1 C = 30.2 F\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "25 30 35\n",
+          "expected": "25 C = 77.0 F\n30 C = 86.0 F\n35 C = 95.0 F\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\ndouble to_fahrenheit(double celsius);\n\nint main(void) {\n    int celsius;\n    while (scanf(\"%d\", &celsius) == 1) {\n        printf(\"%d C = %.1f F\\n\", celsius, to_fahrenheit(celsius));\n    }\n    return 0;\n}\n\ndouble to_fahrenheit(double celsius) {\n    return celsius * 9 / 5 + 32;\n}\n",
+      "solutionExplanation": "В C23 объявление `double to_fahrenheit();` означает «функция без параметров», поэтому вызов с аргументом и определение с `double celsius` — две ошибки компиляции: `too many arguments` и `conflicting types`.\n\nВ C17 то же объявление говорило только «функция возвращает `double`», а о параметрах — ничего. Компилятор не мог преобразовать `int` в `double` и передавал целое число так, как передаются целые, — в другом регистре процессора. Функция читала свой `double` оттуда, где его никто не положил: неопределённое поведение без единого предупреждения. C23 превратил тихую ошибку в громкую.\n\nС полным прототипом `double to_fahrenheit(double celsius);` компилятор сам вставляет преобразование `celsius → (double)celsius`, и программа работает по любому стандарту.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-translation-units-task-4",
+      "title": "Калькулятор",
+      "description": "Вычислите значения целочисленных выражений. Каждая строка ввода — одно выражение из неотрицательных целых чисел, операций `+ - * / %`, круглых скобок и унарного минуса; между элементами могут стоять пробелы.\n\nПриоритеты и порядок — как в C: сначала скобки и унарный минус, затем `* / %` слева направо, затем `+ -` слева направо. Деление и остаток — целочисленные, как в C (`-7 / 2 = -3`, `-7 % 2 = -1`).\n\nДля каждой строки напечатайте значение выражения или `деление на ноль`, если при вычислении встретилось деление или остаток от деления на ноль.\n\nИспользуйте **рекурсивный спуск** — по функции на каждый уровень приоритета:\n\n```\nвыражение  = слагаемое { (+ | -) слагаемое }\nслагаемое  = множитель { (* | / | %) множитель }\nмножитель  = - множитель | число | ( выражение )\n```",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2 + 3 * 4\n(2 + 3) * 4\n",
+          "output": "14\n20\n"
+        },
+        {
+          "input": "-7 / 2\n10 / (5 - 5)\n",
+          "output": "-3\nделение на ноль\n"
+        }
+      ],
+      "constraints": [
+        "Выражения корректны, строки не длиннее 200 символов, строк не больше 20.",
+        "Все промежуточные значения по модулю не больше 10¹⁵ — используйте long long."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Храните позицию разбора в глобальной переменной const char *pos и напишите функцию skip_spaces(). Функции parse_expr, parse_term и parse_factor возвращают long long.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "parse_factor вызывает parse_expr для выражения в скобках, а parse_expr через parse_term вызывает parse_factor — это взаимная рекурсия, поэтому перед определениями нужны прототипы.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Для деления на ноль заведите глобальный флаг: при делителе 0 установите его и не выполняйте операцию. В main перед каждой строкой сбрасывайте флаг.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2 + 3 * 4\n(2 + 3) * 4\n",
+          "expected": "14\n20\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "-7 / 2\n10 / (5 - 5)\n",
+          "expected": "-3\nделение на ноль\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одно число",
+          "stdin": "42\n",
+          "expected": "42\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Левая ассоциативность",
+          "stdin": "10 - 3 - 2\n100 / 10 / 5\n",
+          "expected": "5\n2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Унарный минус",
+          "stdin": "-(-3)\n- - 4\n-2 * -3\n",
+          "expected": "3\n4\n6\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Остаток",
+          "stdin": "-7 % 3\n7 % -3\n17 % 5\n",
+          "expected": "-1\n1\n2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Вложенные скобки",
+          "stdin": "((((1))))\n(1 + (2 * (3 + (4 * 5))))\n",
+          "expected": "1\n47\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Большие числа",
+          "stdin": "1000000 * 1000000\n999999999999999 - 1\n",
+          "expected": "1000000000000\n999999999999998\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Деление на ноль внутри",
+          "stdin": "5 % 0\n1 + 2 * (3 / (2 - 2)) + 4\n",
+          "expected": "деление на ноль\nделение на ноль\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пробелы и смесь",
+          "stdin": "  12   +  -3*2   \n2*3+4*5-6/2\n",
+          "expected": "6\n23\n"
+        }
+      ],
+      "referenceSolution": "#include <ctype.h>\n#include <stdio.h>\n\nlong long parse_expr(void);\nlong long parse_term(void);\nlong long parse_factor(void);\n\nconst char *pos;\nint division_by_zero;\n\nvoid skip_spaces(void) {\n    while (*pos == ' ' || *pos == '\\t') {\n        pos++;\n    }\n}\n\nint main(void) {\n    char line[256];\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        pos = line;\n        division_by_zero = 0;\n        long long value = parse_expr();\n        if (division_by_zero) {\n            printf(\"деление на ноль\\n\");\n        } else {\n            printf(\"%lld\\n\", value);\n        }\n    }\n    return 0;\n}\n\nlong long parse_expr(void) {\n    long long value = parse_term();\n    for (;;) {\n        skip_spaces();\n        char op = *pos;\n        if (op != '+' && op != '-') {\n            return value;\n        }\n        pos++;\n        long long right = parse_term();\n        value = op == '+' ? value + right : value - right;\n    }\n}\n\nlong long parse_term(void) {\n    long long value = parse_factor();\n    for (;;) {\n        skip_spaces();\n        char op = *pos;\n        if (op != '*' && op != '/' && op != '%') {\n            return value;\n        }\n        pos++;\n        long long right = parse_factor();\n        if (op == '*') {\n            value *= right;\n        } else if (right == 0) {\n            division_by_zero = 1;\n        } else if (op == '/') {\n            value /= right;\n        } else {\n            value %= right;\n        }\n    }\n}\n\nlong long parse_factor(void) {\n    skip_spaces();\n    if (*pos == '-') {\n        pos++;\n        return -parse_factor();\n    }\n    if (*pos == '(') {\n        pos++;\n        long long value = parse_expr();\n        skip_spaces();\n        pos++;                      // закрывающая скобка\n        return value;\n    }\n    long long value = 0;\n    while (isdigit((unsigned char)*pos)) {\n        value = value * 10 + (*pos - '0');\n        pos++;\n    }\n    return value;\n}\n",
+      "solutionExplanation": "Грамматика записывает приоритеты структурой: выражение — это сумма слагаемых, слагаемое — произведение множителей, а множитель — число, отрицание множителя или **снова выражение** в скобках. Каждое правило становится функцией, а цикл `for (;;)` внутри `parse_expr` и `parse_term` обеспечивает левую ассоциативность: `10 - 3 - 2` вычисляется как `(10 - 3) - 2`.\n\nПоследнее правило замыкает круг: `parse_factor` вызывает `parse_expr`, которая через `parse_term` снова приходит в `parse_factor`. Без прототипов в начале файла такую взаимную рекурсию не скомпилировать — в каком бы порядке ни стояли определения, одна функция вызывается раньше, чем определена.\n\nПри делении на ноль операция пропускается, а флаг сообщает `main`, что результат недействителен; разбор при этом доходит до конца строки, и следующая строка начинается с чистого состояния.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-translation-units-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Что компилятор должен знать в месте вызова?",
-        "options": ["Совместимый прототип функции", "Только имя объектного файла"],
-        "correct": 0,
-        "explanation": "Единица трансляции — исходный файл после обработки директив препроцессора и включения заголовков. Компилятор проверяет её независимо от соседних .c. Поэтому объявление функции должно быть доступно в месте вызова: наличие реализации в другом файле не сообщает компилятору её тип. Объявление описывает интерфейс, определение предоставляет тело. Затем линкер связывает внешние ссылки объектных файлов."
-      },
-      {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q1",
+        "question": "Что такое единица трансляции?",
+        "explanation": "Компилятор обрабатывает каждый .c файл отдельно, предварительно подставив заголовки. Из каждой единицы трансляции получается свой объектный файл, а соединяет их линковщик.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "Вызов без прототипа недопустим в современном C. Подключение реализации через #include может дать несколько определений."
+          "Один .c файл вместе с текстом всех заголовков, подставленных через #include",
+          "Все .c файлы программы, собранные вместе",
+          "Одна функция вместе с её прототипом",
+          "Объектный файл, который создаёт линковщик"
         ],
-        "correct": 1,
-        "explanation": "Представьте отдельные цеха: каждый выпускает объектный файл по известным интерфейсам; линкер соединяет их внешние имена."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["11", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: printf(\"%d\\n\",adjust(10)); Ожидаемый результат: 11"
+        "id": "q2",
+        "question": "Какие строки — объявления функций, но не определения? Выберите все.",
+        "explanation": "Объявление — заголовок функции с точкой с запятой, без тела. Имена параметров в объявлении необязательны, поэтому double scale(double); — тоже объявление. Строка с телом в фигурных скобках — определение.",
+        "type": "multiple",
+        "options": [
+          "int max(int a, int b);",
+          "int max(int a, int b) { return a > b ? a : b; }",
+          "void print_report(void);",
+          "double scale(double);"
+        ],
+        "correct": [0, 2, 3]
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint next(int x);\nint twice(int x);\n\nint main(void) {\n    printf(\"%d\\n\", twice(next(4)));\n    return 0;\n}\n\nint next(int x) {\n    return x + 1;\n}\n\nint twice(int x) {\n    return next(x) + next(x);\n}",
+        "explanation": "next(4) = 5, затем twice(5) = next(5) + next(5) = 6 + 6 = 12. Определения стоят после main, но прототипы сверху сообщили компилятору типы обеих функций.",
+        "type": "text",
+        "answers": ["12"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Что означает объявление int count(); в C23 и что оно означало в C17?",
+        "explanation": "C23 привёл пустые скобки к смыслу C++: параметров нет, вызов count(1, 2) — ошибка компиляции. В C17 и раньше то же объявление отключало проверку числа и типов аргументов, и count(1, 2) компилировался молча.",
+        "options": [
+          "В C23 — то же, что int count(void); в C17 — «параметры неизвестны», без проверки аргументов",
+          "В обоих стандартах — функция без параметров",
+          "В обоих стандартах — «параметры неизвестны»",
+          "В C23 такое объявление запрещено"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что произойдёт при компиляции этого файла в GCC 14 по стандарту C23?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%.1f\\n\", mean(2, 5));\n    return 0;\n}\n\ndouble mean(int a, int b) {\n    return (a + b) / 2.0;\n}",
+        "explanation": "В месте вызова компилятор ещё не знает mean — с GCC 14 это ошибка. По старым правилам он «угадал» тип int mean(), поэтому определение с double даёт вторую ошибку. Исправление — прототип double mean(int a, int b); до main. Старые компиляторы (GCC 13 и раньше) выдавали здесь только предупреждение.",
+        "options": [
+          "Ошибка implicit declaration of function 'mean', затем conflicting types for 'mean'",
+          "Программа соберётся и напечатает 3.5",
+          "Ошибка линковки undefined reference to `mean`",
+          "Только предупреждение, программа напечатает 3"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "В geometry.c определена функция double area(double w, double h), а в main.c перед вызовом написано int area(int w, int h);. Что будет при сборке gcc main.c geometry.c -o app?",
+        "explanation": "Компилируя main.c, компилятор не видит geometry.c, а линковщик C сравнивает только имена. Защита — один заголовок с объявлением, подключённый и в geometry.c, и в main.c.",
+        "options": [
+          "Программа соберётся без ошибок, но поведение не определено",
+          "Компилятор сообщит conflicting types при сборке main.c",
+          "Линковщик сообщит о несовпадении типов",
+          "Линковщик автоматически выберет подходящую версию"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Сколько определений функции parse_line может быть в программе из пяти .c файлов?",
+        "explanation": "Правило одного определения: объявлять функцию можно в каждом файле сколько угодно раз, а определить — ровно один раз на всю программу. Два определения дают multiple definition при линковке.",
+        "type": "text",
+        "answers": ["1", "одно", "ровно одно"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q8",
+        "question": "Функции is_even и is_odd вызывают друг друга. Что нужно, чтобы файл скомпилировался без предупреждений?",
+        "explanation": "Компилятор читает файл сверху вниз. При взаимной рекурсии одна из функций неизбежно вызывается раньше своего определения, поэтому ей нужен прототип выше.",
+        "options": [
+          "Прототип хотя бы той функции, которая определена ниже места первого вызова",
+          "Определить обе функции после main",
+          "Ничего: компилятор сам найдёт функцию ниже по файлу",
+          "Вынести каждую функцию в отдельный .c файл"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q9",
+        "question": "Какая команда собирает программу из файлов main.c и stats.c?",
+        "explanation": "gcc компилирует каждый файл отдельно и передаёт оба объектных файла линковщику. Без stats.c линковщик не найдёт её функции, а флаг -c с несколькими файлами и -o не создаёт программу.",
+        "options": [
+          "gcc main.c stats.c -o app",
+          "gcc main.c -o app",
+          "gcc main.c -include stats.c -o app",
+          "gcc -c main.c stats.c -o app"
+        ],
+        "correct": 0
       }
     ]
   }

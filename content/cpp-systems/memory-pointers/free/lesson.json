@@ -13,9 +13,9 @@
     "Писать парные функции create и destroy для структур с вложенными блоками",
     "Освобождать связанные цепочки, не обращаясь к уже освобождённым узлам"
   ],
-  "tags": ["C17", "Память", "free", "Владение", "Деструктор"],
+  "tags": ["C23", "Память", "free", "Владение", "Деструктор"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-free-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nstruct Matrix {\n    int rows, cols;\n    int **data;\n};\n\nstruct Matrix *matrix_create(int rows, int cols) {\n    return NULL;\n}\n\nvoid matrix_destroy(struct Matrix *m) {\n}\n\nint main(void) {\n    int rows, cols;\n    scanf(\"%d %d\", &rows, &cols);\n    struct Matrix *m = matrix_create(rows, cols);\n    if (m == NULL) {\n        return 1;\n    }\n    for (int r = 0; r < rows; r++) {\n        for (int c = 0; c < cols; c++) {\n            scanf(\"%d\", &m->data[r][c]);\n        }\n    }\n    for (int r = 0; r < rows; r++) {\n        long long sum = 0;\n        for (int c = 0; c < cols; c++) {\n            sum += m->data[r][c];\n        }\n        printf(r + 1 < rows ? \"%lld \" : \"%lld\\n\", sum);\n    }\n    for (int c = 0; c < cols; c++) {\n        long long sum = 0;\n        for (int r = 0; r < rows; r++) {\n            sum += m->data[r][c];\n        }\n        printf(c + 1 < cols ? \"%lld \" : \"%lld\\n\", sum);\n    }\n    matrix_destroy(m);\n    matrix_destroy(NULL);\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -134,7 +134,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nstruct Node {\n    int value;\n    struct Node *next;\n};\n\nstruct Node *push_front(struct Node *head, int value) {\n    return NULL;\n}\n\nvoid free_list(struct Node *head) {\n}\n\nint main(void) {\n    struct Node *head = NULL;\n    int x;\n    while (scanf(\"%d\", &x) == 1) {\n        struct Node *bigger = push_front(head, x);\n        if (bigger == NULL) {\n            free_list(head);\n            return 1;\n        }\n        head = bigger;\n    }\n    int count = 0;\n    for (struct Node *n = head; n != NULL; n = n->next) {\n        printf(\"%d \", n->value);\n        count++;\n    }\n    printf(\"(%d)\\n\", count);\n    free_list(head);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -238,7 +238,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint main(void) {\n    char *line = malloc(256);\n    if (line == NULL || fgets(line, 256, stdin) == NULL) {\n        free(line);\n        return 1;\n    }\n    line[strcspn(line, \"\\n\")] = '\\0';\n    char *words[50];\n    int count = 0;\n    char *p = line;\n    while (*p != '\\0' && count < 50) {\n        words[count++] = p;\n        char *space = strchr(p, ' ');\n        if (space == NULL) {\n            break;\n        }\n        *space = '\\0';\n        p = space + 1;\n    }\n    for (int i = count - 1; i >= 0; i--) {\n        printf(i > 0 ? \"%s \" : \"%s\\n\", words[i]);\n    }\n    for (int i = 0; i < count; i++) {\n        free(words[i]);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -345,7 +345,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Stack {\n    char **items;\n    int count, capacity;\n};\n\nint stack_push(struct Stack *s, const char *word) {\n    return -1;\n}\n\nchar *stack_pop(struct Stack *s) {\n    return NULL;\n}\n\nvoid stack_destroy(struct Stack *s) {\n}\n\nint main(void) {\n    struct Stack s = {NULL, 0, 0};\n    char command[8];\n    while (scanf(\"%7s\", command) == 1) {\n        if (strcmp(command, \"push\") == 0) {\n            char word[32];\n            scanf(\"%31s\", word);\n            if (stack_push(&s, word) != 0) {\n                break;\n            }\n        } else if (strcmp(command, \"pop\") == 0) {\n            char *top = stack_pop(&s);\n            if (top == NULL) {\n                printf(\"empty\\n\");\n            } else {\n                printf(\"%s\\n\", top);\n                free(top);\n            }\n        }\n    }\n    printf(\"left %d\\n\", s.count);\n    stack_destroy(&s);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

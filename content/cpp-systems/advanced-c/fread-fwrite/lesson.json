@@ -1,84 +1,127 @@
 {
   "id": "advanced-fread-fwrite",
-  "title": "fread/fwrite",
-  "description": "fread и fwrite возвращают число полных элементов, а не всегда число байтов.",
+  "title": "Блочный ввод-вывод: fread, fwrite, fseek",
+  "description": "fread и fwrite и их результат в элементах; двоичный режим; запись массива как снимок памяти; копирование блоками и последний неполный блок; позиция в файле — fseek, ftell, rewind; размер файла; записи фиксированного размера и произвольный доступ; переключение чтения и записи; tmpfile.",
   "moduleId": "advanced-c",
-  "order": 25,
-  "difficulty": "advanced",
-  "estimatedMinutes": 100,
+  "order": 24,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 55,
   "prerequisites": ["advanced-file-stream"],
   "objectives": [
-    "Объяснить: fread/fwrite",
-    "Различать корректный контракт и ошибку: Успешное чтение одного байта заголовка не означает, что весь заголовок доступен.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Читать и записывать данные блоками и правильно проверять результат fread и fwrite",
+    "Перемещаться по файлу с помощью fseek, ftell и rewind",
+    "Хранить записи фиксированного размера с произвольным доступом",
+    "Отличать двоичный режим от текстового и понимать ограничения снимков памяти"
   ],
-  "tags": ["C17", "углублённый C", "fread/fwrite"],
+  "tags": ["Файлы", "fread", "fwrite", "fseek", "Двоичные файлы"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-fread-fwrite-exercise",
-    "title": "Практика: fread/fwrite",
-    "description": "Ввод n 0…20 и n байтов 0…255. Запишите массив в tmpfile через fwrite с размером элемента 1, прочитайте через fread и выведите сумму байтов.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-fread-fwrite-task-1",
+    "title": "Копирование блоками",
+    "description": "В первой строке ввода — размер блока `k`. Всё, что идёт после этой строки до конца ввода, — содержимое файла (любые байты, включая переводы строк).\n\nЗапишите содержимое в файл `src.bin`, затем скопируйте `src.bin` в `dst.bin` блоками по `k` байтов с помощью `fread` и `fwrite`, и сравните файлы побайтно. Напечатайте `блоков B, байтов N, копия совпадает` (или `копия отличается`), где `B` — число вызовов `fread`, которые прочитали хотя бы один байт, а `N` — размер копии.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "3 1 2 255",
-        "output": "258\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "4\nhello world\n",
+        "output": "блоков 3, байтов 12, копия совпадает\n"
       },
       {
-        "input": "0",
-        "output": "0\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "100\n",
+        "output": "блоков 0, байтов 0, копия совпадает\n",
+        "explanation": "Пустое содержимое."
       }
     ],
-    "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
-    ],
+    "constraints": ["1 ≤ k ≤ 4096; содержимое не длиннее 10 000 байтов."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Чтение — запрос на порцию, а возвращаемое число — подтверждение реально полученного объёма."
+        "text": "Первую строку прочитайте fgets и переведите в число через sscanf. Содержимое — fread(chunk, 1, sizeof chunk, stdin) в цикле и fwrite в src.bin.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Успешное чтение одного байта заголовка не означает, что весь заголовок доступен."
+        "text": "Буфер размера k выделите через malloc(k) — размер известен только во время работы. Не забудьте free.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Сравнение: откройте оба файла \"rb\" и читайте их по одному байту fgetc, пока не кончится первый; затем убедитесь, что второй тоже кончился.",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "3 1 2 255",
-        "expected": "258\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "4\nhello world\n",
+        "expected": "блоков 3, байтов 12, копия совпадает\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "0",
-        "expected": "0\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "100\n",
+        "expected": "блоков 0, байтов 0, копия совпадает\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "1 0",
-        "expected": "0\n"
+        "id": "hidden-1",
+        "name": "Блок в один байт",
+        "stdin": "1\nabc",
+        "expected": "блоков 3, байтов 3, копия совпадает\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Ровное деление",
+        "stdin": "3\nabcdef",
+        "expected": "блоков 2, байтов 6, копия совпадает\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Блок больше файла",
+        "stdin": "4096\nshort\n",
+        "expected": "блоков 1, байтов 6, копия совпадает\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Несколько строк",
+        "stdin": "7\nline one\nline two\nline three\n",
+        "expected": "блоков 5, байтов 29, копия совпадает\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Только переводы строк",
+        "stdin": "2\n\n\n\n",
+        "expected": "блоков 2, байтов 3, копия совпадает\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Русский текст",
+        "stdin": "5\nпривет, мир\n",
+        "expected": "блоков 5, байтов 21, копия совпадает\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "100 байтов",
+        "stdin": "16\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "expected": "блоков 7, байтов 100, копия совпадает\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Ровно один блок",
+        "stdin": "10\n1234567890",
+        "expected": "блоков 1, байтов 10, копия совпадает\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    size_t n;if(scanf(\"%zu\",&n)!=1 || n>20)return 1;\n    unsigned char data[20];for(size_t i=0;i<n;++i){unsigned x;if(scanf(\"%u\",&x)!=1 || x>255)return 1;data[i]=(unsigned char)x;}\n    FILE *f=tmpfile();if(!f)return 1;\n    if(fwrite(data,1,n,f)!=n || fseek(f,0,SEEK_SET)!=0){fclose(f);return 1;}\n    unsigned char copy[20];if(fread(copy,1,n,f)!=n){fclose(f);return 1;}\n    if(fclose(f)!=0)return 1;\n    unsigned sum=0;for(size_t i=0;i<n;++i)sum+=copy[i];printf(\"%u\\n\",sum);\n    return 0;\n}\n",
-    "solutionExplanation": "Чтение — запрос на порцию, а возвращаемое число — подтверждение реально полученного объёма.\n\nУспешное чтение одного байта заголовка не означает, что весь заголовок доступен.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '3 1 2 255' → '258\\n'; '0' → '0\\n'; '1 0' → '0\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\nstatic int same_files(const char *a, const char *b) {\n    FILE *fa = fopen(a, \"rb\");\n    FILE *fb = fopen(b, \"rb\");\n    int same = fa != NULL && fb != NULL;\n    while (same) {\n        int ca = fgetc(fa), cb = fgetc(fb);\n        if (ca != cb) {\n            same = 0;\n        } else if (ca == EOF) {\n            break;\n        }\n    }\n    if (fa != NULL) {\n        fclose(fa);\n    }\n    if (fb != NULL) {\n        fclose(fb);\n    }\n    return same;\n}\n\nint main(void) {\n    char line[32];\n    size_t k;\n    if (fgets(line, sizeof line, stdin) == NULL || sscanf(line, \"%zu\", &k) != 1 || k == 0) {\n        return 1;\n    }\n    FILE *src = fopen(\"src.bin\", \"wb\");\n    if (src == NULL) {\n        return 1;\n    }\n    unsigned char chunk[512];\n    size_t n;\n    while ((n = fread(chunk, 1, sizeof chunk, stdin)) > 0) {\n        fwrite(chunk, 1, n, src);\n    }\n    fclose(src);\n\n    unsigned char *buffer = malloc(k);\n    FILE *in = fopen(\"src.bin\", \"rb\");\n    FILE *out = fopen(\"dst.bin\", \"wb\");\n    if (buffer == NULL || in == NULL || out == NULL) {\n        free(buffer);\n        return 1;\n    }\n    size_t blocks = 0, total = 0;\n    while ((n = fread(buffer, 1, k, in)) > 0) {\n        fwrite(buffer, 1, n, out);\n        blocks++;\n        total += n;\n    }\n    fclose(in);\n    fclose(out);\n    free(buffer);\n    printf(\"блоков %zu, байтов %zu, копия %s\\n\", blocks, total,\n           same_files(\"src.bin\", \"dst.bin\") ? \"совпадает\" : \"отличается\");\n    return 0;\n}\n",
+    "solutionExplanation": "Копирование блоками — основной способ переносить данные между файлами: `fread` читает до `k` байтов, `fwrite` записывает ровно столько, сколько прочитано. Цикл заканчивается, когда `fread` возвращает 0. Число непустых блоков — это `⌈N / k⌉`: все блоки, кроме последнего, полные.\n\nРазмер блока известен только во время работы, поэтому буфер выделяется в куче. Двоичный режим и побайтное сравнение гарантируют, что копия точная, включая переводы строк и нулевые байты. Сравнение проверяет и длину: файлы совпадают, только если оба кончились одновременно.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
@@ -86,109 +129,326 @@
   },
   "additionalExercises": [
     {
-      "id": "advanced-project-binary-parser",
-      "title": "Парсер бинарного файла",
-      "description": "Разберите формат SENS/1 из настоящего бинарного потока FILE*. Заголовок: октет 0 = 83 (S), октет 1 = 78 (N), октет 2 = версия 1, октет 3 = количество записей 0…64. Каждая запись — unsigned 16-bit little-endian измерение. Файл должен содержать ровно 4+2*count байтов. При неверной сигнатуре, версии, количестве, усечении или лишнем хвосте выведите ОШИБКА. При успехе — count и сумму измерений.\n\nТранспорт браузерного теста: stdin содержит n (0…256) и n десятичных байтов 0…255. Адаптер записывает их через fwrite в tmpfile и перемещается к началу. Сам парсер принимает FILE*, читает fread/fgetc и не использует исходный массив. Это позволяет передать нулевые байты и некорректные файлы через текстовое поле. Реальный файловый формат не содержит транспортного n. Ошибки ввода/вывода также считаются ошибкой. Формат рассчитан на CHAR_BIT=8.",
-      "difficulty": "advanced",
-      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+      "id": "advanced-fread-fwrite-task-2",
+      "title": "Файл счетов",
+      "description": "Храните счета в двоичном файле `accounts.dat` записями фиксированного размера:\n\n```c\ntypedef struct {\n    int id;\n    char name[16];\n    long long balance;\n} Account;\n```\n\nСчёт с номером `id` хранится записью номер `id − 1`. Не держите счета в массиве: каждая команда читает и изменяет нужные записи прямо в файле через `fseek`, `fread` и `fwrite`. Команды:\n- `add ИМЯ СУММА` — добавить счёт в конец файла; печатает `создан счёт ID`;\n- `get ID` — печатает `ID ИМЯ БАЛАНС` или `нет счёта`;\n- `deposit ID СУММА` — изменить баланс (сумма может быть отрицательной, но баланс не должен стать меньше нуля); печатает новый баланс, `нет счёта` или `недостаточно средств`;\n- `transfer ОТ КУДА СУММА` — перевести положительную сумму; печатает `перевод выполнен`, `нет счёта` или `недостаточно средств`;\n- `count` — число счетов, вычисленное по размеру файла.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
-      "compiler": "clang",
+      "standard": "c23",
+      "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
         {
-          "input": "8 83 78 1 2 52 18 1 0",
-          "output": "2 4661\n",
-          "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+          "input": "add ann 100\nadd bob 50\ntransfer 1 2 30\nget 1\nget 2\ncount\n",
+          "output": "создан счёт 1\nсоздан счёт 2\nперевод выполнен\n1 ann 70\n2 bob 80\n2\n"
         },
         {
-          "input": "4 83 78 1 0",
-          "output": "0 0\n",
-          "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+          "input": "get 1\nadd zoe 10\ndeposit 1 -20\ndeposit 1 15\n",
+          "output": "нет счёта\nсоздан счёт 1\nнедостаточно средств\n25\n"
         }
       ],
       "constraints": [
-        "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-        "В stdout только требуемый результат.",
-        "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+        "Имена — до 15 латинских букв; суммы по модулю до 10⁹; команд не больше 100.",
+        "В команде transfer номера счетов различны."
       ],
       "hints": [
         {
           "id": "hint-1",
-          "order": 1,
-          "text": "Нарисуйте смещения 0,1,2,3 и пары байтов записей."
+          "text": "Откройте файл режимом \"w+b\" один раз в начале. Функции read_account(f, id, &a) и write_account(f, &a) делают fseek на (id − 1) · sizeof(Account) и читают или пишут одну запись.",
+          "order": 1
         },
         {
           "id": "hint-2",
-          "order": 2,
-          "text": "Проверяйте возвращаемое количество fread перед использованием буфера."
+          "text": "Перед fseek проверьте, что id от 1 до числа счетов; число счетов — размер файла (fseek в конец и ftell), делённый на sizeof(Account).",
+          "order": 2
         },
         {
           "id": "hint-3",
-          "order": 3,
-          "text": "После count записей выполните ещё одно чтение для проверки запрещённого хвоста."
+          "text": "Новую запись заполните нулями перед заполнением полей (Account a = {0};) — тогда в файл не попадут случайные байты из заполнителей структуры.",
+          "order": 3
         }
       ],
       "publicTests": [
         {
-          "id": "test-1",
-          "name": "Основной сценарий",
-          "stdin": "8 83 78 1 2 52 18 1 0",
-          "expected": "2 4661\n"
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add ann 100\nadd bob 50\ntransfer 1 2 30\nget 1\nget 2\ncount\n",
+          "expected": "создан счёт 1\nсоздан счёт 2\nперевод выполнен\n1 ann 70\n2 bob 80\n2\n"
         },
         {
-          "id": "test-2",
-          "name": "Граничный сценарий 1",
-          "stdin": "4 83 78 1 0",
-          "expected": "0 0\n"
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "get 1\nadd zoe 10\ndeposit 1 -20\ndeposit 1 15\n",
+          "expected": "нет счёта\nсоздан счёт 1\nнедостаточно средств\n25\n"
         }
       ],
       "hiddenTests": [
         {
-          "id": "test-3",
-          "name": "Граничный сценарий 2",
-          "stdin": "3 83 78 1",
-          "expected": "ОШИБКА\n"
+          "id": "hidden-1",
+          "name": "Пустой файл",
+          "stdin": "count\n",
+          "expected": "0\n"
         },
         {
-          "id": "test-4",
-          "name": "Граничный сценарий 3",
-          "stdin": "6 83 78 1 1 255 255",
-          "expected": "1 65535\n"
+          "id": "hidden-2",
+          "name": "Перевод с несуществующим счётом",
+          "stdin": "add a 5\ntransfer 1 2 1\ntransfer 3 1 1\n",
+          "expected": "создан счёт 1\nнет счёта\nнет счёта\n"
         },
         {
-          "id": "test-5",
-          "name": "Граничный сценарий 4",
-          "stdin": "6 0 78 1 1 0 0",
-          "expected": "ОШИБКА\n"
+          "id": "hidden-3",
+          "name": "Недостаточно и ноль",
+          "stdin": "add a 5\nadd b 0\ntransfer 1 2 6\ntransfer 1 2 0\n",
+          "expected": "создан счёт 1\nсоздан счёт 2\nнедостаточно средств\nнедостаточно средств\n"
         },
         {
-          "id": "test-6",
-          "name": "Граничный сценарий 5",
-          "stdin": "4 83 78 2 0",
-          "expected": "ОШИБКА\n"
+          "id": "hidden-4",
+          "name": "Большие суммы",
+          "stdin": "add a 1000000000\ndeposit 1 1000000000\nget 1\n",
+          "expected": "создан счёт 1\n2000000000\n1 a 2000000000\n"
         },
         {
-          "id": "test-7",
-          "name": "Граничный сценарий 6",
-          "stdin": "5 83 78 1 0 0",
-          "expected": "ОШИБКА\n"
+          "id": "hidden-5",
+          "name": "Границы номеров",
+          "stdin": "add a 1\nadd b 2\nadd c 3\nget 3\nget 0\nget 4\ncount\n",
+          "expected": "создан счёт 1\nсоздан счёт 2\nсоздан счёт 3\n3 c 3\nнет счёта\nнет счёта\n3\n"
         },
         {
-          "id": "test-8",
-          "name": "Граничный сценарий 7",
-          "stdin": "4 83 78 1 65",
-          "expected": "ОШИБКА\n"
+          "id": "hidden-6",
+          "name": "Баланс до нуля",
+          "stdin": "add x 10\ndeposit 1 -10\nget 1\n",
+          "expected": "создан счёт 1\n0\n1 x 0\n"
         },
         {
-          "id": "test-9",
-          "name": "Граничный сценарий 8",
-          "stdin": "5 83 78 1 1 0",
-          "expected": "ОШИБКА\n"
+          "id": "hidden-7",
+          "name": "Цепочка переводов",
+          "stdin": "add a 100\nadd b 100\nadd c 100\ntransfer 1 3 50\ntransfer 3 2 120\nget 1\nget 2\nget 3\n",
+          "expected": "создан счёт 1\nсоздан счёт 2\nсоздан счёт 3\nперевод выполнен\nперевод выполнен\n1 a 50\n2 b 220\n3 c 30\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Имя из 15 букв",
+          "stdin": "add longnameabcdefg 7\nget 1\n",
+          "expected": "создан счёт 1\n1 longnameabcdefg 7\n"
         }
       ],
-      "referenceSolution": "#include <stdio.h>\n#include <limits.h>\n_Static_assert(CHAR_BIT == 8, \"Нужны восьмибитные байты\");\nstatic int parse(FILE *file, unsigned *count, unsigned long *sum) {\n    unsigned char header[4];\n    if (fread(header,1,4,file)!=4) return 0;\n    if (header[0]!=83 || header[1]!=78 || header[2]!=1 || header[3]>64) return 0;\n    unsigned long total=0;\n    for (unsigned i=0;i<header[3];++i) {\n        unsigned char bytes[2];\n        if (fread(bytes,1,2,file)!=2) return 0;\n        total += (unsigned long)bytes[0] | ((unsigned long)bytes[1] << 8);\n    }\n    if (fgetc(file)!=EOF || ferror(file)) return 0;\n    *count=header[3]; *sum=total;\n    return 1;\n}\nint main(void) {\n    unsigned n;if(scanf(\"%u\",&n)!=1 || n>256)return 1;\n    FILE *file=tmpfile();if(!file)return 1;\n    int valid=1;\n    for(unsigned i=0;i<n;++i){unsigned x;\n        if(scanf(\"%u\",&x)!=1 || x>255){valid=0;break;}\n        unsigned char byte=(unsigned char)x;\n        if(fwrite(&byte,1,1,file)!=1){valid=0;break;}\n    }\n    unsigned count=0;unsigned long sum=0;\n    if(valid && fseek(file,0,SEEK_SET)==0)valid=parse(file,&count,&sum);else valid=0;\n    if(fclose(file)!=0)valid=0;\n    if(valid)printf(\"%u %lu\\n\",count,sum);else puts(\"ОШИБКА\");\n    return 0;\n}\n",
-      "solutionExplanation": "Парсер сначала читает фиксированный заголовок, проверяет его и только потом использует count. Каждая запись требует ровно двух байтов. Беззнаковое расширение до сдвига делает декодирование независимым от signed char; unsigned long вмещает максимум 64*65535 даже на реализации с 16-битным int. Контроль EOF после записей отвергает лишний хвост, а ferror отличает конец от ошибки чтения. Выходные параметры меняются лишь после полного успеха.\n\nАдаптер отвечает за транспорт и жизненный цикл FILE*. Парсер ничего не знает о stdin и может работать с fopen(path,\"rb\") в отдельном приложении. Не заменяйте декодирование чтением struct или unsigned short: это привяжет формат к ABI. В тестах отдельно выделены сигнатура, версия, длина и порядок байтов, чтобы ошибка имела локальную причину.",
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    int id;\n    char name[16];\n    long long balance;\n} Account;\n\nstatic FILE *db;\n\nstatic long count_accounts(void) {\n    fseek(db, 0, SEEK_END);\n    return ftell(db) / (long)sizeof(Account);\n}\n\nstatic int read_account(int id, Account *a) {\n    if (id < 1 || id > count_accounts()) {\n        return 0;\n    }\n    fseek(db, (long)(id - 1) * (long)sizeof(Account), SEEK_SET);\n    return fread(a, sizeof *a, 1, db) == 1;\n}\n\nstatic void write_account(const Account *a) {\n    fseek(db, (long)(a->id - 1) * (long)sizeof(Account), SEEK_SET);\n    fwrite(a, sizeof *a, 1, db);\n    fflush(db);\n}\n\nint main(void) {\n    db = fopen(\"accounts.dat\", \"w+b\");\n    if (db == NULL) {\n        perror(\"accounts.dat\");\n        return 1;\n    }\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        Account a, b;\n        int id, to;\n        long long amount;\n        if (strcmp(command, \"add\") == 0) {\n            Account fresh = {0};\n            if (scanf(\"%15s %lld\", fresh.name, &fresh.balance) != 2) {\n                break;\n            }\n            fresh.id = (int)count_accounts() + 1;\n            write_account(&fresh);\n            printf(\"создан счёт %d\\n\", fresh.id);\n        } else if (strcmp(command, \"get\") == 0 && scanf(\"%d\", &id) == 1) {\n            if (read_account(id, &a)) {\n                printf(\"%d %s %lld\\n\", a.id, a.name, a.balance);\n            } else {\n                printf(\"нет счёта\\n\");\n            }\n        } else if (strcmp(command, \"deposit\") == 0 && scanf(\"%d %lld\", &id, &amount) == 2) {\n            if (!read_account(id, &a)) {\n                printf(\"нет счёта\\n\");\n            } else if (a.balance + amount < 0) {\n                printf(\"недостаточно средств\\n\");\n            } else {\n                a.balance += amount;\n                write_account(&a);\n                printf(\"%lld\\n\", a.balance);\n            }\n        } else if (strcmp(command, \"transfer\") == 0 &&\n                   scanf(\"%d %d %lld\", &id, &to, &amount) == 3) {\n            if (!read_account(id, &a) || !read_account(to, &b)) {\n                printf(\"нет счёта\\n\");\n            } else if (amount <= 0 || a.balance < amount) {\n                printf(\"недостаточно средств\\n\");\n            } else {\n                a.balance -= amount;\n                b.balance += amount;\n                write_account(&a);\n                write_account(&b);\n                printf(\"перевод выполнен\\n\");\n            }\n        } else if (strcmp(command, \"count\") == 0) {\n            printf(\"%ld\\n\", count_accounts());\n        }\n    }\n    fclose(db);\n    return 0;\n}\n",
+      "solutionExplanation": "Файл записей фиксированного размера работает как массив на диске: номер записи однозначно определяет смещение, поэтому любая запись читается и изменяется одним переходом позиции. Число записей не нужно хранить отдельно — его даёт размер файла.\n\nКаждое изменение — прочитать запись, поменять поле, вернуться к её началу и записать. В потоке `\"w+b\"` между чтением и записью стоит `fseek`, как требует стандарт; `fflush` после записи гарантирует, что следующее чтение увидит новые данные. Перевод сначала проверяет оба счёта и средства и только потом записывает обе записи — так файл не окажется в промежуточном состоянии из-за ошибки во входных данных.\n\nНовая запись обнуляется целиком перед заполнением: у структуры есть заполнители между `name` и `balance`, и без обнуления в файл попали бы случайные байты из памяти.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-fread-fwrite-task-3",
+      "title": "Найди ошибку: хвост копии",
+      "description": "Программа сохраняет стандартный ввод в файл `src.bin`, копирует его в `dst.bin` блоками по 16 байтов, а затем печатает размеры оригинала и копии и сообщает, совпадают ли файлы.\n\nКопия почти всегда длиннее оригинала. Найдите и исправьте ошибку копирования.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nstatic int save_input(const char *path) {\n    FILE *out = fopen(path, \"wb\");\n    if (out == NULL) {\n        return 0;\n    }\n    unsigned char chunk[512];\n    size_t n;\n    while ((n = fread(chunk, 1, sizeof chunk, stdin)) > 0) {\n        fwrite(chunk, 1, n, out);\n    }\n    return fclose(out) == 0;\n}\n\nstatic long file_size(FILE *f) {\n    fseek(f, 0, SEEK_END);\n    long size = ftell(f);\n    rewind(f);\n    return size;\n}\n\nint main(void) {\n    if (!save_input(\"src.bin\")) {\n        return 1;\n    }\n    FILE *in = fopen(\"src.bin\", \"rb\");\n    FILE *out = fopen(\"dst.bin\", \"wb\");\n    if (in == NULL || out == NULL) {\n        return 1;\n    }\n    unsigned char buffer[16] = {0};\n    size_t n;\n    while ((n = fread(buffer, 1, sizeof buffer, in)) > 0) {\n        fwrite(buffer, 1, sizeof buffer, out);\n    }\n    fclose(out);\n\n    FILE *copy = fopen(\"dst.bin\", \"rb\");\n    if (copy == NULL) {\n        return 1;\n    }\n    long original = file_size(in), copied = file_size(copy);\n    int same = original == copied;\n    int a, b;\n    while (same && (a = fgetc(in)) != EOF) {\n        b = fgetc(copy);\n        same = a == b;\n    }\n    printf(\"размер оригинала %ld, размер копии %ld, %s\\n\", original, copied,\n           same ? \"совпадают\" : \"отличаются\");\n    fclose(in);\n    fclose(copy);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "hello, world\n",
+          "output": "размер оригинала 13, размер копии 13, совпадают\n"
+        },
+        {
+          "input": "0123456789abcdef",
+          "output": "размер оригинала 16, размер копии 16, совпадают\n"
+        }
+      ],
+      "constraints": ["Ввод не длиннее 10 000 байтов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сколько байтов возвращает последний вызов fread и сколько записывает fwrite?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Последний блок обычно неполный. Записывайте столько байтов, сколько прочитано: fwrite(buffer, 1, n, out).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "hello, world\n",
+          "expected": "размер оригинала 13, размер копии 13, совпадают\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0123456789abcdef",
+          "expected": "размер оригинала 16, размер копии 16, совпадают\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "",
+          "expected": "размер оригинала 0, размер копии 0, совпадают\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "x",
+          "expected": "размер оригинала 1, размер копии 1, совпадают\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "0123456789abcdefg",
+          "expected": "размер оригинала 17, размер копии 17, совпадают\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "line one\nline two\nline three\n",
+          "expected": "размер оригинала 29, размер копии 29, совпадают\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "ровно столько байтов",
+          "expected": "размер оригинала 38, размер копии 38, совпадают\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "0123456789abcdef0123456789abcdef",
+          "expected": "размер оригинала 32, размер копии 32, совпадают\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "abc\n\n\ndef\n",
+          "expected": "размер оригинала 10, размер копии 10, совпадают\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "The quick brown fox jumps over the lazy dog",
+          "expected": "размер оригинала 43, размер копии 43, совпадают\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic int save_input(const char *path) {\n    FILE *out = fopen(path, \"wb\");\n    if (out == NULL) {\n        return 0;\n    }\n    unsigned char chunk[512];\n    size_t n;\n    while ((n = fread(chunk, 1, sizeof chunk, stdin)) > 0) {\n        fwrite(chunk, 1, n, out);\n    }\n    return fclose(out) == 0;\n}\n\nstatic long file_size(FILE *f) {\n    fseek(f, 0, SEEK_END);\n    long size = ftell(f);\n    rewind(f);\n    return size;\n}\n\nint main(void) {\n    if (!save_input(\"src.bin\")) {\n        return 1;\n    }\n    FILE *in = fopen(\"src.bin\", \"rb\");\n    FILE *out = fopen(\"dst.bin\", \"wb\");\n    if (in == NULL || out == NULL) {\n        return 1;\n    }\n    unsigned char buffer[16] = {0};\n    size_t n;\n    while ((n = fread(buffer, 1, sizeof buffer, in)) > 0) {\n        fwrite(buffer, 1, n, out);\n    }\n    fclose(out);\n\n    FILE *copy = fopen(\"dst.bin\", \"rb\");\n    if (copy == NULL) {\n        return 1;\n    }\n    long original = file_size(in), copied = file_size(copy);\n    int same = original == copied;\n    int a, b;\n    while (same && (a = fgetc(in)) != EOF) {\n        b = fgetc(copy);\n        same = a == b;\n    }\n    printf(\"размер оригинала %ld, размер копии %ld, %s\\n\", original, copied,\n           same ? \"совпадают\" : \"отличаются\");\n    fclose(in);\n    fclose(copy);\n    return 0;\n}\n",
+      "solutionExplanation": "`fread` возвращает, сколько байтов он действительно прочитал. Последний блок файла почти всегда короче буфера, но `fwrite(buffer, 1, sizeof buffer, out)` записывает весь буфер — в копию попадают остатки предыдущего блока. Размер копии округляется вверх до кратного 16, а содержимое хвоста — мусор.\n\nСовпадение возможно, только если размер файла делится на 16, — поэтому ошибка может долго оставаться незамеченной на «удобных» тестовых данных. Правильный шаблон копирования: `fwrite(buffer, 1, n, out)`, где `n` — результат `fread`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-fread-fwrite-task-4",
+      "title": "Последние строки",
+      "description": "Реализуйте упрощённую команду `tail`. В первой строке ввода — число `n`, всё остальное — текст файла. Сохраните текст в `log.txt` и напечатайте его последние `n` строк точно так, как они записаны в файле. Если последняя строка файла не заканчивается переводом строки, допечатайте его. Если строк меньше `n`, напечатайте весь файл; при `n = 0` или пустом файле не печатайте ничего.\n\nФайл может быть большим, поэтому **не читайте его целиком с начала**: найдите начало нужной строки, читая файл с конца блоками по 64 байта (`fseek` назад и `fread`), затем перейдите к найденной позиции и выведите остаток файла.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\none\ntwo\nthree\n",
+          "output": "two\nthree\n"
+        },
+        {
+          "input": "5\na\nb",
+          "output": "a\nb\n",
+          "explanation": "Строк меньше n, последняя без перевода строки."
+        }
+      ],
+      "constraints": ["0 ≤ n ≤ 1000; текст не длиннее 10 000 байтов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Последний байт файла — особый: если это \\n, он завершает последнюю строку и не отделяет новую. Поэтому начните поиск с позиции size − 1 (или size, если последний байт не \\n).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Идите блоками назад: start = pos > 64 ? pos − 64 : 0; fseek(f, start, SEEK_SET); fread(block, 1, pos − start, f); просматривайте блок с конца и считайте \\n. Когда встретится n-й перевод строки, начало нужного куска — сразу после него.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Если дошли до начала файла, а n переводов строк не нашлось, выводите файл целиком. Вывод: fseek на найденную позицию и копирование блоками до конца.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\none\ntwo\nthree\n",
+          "expected": "two\nthree\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5\na\nb",
+          "expected": "a\nb\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "n = 0",
+          "stdin": "0\nx\ny\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-2",
+          "name": "Пустой файл",
+          "stdin": "3\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-3",
+          "name": "Одна строка",
+          "stdin": "1\nonly line\n",
+          "expected": "only line\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Последняя без перевода строки",
+          "stdin": "1\nfirst\nsecond",
+          "expected": "second\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Пустые строки",
+          "stdin": "2\n\n\n\n",
+          "expected": "\n\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Строки на границах блоков",
+          "stdin": "3\nline 1 of the log file\nline 2 of the log file\nline 3 of the log file\nline 4 of the log file\nline 5 of the log file\nline 6 of the log file\nline 7 of the log file\nline 8 of the log file\nline 9 of the log file\nline 10 of the log file\nline 11 of the log file\nline 12 of the log file\nline 13 of the log file\nline 14 of the log file\nline 15 of the log file\nline 16 of the log file\nline 17 of the log file\nline 18 of the log file\nline 19 of the log file\nline 20 of the log file\nline 21 of the log file\nline 22 of the log file\nline 23 of the log file\nline 24 of the log file\nline 25 of the log file\nline 26 of the log file\nline 27 of the log file\nline 28 of the log file\nline 29 of the log file\nline 30 of the log file\nline 31 of the log file\nline 32 of the log file\nline 33 of the log file\nline 34 of the log file\nline 35 of the log file\nline 36 of the log file\nline 37 of the log file\nline 38 of the log file\nline 39 of the log file\nline 40 of the log file\n",
+          "expected": "line 38 of the log file\nline 39 of the log file\nline 40 of the log file\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Строка длиннее блока",
+          "stdin": "1\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\nyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\n",
+          "expected": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Обычный журнал",
+          "stdin": "4\nalpha\nbeta\ngamma\ndelta\nepsilon\n",
+          "expected": "beta\ngamma\ndelta\nepsilon\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    char header[32];\n    long n;\n    if (fgets(header, sizeof header, stdin) == NULL || sscanf(header, \"%ld\", &n) != 1) {\n        return 0;\n    }\n    FILE *f = fopen(\"log.txt\", \"w+b\");\n    if (f == NULL) {\n        perror(\"log.txt\");\n        return 1;\n    }\n    char chunk[512];\n    size_t got;\n    while ((got = fread(chunk, 1, sizeof chunk, stdin)) > 0) {\n        fwrite(chunk, 1, got, f);\n    }\n    fseek(f, 0, SEEK_END);\n    long size = ftell(f);\n    if (n <= 0 || size == 0) {\n        fclose(f);\n        return 0;\n    }\n    fseek(f, size - 1, SEEK_SET);\n    int last = fgetc(f);\n    long pos = last == '\\n' ? size - 1 : size;   // завершающий \\n не начинает новую строку\n    long begin = 0;\n    long found = 0;\n    char block[64];\n    while (pos > 0 && found < n) {\n        long start = pos > (long)sizeof block ? pos - (long)sizeof block : 0;\n        fseek(f, start, SEEK_SET);\n        size_t len = fread(block, 1, (size_t)(pos - start), f);\n        for (long i = (long)len - 1; i >= 0; i--) {\n            if (block[i] == '\\n' && ++found == n) {\n                begin = start + i + 1;\n                break;\n            }\n        }\n        pos = start;\n    }\n    fseek(f, begin, SEEK_SET);\n    while ((got = fread(chunk, 1, sizeof chunk, f)) > 0) {\n        fwrite(chunk, 1, got, stdout);\n    }\n    if (last != '\\n') {\n        putchar('\\n');\n    }\n    fclose(f);\n    return 0;\n}\n",
+      "solutionExplanation": "Настоящий `tail` работает с журналами размером в гигабайты и не может читать их с начала. Он идёт от конца файла назад блоками, считая переводы строк, — и прочитывает ровно столько, сколько нужно для последних `n` строк. `fseek` позволяет перейти к любому месту файла за одно действие, без чтения всего, что перед ним.\n\nТонкость — завершающий перевод строки. Строка `\"a\\nb\\n\"` состоит из двух строк, а не трёх: последний `\\n` закрывает строку `b`. Поэтому поиск начинается перед ним. Найдя `n`-й перевод строки с конца, программа знает, что нужный кусок начинается сразу после него; если столько переводов нет, выводится весь файл.\n\nПеревод строки внутри блока может оказаться на границе блоков — это не мешает: каждый байт просматривается ровно один раз, а позиция найденного `\\n` вычисляется от начала блока.",
       "checking": {
         "type": "stdout",
         "comparison": "exact"
@@ -200,28 +460,80 @@
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Что возвращает fread(buf, 4, 3, f)?",
-        "options": ["Число полных четырёхбайтовых элементов", "Всегда число прочитанных байтов"],
-        "correct": 0,
-        "explanation": "fread и fwrite возвращают число полных элементов, а не всегда число байтов. Вызов fread(buf, 1, n, file) удобен для форматов: результат прямо показывает прочитанные байты. Короткое чтение требует проверки ferror и feof; частичный элемент не следует трактовать как полноценную запись."
+        "id": "q1",
+        "question": "Что возвращает fread(records, sizeof(Record), 10, f), если в файле осталось три полные записи?",
+        "explanation": "fread возвращает число полностью прочитанных элементов, а не байтов. Меньше 10 — значит, файл кончился или была ошибка.",
+        "type": "text",
+        "answers": ["3"],
+        "placeholder": "Число"
       },
       {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q2",
+        "question": "Зачем при открытии двоичного файла пишут \"rb\" вместо \"r\"?",
+        "explanation": "Текстовый режим может менять байты переводов строк. Для байтов, которые должны остаться точно такими же, нужен двоичный режим.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "Успешное чтение одного байта заголовка не означает, что весь заголовок доступен."
+          "В Windows текстовый режим преобразует \\r\\n и портит двоичные данные; в Linux и macOS разницы нет",
+          "Без b нельзя вызывать fread",
+          "b ускоряет чтение в несколько раз",
+          "b запрещает запись в файл"
         ],
-        "correct": 1,
-        "explanation": "Чтение — запрос на порцию, а возвращаемое число — подтверждение реально полученного объёма."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["3 4", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: FILE *f=tmpfile();if(!f)return 1;unsigned char data[2]={3,4},copy[2];if(fwrite(data,1,2,f)!=2 || fseek(f,0,SEEK_SET)!=0 || fread(copy,1,2,f)!=2){fclose(f);return 1;}if(fclose(f)!=0)return 1;printf(\"%u %u\\n\",(unsigned)copy[0],(unsigned)copy[1]); Ожидаемый результат: 3 4"
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    FILE *f = fopen(\"x.bin\", \"wb+\");\n    if (f == NULL) {\n        return 1;\n    }\n    fputs(\"0123456789\", f);\n    fseek(f, -4, SEEK_END);\n    putchar(fgetc(f));\n    fseek(f, 1, SEEK_SET);\n    putchar(fgetc(f));\n    fseek(f, 2, SEEK_CUR);\n    putchar(fgetc(f));\n    printf(\" %ld\\n\", ftell(f));\n    fclose(f);\n    return 0;\n}",
+        "explanation": "Четыре байта до конца — позиция 6. Затем позиция 1 — символ 1, после чтения позиция 2; сдвиг на 2 — позиция 4, символ 4, после чтения позиция 5.",
+        "type": "text",
+        "answers": ["614 5"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Как узнать размер двоичного файла, открытого в потоке f?",
+        "explanation": "ftell возвращает текущую позицию, а после перехода в конец она равна размеру. sizeof(f) — размер указателя.",
+        "options": [
+          "fseek(f, 0, SEEK_END), затем ftell(f)",
+          "sizeof(f)",
+          "Прочитать файл через fgets и посчитать строки",
+          "ftell(f) сразу после открытия"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "В цикле копирования последний fread вернул 44 байта при буфере на 128. Что нужно передать в fwrite?",
+        "explanation": "Записывают ровно столько, сколько прочитано. 128 байтов дописали бы в копию 84 байта мусора из предыдущего блока.",
+        "type": "text",
+        "answers": ["44"],
+        "placeholder": "Число байтов"
+      },
+      {
+        "id": "q6",
+        "question": "По какому смещению лежит запись номер 5 (считая с нуля) в файле записей по 24 байта?",
+        "explanation": "Запись i начинается с i · sizeof(Record) = 5 · 24 = 120.",
+        "type": "text",
+        "answers": ["120"],
+        "placeholder": "Смещение в байтах"
+      },
+      {
+        "id": "q7",
+        "question": "Что нужно сделать в потоке \"r+b\" между fread и fwrite?",
+        "explanation": "Переключение между чтением и записью без перехода позиции или fflush — неопределённое поведение. Обычно и так нужен fseek: вернуться к началу записи, которую только что прочитали.",
+        "options": ["Вызвать fseek (или fflush)", "Ничего", "Закрыть файл", "Вызвать feof"],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Почему структуру с полем char *name нельзя сохранить в файл через fwrite, чтобы потом прочитать в другой программе?",
+        "explanation": "fwrite копирует байты структуры как есть. Сами данные нужно хранить в структуре (char name[32]) или записывать отдельно — например, длину и символы.",
+        "options": [
+          "В файл попадёт адрес строки, а не её символы; в другой программе этот адрес ничего не значит",
+          "fwrite не умеет записывать структуры",
+          "Указатели всегда равны NULL при записи",
+          "Строки нельзя записывать в двоичные файлы"
+        ],
+        "correct": 0
       }
     ]
   }

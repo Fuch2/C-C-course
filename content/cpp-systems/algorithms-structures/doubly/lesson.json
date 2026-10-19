@@ -1,134 +1,538 @@
 {
   "id": "algo-doubly",
-  "title": "Двусвязный список — Doubly linked list",
-  "description": "У каждого узла есть prev и next, а контейнер хранит head и tail.",
+  "title": "Двусвязный список",
+  "description": "Узлы со ссылками в обе стороны; фиктивный узел, замкнутый в кольцо, без особых случаев; вставка и удаление известного узла за O(1); порядок присваиваний; применение: LRU-кэш, редактор, история; std::list.",
   "moduleId": "algorithms-structures",
   "order": 18,
   "difficulty": "intermediate",
-  "estimatedMinutes": 60,
+  "estimatedMinutes": 50,
   "prerequisites": ["algo-list"],
   "objectives": [
-    "Объяснить инвариант: Каждый вагон связан с соседом спереди и сзади; нужно поддерживать обе сцепки.",
-    "Обосновать время: Добавление/удаление на концах O(1), поиск O(n).",
-    "Оценить память и компромиссы: Дешёвое удаление известного узла против памяти и медленного случайного доступа."
+    "Реализовывать двусвязный список с фиктивным узлом",
+    "Вставлять и удалять узлы за O(1) в правильном порядке присваиваний",
+    "Выполнять операции дека на обоих концах",
+    "Строить LRU-кэш из таблицы и двусвязного списка"
   ],
-  "tags": [
-    "алгоритмы",
-    "C17",
-    "Двусвязный список — Doubly linked list",
-    "структуры данных",
-    "cache locality"
-  ],
+  "tags": ["Структуры данных", "Двусвязный список", "Фиктивный узел", "LRU"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "algo-doubly-exercise",
-    "title": "Два конца списка",
-    "description": "Ввод q (0…128), затем команды L x/R x — добавить слева/справа без вывода; l/r — удалить слева/справа и вывести значение или ПУСТО. x — int −1000…1000. После всех команд выведите список вперёд и назад на двух строках, затем освободите узлы.",
-    "difficulty": "intermediate",
+    "id": "algo-doubly-task-1",
+    "title": "Вперёд и назад",
+    "description": "Прочитайте `n` и `n` целых чисел и сложите их в двусвязный список в порядке ввода. Напечатайте список дважды: на первой строке — от начала к концу, на второй — от конца к началу. Освободите все узлы.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "4 L 1 R 2 L 3 r",
-        "output": "2\n3 1\n1 3\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "4\n10 20 30 40\n",
+        "output": "10 20 30 40\n40 30 20 10\n"
       },
       {
-        "input": "3 L 9 r l",
-        "output": "9\nПУСТО\n\n\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "1\n7\n",
+        "output": "7\n7\n"
       }
     ],
-    "constraints": [
-      "Используйте C17 и диапазоны входа из условия.",
-      "Выводите только требуемый результат.",
-      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
-    ],
+    "constraints": ["1 ≤ n ≤ 1000; числа int."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Каждый вагон связан с соседом спереди и сзади; нужно поддерживать обе сцепки."
+        "text": "Удобнее всего фиктивный узел: Node list = {0, &list, &list}; добавление в конец — вставка перед стражем.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "После удаления единственного узла нельзя оставлять tail на освобождённой памяти."
-      },
-      {
-        "id": "hint-3",
-        "order": 3,
-        "text": "После L 1 и R 2: NULL ← 1 ⇄ 2 → NULL. Удаление слева оставляет head=tail=узел 2 с двумя NULL-ссылками."
+        "text": "Обход вперёд — по next от list.next до &list, назад — по prev от list.prev до &list.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "4 L 1 R 2 L 3 r",
-        "expected": "2\n3 1\n1 3\n"
+        "stdin": "4\n10 20 30 40\n",
+        "expected": "10 20 30 40\n40 30 20 10\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "3 L 9 r l",
-        "expected": "9\nПУСТО\n\n\n"
+        "stdin": "1\n7\n",
+        "expected": "7\n7\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "0",
-        "expected": "\n\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "2\n1 2\n",
+        "expected": "1 2\n2 1\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "4 R 1 l R 2 L 3",
-        "expected": "1\n3 2\n2 3\n"
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "3\n5 5 5\n",
+        "expected": "5 5 5\n5 5 5\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "5\n-1 -2 -3 -4 -5\n",
+        "expected": "-1 -2 -3 -4 -5\n-5 -4 -3 -2 -1\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "3\n2147483647 0 -2147483648\n",
+        "expected": "2147483647 0 -2147483648\n-2147483648 0 2147483647\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "6\n1 2 3 3 2 1\n",
+        "expected": "1 2 3 3 2 1\n1 2 3 3 2 1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "7\n9 8 7 6 5 4 3\n",
+        "expected": "9 8 7 6 5 4 3\n3 4 5 6 7 8 9\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "8\n0 1 0 1 0 1 0 1\n",
+        "expected": "0 1 0 1 0 1 0 1\n1 0 1 0 1 0 1 0\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "5\n100 -100 200 -200 300\n",
+        "expected": "100 -100 200 -200 300\n300 -200 200 -100 100\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\ntypedef struct Node { int value; struct Node *prev,*next; } Node;\ntypedef struct { Node *head,*tail; } List;\nstatic int push(List *list,int value,int left){\n    Node *node=malloc(sizeof *node);if(!node)return 0;\n    *node=(Node){value,NULL,NULL};\n    if(!list->head)list->head=list->tail=node;\n    else if(left){node->next=list->head;list->head->prev=node;list->head=node;}\n    else {node->prev=list->tail;list->tail->next=node;list->tail=node;}\n    return 1;\n}\nstatic int pop(List *list,int left,int *out){\n    Node *node=left?list->head:list->tail;if(!node)return 0;\n    *out=node->value;\n    if(node->prev)node->prev->next=node->next;else list->head=node->next;\n    if(node->next)node->next->prev=node->prev;else list->tail=node->prev;\n    free(node);return 1;\n}\nstatic void destroy(List *list){int value;while(pop(list,1,&value)){} }\nint main(void) {\nList list={0};int q,failed=0;if(scanf(\"%d\",&q)!=1 || q<0 || q>128)return 1;\nfor(int i=0;i<q;++i){char c;if(scanf(\" %c\",&c)!=1){failed=1;break;}int x;\n if(c=='L'||c=='R'){if(scanf(\"%d\",&x)!=1 || !push(&list,x,c=='L')){failed=1;break;}}\n else if(c=='l'||c=='r'){if(pop(&list,c=='l',&x))printf(\"%d\\n\",x);else puts(\"ПУСТО\");}else{failed=1;break;}}\nif(!failed){int first=1;for(Node *p=list.head;p;p=p->next){printf(\"%s%d\",first?\"\":\" \",p->value);first=0;}puts(\"\");first=1;for(Node *p=list.tail;p;p=p->prev){printf(\"%s%d\",first?\"\":\" \",p->value);first=0;}puts(\"\");}destroy(&list);if(failed)return 1;\nreturn 0;\n}\n",
-    "solutionExplanation": "Инвариант: Каждый вагон связан с соседом спереди и сзади; нужно поддерживать обе сцепки.\n\nПосле L 1 и R 2: NULL ← 1 ⇄ 2 → NULL. Удаление слева оставляет head=tail=узел 2 с двумя NULL-ссылками.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. После удаления единственного узла нельзя оставлять tail на освобождённой памяти.\n\nВремя: Добавление/удаление на концах O(1), поиск O(n).\nПамять: O(n), два указателя на узел плюс overhead allocator.\nКомпромисс: Дешёвое удаление известного узла против памяти и медленного случайного доступа.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *prev;\n    struct Node *next;\n} Node;\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1) {\n        return 0;\n    }\n    Node list = {0, &list, &list};\n    for (int i = 0; i < n; i++) {\n        int v;\n        if (scanf(\"%d\", &v) != 1) {\n            break;\n        }\n        Node *node = malloc(sizeof *node);\n        if (node == NULL) {\n            return 1;\n        }\n        node->value = v;\n        node->next = &list;\n        node->prev = list.prev;\n        list.prev->next = node;\n        list.prev = node;\n    }\n    for (Node *p = list.next; p != &list; p = p->next) {\n        printf(p->next != &list ? \"%d \" : \"%d\\n\", p->value);\n    }\n    for (Node *p = list.prev; p != &list; p = p->prev) {\n        printf(p->prev != &list ? \"%d \" : \"%d\\n\", p->value);\n    }\n    while (list.next != &list) {\n        Node *node = list.next;\n        list.next = node->next;\n        free(node);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Вставка в конец — это вставка перед стражем: новый узел смотрит вперёд на страж и назад на бывший последний узел, затем оба соседа переключаются на него. Пустой список не требует особой обработки: в нём «бывший последний» — сам страж.\n\nОбратный обход возможен только благодаря `prev`: в односвязном списке для этого понадобился бы массив или рекурсия. Освобождение идёт вперёд; ссылки `prev` при этом не обновляются, потому что после цикла список больше не используется.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "algo-doubly-task-2",
+      "title": "Дек",
+      "description": "**Дек** (deque, двусторонняя очередь) — последовательность, в которую можно добавлять и из которой можно удалять с обоих концов. Реализуйте его на двусвязном списке со стражем и выполните команды из ввода:\n\n- `push_front x`, `push_back x` — добавить в начало или конец;\n- `pop_front`, `pop_back` — удалить из начала или конца и напечатать удалённое значение, а если дек пуст — `пусто`;\n- `print` — напечатать элементы от начала к концу через пробел или `пусто`.\n\nВ конце освободите все узлы.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "push_back 1\npush_back 2\npush_front 0\nprint\npop_back\npop_front\nprint\n",
+          "output": "0 1 2\n2\n0\n1\n"
+        },
+        {
+          "input": "pop_front\nprint\n",
+          "output": "пусто\nпусто\n"
+        }
+      ],
+      "constraints": ["Команд не больше 1000; числа int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Одна функция insert_after(where, value) обслуживает оба конца: push_front — insert_after(&list, x), push_back — insert_after(list.prev, x).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "pop_front удаляет list.next, pop_back — list.prev, но только если список не пуст: list.next != &list.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "push_back 1\npush_back 2\npush_front 0\nprint\npop_back\npop_front\nprint\n",
+          "expected": "0 1 2\n2\n0\n1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "pop_front\nprint\n",
+          "expected": "пусто\nпусто\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Только в начало",
+          "stdin": "push_front 1\npush_front 2\npush_front 3\nprint\n",
+          "expected": "3 2 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Как очередь",
+          "stdin": "push_back 1\npush_back 2\npop_front\npop_front\npop_front\n",
+          "expected": "1\n2\nпусто\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Как стек",
+          "stdin": "push_back 1\npush_back 2\npop_back\npop_back\npop_back\n",
+          "expected": "2\n1\nпусто\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Снова пустой",
+          "stdin": "push_back 5\npop_back\nprint\npush_front 6\nprint\n",
+          "expected": "5\nпусто\n6\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Крайние значения",
+          "stdin": "push_back -2147483648\npush_front 2147483647\nprint\n",
+          "expected": "2147483647 -2147483648\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Удаление из пустого",
+          "stdin": "pop_back\npush_back 1\npop_front\npop_back\n",
+          "expected": "пусто\n1\nпусто\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смешанные",
+          "stdin": "push_back 1\npush_back 2\npush_back 3\npush_back 4\npop_front\npop_back\npush_front 9\npush_back 8\nprint\n",
+          "expected": "1\n4\n9 2 3 8\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Чередование концов",
+          "stdin": "push_front 1\npush_back 2\npush_front 3\npush_back 4\nprint\n",
+          "expected": "3 1 2 4\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *prev;\n    struct Node *next;\n} Node;\n\nstatic void insert_after(Node *where, int value) {\n    Node *node = malloc(sizeof *node);\n    if (node == NULL) {\n        exit(1);\n    }\n    node->value = value;\n    node->prev = where;\n    node->next = where->next;\n    where->next->prev = node;\n    where->next = node;\n}\n\nstatic int unlink_node(Node *node) {\n    int value = node->value;\n    node->prev->next = node->next;\n    node->next->prev = node->prev;\n    free(node);\n    return value;\n}\n\nint main(void) {\n    Node list = {0, &list, &list};\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"push_front\") == 0 || strcmp(command, \"push_back\") == 0) {\n            int x;\n            if (scanf(\"%d\", &x) != 1) {\n                break;\n            }\n            insert_after(command[5] == 'f' ? &list : list.prev, x);\n        } else if (strcmp(command, \"pop_front\") == 0 || strcmp(command, \"pop_back\") == 0) {\n            if (list.next == &list) {\n                printf(\"пусто\\n\");\n            } else {\n                printf(\"%d\\n\", unlink_node(command[4] == 'f' ? list.next : list.prev));\n            }\n        } else if (strcmp(command, \"print\") == 0) {\n            if (list.next == &list) {\n                printf(\"пусто\\n\");\n            }\n            for (Node *p = list.next; p != &list; p = p->next) {\n                printf(p->next != &list ? \"%d \" : \"%d\\n\", p->value);\n            }\n        }\n    }\n    while (list.next != &list) {\n        unlink_node(list.next);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Все четыре операции — `O(1)`, и все сводятся к двум функциям: вставке после узла и удалению узла. Фиктивный узел делает концы симметричными: «после стража» — начало, «после последнего» (`list.prev`) — конец.\n\nЕдинственная проверка — пустота перед удалением: иначе `unlink_node(list.next)` удалил бы сам страж, а он лежит на стеке, и `free` для него — неопределённое поведение. Дек обобщает стек и очередь: стек — добавление и удаление с одного конца, очередь — добавление в конец и удаление из начала. Об этих структурах — следующие уроки.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-doubly-task-3",
+      "title": "Найди ошибку: удаление узла",
+      "description": "Программа читает `n`, `x` и `n` целых чисел, складывает их в двусвязный список со стражем, удаляет все узлы со значением `x` и печатает список вперёд, а после черты — назад.\n\nКогда что-то удаляется, AddressSanitizer сообщает об ошибке. Найдите и исправьте её.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *prev;\n    struct Node *next;\n} Node;\n\nstatic void insert_before(Node *where, int value) {\n    Node *node = malloc(sizeof *node);\n    if (node == NULL) {\n        exit(1);\n    }\n    node->value = value;\n    node->next = where;\n    node->prev = where->prev;\n    where->prev->next = node;\n    where->prev = node;\n}\n\nstatic void unlink_node(Node *node) {\n    node->prev->next = node->next;\n    free(node);\n}\n\nint main(void) {\n    int n, x;\n    if (scanf(\"%d %d\", &n, &x) != 2 || n < 1) {\n        return 0;\n    }\n    Node list = {0, &list, &list};\n    for (int i = 0; i < n; i++) {\n        int v;\n        if (scanf(\"%d\", &v) != 1) {\n            break;\n        }\n        insert_before(&list, v);\n    }\n    for (Node *p = list.next; p != &list;) {\n        Node *next = p->next;\n        if (p->value == x) {\n            unlink_node(p);\n        }\n        p = next;\n    }\n    for (Node *p = list.next; p != &list; p = p->next) {\n        printf(\"%d \", p->value);\n    }\n    printf(\"|\");\n    for (Node *p = list.prev; p != &list; p = p->prev) {\n        printf(\" %d\", p->value);\n    }\n    printf(\"\\n\");\n    while (list.next != &list) {\n        Node *node = list.next;\n        list.next = node->next;\n        free(node);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5 3\n1 3 2 3 4\n",
+          "output": "1 2 4 | 4 2 1\n"
+        },
+        {
+          "input": "3 9\n1 2 3\n",
+          "output": "1 2 3 | 3 2 1\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; числа int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какие указатели ведут к удаляемому узлу? Сколько из них переставляет unlink_node?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "К узлу ведут две ссылки: prev->next и next->prev. Функция исправляет только первую, поэтому обход назад заходит в освобождённый узел. Добавьте node->next->prev = node->prev;.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5 3\n1 3 2 3 4\n",
+          "expected": "1 2 4 | 4 2 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3 9\n1 2 3\n",
+          "expected": "1 2 3 | 3 2 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 5\n5\n",
+          "expected": "|\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "3 1\n1 2 3\n",
+          "expected": "2 3 | 3 2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "3 3\n1 2 3\n",
+          "expected": "1 2 | 2 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "4 7\n7 7 7 7\n",
+          "expected": "|\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "5 0\n0 1 0 1 0\n",
+          "expected": "1 1 | 1 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "6 -1\n-1 2 -1 -1 3 -1\n",
+          "expected": "2 3 | 3 2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "2 2147483647\n2147483647 -2147483648\n",
+          "expected": "-2147483648 | -2147483648\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "7 4\n1 2 3 4 5 6 7\n",
+          "expected": "1 2 3 5 6 7 | 7 6 5 3 2 1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *prev;\n    struct Node *next;\n} Node;\n\nstatic void insert_before(Node *where, int value) {\n    Node *node = malloc(sizeof *node);\n    if (node == NULL) {\n        exit(1);\n    }\n    node->value = value;\n    node->next = where;\n    node->prev = where->prev;\n    where->prev->next = node;\n    where->prev = node;\n}\n\nstatic void unlink_node(Node *node) {\n    node->prev->next = node->next;\n    node->next->prev = node->prev;\n    free(node);\n}\n\nint main(void) {\n    int n, x;\n    if (scanf(\"%d %d\", &n, &x) != 2 || n < 1) {\n        return 0;\n    }\n    Node list = {0, &list, &list};\n    for (int i = 0; i < n; i++) {\n        int v;\n        if (scanf(\"%d\", &v) != 1) {\n            break;\n        }\n        insert_before(&list, v);\n    }\n    for (Node *p = list.next; p != &list;) {\n        Node *next = p->next;\n        if (p->value == x) {\n            unlink_node(p);\n        }\n        p = next;\n    }\n    for (Node *p = list.next; p != &list; p = p->next) {\n        printf(\"%d \", p->value);\n    }\n    printf(\"|\");\n    for (Node *p = list.prev; p != &list; p = p->prev) {\n        printf(\" %d\", p->value);\n    }\n    printf(\"\\n\");\n    while (list.next != &list) {\n        Node *node = list.next;\n        list.next = node->next;\n        free(node);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "На узел двусвязного списка указывают **два** соседа: левый — через `next`, правый — через `prev`. Заготовка исключает узел только из прямого направления. Обход вперёд его не видит и работает правильно, а обход назад приходит в узел по устаревшей ссылке `prev` — в уже освобождённую память. AddressSanitizer сообщает `heap-use-after-free`.\n\nЕсли ничего не удалено, ошибка не проявляется, — поэтому полезно проверять структуру в **обоих** направлениях. Удаление в двусвязном списке всегда симметрично: две строки, по одной на каждого соседа.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-doubly-task-4",
+      "title": "LRU-кэш",
+      "description": "Кэш вмещает `C` ключей. При обращении к ключу:\n\n- если ключ есть в кэше — это **попадание**, ключ становится самым свежим;\n- если нет — **промах**: ключ добавляется как самый свежий, а если кэш был полон, сначала вытесняется ключ, к которому дольше всего не обращались.\n\nПервая строка — `C` и `m`, вторая — `m` ключей обращений. Напечатайте строку `попаданий H, промахов M`, а на следующей — ключи кэша от самого свежего к самому старому через пробел.\n\nКаждое обращение должно выполняться за `O(1)`: храните порядок в двусвязном списке, а для каждого ключа — указатель на его узел (или `NULL`) в массиве.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2 5\n1 2 1 3 2\n",
+          "output": "попаданий 1, промахов 4\n2 3\n"
+        },
+        {
+          "input": "3 4\n7 7 7 7\n",
+          "output": "попаданий 3, промахов 1\n7\n"
+        }
+      ],
+      "constraints": ["1 ≤ C ≤ 1000; 1 ≤ m ≤ 10⁴; 0 ≤ ключи ≤ 10⁵."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Список со стражем: начало — самый свежий ключ, конец (sentinel.prev) — самый старый. Массив static Node *where[100001] хранит узел каждого ключа.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Попадание: вырежьте узел из списка (две ссылки) и вставьте после стража (четыре ссылки) — без malloc и free.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Промах при полном кэше: удалите sentinel.prev, обнулите where[его ключа], освободите узел. Затем создайте новый узел в начале.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2 5\n1 2 1 3 2\n",
+          "expected": "попаданий 1, промахов 4\n2 3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3 4\n7 7 7 7\n",
+          "expected": "попаданий 3, промахов 1\n7\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ёмкость 1",
+          "stdin": "1 4\n1 2 1 2\n",
+          "expected": "попаданий 0, промахов 4\n2\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Всё помещается",
+          "stdin": "3 6\n1 2 3 1 2 3\n",
+          "expected": "попаданий 3, промахов 3\n3 2 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Цикл длиннее кэша",
+          "stdin": "2 6\n1 2 3 1 2 3\n",
+          "expected": "попаданий 0, промахов 6\n3 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Обращение спасает от вытеснения",
+          "stdin": "3 7\n1 2 3 1 4 1 5\n",
+          "expected": "попаданий 2, промахов 5\n5 1 4\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Наибольший ключ",
+          "stdin": "4 1\n100000\n",
+          "expected": "попаданий 0, промахов 1\n100000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Частый ключ остаётся",
+          "stdin": "2 6\n0 1 0 2 0 3\n",
+          "expected": "попаданий 2, промахов 4\n3 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Обратный порядок",
+          "stdin": "5 10\n1 2 3 4 5 5 4 3 2 1\n",
+          "expected": "попаданий 5, промахов 5\n1 2 3 4 5\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Смешанные",
+          "stdin": "3 9\n9 8 7 9 6 8 9 5 9\n",
+          "expected": "попаданий 3, промахов 6\n9 5 8\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int key;\n    struct Node *prev;\n    struct Node *next;\n} Node;\n\nstatic Node *where[100001];\n\nstatic void detach(Node *node) {\n    node->prev->next = node->next;\n    node->next->prev = node->prev;\n}\n\nstatic void attach_front(Node *list, Node *node) {\n    node->prev = list;\n    node->next = list->next;\n    list->next->prev = node;\n    list->next = node;\n}\n\nint main(void) {\n    int capacity, m;\n    if (scanf(\"%d %d\", &capacity, &m) != 2 || capacity < 1) {\n        return 0;\n    }\n    Node list = {0, &list, &list};\n    int size = 0, hits = 0, misses = 0;\n    for (int i = 0; i < m; i++) {\n        int key;\n        if (scanf(\"%d\", &key) != 1 || key < 0 || key > 100000) {\n            break;\n        }\n        if (where[key] != NULL) {\n            hits++;\n            detach(where[key]);\n            attach_front(&list, where[key]);\n            continue;\n        }\n        misses++;\n        if (size == capacity) {\n            Node *oldest = list.prev;\n            detach(oldest);\n            where[oldest->key] = NULL;\n            free(oldest);\n            size--;\n        }\n        Node *node = malloc(sizeof *node);\n        if (node == NULL) {\n            return 1;\n        }\n        node->key = key;\n        attach_front(&list, node);\n        where[key] = node;\n        size++;\n    }\n    printf(\"попаданий %d, промахов %d\\n\", hits, misses);\n    for (Node *p = list.next; p != &list; p = p->next) {\n        printf(p->next != &list ? \"%d \" : \"%d\\n\", p->key);\n    }\n    while (list.next != &list) {\n        Node *node = list.next;\n        detach(node);\n        free(node);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Две структуры делят работу. Массив `where` отвечает на вопрос «есть ли ключ в кэше и где его узел» за `O(1)` — это прямая адресация по ключу (для больших ключей здесь была бы хеш-таблица). Двусвязный список хранит порядок обращений: при попадании узел вырезается из середины и вставляется в начало, при вытеснении удаляется последний — всё за `O(1)`, потому что у каждого узла есть ссылка на предыдущего соседа.\n\nПопадание не выделяет и не освобождает память — узел просто переставляется. Важная деталь вытеснения: перед `free` нужно обнулить `where[oldest->key]`, иначе следующее обращение к этому ключу нашло бы висячий указатель. Такой кэш стоит перед диском и базами данных, в процессорах (в упрощённом виде) и в браузерах.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "algo-doubly-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "invariant",
-        "question": "Что должно быть после удаления последнего узла?",
-        "options": ["head и tail равны NULL", "Только head равен NULL"],
-        "correct": 0,
-        "explanation": "Каждый вагон связан с соседом спереди и сзади; нужно поддерживать обе сцепки. После L 1 и R 2: NULL ← 1 ⇄ 2 → NULL. Удаление слева оставляет head=tail=узел 2 с двумя NULL-ссылками."
+        "id": "q1",
+        "question": "Сколько указателей нужно изменить, чтобы удалить узел из середины двусвязного списка?",
+        "explanation": "prev->next соседа слева и next->prev соседа справа. Поля самого удаляемого узла можно не трогать — он освобождается.",
+        "type": "text",
+        "answers": ["2"],
+        "placeholder": "Число"
       },
       {
-        "id": "complexity",
-        "question": "Какая оценка соответствует рассмотренной реализации?",
+        "id": "q2",
+        "question": "Как выглядит пустой двусвязный список с фиктивным узлом?",
+        "explanation": "Страж замкнут в кольцо сам с собой. Благодаря этому у каждого настоящего узла всегда есть оба соседа, и проверки на NULL не нужны.",
         "options": [
-          "Всегда O(1), потому что все тесты ограничены по размеру.",
-          "Добавление/удаление на концах O(1), поиск O(n)."
+          "sentinel.next == &sentinel и sentinel.prev == &sentinel",
+          "sentinel.next == NULL",
+          "sentinel.value == 0",
+          "Фиктивного узла в пустом списке нет"
         ],
-        "correct": 1,
-        "explanation": "Дешёвое удаление известного узла против памяти и медленного случайного доступа."
+        "correct": 0
       },
       {
-        "id": "engineering",
-        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "id": "q3",
+        "question": "Чем удаление известного узла из двусвязного списка лучше, чем из односвязного?",
+        "explanation": "В односвязном списке, чтобы переставить next у предыдущего узла, его нужно найти обходом от головы — O(n).",
         "options": [
-          "После удаления единственного узла нельзя оставлять tail на освобождённой памяти.",
-          "Совпадение Big O гарантирует одинаковое время на любой машине."
+          "Предыдущий узел доступен через prev, искать его не нужно — O(1)",
+          "Не нужно вызывать free",
+          "Удаление из односвязного списка невозможно",
+          "Ничем"
         ],
-        "correct": 0,
-        "explanation": "Последовательность логическая, а не физическая: обратные ссылки не делают память непрерывной. O(n), два указателя на узел плюс overhead allocator."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *prev;\n    struct Node *next;\n} Node;\n\nint main(void) {\n    Node s, a = {1, 0, 0}, b = {2, 0, 0}, c = {3, 0, 0};\n    s.next = &a; a.next = &b; b.next = &c; c.next = &s;\n    s.prev = &c; c.prev = &b; b.prev = &a; a.prev = &s;\n    b.prev->next = b.next;\n    b.next->prev = b.prev;\n    for (Node *p = s.prev; p != &s; p = p->prev) {\n        printf(\"%d \", p->value);\n    }\n    printf(\"\\n\");\n    return 0;\n}",
+        "explanation": "Узел 2 исключён из кольца обеими ссылками; обход назад от стража: 3, затем 1.",
+        "type": "text",
+        "answers": ["3 1"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Как в списке со стражем sentinel добавить элемент в конец с помощью insert_after(where, value)?",
+        "explanation": "sentinel.prev — последний узел (или сам страж в пустом списке). Вставка после него — это вставка в конец. insert_after(&sentinel, x) добавляет в начало.",
+        "options": [
+          "insert_after(sentinel.prev, value)",
+          "insert_after(&sentinel, value)",
+          "insert_after(sentinel.next, value)",
+          "insert_after(NULL, value)"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Почему в LRU-кэше используют именно двусвязный список?",
+        "explanation": "Поиск ключа делает таблица, а список хранит порядок обращений. Вырезать узел из середины за O(1) можно, только зная его предыдущего соседа.",
+        "options": [
+          "Найденный по таблице узел можно за O(1) вырезать и перенести в начало, а последний — удалить",
+          "Двусвязный список быстрее ищет ключи",
+          "В нём меньше памяти на элемент",
+          "Он автоматически сортирует элементы"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что не так с обходом списка со стражем: for (p = sentinel.next; p != NULL; p = p->next)?",
+        "explanation": "Обход заканчивается, когда p вернулся к стражу: p != &sentinel.",
+        "options": [
+          "В кольце нет NULL: цикл никогда не закончится и будет печатать страж",
+          "Он пропустит первый узел",
+          "Он пропустит последний узел",
+          "Всё верно"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какие операции двусвязного списка со стражем выполняются за O(1)?",
+        "explanation": "Поиск значения по-прежнему требует обхода — O(n).",
+        "type": "multiple",
+        "options": [
+          "Удаление последнего узла",
+          "Добавление в начало",
+          "Удаление узла по известному указателю на него",
+          "Поиск узла с заданным значением"
+        ],
+        "correct": [0, 1, 2]
       }
     ]
   }

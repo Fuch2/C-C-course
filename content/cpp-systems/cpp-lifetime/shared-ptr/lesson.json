@@ -1,149 +1,528 @@
 {
   "id": "lifetime-shared-ptr",
-  "title": "std::shared_ptr — совместное владение",
-  "description": "shared_ptr применяют, когда несколько независимых участников должны продлевать жизнь одного объекта и момент последнего использования заранее неизвестен.",
+  "title": "std::shared_ptr: совместное владение",
+  "description": "Совместное владение и счётчик владельцев; блок управления, make_shared и одно выделение памяти; цена копирования и атомарный счётчик; когда shared_ptr действительно нужен и почему по умолчанию unique_ptr; общие неизменяемые данные shared_ptr<const T>; ошибка двух блоков управления и enable_shared_from_this; копирование при записи.",
   "moduleId": "cpp-lifetime",
   "order": 20,
-  "difficulty": "advanced",
+  "difficulty": "intermediate",
   "estimatedMinutes": 55,
   "prerequisites": ["lifetime-make-unique"],
   "objectives": [
-    "Объяснить блок управления как источник совместного владения.",
-    "Проследить на MemoryDiagram счётчик сильных владельцев через копии и reset.",
-    "Разделить владение копированием и объяснить, почему конструирование из get() запрещено."
+    "Объяснять, когда объект под shared_ptr удаляется",
+    "Понимать устройство и цену блока управления",
+    "Выбирать между unique_ptr и shared_ptr",
+    "Избегать второго блока управления"
   ],
-  "tags": ["C++20", "время жизни", "управление ресурсами", "std::shared_ptr — совместное владение"],
+  "tags": ["C++23", "Время жизни", "shared_ptr", "Умные указатели", "Совместное владение"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "lifetime-shared-ptr-exercise",
-    "title": "Практика: std::shared_ptr — совместное владение",
-    "description": "В solve создайте first = make_shared<int>(a), скопируйте в second, измените объект через second прибавлением b, сбросьте first и верните *second. Не создавайте независимый блок управления из get().",
-    "difficulty": "advanced",
+    "title": "Общий документ",
+    "description": "Документ `Doc` печатает `создан название` и `удалён название`. Редакторы хранят документы в `std::map<std::string, std::shared_ptr<Doc>>` (`operator[]` создаёт пустой указатель). Команды:\n\n- `new E название` — `editors[E] = std::make_shared<Doc>(название)`;\n- `open E F` — редактор E открывает тот же документ, что у F: `editors[E] = editors[F]`;\n- `close E` — `editors[E].reset()`;\n- `who E` — `E: название (владельцев K)` или `E: пусто`.\n\nВ конце сбросьте указатели редакторов от последнего имени к первому.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 7)",
-        "output": "10\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "new a отчёт\nopen b a\nwho a\nclose a\nwho b\nclose b\nwho b\n",
+        "output": "создан отчёт\na: отчёт (владельцев 2)\nb: отчёт (владельцев 1)\nудалён отчёт\nb: пусто\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "new x один\nnew x два\n",
+        "output": "создан один\nсоздан два\nудалён один\nудалён два\n"
       }
     ],
-    "constraints": [
-      "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Команд не больше 300."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Нарисуйте блок управления отдельно от объекта. Каждая копия shared_ptr добавляет сильного владельца; каждый reset или деструктор копии отнимает."
+        "id": "hint-1",
+        "text": "Документ удаляется, только когда его закрыл последний редактор, — печатать «удалён» вручную не нужно.",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "Новую долю владения получают только копированием существующего shared_ptr. Конструирование двух shared_ptr из одного сырого адреса создаёт независимые блоки управления: каждый удалит объект — double delete. shared_ptr(this) внутри метода — та же ошибка изнутри; для законной выдачи совладения существует enable_shared_from_this. make_shared совмещает выделение объекта и блока управления. const shared_ptr<T> запрещает менять указатель, но не объект; shared_ptr<const T> ограничивает изменение объекта. Атомарен счётчик, а не сам T: доступ к объекту из нескольких потоков требует отдельной синхронизации.\n\nНельзя писать shared_ptr<T> second(first.get()) для получения совладельца — копируйте first. И не создавайте shared_ptr(this) для подключения к уже существующему владению.\n\nСкопируйте shared_ptr, измените int через второго владельца и прочитайте через первого: это намеренно общее состояние. Сравните с глубокой копией из предыдущих уроков, где значения независимы."
+        "id": "hint-2",
+        "text": "use_count() показывает число владельцев документа.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 7],
-        "expected": "10\n"
+        "stdin": "new a отчёт\nopen b a\nwho a\nclose a\nwho b\nclose b\nwho b\n",
+        "expected": "создан отчёт\na: отчёт (владельцев 2)\nb: отчёт (владельцев 1)\nудалён отчёт\nb: пусто\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "new x один\nnew x два\n",
+        "expected": "создан один\nсоздан два\nудалён один\nудалён два\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный случай 1",
-        "arguments": [-8, 3],
-        "expected": "-5\n"
+        "id": "hidden-1",
+        "name": "Пустой редактор",
+        "stdin": "who z\n",
+        "expected": "z: пусто\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный случай 2",
-        "arguments": [5, -9],
-        "expected": "-4\n"
+        "id": "hidden-2",
+        "name": "Три владельца",
+        "stdin": "new a d\nopen b a\nopen c a\nwho c\n",
+        "expected": "создан d\nc: d (владельцев 3)\nудалён d\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный случай 3",
-        "arguments": [-1000, 1000],
-        "expected": "0\n"
+        "id": "hidden-3",
+        "name": "Открыть своё",
+        "stdin": "new a d\nopen a a\nwho a\n",
+        "expected": "создан d\na: d (владельцев 1)\nудалён d\n"
       },
       {
-        "id": "case-6",
-        "name": "Граничный случай 4",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-4",
+        "name": "Переключение на чужой",
+        "stdin": "new a d1\nnew b d2\nopen a b\nwho a\nwho b\n",
+        "expected": "создан d1\nсоздан d2\nудалён d1\na: d2 (владельцев 2)\nb: d2 (владельцев 2)\nудалён d2\n"
       },
       {
-        "id": "case-7",
-        "name": "Граничный случай 5",
-        "arguments": [4, 4],
-        "expected": "8\n"
+        "id": "hidden-5",
+        "name": "Открыть пустой",
+        "stdin": "open a b\nwho a\n",
+        "expected": "a: пусто\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Двойное закрытие",
+        "stdin": "new a d\nclose a\nclose a\n",
+        "expected": "создан d\nудалён d\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Удаление в конце",
+        "stdin": "new z 1\nnew a 2\nopen m z\n",
+        "expected": "создан 1\nсоздан 2\nудалён 1\nудалён 2\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Замена у одного",
+        "stdin": "new a d\nopen b a\nnew a e\nwho b\n",
+        "expected": "создан d\nсоздан e\nb: d (владельцев 1)\nудалён d\nудалён e\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint solve(int a, int b) { auto first = std::make_shared<int>(a); auto second = first; *second += b; first.reset(); return *second; }",
-    "solutionExplanation": "Новую долю владения получают только копированием существующего shared_ptr. Конструирование двух shared_ptr из одного сырого адреса создаёт независимые блоки управления: каждый удалит объект — double delete. shared_ptr(this) внутри метода — та же ошибка изнутри; для законной выдачи совладения существует enable_shared_from_this. make_shared совмещает выделение объекта и блока управления. const shared_ptr<T> запрещает менять указатель, но не объект; shared_ptr<const T> ограничивает изменение объекта. Атомарен счётчик, а не сам T: доступ к объекту из нескольких потоков требует отдельной синхронизации.\n\nНельзя писать shared_ptr<T> second(first.get()) для получения совладельца — копируйте first. И не создавайте shared_ptr(this) для подключения к уже существующему владению.\n\nСкопируйте shared_ptr, измените int через второго владельца и прочитайте через первого: это намеренно общее состояние. Сравните с глубокой копией из предыдущих уроков, где значения независимы.",
+    "referenceSolution": "#include <iostream>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Doc {\n    std::string name;\n    explicit Doc(std::string n) : name(std::move(n)) {\n        std::println(\"создан {}\", name);\n    }\n    ~Doc() {\n        std::println(\"удалён {}\", name);\n    }\n};\n\nint main() {\n    std::map<std::string, std::shared_ptr<Doc>> editors;\n    std::string command, e;\n    while (std::cin >> command >> e) {\n        if (command == \"new\") {\n            std::string name;\n            std::cin >> name;\n            editors[e] = std::make_shared<Doc>(name);\n        } else if (command == \"open\") {\n            std::string f;\n            std::cin >> f;\n            editors[e] = editors[f];\n        } else if (command == \"close\") {\n            editors[e].reset();\n        } else if (const auto &doc = editors[e]) {\n            std::println(\"{}: {} (владельцев {})\", e, doc->name, doc.use_count());\n        } else {\n            std::println(\"{}: пусто\", e);\n        }\n    }\n    for (auto it = editors.rbegin(); it != editors.rend(); ++it) {\n        it->second.reset();\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Каждый редактор — полноправный совладелец документа. Закрытие одним редактором лишь уменьшает счётчик; документ удаляется, когда его отпустит последний — при `close`, при замене другим документом или в конце программы. Никто из редакторов не обязан знать о других, и в этом смысл совместного владения.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "lifetime-shared-ptr-task-2",
+      "title": "Кэш картинок",
+      "description": "Картинка `Image` печатает `загружено имя` и `выгружено имя`. Кэш `Cache` хранит `std::map<std::string, std::shared_ptr<const Image>>`; `get(имя)` возвращает картинку из кэша или загружает и запоминает её. Окна хранят свои `std::shared_ptr<const Image>` в `std::map<std::string, …>`.\n\nКоманды:\n\n- `show W имя` — окно W показывает картинку: `windows[W] = cache.get(имя)`;\n- `close W` — `windows[W].reset()`;\n- `evict имя` — убрать картинку из кэша (если есть);\n- `info имя` — `имя: в кэше, владельцев K` или `имя: не в кэше`.\n\nВ конце сбросьте окна от последнего имени к первому, затем очистите кэш, удаляя записи от последнего имени к первому.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "show w1 кот\nshow w2 кот\ninfo кот\nevict кот\ninfo кот\nclose w1\nclose w2\n",
+          "output": "загружено кот\nкот: в кэше, владельцев 3\nкот: не в кэше\nвыгружено кот\n"
+        },
+        {
+          "input": "show w a\nshow w b\n",
+          "output": "загружено a\nзагружено b\nвыгружено b\nвыгружено a\n"
+        }
+      ],
+      "constraints": ["Команд не больше 300."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "evict убирает только запись кэша: если картинку показывает окно, она остаётся загруженной, пока окно её держит.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Число владельцев картинки в кэше — use_count() указателя, который хранит кэш.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "show w1 кот\nshow w2 кот\ninfo кот\nevict кот\ninfo кот\nclose w1\nclose w2\n",
+          "expected": "загружено кот\nкот: в кэше, владельцев 3\nкот: не в кэше\nвыгружено кот\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "show w a\nshow w b\n",
+          "expected": "загружено a\nзагружено b\nвыгружено b\nвыгружено a\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Нет в кэше",
+          "stdin": "info x\n",
+          "expected": "x: не в кэше\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Остаётся в кэше",
+          "stdin": "show w a\nclose w\ninfo a\n",
+          "expected": "загружено a\na: в кэше, владельцев 1\nвыгружено a\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Повторная загрузка",
+          "stdin": "show w a\nevict a\nshow v a\ninfo a\n",
+          "expected": "загружено a\nзагружено a\na: в кэше, владельцев 2\nвыгружено a\nвыгружено a\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Удаление отсутствующей",
+          "stdin": "evict a\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-5",
+          "name": "То же окно",
+          "stdin": "show w a\nshow w a\ninfo a\n",
+          "expected": "загружено a\na: в кэше, владельцев 2\nвыгружено a\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Выгрузка в конце",
+          "stdin": "show x 1\nshow y 2\nshow z 3\nevict 2\n",
+          "expected": "загружено 1\nзагружено 2\nзагружено 3\nвыгружено 2\nвыгружено 3\nвыгружено 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Последний владелец — окно",
+          "stdin": "show w a\nevict a\nclose w\ninfo a\n",
+          "expected": "загружено a\nвыгружено a\na: не в кэше\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Две картинки",
+          "stdin": "show a p\nshow b p\nshow c q\ninfo p\ninfo q\n",
+          "expected": "загружено p\nзагружено q\np: в кэше, владельцев 3\nq: в кэше, владельцев 2\nвыгружено q\nвыгружено p\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <iterator>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Image {\n    std::string name;\n    explicit Image(std::string n) : name(std::move(n)) {\n        std::println(\"загружено {}\", name);\n    }\n    ~Image() {\n        std::println(\"выгружено {}\", name);\n    }\n};\n\nclass Cache {\npublic:\n    std::shared_ptr<const Image> get(const std::string &name) {\n        auto &slot = images_[name];\n        if (!slot) {\n            slot = std::make_shared<Image>(name);\n        }\n        return slot;\n    }\n\n    void evict(const std::string &name) {\n        images_.erase(name);\n    }\n\n    void info(const std::string &name) const {\n        if (auto it = images_.find(name); it != images_.end()) {\n            std::println(\"{}: в кэше, владельцев {}\", name, it->second.use_count());\n        } else {\n            std::println(\"{}: не в кэше\", name);\n        }\n    }\n\n    void clear() {\n        while (!images_.empty()) {\n            images_.erase(std::prev(images_.end()));\n        }\n    }\n\nprivate:\n    std::map<std::string, std::shared_ptr<const Image>> images_;\n};\n\nint main() {\n    Cache cache;\n    std::map<std::string, std::shared_ptr<const Image>> windows;\n    std::string command, a;\n    while (std::cin >> command >> a) {\n        if (command == \"show\") {\n            std::string name;\n            std::cin >> name;\n            windows[a] = cache.get(name);\n        } else if (command == \"close\") {\n            windows[a].reset();\n        } else if (command == \"evict\") {\n            cache.evict(a);\n        } else {\n            cache.info(a);\n        }\n    }\n    for (auto it = windows.rbegin(); it != windows.rend(); ++it) {\n        it->second.reset();\n    }\n    cache.clear();\n    return 0;\n}\n",
+      "solutionExplanation": "Кэш и окна — равноправные совладельцы картинки. Удаление из кэша не выгружает картинку, если её показывает окно: она живёт, пока нужна хоть кому-то, и исчезает вместе с последним владельцем. `shared_ptr<const Image>` гарантирует, что ни окно, ни кэш не изменят общую картинку.\n\n`std::make_shared<Image>` возвращает `shared_ptr<Image>`, который неявно превращается в `shared_ptr<const Image>`: доступ сужается, блок управления остаётся тем же.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-shared-ptr-task-3",
+      "title": "Найди ошибку: сессия сама себе владелец",
+      "description": "Для каждого пользователя программа создаёт сессию в `shared_ptr` и запускает её; при запуске сессия регистрирует себя в реестре, который хранит `shared_ptr` на активные сессии. В конце печатается число активных сессий и их пользователи. AddressSanitizer сообщает об ошибке. Найдите и исправьте её.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Session;\n\nstruct Registry {\n    std::vector<std::shared_ptr<Session>> active;\n};\n\nclass Session {\npublic:\n    explicit Session(std::string user) : user_(std::move(user)) {}\n\n    void start(Registry &registry) {\n        registry.active.push_back(std::shared_ptr<Session>(this));\n        std::println(\"старт {}\", user_);\n    }\n\n    const std::string &user() const {\n        return user_;\n    }\n\nprivate:\n    std::string user_;\n};\n\nint main() {\n    Registry registry;\n    std::string user;\n    while (std::cin >> user) {\n        auto session = std::make_shared<Session>(user);\n        session->start(registry);\n    }\n    std::println(\"активных {}\", registry.active.size());\n    for (const auto &s : registry.active) {\n        std::println(\"- {}\", s->user());\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "Ада Алан\n",
+          "output": "старт Ада\nстарт Алан\nактивных 2\n- Ада\n- Алан\n"
+        },
+        {
+          "input": "Грейс\n",
+          "output": "старт Грейс\nактивных 1\n- Грейс\n"
+        }
+      ],
+      "constraints": ["Пользователей не больше 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сколько блоков управления у сессии после std::shared_ptr<Session>(this)?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Унаследуйте std::enable_shared_from_this<Session> и регистрируйте shared_from_this().",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "Ада Алан\n",
+          "expected": "старт Ада\nстарт Алан\nактивных 2\n- Ада\n- Алан\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "Грейс\n",
+          "expected": "старт Грейс\nактивных 1\n- Грейс\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "a\n",
+          "expected": "старт a\nактивных 1\n- a\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "a b c\n",
+          "expected": "старт a\nстарт b\nстарт c\nактивных 3\n- a\n- b\n- c\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "длинное-имя-пользователя-сессии\n",
+          "expected": "старт длинное-имя-пользователя-сессии\nактивных 1\n- длинное-имя-пользователя-сессии\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "x y\n",
+          "expected": "старт x\nстарт y\nактивных 2\n- x\n- y\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "Бьёрн\nДеннис\nКен\n",
+          "expected": "старт Бьёрн\nстарт Деннис\nстарт Кен\nактивных 3\n- Бьёрн\n- Деннис\n- Кен\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "q\n",
+          "expected": "старт q\nактивных 1\n- q\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "p p\n",
+          "expected": "старт p\nстарт p\nактивных 2\n- p\n- p\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "1 2 3 4 5\n",
+          "expected": "старт 1\nстарт 2\nстарт 3\nстарт 4\nстарт 5\nактивных 5\n- 1\n- 2\n- 3\n- 4\n- 5\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Session;\n\nstruct Registry {\n    std::vector<std::shared_ptr<Session>> active;\n};\n\nclass Session : public std::enable_shared_from_this<Session> {\npublic:\n    explicit Session(std::string user) : user_(std::move(user)) {}\n\n    void start(Registry &registry) {\n        registry.active.push_back(shared_from_this());\n        std::println(\"старт {}\", user_);\n    }\n\n    const std::string &user() const {\n        return user_;\n    }\n\nprivate:\n    std::string user_;\n};\n\nint main() {\n    Registry registry;\n    std::string user;\n    while (std::cin >> user) {\n        auto session = std::make_shared<Session>(user);\n        session->start(registry);\n    }\n    std::println(\"активных {}\", registry.active.size());\n    for (const auto &s : registry.active) {\n        std::println(\"- {}\", s->user());\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`std::shared_ptr<Session>(this)` заводит **второй** блок управления для объекта, которым уже владеет `session` из `make_shared`. В конце итерации `session` уничтожается, его счётчик падает до нуля — объект удалён, а реестр держит указатель с собственным счётчиком 1 на уже удалённую сессию. Печать читает освобождённую память, а в конце программы объект удаляется второй раз.\n\n`std::enable_shared_from_this` хранит внутри объекта слабую ссылку на его блок управления; `shared_from_this()` создаёт ещё одного владельца в **том же** блоке. Вызывать его можно, только если объектом уже владеет `shared_ptr` — иначе он бросит `std::bad_weak_ptr`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-shared-ptr-task-4",
+      "title": "Копирование при записи",
+      "description": "Класс `CowText` хранит текст в `std::shared_ptr<std::string>` и не объявляет специальных функций: копии `CowText` **разделяют** одну строку. Перед изменением (`append`) текст «отделяется»: если у строки больше одного владельца, создаётся собственная копия (статический счётчик глубоких копий увеличивается), и меняется уже она.\n\nТексты хранятся в `std::map<std::string, CowText>`. Команды:\n\n- `set A слово` — `insert_or_assign(A, CowText(слово))`;\n- `copy B A` — `insert_or_assign(B, texts.at(A))`;\n- `append A слово` — дописать слово;\n- `show A` — `A: «текст» (владельцев K)`;\n- `stats` — `глубоких копий N`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "set a привет\ncopy b a\nshow a\nappend b !\nshow a\nshow b\nstats\n",
+          "output": "a: «привет» (владельцев 2)\na: «привет» (владельцев 1)\nb: «привет!» (владельцев 1)\nглубоких копий 1\n"
+        },
+        {
+          "input": "set x a\nappend x b\nshow x\nstats\n",
+          "output": "x: «ab» (владельцев 1)\nглубоких копий 0\n"
+        }
+      ],
+      "constraints": ["Команд не больше 300; ссылки только на существующие тексты."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "append: if (data_.use_count() > 1) { data_ = std::make_shared<std::string>(*data_); ++deep_copies; } *data_ += tail;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Копирование CowText копирует shared_ptr — это дёшево: строка не копируется, растёт только счётчик.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "set a привет\ncopy b a\nshow a\nappend b !\nshow a\nshow b\nstats\n",
+          "expected": "a: «привет» (владельцев 2)\na: «привет» (владельцев 1)\nb: «привет!» (владельцев 1)\nглубоких копий 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "set x a\nappend x b\nshow x\nstats\n",
+          "expected": "x: «ab» (владельцев 1)\nглубоких копий 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Три владельца",
+          "stdin": "set a x\ncopy b a\ncopy c a\nshow c\nappend a y\nshow b\nstats\n",
+          "expected": "c: «x» (владельцев 3)\nb: «x» (владельцев 2)\nглубоких копий 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Копия в себя",
+          "stdin": "set a x\ncopy a a\nshow a\n",
+          "expected": "a: «x» (владельцев 1)\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Одна копия на несколько изменений",
+          "stdin": "set a x\ncopy b a\nappend a 1\nappend a 2\nstats\n",
+          "expected": "глубоких копий 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Замена разрывает связь",
+          "stdin": "set a x\ncopy b a\nset a y\nshow b\n",
+          "expected": "b: «x» (владельцев 1)\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Оба меняются",
+          "stdin": "set a x\ncopy b a\nappend a 1\nappend b 2\nshow a\nshow b\nstats\n",
+          "expected": "a: «x1» (владельцев 1)\nb: «x2» (владельцев 1)\nглубоких копий 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Без копий",
+          "stdin": "stats\n",
+          "expected": "глубоких копий 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Цепочка копий",
+          "stdin": "set a 1\ncopy b a\ncopy c b\nappend c 2\nshow a\nshow c\n",
+          "expected": "a: «1» (владельцев 2)\nc: «12» (владельцев 1)\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Кириллица",
+          "stdin": "set a длинный-текст\ncopy b a\nshow b\n",
+          "expected": "b: «длинный-текст» (владельцев 2)\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <string_view>\n#include <utility>\n\nclass CowText {\npublic:\n    static inline int deep_copies = 0;\n\n    explicit CowText(std::string s) : data_(std::make_shared<std::string>(std::move(s))) {}\n\n    void append(std::string_view tail) {\n        if (data_.use_count() > 1) {\n            data_ = std::make_shared<std::string>(*data_);\n            ++deep_copies;\n        }\n        *data_ += tail;\n    }\n\n    const std::string &str() const {\n        return *data_;\n    }\n\n    long owners() const {\n        return data_.use_count();\n    }\n\nprivate:\n    std::shared_ptr<std::string> data_;\n};\n\nint main() {\n    std::map<std::string, CowText> texts;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"stats\") {\n            std::println(\"глубоких копий {}\", CowText::deep_copies);\n            continue;\n        }\n        std::string a, b;\n        std::cin >> a;\n        if (command == \"set\") {\n            std::cin >> b;\n            texts.insert_or_assign(a, CowText(b));\n        } else if (command == \"copy\") {\n            std::cin >> b;\n            texts.insert_or_assign(a, texts.at(b));\n        } else if (command == \"append\") {\n            std::cin >> b;\n            texts.at(a).append(b);\n        } else {\n            const CowText &t = texts.at(a);\n            std::println(\"{}: «{}» (владельцев {})\", a, t.str(), t.owners());\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Копирование при записи откладывает дорогую работу: пока тексты только читают, все копии разделяют одну строку, и копирование `CowText` стоит увеличения счётчика. Глубокая копия делается лишь при первом изменении разделяемого текста — и только для того, кто меняет. Если владелец один, `append` меняет строку на месте.\n\nТак когда-то был устроен `std::string` в libstdc++; от этого отказались в C++11 из-за многопоточности: проверка счётчика и последующая запись не атомарны вместе. Однопоточный COW или COW поверх неизменяемых данных (`shared_ptr<const T>`) по-прежнему полезен — например, для снимков документов и настроек.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "lifetime-shared-ptr-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Копирует ли копирование shared_ptr сам управляемый объект?",
+        "id": "q1",
+        "question": "Когда удаляется объект, которым владеют несколько shared_ptr?",
+        "explanation": "Счётчик владельцев доходит до нуля.",
         "options": [
-          "Да: создаётся независимый объект T",
-          "Нет: копируется участие в общем владении"
+          "Когда уничтожается или сбрасывается последний владелец",
+          "Когда уничтожается первый владелец",
+          "В конце программы",
+          "При вызове use_count()"
         ],
-        "correct": 1,
-        "explanation": "Новую долю владения получают только копированием существующего shared_ptr. Конструирование двух shared_ptr из одного сырого адреса создаёт независимые блоки управления: каждый удалит объект — double delete. shared_ptr(this) внутри метода — та же ошибка изнутри; для законной выдачи совладения существует enable_shared_from_this. make_shared совмещает выделение объекта и блока управления. const shared_ptr<T> запрещает менять указатель, но не объект; shared_ptr<const T> ограничивает изменение объекта. Атомарен счётчик, а не сам T: доступ к объекту из нескольких потоков требует отдельной синхронизации."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["7 1", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "first ──> блок управления: сильных 2 ──> объект A(4)\nsecond ──> тот же блок\nfirst.reset(): сильных 1; A жив\nsecond владеет A единолично; *second = 7\nsecond.reset(): сильных 0; A уничтожен"
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <memory>\n#include <print>\n#include <utility>\n\nint main() {\n    auto a = std::make_shared<int>(1);\n    auto b = a;\n    auto c = std::move(b);\n    std::shared_ptr<int> d;\n    d = c;\n    std::println(\"{} {}\", a.use_count(), b == nullptr);\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Владельцы — a, c и d; перемещение из b не добавило владельца, а b стал пустым.",
+        "type": "text",
+        "answers": ["3 true"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q3",
+        "question": "Чем std::make_shared<T>(…) лучше std::shared_ptr<T>(new T(…))?",
+        "explanation": "Меньше выделений и лучше локальность в памяти.",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Нельзя писать shared_ptr<T> second(first.get()) для получения совладельца — копируйте first. И не создавайте shared_ptr(this) для подключения к уже существующему владению."
+          "Объект и блок управления выделяются одним вызовом",
+          "Он не создаёт блок управления",
+          "Он делает указатель уникальным",
+          "Ничем"
         ],
-        "correct": 1,
-        "explanation": "Скопируйте shared_ptr, измените int через второго владельца и прочитайте через первого: это намеренно общее состояние. Сравните с глубокой копией из предыдущих уроков, где значения независимы."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что в shared_ptr потокобезопасно?",
+        "explanation": "Изменять объект из разных потоков нужно с синхронизацией; shared_ptr<const T> делает общий объект неизменяемым.",
+        "options": ["Счётчик владельцев", "Сам объект", "И то и другое", "Ничего"],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что произойдёт при std::shared_ptr<int> a(raw); std::shared_ptr<int> b(raw);?",
+        "explanation": "Каждый shared_ptr, созданный из сырого указателя, заводит свой блок управления.",
+        "options": [
+          "Два блока управления и двойное удаление",
+          "Счётчик станет равен 2",
+          "Ошибка компиляции",
+          "Утечка"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Как объекту получить shared_ptr на самого себя?",
+        "explanation": "shared_from_this использует существующий блок управления.",
+        "options": [
+          "Унаследовать std::enable_shared_from_this<T> и вызвать shared_from_this()",
+          "std::shared_ptr<T>(this)",
+          "std::make_shared<T>(*this)",
+          "Это невозможно"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Функции нужен только объект для чтения. Какой параметр выбрать?",
+        "explanation": "shared_ptr по значению — для новых совладельцев.",
+        "options": [
+          "const T &",
+          "std::shared_ptr<T>",
+          "const std::shared_ptr<T> &",
+          "std::shared_ptr<T> &&"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Как называется отдельная структура в куче, где shared_ptr хранит счётчики и удалитель? Блок …",
+        "explanation": "Его создаёт первый shared_ptr для объекта.",
+        "type": "text",
+        "answers": ["управления", "блок управления", "control block"],
+        "placeholder": "Одно слово"
       }
     ]
   }

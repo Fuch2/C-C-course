@@ -13,9 +13,9 @@
     "Применять memset и memcmp и объяснять их ограничения",
     "Реализовывать байтовое копирование через unsigned char *"
   ],
-  "tags": ["C17", "Память", "memcpy", "memmove", "memset", "memcmp"],
+  "tags": ["C23", "Память", "memcpy", "memmove", "memset", "memcmp"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-pointer-arithmetic-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -135,7 +135,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -239,7 +239,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -348,7 +348,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n\nvoid *my_memmove(void *dst, const void *src, size_t n) {\n    // Скопируйте n байтов с учётом перекрытия.\n    return dst;\n}\n\nint main(void) {\n    char s[64];\n    int q;\n    scanf(\"%63s %d\", s, &q);\n    for (int i = 0; i < q; i++) {\n        int dst, src, len;\n        scanf(\"%d %d %d\", &dst, &src, &len);\n        my_memmove(s + dst, s + src, (size_t)len);\n        printf(\"%s\\n\", s);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

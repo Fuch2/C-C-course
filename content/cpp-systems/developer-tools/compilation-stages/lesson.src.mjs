@@ -15,7 +15,7 @@ export default {
     'Определять по сообщению об ошибке, какая стадия её выдала',
   ],
   tags: ['Сборка', 'GCC', 'Препроцессор', 'Линковка', 'Объектный файл'],
-  standard: 'c17',
+  standard: 'c23',
   quiz: [
     {
       q: 'Какой флаг останавливает сборку сразу после препроцессора?',
@@ -217,7 +217,7 @@ int main(void) {
         { in: 'gcc -c src/util.c\n', out: 'стадия: ассемблирование\nфайл: util.o\n' },
       ],
       hidden: [
-        { in: 'gcc -std=c17 -Wall main.c -o app\n', name: 'Обычная сборка' },
+        { in: 'gcc -std=c23 -Wall main.c -o app\n', name: 'Обычная сборка' },
         { in: 'clang -S -O2 square.c\n', name: 'Ассемблер' },
         { in: 'gcc -E main.c\n', name: 'Препроцессор в терминал' },
         { in: 'gcc -E main.c -o main.i\n', name: 'Препроцессор в файл' },

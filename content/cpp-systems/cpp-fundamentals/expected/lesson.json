@@ -1,0 +1,549 @@
+{
+  "id": "cpp23-expected",
+  "title": "Результат или ошибка: std::expected",
+  "description": "Чего не хватает optional и исключениям; std::expected<T, E> из C++23 — значение или ошибка с причиной; std::unexpected; has_value, value, error, value_or; ошибки-перечисления; передача ошибки наверх с контекстом; цепочки and_then, transform, or_else, transform_error; expected<void, E>; выбор между expected, optional, исключениями и assert.",
+  "moduleId": "cpp-fundamentals",
+  "order": 27,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
+  "prerequisites": ["cpp20-exceptions"],
+  "objectives": [
+    "Возвращать из функций std::expected с причиной ошибки",
+    "Описывать ошибки перечислением и передавать их наверх с контекстом",
+    "Строить цепочки шагов через and_then и transform",
+    "Выбирать между expected, optional, исключениями и assert"
+  ],
+  "tags": ["C++23", "expected", "Обработка ошибок"],
+  "published": true,
+  "standard": "c++23",
+  "completion": "practice",
+  "exercise": {
+    "id": "cpp23-expected-task-1",
+    "title": "Деление",
+    "description": "Каждая строка ввода — два целых числа `a` и `b`. Напишите функцию `std::expected<int, std::string> divide(int a, int b)`, которая возвращает целую часть частного или ошибку:\n\n- `деление на ноль`, если `b = 0`;\n- `переполнение`, если `a = −2 147 483 648` и `b = −1` (результат не помещается в `int`).\n\nНапечатайте для каждой пары `a / b = q` или `a / b: ошибка: текст`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "cpp",
+    "standard": "c++23",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "17 5\n1 0\n",
+        "output": "17 / 5 = 3\n1 / 0: ошибка: деление на ноль\n"
+      },
+      {
+        "input": "-2147483648 -1\n",
+        "output": "-2147483648 / -1: ошибка: переполнение\n"
+      }
+    ],
+    "constraints": ["Числа помещаются в int; пар не больше 20."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Ошибку возвращайте через std::unexpected(\"деление на ноль\"), значение — просто return a / b;.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Наименьший int — std::numeric_limits<int>::min() из <limits>. Его нельзя разделить на −1: модуль результата на единицу больше наибольшего int.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "17 5\n1 0\n",
+        "expected": "17 / 5 = 3\n1 / 0: ошибка: деление на ноль\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "-2147483648 -1\n",
+        "expected": "-2147483648 / -1: ошибка: переполнение\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Отрицательное делимое",
+        "stdin": "-7 2\n",
+        "expected": "-7 / 2 = -3\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Ноль делимое",
+        "stdin": "0 5\n",
+        "expected": "0 / 5 = 0\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Ноль на ноль",
+        "stdin": "0 0\n",
+        "expected": "0 / 0: ошибка: деление на ноль\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Минимум на 1",
+        "stdin": "-2147483648 1\n",
+        "expected": "-2147483648 / 1 = -2147483648\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Максимум на -1",
+        "stdin": "2147483647 -1\n",
+        "expected": "2147483647 / -1 = -2147483647\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Минимум на 2",
+        "stdin": "-2147483648 2\n",
+        "expected": "-2147483648 / 2 = -1073741824\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Две пары",
+        "stdin": "100 -3\n9 9\n",
+        "expected": "100 / -3 = -33\n9 / 9 = 1\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Обе ошибки",
+        "stdin": "5 0\n-2147483648 -1\n6 3\n",
+        "expected": "5 / 0: ошибка: деление на ноль\n-2147483648 / -1: ошибка: переполнение\n6 / 3 = 2\n"
+      }
+    ],
+    "referenceSolution": "#include <expected>\n#include <iostream>\n#include <limits>\n#include <print>\n#include <string>\n\nstd::expected<int, std::string> divide(int a, int b) {\n    if (b == 0) {\n        return std::unexpected(\"деление на ноль\");\n    }\n    if (a == std::numeric_limits<int>::min() && b == -1) {\n        return std::unexpected(\"переполнение\");\n    }\n    return a / b;\n}\n\nint main() {\n    int a, b;\n    while (std::cin >> a >> b) {\n        auto q = divide(a, b);\n        if (q) {\n            std::println(\"{} / {} = {}\", a, b, *q);\n        } else {\n            std::println(\"{} / {}: ошибка: {}\", a, b, q.error());\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Обе неудачи — ожидаемые случаи, а не сбои, поэтому `expected` подходит лучше исключения: вызывающий код обрабатывает их прямо на месте. Деление `INT_MIN / -1` — неопределённое поведение (результат 2 147 483 648 не помещается в `int`, а на x86 программа просто аварийно завершается), поэтому его нужно проверить **до** деления.\n\nСообщение об ошибке несёт причину: вызывающий код может напечатать её, не зная, какие проверки выполняет функция.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "cpp23-expected-task-2",
+      "title": "Разбор настроек",
+      "description": "Каждая строка ввода — настройка вида `имя=значение`, где значение — целое число. Разберите каждую строку функцией, возвращающей `std::expected` с ошибкой-перечислением:\n\n| Ошибка          | Когда                                         | Текст                |\n| --------------- | --------------------------------------------- | -------------------- |\n| нет `=`       | в строке нет знака `=`                      | `нет знака =`      |\n| пустое имя      | `=` стоит первым символом                   | `пустое имя`       |\n| не число        | после `=` не целое число (или пусто)        | `значение не число` |\n\nДля успешной строки напечатайте `имя = значение`, для ошибочной — `строка N: текст` (строки нумеруются с 1). В конце — `настроек: K, ошибок: E`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "width=80\nheight\n=5\n",
+          "output": "width = 80\nстрока 2: нет знака =\nстрока 3: пустое имя\nнастроек: 1, ошибок: 2\n"
+        },
+        {
+          "input": "",
+          "output": "настроек: 0, ошибок: 0\n"
+        }
+      ],
+      "constraints": ["Строк не больше 30, в них нет пробелов; числа помещаются в int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "enum class ConfigError { no_equals, empty_key, not_number }; и функция std::string_view describe(ConfigError).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Разбор: pos = line.find('='); имя — substr(0, pos), значение — substr(pos + 1), число — std::from_chars с проверкой, что прочитаны все символы.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "width=80\nheight\n=5\n",
+          "expected": "width = 80\nстрока 2: нет знака =\nстрока 3: пустое имя\nнастроек: 1, ошибок: 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "настроек: 0, ошибок: 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Две настройки",
+          "stdin": "a=1\nb=-2\n",
+          "expected": "a = 1\nb = -2\nнастроек: 2, ошибок: 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Не число",
+          "stdin": "name=Ada\n",
+          "expected": "строка 1: значение не число\nнастроек: 0, ошибок: 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Пустое значение",
+          "stdin": "empty=\n",
+          "expected": "строка 1: значение не число\nнастроек: 0, ошибок: 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Два знака",
+          "stdin": "x=1=2\n",
+          "expected": "строка 1: значение не число\nнастроек: 0, ошибок: 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Только знак",
+          "stdin": "=\n",
+          "expected": "строка 1: пустое имя\nнастроек: 0, ошибок: 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Смесь",
+          "stdin": "port=8080\ndebug=1\nlevel=x3\nretries=+3\n",
+          "expected": "port = 8080\ndebug = 1\nстрока 3: значение не число\nстрока 4: значение не число\nнастроек: 2, ошибок: 2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Границы int",
+          "stdin": "big=2147483647\nsmall=-2147483648\n",
+          "expected": "big = 2147483647\nsmall = -2147483648\nнастроек: 2, ошибок: 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Все без знака",
+          "stdin": "a\nb\nc\n",
+          "expected": "строка 1: нет знака =\nстрока 2: нет знака =\nстрока 3: нет знака =\nнастроек: 0, ошибок: 3\n"
+        }
+      ],
+      "referenceSolution": "#include <charconv>\n#include <expected>\n#include <iostream>\n#include <print>\n#include <string>\n#include <string_view>\n\nenum class ConfigError { no_equals, empty_key, not_number };\n\nstd::string_view describe(ConfigError e) {\n    switch (e) {\n    case ConfigError::no_equals:\n        return \"нет знака =\";\n    case ConfigError::empty_key:\n        return \"пустое имя\";\n    case ConfigError::not_number:\n        return \"значение не число\";\n    }\n    return \"?\";\n}\n\nstruct Setting {\n    std::string_view key;\n    int value;\n};\n\nstd::expected<Setting, ConfigError> parse_setting(std::string_view line) {\n    std::size_t eq = line.find('=');\n    if (eq == std::string_view::npos) {\n        return std::unexpected(ConfigError::no_equals);\n    }\n    if (eq == 0) {\n        return std::unexpected(ConfigError::empty_key);\n    }\n    std::string_view text = line.substr(eq + 1);\n    int value = 0;\n    auto [end, error] = std::from_chars(text.data(), text.data() + text.size(), value);\n    if (text.empty() || error != std::errc{} || end != text.data() + text.size()) {\n        return std::unexpected(ConfigError::not_number);\n    }\n    return Setting{line.substr(0, eq), value};\n}\n\nint main() {\n    std::string line;\n    int number = 0, good = 0, bad = 0;\n    while (std::getline(std::cin, line)) {\n        number++;\n        auto setting = parse_setting(line);\n        if (setting) {\n            std::println(\"{} = {}\", setting->key, setting->value);\n            good++;\n        } else {\n            std::println(\"строка {}: {}\", number, describe(setting.error()));\n            bad++;\n        }\n    }\n    std::println(\"настроек: {}, ошибок: {}\", good, bad);\n    return 0;\n}\n",
+      "solutionExplanation": "Перечисление `ConfigError` — словарь ошибок, которые может вернуть разбор, а `describe` переводит его на человеческий язык. Разделение полезно: программа, читающая настройки, могла бы, например, пропускать строки с `not_number`, но останавливаться на `no_equals`, — сравнивать для этого тексты не пришлось бы.\n\nУспешный результат — структура `Setting`, а к её полям удобно обращаться через `->`. Имя хранится как `std::string_view` внутри `line` и используется до чтения следующей строки, поэтому представление не успевает «повиснуть».",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp23-expected-task-3",
+      "title": "Найди ошибку: проглоченная ошибка",
+      "description": "Программа читает слова до конца ввода и печатает сумму чисел — или сообщение об ошибке, если среди слов встретилось не число:\n\n```text\nошибка: 'abc' — не число\n```\n\nСообщается о **первом** неверном слове. Программа компилируется и работает, но вместо ошибки печатает сумму. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <charconv>\n#include <expected>\n#include <iostream>\n#include <print>\n#include <string>\n#include <string_view>\n#include <vector>\n\nstd::expected<int, std::string> parse_int(std::string_view text) {\n    int value = 0;\n    auto [end, error] = std::from_chars(text.data(), text.data() + text.size(), value);\n    if (error != std::errc{} || end != text.data() + text.size()) {\n        return std::unexpected(\"'\" + std::string(text) + \"' — не число\");\n    }\n    return value;\n}\n\nstd::expected<long long, std::string> total(const std::vector<std::string> &words) {\n    long long sum = 0;\n    for (const std::string &word : words) {\n        sum += parse_int(word).value_or(0);\n    }\n    return sum;\n}\n\nint main() {\n    std::vector<std::string> words;\n    std::string word;\n    while (std::cin >> word) {\n        words.push_back(word);\n    }\n    auto result = total(words);\n    if (result) {\n        std::println(\"сумма {}\", *result);\n    } else {\n        std::println(\"ошибка: {}\", result.error());\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "10 20 abc 5\n",
+          "output": "ошибка: 'abc' — не число\n"
+        },
+        {
+          "input": "1 2 3\n",
+          "output": "сумма 6\n"
+        }
+      ],
+      "constraints": ["Слов не больше 100; числа помещаются в int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что делает value_or(0), если parse_int вернул ошибку?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Ошибку нужно передать наверх: проверить результат и при неудаче вернуть std::unexpected(value.error()) из total.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "10 20 abc 5\n",
+          "expected": "ошибка: 'abc' — не число\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 2 3\n",
+          "expected": "сумма 6\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "x\n",
+          "expected": "ошибка: 'x' — не число\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "5 7a\n",
+          "expected": "ошибка: '7a' — не число\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1 2 3 4 5 + 6\n",
+          "expected": "ошибка: '+' — не число\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "2147483647 2147483647\n",
+          "expected": "сумма 4294967294\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "-5 -6 seven\n",
+          "expected": "ошибка: 'seven' — не число\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "0\n",
+          "expected": "сумма 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "один два\n",
+          "expected": "ошибка: 'один' — не число\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "3.14 1\n",
+          "expected": "ошибка: '3.14' — не число\n"
+        }
+      ],
+      "referenceSolution": "#include <charconv>\n#include <expected>\n#include <iostream>\n#include <print>\n#include <string>\n#include <string_view>\n#include <vector>\n\nstd::expected<int, std::string> parse_int(std::string_view text) {\n    int value = 0;\n    auto [end, error] = std::from_chars(text.data(), text.data() + text.size(), value);\n    if (error != std::errc{} || end != text.data() + text.size()) {\n        return std::unexpected(\"'\" + std::string(text) + \"' — не число\");\n    }\n    return value;\n}\n\nstd::expected<long long, std::string> total(const std::vector<std::string> &words) {\n    long long sum = 0;\n    for (const std::string &word : words) {\n        auto value = parse_int(word);\n        if (!value) {\n            return std::unexpected(value.error());\n        }\n        sum += *value;\n    }\n    return sum;\n}\n\nint main() {\n    std::vector<std::string> words;\n    std::string word;\n    while (std::cin >> word) {\n        words.push_back(word);\n    }\n    auto result = total(words);\n    if (result) {\n        std::println(\"сумма {}\", *result);\n    } else {\n        std::println(\"ошибка: {}\", result.error());\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`parse_int(word).value_or(0)` превращает любую ошибку в ноль: неверное слово молча пропускается, и программа выдаёт сумму, которой пользователь поверит. Причина ошибки, которую так старательно сформулировал `parse_int`, теряется.\n\nФункция `total` не может исправить неверное слово — значит, должна передать ошибку тому, кто её вызвал: проверить результат и вернуть `std::unexpected(value.error())`. Первое же неверное слово прерывает подсчёт, а `main` печатает его причину. `value_or` годится, только когда запасное значение — действительно верный ответ, а не способ «заглушить» ошибку.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp23-expected-task-4",
+      "title": "Калькулятор",
+      "description": "Каждая строка ввода — выражение из трёх слов: `a op b`, где `op` — одна из операций `+ - * /`. Вычислите его в типе `int` и напечатайте `a op b = r` или `ошибка: текст`. Ошибки проверяются в таком порядке:\n\n1. `'x' — не число` — для первого из `a`, `b`, которое не целое число `int`;\n2. `неизвестная операция 'op'`;\n3. `деление на ноль`;\n4. `переполнение` — если точный результат не помещается в `int`.\n\nДеление — целочисленное, с отбрасыванием дробной части.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "7 * 6\n9 / 0\n",
+          "output": "7 * 6 = 42\nошибка: деление на ноль\n"
+        },
+        {
+          "input": "x + 1\n2 ^ 3\n",
+          "output": "ошибка: 'x' — не число\nошибка: неизвестная операция '^'\n"
+        }
+      ],
+      "constraints": ["Строк не больше 30."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Разбор числа — функция std::expected<int, std::string> parse_int(std::string_view). Вычисление — std::expected<int, std::string> apply(int a, std::string_view op, int b).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Переполнение проще всего проверить, вычислив результат в long long и сравнив с std::numeric_limits<int>::min() и max(). Операция — ровно один символ из четырёх.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "7 * 6\n9 / 0\n",
+          "expected": "7 * 6 = 42\nошибка: деление на ноль\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "x + 1\n2 ^ 3\n",
+          "expected": "ошибка: 'x' — не число\nошибка: неизвестная операция '^'\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Переполнение суммы",
+          "stdin": "2147483647 + 1\n",
+          "expected": "ошибка: переполнение\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Переполнение деления",
+          "stdin": "-2147483648 / -1\n",
+          "expected": "ошибка: переполнение\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Отбрасывание дроби",
+          "stdin": "-7 / 2\n",
+          "expected": "-7 / 2 = -3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Переполнение произведения",
+          "stdin": "100000 * 100000\n",
+          "expected": "ошибка: переполнение\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Сначала числа",
+          "stdin": "1 ^ y\n",
+          "expected": "ошибка: 'y' — не число\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Простые",
+          "stdin": "5 - 8\n0 * -3\n",
+          "expected": "5 - 8 = -3\n0 * -3 = 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Вниз",
+          "stdin": "-2147483648 - 1\n",
+          "expected": "ошибка: переполнение\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Второе число и двойной слэш",
+          "stdin": "12 + 4x\n10 // 2\n",
+          "expected": "ошибка: '4x' — не число\nошибка: неизвестная операция '//'\n"
+        }
+      ],
+      "referenceSolution": "#include <charconv>\n#include <expected>\n#include <iostream>\n#include <limits>\n#include <print>\n#include <string>\n#include <string_view>\n\nstd::expected<int, std::string> parse_int(std::string_view text) {\n    int value = 0;\n    auto [end, error] = std::from_chars(text.data(), text.data() + text.size(), value);\n    if (error != std::errc{} || end != text.data() + text.size()) {\n        return std::unexpected(\"'\" + std::string(text) + \"' — не число\");\n    }\n    return value;\n}\n\nstd::expected<int, std::string> apply(int a, std::string_view op, int b) {\n    long long x = a, y = b, r = 0;\n    if (op == \"+\") {\n        r = x + y;\n    } else if (op == \"-\") {\n        r = x - y;\n    } else if (op == \"*\") {\n        r = x * y;\n    } else if (op == \"/\") {\n        if (y == 0) {\n            return std::unexpected(\"деление на ноль\");\n        }\n        r = x / y;\n    } else {\n        return std::unexpected(\"неизвестная операция '\" + std::string(op) + \"'\");\n    }\n    if (r < std::numeric_limits<int>::min() || r > std::numeric_limits<int>::max()) {\n        return std::unexpected(\"переполнение\");\n    }\n    return static_cast<int>(r);\n}\n\nstd::expected<int, std::string> evaluate(std::string_view a, std::string_view op, std::string_view b) {\n    return parse_int(a).and_then([&](int x) {\n        return parse_int(b).and_then([&](int y) { return apply(x, op, y); });\n    });\n}\n\nint main() {\n    std::string a, op, b;\n    while (std::cin >> a >> op >> b) {\n        auto result = evaluate(a, op, b);\n        if (result) {\n            std::println(\"{} {} {} = {}\", a, op, b, *result);\n        } else {\n            std::println(\"ошибка: {}\", result.error());\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Вычисление собрано из трёх функций, каждая из которых может не удаться, — и `and_then` соединяет их так, что первая же ошибка проходит до `main` без единого `if` в `evaluate`. Порядок проверок из условия соблюдается сам: сначала разбирается `a`, затем `b`, и только потом вызывается `apply`, которая проверяет операцию, ноль и переполнение.\n\nПереполнение определяется честно: `int` расширяется до `long long`, где сумма, разность и произведение двух `int` точно помещаются, и результат сравнивается с границами `int`. Проверять «после» в самом `int` нельзя — переполнение знакового типа уже было бы неопределённым поведением.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "cpp23-expected-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <expected>\n#include <print>\n#include <string>\n\nstd::expected<int, std::string> root(int x) {\n    if (x < 0) {\n        return std::unexpected(\"отрицательное\");\n    }\n    int r = 0;\n    while ((r + 1) * (r + 1) <= x) {\n        r++;\n    }\n    return r;\n}\n\nint main() {\n    auto a = root(17), b = root(-4);\n    std::println(\"{} {} {}\", *a, b.has_value(), b.error());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Целая часть корня из 17 — 4. Для -4 функция вернула ошибку с текстом.",
+        "type": "text",
+        "answers": ["4 false отрицательное"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Чем std::expected<int, E> отличается от std::optional<int>?",
+        "explanation": "optional сообщает только «нет значения», expected — ещё и почему.",
+        "options": [
+          "Вместо пустоты он хранит ошибку типа E — причину неудачи",
+          "expected всегда выделяет память в куче",
+          "expected нельзя проверить в if",
+          "Ничем, это синонимы"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Зачем ошибку оборачивают в std::unexpected(…)?",
+        "explanation": "Без обёртки return \"текст\" в expected<std::string, std::string> создал бы значение.",
+        "options": [
+          "Чтобы отличить ошибку от значения — например, когда T и E одного типа",
+          "Чтобы выбросить исключение",
+          "Чтобы ошибка напечаталась в stderr",
+          "Это необязательно, просто стиль"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что произойдёт при вызове value() у std::expected, который хранит ошибку?",
+        "explanation": "value() проверяет состояние; неопределённое поведение — у *r и r.error() без проверки.",
+        "options": [
+          "Будет выброшено исключение std::bad_expected_access<E>, которое содержит ошибку",
+          "Вернётся значение по умолчанию",
+          "Неопределённое поведение",
+          "Ошибка компиляции"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <expected>\n#include <print>\n#include <string>\n\nstd::expected<int, std::string> step(int x) {\n    if (x > 100) {\n        return std::unexpected(\"больше 100\");\n    }\n    return x * 3;\n}\n\nint main() {\n    auto a = step(5).and_then(step).and_then(step);\n    auto b = step(20).and_then(step).and_then(step);\n    std::println(\"{} {}\", a.value_or(-1), b ? \"успех\" : b.error());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "5 → 15 → 45 → 135. 20 → 60 → 180, а step(180) возвращает ошибку.",
+        "type": "text",
+        "answers": ["135 больше 100"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Какой тип возвращает функция, которая сохраняет настройки и может сообщить об ошибке, но результата не имеет?",
+        "explanation": "expected<void, E>: при успехе возвращают {}, при неудаче — std::unexpected(…).",
+        "type": "text",
+        "answers": [
+          "std::expected<void, std::string>",
+          "std::expected<void,std::string>",
+          "expected<void, std::string>",
+          "std::expected<void, E>"
+        ],
+        "placeholder": "Тип"
+      },
+      {
+        "id": "q7",
+        "question": "Почему тип ошибки часто делают enum class, а не строкой?",
+        "explanation": "Текст — для человека, перечисление — для программы. Описание получают отдельной функцией.",
+        "options": [
+          "Вызывающий код может реагировать на вид ошибки, не сравнивая тексты, а switch проверит, что обработаны все варианты",
+          "Строки нельзя хранить в expected",
+          "enum class печатается автоматически",
+          "Так требует стандарт"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Что плохого в строке int n = parse(text).value_or(0);, если parse возвращает std::expected<int, Error>?",
+        "explanation": "value_or уместен, только когда запасное значение действительно верный ответ. Иначе ошибку передают наверх.",
+        "options": [
+          "Ошибка разбора молча превращается в ноль, и причина теряется",
+          "Строка не компилируется",
+          "value_or бросает исключение",
+          "Ничего, так и задумано"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q9",
+        "question": "Для какой ситуации исключение подходит лучше, чем std::expected?",
+        "explanation": "Ожидаемые ошибки ввода удобнее возвращать через expected — их обрабатывают рядом. Редкие сбои передают исключениями.",
+        "options": [
+          "Редкий сбой, который обрабатывают далеко от места возникновения, — например, нехватка памяти",
+          "Пользователь ввёл не число",
+          "Файл настроек не найден",
+          "В строке конфигурации нет знака ="
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

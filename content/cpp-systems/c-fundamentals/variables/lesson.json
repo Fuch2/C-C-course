@@ -14,9 +14,9 @@
     "Использовать +=, -=, *=, /=, ++ и --",
     "Выбирать понятные имена переменных"
   ],
-  "tags": ["C17", "Переменные", "Присваивание", "int"],
+  "tags": ["C23", "Переменные", "Присваивание", "int"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-variables-task-1",
@@ -25,7 +25,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf(\"%d %d\", &a, &b);\n    // Поменяйте значения a и b местами.\n\n    printf(\"%d %d\\n\", a, b);\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -117,7 +117,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int a, b, c;\n    scanf(\"%d %d %d\", &a, &b, &c);\n    // Сдвиньте значения по кругу.\n\n    printf(\"%d %d %d\\n\", a, b, c);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -208,7 +208,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int balance, fee;\n    scanf(\"%d %d\", &balance, &fee);\n    // Сохраните исходный баланс, спишите комиссию и напечатайте результат.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -299,7 +299,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int s, bonus, penalty;\n    scanf(\"%d %d %d\", &s, &bonus, &penalty);\n    // Примените четыре события и напечатайте счёт после каждого.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

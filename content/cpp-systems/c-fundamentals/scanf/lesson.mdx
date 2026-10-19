@@ -38,7 +38,7 @@ int main(void) {
 Компилятор в строгом режиме предупредит:
 
 ```text
-warning: format ‘%d’ expects argument of type ‘int *’, but argument 2 has type ‘int’
+warning: format '%d' expects argument of type 'int *', but argument 2 has type 'int'
 ```
 
 `int *` — это тип «адрес переменной типа int». Подробно адреса и указатели разберём в последнем разделе модуля, а пока правило простое: **в scanf перед именем переменной ставится `&`**.
@@ -192,7 +192,7 @@ int main(void) {
 
 <CommonMistake title="Забыть &">
 
-`scanf("%d", n);` — функция получит значение вместо адреса. Это приводит к аварии или порче памяти. Компилятор предупреждает: `expects argument of type ‘int *’`.
+`scanf("%d", n);` — функция получит значение вместо адреса. Это приводит к аварии или порче памяти. Компилятор предупреждает: `expects argument of type 'int *'`.
 
 </CommonMistake>
 

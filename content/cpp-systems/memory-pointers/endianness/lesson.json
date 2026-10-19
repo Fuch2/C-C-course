@@ -13,9 +13,9 @@
     "Записывать и читать числа с явным порядком байтов через сдвиги",
     "Избегать переполнения при сдвиге байтов и переставлять байты числа"
   ],
-  "tags": ["C17", "Память", "Порядок байтов", "Endianness", "Сериализация"],
+  "tags": ["C23", "Память", "Порядок байтов", "Endianness", "Сериализация"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-endianness-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -129,7 +129,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -233,7 +233,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdint.h>\n#include <stdio.h>\n\nuint32_t read_u32_be(const unsigned char *in) {\n    return in[0] << 24 | in[1] << 16 | in[2] << 8 | in[3];\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    unsigned char buf[16];\n    for (int i = 0; i < n; i++) {\n        unsigned value;\n        scanf(\"%x\", &value);\n        buf[i] = (unsigned char)value;\n    }\n    for (int i = 0; i + 4 <= n; i += 4) {\n        printf(\"%u\\n\", (unsigned)read_u32_be(buf + i));\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -337,7 +337,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

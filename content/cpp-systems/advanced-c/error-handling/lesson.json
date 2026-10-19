@@ -1,90 +1,132 @@
 {
   "id": "advanced-error-handling",
-  "title": "Error handling в C",
-  "description": "В C ошибки обычно представлены статусом возврата и отдельным выходным параметром.",
+  "title": "Обработка ошибок: коды, контекст, освобождение ресурсов",
+  "description": "Ошибки программиста, отказы окружения и неверные данные; код возврата и выходной параметр, особые значения, перечисления кодов и функции-описания; распространение ошибок и warn_unused_result; единая точка выхода goto cleanup; частично созданные объекты; stderr, контекст сообщений и коды завершения.",
   "moduleId": "advanced-c",
-  "order": 26,
+  "order": 27,
   "difficulty": "advanced",
-  "estimatedMinutes": 100,
-  "prerequisites": ["advanced-fread-fwrite"],
+  "estimatedMinutes": 65,
+  "prerequisites": ["advanced-errno"],
   "objectives": [
-    "Объяснить: Error handling в C",
-    "Различать корректный контракт и ошибку: Ноль бывает корректным результатом; его нельзя одновременно использовать как единственный признак ошибки.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Выбирать способ сообщения об ошибке и описывать его в договоре функции",
+    "Распространять ошибки с контекстом и не терять результаты проверок",
+    "Освобождать несколько ресурсов на всех путях через единую точку выхода",
+    "Строить устойчивые к ошибочным данным программы, не допуская частичных изменений"
   ],
-  "tags": ["C17", "углублённый C", "Error handling в C"],
+  "tags": ["Обработка ошибок", "goto cleanup", "Коды ошибок", "Ресурсы", "stderr"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-error-handling-exercise",
-    "title": "Практика: Error handling в C",
-    "description": "Реализуйте divide(a,b,out): при b=0 ошибка и out не меняется. Ввод a,b −1000…1000; выведите целочисленное частное либо ОШИБКА.",
+    "id": "advanced-error-handling-task-1",
+    "title": "Разбор конфигурации",
+    "description": "Разберите файл настроек окна. Каждая строка ввода — `ключ = значение` (пробелы вокруг ключа, `=` и значения необязательны). Пустые строки и строки, начинающиеся с `#`, пропускаются. Допустимые ключи:\n\n| Ключ | Значение |\n| --- | --- |\n| `width`, `height` | целое от 1 до 10000 |\n| `title` | непустая строка до 30 символов |\n| `fullscreen` | `yes` или `no` |\n\nНапишите функцию разбора строки, которая возвращает код из перечисления, и функцию, переводящую код в сообщение. Для строки с ошибкой напечатайте `строка N: СООБЩЕНИЕ`:\n- `синтаксическая ошибка` — нет `=` или пустой ключ;\n- `неизвестный ключ КЛЮЧ`;\n- `неверное значение ключа КЛЮЧ` — значение не подходит;\n- `повтор ключа КЛЮЧ` — ключ уже встречался в правильной строке (неверное значение важнее повтора).\n\nЕсли ошибок не было, напечатайте настройки в виде `width=W height=H title=T fullscreen=yes|no` (по умолчанию 800, 600, `untitled`, `no`), иначе — `ошибок: K`.",
     "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "9 2",
-        "output": "4\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "# окно\nwidth = 1024\ntitle = Редактор\n\nfullscreen=yes\n",
+        "output": "width=1024 height=600 title=Редактор fullscreen=yes\n"
       },
       {
-        "input": "0 2",
-        "output": "0\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "width = 0\ncolor = red\nheight 500\ntitle = A\ntitle = B\n",
+        "output": "строка 1: неверное значение ключа width\nстрока 2: неизвестный ключ color\nстрока 3: синтаксическая ошибка\nстрока 5: повтор ключа title\nошибок: 4\n"
       }
     ],
-    "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
-    ],
+    "constraints": ["Строки не длиннее 200 символов; строк не больше 50."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Функция возвращает два канала: статус операции и данные, действительные только при успехе."
+        "text": "Перечисление: typedef enum { CFG_OK, CFG_SKIP, CFG_SYNTAX, CFG_UNKNOWN, CFG_VALUE, CFG_DUPLICATE } CfgError; — CFG_SKIP для пустых строк и комментариев.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Ноль бывает корректным результатом; его нельзя одновременно использовать как единственный признак ошибки."
+        "text": "Отделите ключ и значение по первому =, затем обрежьте пробелы с обеих сторон каждой части. Ключ для сообщения функция возвращает через выходной параметр.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Число проверяйте через strtol с указателем end. Чтобы обнаружить повтор, храните флаги «ключ уже задан» в структуре конфигурации.",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "9 2",
-        "expected": "4\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "# окно\nwidth = 1024\ntitle = Редактор\n\nfullscreen=yes\n",
+        "expected": "width=1024 height=600 title=Редактор fullscreen=yes\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "0 2",
-        "expected": "0\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "width = 0\ncolor = red\nheight 500\ntitle = A\ntitle = B\n",
+        "expected": "строка 1: неверное значение ключа width\nстрока 2: неизвестный ключ color\nстрока 3: синтаксическая ошибка\nстрока 5: повтор ключа title\nошибок: 4\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "1 0",
-        "expected": "ОШИБКА\n"
+        "id": "hidden-1",
+        "name": "Пустой файл",
+        "stdin": "",
+        "expected": "width=800 height=600 title=untitled fullscreen=no\n"
       },
       {
-        "id": "test-4",
-        "name": "Граничный сценарий 3",
-        "stdin": "-9 2",
-        "expected": "-4\n"
+        "id": "hidden-2",
+        "name": "Границы и пробелы",
+        "stdin": "   width=10000  \nheight=1\n",
+        "expected": "width=10000 height=1 title=untitled fullscreen=no\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Больше максимума",
+        "stdin": "width=10001\n",
+        "expected": "строка 1: неверное значение ключа width\nошибок: 1\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Не числа",
+        "stdin": "width=12px\nheight=\n",
+        "expected": "строка 1: неверное значение ключа width\nстрока 2: неверное значение ключа height\nошибок: 2\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Пустой ключ",
+        "stdin": "= 5\n",
+        "expected": "строка 1: синтаксическая ошибка\nошибок: 1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Длинный заголовок",
+        "stdin": "title = abcdefghijklmnopqrstuvwxyz0123\n",
+        "expected": "width=800 height=600 title=abcdefghijklmnopqrstuvwxyz0123 fullscreen=no\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Ошибка, затем правильное значение",
+        "stdin": "fullscreen = maybe\nfullscreen = no\n",
+        "expected": "строка 1: неверное значение ключа fullscreen\nошибок: 1\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Повтор после ошибки",
+        "stdin": "width = 5\nwidth = 0\nwidth = 6\n",
+        "expected": "строка 2: неверное значение ключа width\nстрока 3: повтор ключа width\nошибок: 2\n"
+      },
+      {
+        "id": "hidden-9",
+        "name": "Комментарии и = в значении",
+        "stdin": "#width=1\n  # comment\ntitle = a = b\n",
+        "expected": "width=800 height=600 title=a = b fullscreen=no\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\nstatic int divide(int a,int b,int *out){if(b==0)return -1;*out=a/b;return 0;}\nint main(void) {\n    int a,b,result=0;if(scanf(\"%d%d\",&a,&b)!=2)return 1;\n    if(divide(a,b,&result)!=0)puts(\"ОШИБКА\");else printf(\"%d\\n\",result);\n    return 0;\n}\n",
-    "solutionExplanation": "Функция возвращает два канала: статус операции и данные, действительные только при успехе.\n\nНоль бывает корректным результатом; его нельзя одновременно использовать как единственный признак ошибки.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '9 2' → '4\\n'; '0 2' → '0\\n'; '1 0' → 'ОШИБКА\\n'; '-9 2' → '-4\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <ctype.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef enum { CFG_OK, CFG_SKIP, CFG_SYNTAX, CFG_UNKNOWN, CFG_VALUE, CFG_DUPLICATE } CfgError;\n\ntypedef struct {\n    long width, height;\n    char title[31];\n    int fullscreen;\n    int seen[4];               // width, height, title, fullscreen\n} Config;\n\nstatic char *trim(char *s) {\n    while (isspace((unsigned char)*s)) {\n        s++;\n    }\n    char *end = s + strlen(s);\n    while (end > s && isspace((unsigned char)end[-1])) {\n        *--end = '\\0';\n    }\n    return s;\n}\n\nstatic int parse_size(const char *text, long *out) {\n    char *end;\n    long v = strtol(text, &end, 10);\n    if (end == text || *end != '\\0' || v < 1 || v > 10000) {\n        return 0;\n    }\n    *out = v;\n    return 1;\n}\n\nstatic CfgError parse_line(char *line, Config *cfg, char *key_out) {\n    char *text = trim(line);\n    if (*text == '\\0' || *text == '#') {\n        return CFG_SKIP;\n    }\n    char *eq = strchr(text, '=');\n    if (eq == NULL) {\n        return CFG_SYNTAX;\n    }\n    *eq = '\\0';\n    char *key = trim(text);\n    char *value = trim(eq + 1);\n    if (*key == '\\0') {\n        return CFG_SYNTAX;\n    }\n    snprintf(key_out, 32, \"%.31s\", key);\n    static const char *const KEYS[] = {\"width\", \"height\", \"title\", \"fullscreen\"};\n    int index = -1;\n    for (int i = 0; i < 4; i++) {\n        if (strcmp(key, KEYS[i]) == 0) {\n            index = i;\n        }\n    }\n    if (index < 0) {\n        return CFG_UNKNOWN;\n    }\n    Config next = *cfg;                       // изменения применяются только при успехе\n    if (index == 0 && !parse_size(value, &next.width)) {\n        return CFG_VALUE;\n    }\n    if (index == 1 && !parse_size(value, &next.height)) {\n        return CFG_VALUE;\n    }\n    if (index == 2) {\n        if (*value == '\\0' || strlen(value) > 30) {\n            return CFG_VALUE;\n        }\n        strcpy(next.title, value);\n    }\n    if (index == 3) {\n        if (strcmp(value, \"yes\") != 0 && strcmp(value, \"no\") != 0) {\n            return CFG_VALUE;\n        }\n        next.fullscreen = strcmp(value, \"yes\") == 0;\n    }\n    if (cfg->seen[index]) {\n        return CFG_DUPLICATE;\n    }\n    next.seen[index] = 1;\n    *cfg = next;\n    return CFG_OK;\n}\n\nstatic const char *cfg_message(CfgError e) {\n    switch (e) {\n    case CFG_SYNTAX:\n        return \"синтаксическая ошибка\";\n    case CFG_UNKNOWN:\n        return \"неизвестный ключ\";\n    case CFG_VALUE:\n        return \"неверное значение ключа\";\n    case CFG_DUPLICATE:\n        return \"повтор ключа\";\n    default:\n        return \"\";\n    }\n}\n\nint main(void) {\n    Config cfg = {800, 600, \"untitled\", 0, {0, 0, 0, 0}};\n    char line[256], key[32];\n    int number = 0, errors = 0;\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        number++;\n        line[strcspn(line, \"\\r\\n\")] = '\\0';\n        CfgError e = parse_line(line, &cfg, key);\n        if (e == CFG_OK || e == CFG_SKIP) {\n            continue;\n        }\n        errors++;\n        if (e == CFG_SYNTAX) {\n            printf(\"строка %d: %s\\n\", number, cfg_message(e));\n        } else {\n            printf(\"строка %d: %s %s\\n\", number, cfg_message(e), key);\n        }\n    }\n    if (errors == 0) {\n        printf(\"width=%ld height=%ld title=%s fullscreen=%s\\n\", cfg.width, cfg.height, cfg.title,\n               cfg.fullscreen ? \"yes\" : \"no\");\n    } else {\n        printf(\"ошибок: %d\\n\", errors);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Функция разбора строки сообщает результат перечислением, а ключ для сообщения — через выходной параметр. Тексты сообщений собраны в одной функции `cfg_message`: разбор не печатает ничего сам, поэтому его можно использовать и в программе с другим форматом вывода, и в тестах.\n\nИзменения применяются к копии конфигурации и переносятся в настоящую только после всех проверок. Строка с неверным значением не оставляет за собой «наполовину» применённых настроек — это то же правило, что и для выходных параметров: при ошибке состояние не меняется.\n\nНомер строки — контекст, без которого сообщение бесполезно: «неверное значение ключа width» в файле из сотни строк заставило бы искать ошибку вручную.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
@@ -92,109 +134,339 @@
   },
   "additionalExercises": [
     {
-      "id": "advanced-project-measurement-log",
-      "title": "Анализатор журнала измерений",
-      "description": "Прочитайте файл с показаниями датчиков и вычислите min, max, average, число измерений и число ошибочных строк. Формат каждой строки: timestamp,value. timestamp — десятичное целое 0…1000000; value — конечное число −1000…1000, распознаваемое strtod в стандартной C locale. Допускаются пробелы вокруг чисел и в конце строки. После значения других символов быть не должно. Дубликаты timestamp допустимы. Пустая строка, неверный разделитель, NaN/Inf, переполнение и строка длиннее 127 байтов считаются одной ошибкой каждая. Вход содержит не более 200 строк. Последняя строка может не иметь перевода строки.\n\nПри наличии измерений выведите: count min max average errors; числа с двумя знаками после точки. Без корректных измерений выведите НЕТ ДАННЫХ errors. Нулевой результат форматируйте без минуса. Ошибка чтения/создания файла завершает программу ненулевым кодом, а не увеличивает errors.\n\nАдаптер копирует stdin в tmpfile и перемещается к началу; функция analyze(FILE*) читает именно этот файл. Файл в браузерном тесте передаётся своим текстовым содержимым. Не загружайте весь журнал в массив измерений: достаточно текущей строки и накопителей.",
+      "id": "advanced-error-handling-task-2",
+      "title": "Найди ошибку: утечка на пути ошибки",
+      "description": "Программа читает группы оценок: число `n`, затем `n` оценок от 0 до 100. Для каждой группы функция `summarize` вычисляет медиану (левую из двух средних при чётном `n`), моду (наименьшую из самых частых оценок) и среднее; программа печатает `медиана M, мода X, среднее A` или сообщение об ошибке: `ошибка: пустая группа` или `ошибка: оценка вне диапазона`.\n\nРезультаты правильные, но при проверке с AddressSanitizer программа падает с отчётом LeakSanitizer на входах с ошибками. Исправьте функцию так, чтобы память освобождалась на всех путях.",
       "difficulty": "advanced",
-      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef enum { SUM_OK, SUM_EMPTY, SUM_RANGE, SUM_MEMORY } SumError;\n\ntypedef struct {\n    int median;\n    int mode;\n    double mean;\n} Summary;\n\nstatic int compare_ints(const void *a, const void *b) {\n    int x = *(const int *)a, y = *(const int *)b;\n    return (x > y) - (x < y);\n}\n\nstatic SumError summarize(const int *values, int n, Summary *out) {\n    int *sorted = malloc((size_t)(n > 0 ? n : 1) * sizeof *sorted);\n    int *histogram = calloc(101, sizeof *histogram);\n    if (sorted == NULL || histogram == NULL) {\n        free(sorted);\n        free(histogram);\n        return SUM_MEMORY;\n    }\n    if (n == 0) {\n        return SUM_EMPTY;\n    }\n    long long total = 0;\n    for (int i = 0; i < n; i++) {\n        if (values[i] < 0 || values[i] > 100) {\n            return SUM_RANGE;\n        }\n        sorted[i] = values[i];\n        histogram[values[i]]++;\n        total += values[i];\n    }\n    qsort(sorted, (size_t)n, sizeof *sorted, compare_ints);\n    int mode = 0;\n    for (int v = 1; v <= 100; v++) {\n        if (histogram[v] > histogram[mode]) {\n            mode = v;\n        }\n    }\n    out->median = sorted[(n - 1) / 2];\n    out->mode = mode;\n    out->mean = (double)total / n;\n    free(histogram);\n    free(sorted);\n    return SUM_OK;\n}\n\nint main(void) {\n    int n;\n    while (scanf(\"%d\", &n) == 1 && n >= 0 && n <= 100) {\n        int values[100];\n        for (int i = 0; i < n; i++) {\n            if (scanf(\"%d\", &values[i]) != 1) {\n                return 0;\n            }\n        }\n        Summary s;\n        SumError e = summarize(values, n, &s);\n        if (e == SUM_OK) {\n            printf(\"медиана %d, мода %d, среднее %.2f\\n\", s.median, s.mode, s.mean);\n        } else if (e == SUM_EMPTY) {\n            printf(\"ошибка: пустая группа\\n\");\n        } else if (e == SUM_RANGE) {\n            printf(\"ошибка: оценка вне диапазона\\n\");\n        } else {\n            printf(\"ошибка: нет памяти\\n\");\n            return 1;\n        }\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
-      "compiler": "clang",
+      "standard": "c23",
+      "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
         {
-          "input": "1,10\n2,20\n3,-3\n",
-          "output": "3 -3.00 20.00 9.00 0\n",
-          "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+          "input": "5 90 70 80 70 100\n",
+          "output": "медиана 80, мода 70, среднее 82.00\n"
         },
         {
-          "input": "bad\n1,5\n2,nan\n",
-          "output": "1 5.00 5.00 5.00 2\n",
-          "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+          "input": "0\n2 50 101\n",
+          "output": "ошибка: пустая группа\nошибка: оценка вне диапазона\n"
         }
       ],
-      "constraints": [
-        "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-        "В stdout только требуемый результат.",
-        "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
-      ],
+      "constraints": ["0 ≤ n ≤ 100; групп не больше 20."],
       "hints": [
         {
           "id": "hint-1",
-          "order": 1,
-          "text": "Инициализируйте min и max первым корректным измерением; не начинайте с нуля."
+          "text": "Посмотрите на каждый return в summarize: какие блоки уже выделены к этому моменту и кто их освободит?",
+          "order": 1
         },
         {
           "id": "hint-2",
-          "order": 2,
-          "text": "После strtod проверьте end, errno, isfinite и оставшийся хвост."
-        },
-        {
-          "id": "hint-3",
-          "order": 3,
-          "text": "Переполненную строку дочитайте до newline, начислив одну ошибку."
+          "text": "Сделайте единую точку выхода: заведите переменную status, вместо return пишите status = …; goto cleanup;, а в конце функции после метки cleanup освободите оба блока и верните status.",
+          "order": 2
         }
       ],
       "publicTests": [
         {
-          "id": "test-1",
-          "name": "Основной сценарий",
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5 90 70 80 70 100\n",
+          "expected": "медиана 80, мода 70, среднее 82.00\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0\n2 50 101\n",
+          "expected": "ошибка: пустая группа\nошибка: оценка вне диапазона\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 100\n",
+          "expected": "медиана 100, мода 100, среднее 100.00\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "4 10 20 30 40\n",
+          "expected": "медиана 20, мода 10, среднее 25.00\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "3 -1 50 50\n",
+          "expected": "ошибка: оценка вне диапазона\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "0\n0\n",
+          "expected": "ошибка: пустая группа\nошибка: пустая группа\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "3 5 5 5\n2 7 200\n1 0\n",
+          "expected": "медиана 5, мода 5, среднее 5.00\nошибка: оценка вне диапазона\nмедиана 0, мода 0, среднее 0.00\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "6 100 0 100 0 50 50\n",
+          "expected": "медиана 50, мода 0, среднее 50.00\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "2 101 101\n",
+          "expected": "ошибка: оценка вне диапазона\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "7 60 70 80 90 100 60 70\n",
+          "expected": "медиана 70, мода 60, среднее 75.71\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef enum { SUM_OK, SUM_EMPTY, SUM_RANGE, SUM_MEMORY } SumError;\n\ntypedef struct {\n    int median;\n    int mode;\n    double mean;\n} Summary;\n\nstatic int compare_ints(const void *a, const void *b) {\n    int x = *(const int *)a, y = *(const int *)b;\n    return (x > y) - (x < y);\n}\n\nstatic SumError summarize(const int *values, int n, Summary *out) {\n    SumError status = SUM_MEMORY;\n    int *sorted = malloc((size_t)(n > 0 ? n : 1) * sizeof *sorted);\n    int *histogram = calloc(101, sizeof *histogram);\n    if (sorted == NULL || histogram == NULL) {\n        goto cleanup;\n    }\n    if (n == 0) {\n        status = SUM_EMPTY;\n        goto cleanup;\n    }\n    long long total = 0;\n    for (int i = 0; i < n; i++) {\n        if (values[i] < 0 || values[i] > 100) {\n            status = SUM_RANGE;\n            goto cleanup;\n        }\n        sorted[i] = values[i];\n        histogram[values[i]]++;\n        total += values[i];\n    }\n    qsort(sorted, (size_t)n, sizeof *sorted, compare_ints);\n    int mode = 0;\n    for (int v = 1; v <= 100; v++) {\n        if (histogram[v] > histogram[mode]) {\n            mode = v;\n        }\n    }\n    out->median = sorted[(n - 1) / 2];\n    out->mode = mode;\n    out->mean = (double)total / n;\n    status = SUM_OK;\n\ncleanup:\n    free(histogram);\n    free(sorted);\n    return status;\n}\n\nint main(void) {\n    int n;\n    while (scanf(\"%d\", &n) == 1 && n >= 0 && n <= 100) {\n        int values[100];\n        for (int i = 0; i < n; i++) {\n            if (scanf(\"%d\", &values[i]) != 1) {\n                return 0;\n            }\n        }\n        Summary s;\n        SumError e = summarize(values, n, &s);\n        if (e == SUM_OK) {\n            printf(\"медиана %d, мода %d, среднее %.2f\\n\", s.median, s.mode, s.mean);\n        } else if (e == SUM_EMPTY) {\n            printf(\"ошибка: пустая группа\\n\");\n        } else if (e == SUM_RANGE) {\n            printf(\"ошибка: оценка вне диапазона\\n\");\n        } else {\n            printf(\"ошибка: нет памяти\\n\");\n            return 1;\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Функция выделяет два блока, а потом проверяет данные. Ранние `return SUM_EMPTY` и `return SUM_RANGE` выходят, не освободив их, — на каждой ошибочной группе теряется память. Программа печатает правильный результат, поэтому утечку видно только инструментами: LeakSanitizer в конце работы сообщает о блоках, на которые не осталось указателей.\n\nЕдиная точка выхода устраняет целый класс таких ошибок: любой путь — успешный или ошибочный — проходит через `cleanup`, где оба блока освобождаются. Добавив в функцию ещё одну проверку, достаточно написать `goto cleanup` — освобождение уже есть. Ветка нехватки памяти тоже упростилась: `free(NULL)` безопасен, и неудачное выделение не требует особого случая.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-error-handling-task-3",
+      "title": "Всё или ничего",
+      "description": "Прочитайте число счетов `n` и их начальные балансы (счета нумеруются с 1). Затем обработайте команды:\n- `transfer A B X` — добавить в текущий пакет перевод суммы `X > 0` со счёта `A` на счёт `B` (сразу ничего не меняется);\n- `commit` — применить пакет **целиком или не применять вовсе**: переводы выполняются по порядку, и если какой-то из них невозможен (нет счёта, `A = B`, недостаточно средств с учётом предыдущих переводов пакета), ни один перевод пакета не применяется. Напечатайте `применено K` или `откат: перевод J` (номер первого невозможного перевода в пакете, с 1). Пакет после `commit` очищается;\n- `show` — напечатать балансы через пробел.\n\nПакет без переводов при `commit` даёт `применено 0`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3 100 50 0\ntransfer 1 3 70\ntransfer 2 3 50\ncommit\nshow\n",
+          "output": "применено 2\n30 0 120\n"
+        },
+        {
+          "input": "2 10 10\ntransfer 1 2 5\ntransfer 1 2 6\ncommit\nshow\n",
+          "output": "откат: перевод 2\n10 10\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 20; балансы и суммы — целые до 10⁹; в пакете не больше 50 переводов; команд не больше 200."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Храните пакет в массиве структур { int from, to; long long amount; }.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "При commit скопируйте балансы во временный массив и выполняйте переводы на копии. Если все прошли — скопируйте копию обратно (memcpy), иначе просто забудьте её.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Проверка перевода: 1 ≤ from, to ≤ n, from ≠ to, amount > 0 и copy[from] ≥ amount.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 100 50 0\ntransfer 1 3 70\ntransfer 2 3 50\ncommit\nshow\n",
+          "expected": "применено 2\n30 0 120\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2 10 10\ntransfer 1 2 5\ntransfer 1 2 6\ncommit\nshow\n",
+          "expected": "откат: перевод 2\n10 10\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустой пакет",
+          "stdin": "1 5\ncommit\nshow\n",
+          "expected": "применено 0\n5\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Ошибка в первом переводе",
+          "stdin": "2 10 0\ntransfer 2 1 1\ntransfer 1 2 5\ncommit\nshow\n",
+          "expected": "откат: перевод 1\n10 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Деньги туда и обратно",
+          "stdin": "2 10 0\ntransfer 1 2 10\ntransfer 2 1 10\ncommit\nshow\n",
+          "expected": "применено 2\n10 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Нет счёта и сам себе",
+          "stdin": "2 10 10\ntransfer 1 3 1\ncommit\ntransfer 1 1 1\ncommit\nshow\n",
+          "expected": "откат: перевод 1\nоткат: перевод 1\n10 10\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Нулевая сумма",
+          "stdin": "2 10 10\ntransfer 1 2 0\ncommit\n",
+          "expected": "откат: перевод 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Два пакета",
+          "stdin": "3 5 5 5\ntransfer 1 2 5\ncommit\ntransfer 2 3 10\ntransfer 3 1 20\ncommit\nshow\n",
+          "expected": "применено 1\nоткат: перевод 2\n0 10 5\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Большая сумма",
+          "stdin": "2 1000000000 0\ntransfer 1 2 1000000000\ncommit\nshow\n",
+          "expected": "применено 1\n0 1000000000\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Цепочка",
+          "stdin": "3 1 1 1\ntransfer 1 2 1\ntransfer 2 3 2\ntransfer 3 1 3\ncommit\nshow\n",
+          "expected": "применено 3\n3 0 0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    int from, to;\n    long long amount;\n} Transfer;\n\nint main(void) {\n    int n;\n    long long balances[21];\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 20) {\n        return 0;\n    }\n    for (int i = 1; i <= n; i++) {\n        if (scanf(\"%lld\", &balances[i]) != 1) {\n            return 0;\n        }\n    }\n    Transfer batch[50];\n    int pending = 0;\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"transfer\") == 0) {\n            Transfer t;\n            if (scanf(\"%d %d %lld\", &t.from, &t.to, &t.amount) != 3) {\n                break;\n            }\n            if (pending < 50) {\n                batch[pending++] = t;\n            }\n        } else if (strcmp(command, \"commit\") == 0) {\n            long long copy[21];\n            memcpy(copy, balances, sizeof copy);\n            int failed = 0;\n            for (int i = 0; i < pending && !failed; i++) {\n                const Transfer *t = &batch[i];\n                if (t->from < 1 || t->from > n || t->to < 1 || t->to > n || t->from == t->to ||\n                    t->amount <= 0 || copy[t->from] < t->amount) {\n                    failed = i + 1;\n                } else {\n                    copy[t->from] -= t->amount;\n                    copy[t->to] += t->amount;\n                }\n            }\n            if (failed) {\n                printf(\"откат: перевод %d\\n\", failed);\n            } else {\n                memcpy(balances, copy, sizeof copy);\n                printf(\"применено %d\\n\", pending);\n            }\n            pending = 0;\n        } else if (strcmp(command, \"show\") == 0) {\n            for (int i = 1; i <= n; i++) {\n                printf(i < n ? \"%lld \" : \"%lld\\n\", balances[i]);\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Пакет переводов — небольшая **транзакция**: либо все изменения, либо никаких. Если применять переводы прямо к настоящим балансам и остановиться на ошибке, деньги «зависнут» на полпути: часть переводов выполнена, часть нет. Вместо этого изменения делаются на копии, и только полностью успешный пакет становится настоящим состоянием — одной операцией копирования.\n\nТот же приём используют базы данных (журнал и откат), текстовые редакторы (сохранение во временный файл и переименование) и функция разбора конфигурации из первой задачи. Проверка средств учитывает предыдущие переводы пакета, потому что они выполняются на той же копии.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-project-measurement-log",
+      "title": "Анализатор журнала измерений",
+      "description": "Прочитайте журнал показаний датчиков и вычислите число измерений, минимум, максимум, среднее и число ошибочных строк. Каждая строка журнала — `время,значение`:\n- **время** — десятичное целое от 0 до 1 000 000;\n- **значение** — конечное число от −1000 до 1000, которое распознаёт `strtod` в стандартной локали;\n- пробелы вокруг чисел и в конце строки допустимы, других символов после значения быть не должно; повторы времени допустимы.\n\nКаждая из этих строк считается **одной** ошибкой: пустая строка, неверный разделитель, время вне диапазона, NaN или бесконечность, переполнение, строка длиннее 127 байтов (или с нулевым байтом). Последняя строка может не заканчиваться переводом строки.\n\nЕсли корректные измерения есть, напечатайте `count min max average errors` — числа с двумя знаками после точки (ноль без минуса). Без корректных измерений — `НЕТ ДАННЫХ errors`. Ошибка создания или чтения файла завершает программу с ненулевым кодом, а не увеличивает `errors`.\n\n**Транспорт.** Адаптер копирует стандартный ввод во временный файл `tmpfile()` и возвращается к началу; функция `analyze(FILE *)` читает именно этот файл. Не храните измерения в массиве: достаточно текущей строки и накопителей.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "1,10\n2,20\n3,-3\n",
+          "output": "3 -3.00 20.00 9.00 0\n"
+        },
+        {
+          "input": "bad\n1,5\n2,nan\n",
+          "output": "1 5.00 5.00 5.00 2\n"
+        }
+      ],
+      "constraints": [
+        "Не больше 200 строк.",
+        "Все открытые потоки закрываются, включая пути ошибки; код ошибки ввода-вывода отделён от брака строк."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "analyze читает поток посимвольно в буфер на 128 байтов. Если строка не помещается, установите флаг переполнения и пропускайте символы до \\n — тогда длинная строка даст одну ошибку, а не несколько.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "consume разбирает строку: strtol для времени, пропуск пробелов, проверка запятой, strtod для значения, пропуск пробелов, проверка конца строки. errno обнуляйте перед каждым strtol и strtod, конечность проверяйте isfinite.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Минимум и максимум инициализируйте первым корректным измерением. При печати замените −0.0 на 0.0, чтобы не получить «-0.00».",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
           "stdin": "1,10\n2,20\n3,-3\n",
           "expected": "3 -3.00 20.00 9.00 0\n"
         },
         {
-          "id": "test-2",
-          "name": "Граничный сценарий 1",
+          "id": "case-2",
+          "name": "Пример 2",
           "stdin": "bad\n1,5\n2,nan\n",
           "expected": "1 5.00 5.00 5.00 2\n"
         }
       ],
       "hiddenTests": [
         {
-          "id": "test-3",
-          "name": "Граничный сценарий 2",
+          "id": "hidden-1",
+          "name": "Пустой журнал",
           "stdin": "",
           "expected": "НЕТ ДАННЫХ 0\n"
         },
         {
-          "id": "test-4",
-          "name": "Граничный сценарий 3",
+          "id": "hidden-2",
+          "name": "Только ошибки",
           "stdin": "\nabc\n",
           "expected": "НЕТ ДАННЫХ 2\n"
         },
         {
-          "id": "test-5",
-          "name": "Граничный сценарий 4",
+          "id": "hidden-3",
+          "name": "Без перевода строки в конце",
           "stdin": "0,-10\n1,-20",
           "expected": "2 -20.00 -10.00 -15.00 0\n"
         },
         {
-          "id": "test-6",
-          "name": "Граничный сценарий 5",
+          "id": "hidden-4",
+          "name": "Бесконечность, хвост и переполнение",
           "stdin": "1,inf\n2,1x\n3,1e999\n4,0\n",
           "expected": "1 0.00 0.00 0.00 3\n"
         },
         {
-          "id": "test-7",
-          "name": "Граничный сценарий 6",
+          "id": "hidden-5",
+          "name": "Пробелы, диапазон времени, разделитель",
           "stdin": " 1 , 2.5 \r\n1000001,0\n2;-1\n",
           "expected": "1 2.50 2.50 2.50 2\n"
         },
         {
-          "id": "test-8",
-          "name": "Граничный сценарий 7",
+          "id": "hidden-6",
+          "name": "Длинная строка",
           "stdin": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n1,3\n",
           "expected": "1 3.00 3.00 3.00 1\n"
         },
         {
-          "id": "test-9",
-          "name": "Граничный сценарий 8",
+          "id": "hidden-7",
+          "name": "Отрицательный ноль",
           "stdin": "1,-0\n2,0\n",
           "expected": "2 0.00 0.00 0.00 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Границы значения",
+          "stdin": "5,1000\n6,-1000\n7,1000.5\n8,-1000.01\n",
+          "expected": "2 -1000.00 1000.00 0.00 2\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Повторы времени",
+          "stdin": "1,1\n1,2\n1,3\n",
+          "expected": "3 1.00 3.00 2.00 0\n"
+        },
+        {
+          "id": "hidden-10",
+          "name": "Отрицательное и огромное время",
+          "stdin": "-1,5\n99999999999999999999,5\n10,5\n",
+          "expected": "1 5.00 5.00 5.00 2\n"
         }
       ],
-      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <errno.h>\n#include <ctype.h>\n#include <math.h>\ntypedef struct { unsigned count, errors; double min, max, sum; } Stats;\nstatic void consume(char *line, int too_long, Stats *stats) {\n    if(too_long){++stats->errors;return;}\n    char *end;errno=0;\n    long timestamp=strtol(line,&end,10);\n    if(end==line || errno==ERANGE || timestamp<0 || timestamp>1000000){++stats->errors;return;}\n    while(isspace((unsigned char)*end))++end;\n    if(*end!=','){++stats->errors;return;}\n    char *start=end+1;errno=0;double value=strtod(start,&end);\n    if(end==start || errno==ERANGE || !isfinite(value) || value < -1000 || value > 1000){++stats->errors;return;}\n    while(isspace((unsigned char)*end))++end;\n    if(*end){++stats->errors;return;}\n    if(!stats->count || value<stats->min)stats->min=value;\n    if(!stats->count || value>stats->max)stats->max=value;\n    stats->sum+=value;++stats->count;\n}\nstatic int analyze(FILE *file, Stats *stats) {\n    char line[128];size_t length=0;int overflow=0,ch;\n    while((ch=fgetc(file))!=EOF){\n        if(ch=='\\n'){line[length]='\\0';consume(line,overflow,stats);length=0;overflow=0;}\n        else if(ch=='\\0')overflow=1;\n        else if(length<sizeof line-1)line[length++]=(char)ch;\n        else overflow=1;\n    }\n    if(ferror(file))return 0;\n    if(length || overflow){line[length]='\\0';consume(line,overflow,stats);}\n    return 1;\n}\nstatic double normalized(double value){return value==0.0 ? 0.0 : value;}\nint main(void) {\n    FILE *file=tmpfile();if(!file)return 1;\n    int ch,ok=1;while((ch=fgetc(stdin))!=EOF)if(fputc(ch,file)==EOF){ok=0;break;}\n    if(ferror(stdin))ok=0;\n    Stats stats={0};\n    if(ok && fseek(file,0,SEEK_SET)==0)ok=analyze(file,&stats);else ok=0;\n    if(fclose(file)!=0)ok=0;\n    if(!ok)return 1;\n    if(!stats.count)printf(\"НЕТ ДАННЫХ %u\\n\",stats.errors);\n    else printf(\"%u %.2f %.2f %.2f %u\\n\",stats.count,normalized(stats.min),normalized(stats.max),normalized(stats.sum/stats.count),stats.errors);\n    return 0;\n}\n",
-      "solutionExplanation": "analyze читает поток по символам, поэтому длинная строка не превращается в несколько независимых ошибок: overflow остаётся установленным до её конца. consume разбирает два поля, проверяет диапазоны, остаток строки и конечность числа. min и max инициализируются первым корректным измерением, что работает и для полностью отрицательного журнала. average вычисляется только при ненулевом count. При данных ограничениях сумма по модулю не превосходит 200000.\n\nПамять O(1) относительно длины файла: буфер строки фиксирован, измерения не сохраняются. Время O(B), где B — число прочитанных байтов. Отказ ввода/вывода отделён от брака конкретной строки. Последняя строка без newline обрабатывается после EOF. Разделение адаптера и analyze позволяет впоследствии заменить tmpfile на fopen без изменения статистического алгоритма.",
+      "referenceSolution": "#include <ctype.h>\n#include <errno.h>\n#include <math.h>\n#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct {\n    unsigned count, errors;\n    double min, max, sum;\n} Stats;\n\n// Разбирает одну строку журнала и обновляет статистику.\nstatic void consume(char *line, int too_long, Stats *stats) {\n    if (too_long) {\n        stats->errors++;\n        return;\n    }\n    char *end;\n    errno = 0;\n    long timestamp = strtol(line, &end, 10);\n    if (end == line || errno == ERANGE || timestamp < 0 || timestamp > 1000000) {\n        stats->errors++;\n        return;\n    }\n    while (isspace((unsigned char)*end)) {\n        end++;\n    }\n    if (*end != ',') {\n        stats->errors++;\n        return;\n    }\n    char *start = end + 1;\n    errno = 0;\n    double value = strtod(start, &end);\n    if (end == start || errno == ERANGE || !isfinite(value) || value < -1000 || value > 1000) {\n        stats->errors++;\n        return;\n    }\n    while (isspace((unsigned char)*end)) {\n        end++;\n    }\n    if (*end != '\\0') {\n        stats->errors++;\n        return;\n    }\n    if (stats->count == 0 || value < stats->min) {\n        stats->min = value;\n    }\n    if (stats->count == 0 || value > stats->max) {\n        stats->max = value;\n    }\n    stats->sum += value;\n    stats->count++;\n}\n\n// Читает поток посимвольно; 0 — ошибка ввода-вывода.\nstatic int analyze(FILE *file, Stats *stats) {\n    char line[128];\n    size_t length = 0;\n    int overflow = 0, ch;\n    while ((ch = fgetc(file)) != EOF) {\n        if (ch == '\\n') {\n            line[length] = '\\0';\n            consume(line, overflow, stats);\n            length = 0;\n            overflow = 0;\n        } else if (ch == '\\0' || length == sizeof line - 1) {\n            overflow = 1;\n        } else {\n            line[length++] = (char)ch;\n        }\n    }\n    if (ferror(file)) {\n        return 0;\n    }\n    if (length > 0 || overflow) {\n        line[length] = '\\0';\n        consume(line, overflow, stats);\n    }\n    return 1;\n}\n\nstatic double normalized(double value) {\n    return value == 0.0 ? 0.0 : value;       // без «-0.00»\n}\n\nint main(void) {\n    FILE *file = tmpfile();\n    if (file == NULL) {\n        return 1;\n    }\n    int ok = 1, ch;\n    while ((ch = getchar()) != EOF) {\n        if (fputc(ch, file) == EOF) {\n            ok = 0;\n            break;\n        }\n    }\n    Stats stats = {0, 0, 0.0, 0.0, 0.0};\n    ok = ok && !ferror(stdin) && fseek(file, 0, SEEK_SET) == 0 && analyze(file, &stats);\n    if (fclose(file) != 0) {\n        ok = 0;\n    }\n    if (!ok) {\n        return 1;\n    }\n    if (stats.count == 0) {\n        printf(\"НЕТ ДАННЫХ %u\\n\", stats.errors);\n    } else {\n        printf(\"%u %.2f %.2f %.2f %u\\n\", stats.count, normalized(stats.min),\n               normalized(stats.max), normalized(stats.sum / stats.count), stats.errors);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`analyze` читает поток по символам, поэтому длинная строка не превращается в несколько независимых ошибок: флаг переполнения остаётся установленным до её конца. `consume` разбирает два поля, проверяет диапазоны, конечность числа и остаток строки; каждая проблема — ровно одна ошибка. `errno` обнуляется перед каждым `strtol` и `strtod`, иначе переполнение одной строки «перешло» бы на следующую. Минимум и максимум берутся из первого корректного измерения — так журнал из одних отрицательных чисел обрабатывается правильно, а среднее вычисляется только при ненулевом счётчике.\n\nПамять не зависит от длины журнала: буфер строки фиксирован, измерения не хранятся. Отказ ввода-вывода отделён от брака строк: испорченная строка — это данные, а невозможность прочитать файл — отказ окружения, и программа сообщает о нём кодом завершения. Разделение адаптера и `analyze` позволяет заменить `tmpfile` на `fopen` без изменения алгоритма.",
       "checking": {
         "type": "stdout",
         "comparison": "exact"
@@ -206,28 +478,93 @@
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Когда читать выходной параметр функции?",
-        "options": ["После проверки успешного статуса", "Всегда, независимо от контракта"],
-        "correct": 0,
-        "explanation": "В C ошибки обычно представлены статусом возврата и отдельным выходным параметром. Успешное значение не должно пересекаться с кодом ошибки. Хороший контракт определяет, изменяется ли выходной параметр при отказе и кто освобождает ресурсы. Это позволяет вызывающему коду безопасно повторить операцию или откатиться."
-      },
-      {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q1",
+        "question": "Какой вид ошибки — вызов функции с NULL там, где договор требует действительный указатель?",
+        "explanation": "Нарушенный договор — дефект в коде. Отказы окружения (нет файла, нет памяти) и неверные данные — ожидаемые ситуации, которые программа обязана обработать.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "Ноль бывает корректным результатом; его нельзя одновременно использовать как единственный признак ошибки."
+          "Ошибка программиста: её ищут и исправляют, а не обрабатывают",
+          "Отказ окружения",
+          "Неверные данные пользователя",
+          "Это не ошибка"
         ],
-        "correct": 1,
-        "explanation": "Функция возвращает два канала: статус операции и данные, действительные только при успехе."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["0 7", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: int value=7;int ok=read_value(0,&value);printf(\"%d %d\\n\",ok,value); Ожидаемый результат: 0 7"
+        "id": "q2",
+        "question": "Функция возвращает температуру в градусах типа double. Почему не стоит сообщать об ошибке значением −1000?",
+        "explanation": "Если однажды −1000 станет законным значением (или вызывающий забудет проверку), ошибка превратится в данные. int read_temp(double *out) различает исходы явно.",
+        "options": [
+          "Особое значение годится, только если оно не может быть законным результатом; надёжнее код возврата и выходной параметр",
+          "−1000 нельзя записать в double",
+          "Особые значения запрещены стандартом",
+          "Так нельзя вернуть значение из функции"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\ntypedef enum { OK, TOO_SMALL, TOO_BIG } Check;\n\nstatic Check check(int x, int *doubled) {\n    if (x < 0) {\n        return TOO_SMALL;\n    }\n    if (x > 100) {\n        return TOO_BIG;\n    }\n    *doubled = 2 * x;\n    return OK;\n}\n\nint main(void) {\n    int result = -1;\n    int inputs[] = {7, 500, -3};\n    for (int i = 0; i < 3; i++) {\n        Check c = check(inputs[i], &result);\n        printf(\"%d:%d \", c, result);\n    }\n    printf(\"\\n\");\n    return 0;\n}",
+        "explanation": "При успехе result становится 14, а при ошибках функция его не трогает — значение остаётся прежним. Коды перечисления: OK = 0, TOO_SMALL = 1, TOO_BIG = 2.",
+        "type": "text",
+        "answers": ["0:14 2:14 1:14"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Почему перед цепочкой захвата ресурсов указатели инициализируют NULL?",
+        "explanation": "free(NULL) ничего не делает, а для fclose проверка на NULL пишется явно. Тогда один и тот же блок освобождения корректен на любом пути выхода.",
+        "options": [
+          "Чтобы код после метки cleanup мог освобождать всё, независимо от того, на каком шаге произошла ошибка",
+          "Без этого malloc вернёт ошибку",
+          "Так требует синтаксис goto",
+          "Чтобы ускорить освобождение"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "В каком порядке освобождают ресурсы в блоке cleanup, если функция открыла файл, затем выделила буфер, затем открыла второй файл?",
+        "explanation": "Обратный порядок повторяет зависимость: позже захваченный ресурс может опираться на ранее захваченный. Это правило работает и для деструкторов в C++.",
+        "options": [
+          "В обратном: второй файл, буфер, первый файл",
+          "В том же: первый файл, буфер, второй файл",
+          "Порядок не важен никогда",
+          "Сначала память, потом файлы"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Куда выводить сообщения об ошибках в консольной программе?",
+        "explanation": "stdout оставляют для результатов: его перенаправляют в файл или передают другой программе. Ошибки в stderr остаются видимыми.",
+        "type": "text",
+        "answers": ["stderr"],
+        "placeholder": "Поток"
+      },
+      {
+        "id": "q7",
+        "question": "Что сообщает атрибут [[nodiscard]] у функции?",
+        "explanation": "Это способ сделать проверку ошибок обязательной. [[nodiscard]] — стандартный атрибут C23; в старом коде то же записывают нестандартным __attribute__((warn_unused_result)).",
+        "options": [
+          "Компилятор предупредит, если результат вызова проигнорирован",
+          "Функция не может вернуть ошибку",
+          "Результат функции хранится в регистре",
+          "Функцию нельзя вызвать дважды"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Конструктор выделил структуру, но не смог выделить её внутренний буфер. Что он должен сделать?",
+        "explanation": "Пользователь не должен получать наполовину созданный объект: он не знает, какие поля годятся. Конструктор отвечает за всё, что успел выделить.",
+        "options": [
+          "Освободить уже выделенную структуру и вернуть NULL",
+          "Вернуть структуру с буфером NULL",
+          "Завершить программу через exit",
+          "Повторять malloc, пока не получится"
+        ],
+        "correct": 0
       }
     ]
   }

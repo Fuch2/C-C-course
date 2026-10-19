@@ -41,8 +41,11 @@ function LessonCodeBlock({ children }: { children?: ReactNode }) {
   const language = /language-([^\s]+)/.exec(className)?.[1]?.toLowerCase() ?? '';
   const source = textContent(code).replace(/\n$/, '');
   const cpp = language === 'cpp' || language === 'c++';
-  const runnable = (language === 'c' || cpp) && /\bmain\s*\(/.test(source);
-  const filename = language === 'c' ? 'main.c' : cpp ? 'main.cpp' : language || 'фрагмент кода';
+  // Блок с именем файла — часть многофайловой программы: его не запускают отдельно.
+  const file = isValidElement<{ 'data-file'?: string }>(code) ? code.props['data-file'] : undefined;
+  const runnable = !file && (language === 'c' || cpp) && /\bmain\s*\(/.test(source);
+  const filename =
+    file ?? (language === 'c' ? 'main.c' : cpp ? 'main.cpp' : language || 'фрагмент кода');
   const readsInput = runnable && /\b(scanf|getchar|fgets|getline|cin)\b/.test(source);
   const initialStdin = isValidElement<{ 'data-stdin'?: string }>(code)
     ? (code.props['data-stdin'] ?? '')
@@ -72,7 +75,7 @@ function LessonCodeBlock({ children }: { children?: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           language: cpp ? 'cpp' : 'c',
-          standard: cpp ? 'c++20' : 'c17',
+          standard: cpp ? 'c++23' : 'c23',
           sourceCode: source,
           stdin: readsInput ? stdin : '',
           compiler: 'gcc',

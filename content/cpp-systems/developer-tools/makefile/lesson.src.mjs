@@ -15,7 +15,7 @@ export default {
     'Поддерживать зависимости от заголовков автоматически',
   ],
   tags: ['Make', 'Makefile', 'Сборка', 'Зависимости', 'Автоматизация'],
-  standard: 'c17',
+  standard: 'c23',
   quiz: [
     {
       q: 'make сообщает Makefile:5: *** missing separator.  Stop. Что, скорее всего, не так в строке 5?',
@@ -468,8 +468,8 @@ int main(void) {
 Автоматические переменные вычисляются для конкретного правила: в шаблонном \`build/%.o: src/%.c\` одна строка рецепта \`$(CC) -c $< -o $@\` превращается в разные команды для каждого файла. \`$$\` нужен, когда в команде оболочки нужен настоящий \`$\`, например \`echo $$HOME\`.`,
       examples: [
         {
-          in: '3\nCC = gcc\nWARN = -Wall -Wextra\nCFLAGS = -std=c17 $(WARN) -g\nbuild/lexer.o: src/lexer.c include/lexer.h\n1\n\t$(CC) $(CFLAGS) -c $< -o $@\n',
-          out: 'gcc -std=c17 -Wall -Wextra -g -c src/lexer.c -o build/lexer.o\n',
+          in: '3\nCC = gcc\nWARN = -Wall -Wextra\nCFLAGS = -std=c23 $(WARN) -g\nbuild/lexer.o: src/lexer.c include/lexer.h\n1\n\t$(CC) $(CFLAGS) -c $< -o $@\n',
+          out: 'gcc -std=c23 -Wall -Wextra -g -c src/lexer.c -o build/lexer.o\n',
         },
         {
           in: '1\nCC = clang\ncalc: main.o lexer.o main.o\n2\n\t@mkdir -p build\n\t$(CC) $^ -o $@ $(LDLIBS)\n',

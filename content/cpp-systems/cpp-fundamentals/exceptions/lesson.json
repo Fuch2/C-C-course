@@ -1,115 +1,541 @@
 {
   "id": "cpp20-exceptions",
-  "title": "Exceptions: основы",
-  "description": "Исключения отделяют нормальный путь от редкой ошибки и автоматически раскручивают стек. Они не должны заменять проверку ожидаемого пользовательского ввода в горячем цикле.",
+  "title": "Исключения",
+  "description": "Ошибки в C и в C++; throw, try и catch; стандартные исключения at, stoi и иерархия std::exception; порядок обработчиков и ловля по константной ссылке; раскрутка стека и освобождение ресурсов; неперехваченное исключение; когда бросать исключения.",
   "moduleId": "cpp-fundamentals",
-  "order": 20,
-  "difficulty": "advanced",
+  "order": 26,
+  "difficulty": "intermediate",
   "estimatedMinutes": 50,
-  "prerequisites": ["cpp20-tuple"],
+  "prerequisites": ["cpp20-set"],
   "objectives": [
-    "Объяснить, зачем появился Exceptions: основы и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Бросать и перехватывать исключения",
+    "Обрабатывать исключения стандартной библиотеки",
+    "Располагать обработчики в правильном порядке",
+    "Объяснять раскрутку стека и связь исключений с освобождением ресурсов"
   ],
-  "tags": ["C++20", "основы C++", "Exceptions: основы"],
+  "tags": ["C++", "Исключения", "try", "catch"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-exceptions-exercise",
-    "title": "Разбор с обработкой ошибок",
-    "description": "Ввод q строковых токенов. std::stoi должен полностью разобрать токен и дать число −1000…1000; иначе печатайте ОШИБКА.",
-    "difficulty": "advanced",
+    "id": "cpp20-exceptions-task-1",
+    "title": "Безопасное деление",
+    "description": "Каждая строка ввода — два числа `a` и `b`. Напишите функцию `double divide(double a, double b)`, которая при `b == 0` бросает `std::invalid_argument(\"деление на ноль\")`. Для каждой строки напечатайте частное с тремя знаками после точки или `ошибка: деление на ноль`, перехватив исключение.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "4 12 12x -3 1001",
-        "output": "12\nОШИБКА\n-3\nОШИБКА\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "10 4\n1 0\n-9 3\n",
+        "output": "2.500\nошибка: деление на ноль\n-3.000\n"
       },
       {
-        "input": "0",
-        "output": "",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "1 3\n",
+        "output": "0.333\n"
       }
     ],
-    "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
-    ],
+    "constraints": ["|a|, |b| ≤ 10⁶; строк не больше 30."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "throw std::invalid_argument(\"деление на ноль\"); — заголовок <stdexcept>.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "Вызов в try, обработчик catch (const std::invalid_argument &e) печатает \"ошибка: \" и e.what().",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "4 12 12x -3 1001",
-        "expected": "12\nОШИБКА\n-3\nОШИБКА\n"
+        "stdin": "10 4\n1 0\n-9 3\n",
+        "expected": "2.500\nошибка: деление на ноль\n-3.000\n"
       },
-      { "id": "case-2", "name": "Пример 2", "stdin": "0", "expected": "" }
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1 3\n",
+        "expected": "0.333\n"
+      }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "2 bad 7",
-        "expected": "ОШИБКА\n7\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "0 5\n",
+        "expected": "0.000\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "5 0\n0 0\n",
+        "expected": "ошибка: деление на ноль\nошибка: деление на ноль\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "1000000 0.5\n",
+        "expected": "2000000.000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "-1 -4\n",
+        "expected": "0.250\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "2 3\n",
+        "expected": "0.667\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "7 7\n",
+        "expected": "1.000\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "1 1000000\n",
+        "expected": "0.000\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "0.25 0.5\n",
+        "expected": "0.500\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <string>\n#include <stdexcept>\n\n\nint main() {\n    int q{};if(!(std::cin>>q)||q<0||q>100)return 1;for(int i=0;i<q;++i){std::string s;std::cin>>s;try{std::size_t p{};int x=std::stoi(s,&p);if(p!=s.size()||x<-1000||x>1000)throw std::out_of_range(\"range\");std::cout<<x<<'\\n';}catch(const std::exception&){std::cout<<\"ОШИБКА\\n\";}}\n}\n",
-    "solutionExplanation": "Исключение отделяет обычный путь от ошибки. Проверка позиции p нужна: stoi допускает числовой префикс. Исключительный путь дороже ветвления, поэтому не используйте исключения для ожидаемого каждого элемента.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <iomanip>\n#include <iostream>\n#include <stdexcept>\n\ndouble divide(double a, double b) {\n    if (b == 0) {\n        throw std::invalid_argument(\"деление на ноль\");\n    }\n    return a / b;\n}\n\nint main() {\n    std::cout << std::fixed << std::setprecision(3);\n    double a, b;\n    while (std::cin >> a >> b) {\n        try {\n            std::cout << divide(a, b) << '\\n';\n        } catch (const std::invalid_argument &e) {\n            std::cout << \"ошибка: \" << e.what() << '\\n';\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Функция не знает, что делать при делении на ноль, — печатать сообщение или прекращать работу решает вызывающий. Поэтому она сообщает об ошибке исключением, а цикл в `main` перехватывает его и продолжает со следующей строки. Возвращаемое значение `divide` занято только результатом — не нужно ни особого значения, ни параметра для кода ошибки.\n\nБлок `try` стоит внутри цикла: исключение прерывает только текущую итерацию. Если бы цикл был внутри `try`, первая же ошибка завершила бы всю обработку.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-exceptions-task-2",
+      "title": "Проверка чисел",
+      "description": "До конца ввода идут слова. Для каждого попробуйте превратить его в `int` через `std::stoi` и напечатайте:\n\n- `число N` — если всё слово — корректное целое число, помещающееся в `int`;\n- `не число` — если `std::stoi` бросил `std::invalid_argument`;\n- `слишком большое` — если бросил `std::out_of_range`;\n- `лишние символы` — если число разобрано, но после него остались символы.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "42 abc 12abc 99999999999\n",
+          "output": "число 42\nне число\nлишние символы\nслишком большое\n"
+        },
+        {
+          "input": "-7 +5\n",
+          "output": "число -7\nчисло 5\n"
+        }
+      ],
+      "constraints": ["Слов не больше 100, длиной до 30 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "std::size_t pos; int value = std::stoi(word, &pos); — в pos окажется число разобранных символов.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Если pos != word.size(), разобрано не всё слово — бросьте своё исключение или выведите ответ сразу. Обработчики invalid_argument и out_of_range — отдельные catch.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "42 abc 12abc 99999999999\n",
+          "expected": "число 42\nне число\nлишние символы\nслишком большое\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "-7 +5\n",
+          "expected": "число -7\nчисло 5\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ноль",
+          "stdin": "0\n",
+          "expected": "число 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Граница int",
+          "stdin": "2147483647 2147483648\n",
+          "expected": "число 2147483647\nслишком большое\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Нижняя граница",
+          "stdin": "-2147483648 -2147483649\n",
+          "expected": "число -2147483648\nслишком большое\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Знаки без цифр",
+          "stdin": "- + x\n",
+          "expected": "не число\nне число\nне число\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Дробные",
+          "stdin": "3.14 1e5\n",
+          "expected": "лишние символы\nлишние символы\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Ведущие нули и hex",
+          "stdin": "007 0x1F\n",
+          "expected": "число 7\nлишние символы\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смешанные",
+          "stdin": "word 100500\n",
+          "expected": "не число\nчисло 100500\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Очень длинное",
+          "stdin": "123456789012345678901234567890\n",
+          "expected": "слишком большое\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <stdexcept>\n#include <string>\n\nint main() {\n    std::string word;\n    while (std::cin >> word) {\n        try {\n            std::size_t pos;\n            int value = std::stoi(word, &pos);\n            if (pos != word.size()) {\n                std::cout << \"лишние символы\\n\";\n            } else {\n                std::cout << \"число \" << value << '\\n';\n            }\n        } catch (const std::invalid_argument &) {\n            std::cout << \"не число\\n\";\n        } catch (const std::out_of_range &) {\n            std::cout << \"слишком большое\\n\";\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`std::stoi` сообщает о двух видах ошибок двумя типами исключений: строка не начинается с числа — `invalid_argument`, число не помещается в `int` — `out_of_range`. Отдельные обработчики дают разные сообщения. Третий случай — число в начале слова, а за ним мусор — `stoi` ошибкой не считает: он разбирает, сколько может, и сообщает длину разобранного через `pos`.\n\n`stoi`, как и `strtol`, пропускает пробелы в начале и принимает знак, поэтому `+5` — корректное число. Сравните с проверкой ввода через `>>` из урока о `std::cin`: там «12abc» разбивалось на число и слово, здесь слово проверяется целиком.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-exceptions-task-3",
+      "title": "Найди ошибку: доступ по индексу",
+      "description": "Первая строка — список целых чисел. Дальше до конца ввода идут запросы — слова. Для каждого запроса программа превращает слово в номер через `std::stoi` и печатает элемент `values.at(номер)`. Ошибки обрабатываются так: слово не число — `не номер`, номера нет в списке — `нет такого индекса`, прочие ошибки — `ошибка`.\n\nВместо точных сообщений программа всегда печатает `ошибка`. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <sstream>\n#include <stdexcept>\n#include <string>\n#include <vector>\n\nint main() {\n    std::string line;\n    std::getline(std::cin, line);\n    std::istringstream in(line);\n    std::vector<int> values;\n    int x;\n    while (in >> x) {\n        values.push_back(x);\n    }\n    std::string query;\n    while (std::cin >> query) {\n        try {\n            int index = std::stoi(query);\n            std::cout << values.at(static_cast<std::size_t>(index)) << '\\n';\n        } catch (const std::exception &) {\n            std::cout << \"ошибка\\n\";\n        } catch (const std::invalid_argument &) {\n            std::cout << \"не номер\\n\";\n        } catch (const std::out_of_range &) {\n            std::cout << \"нет такого индекса\\n\";\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "10 20 30\n1\nx\n5\n",
+          "output": "20\nне номер\nнет такого индекса\n"
+        },
+        {
+          "input": "7\n0\n",
+          "output": "7\n"
+        }
+      ],
+      "constraints": ["В списке от 1 до 100 чисел; запросов не больше 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "В каком порядке проверяются обработчики catch? Какой из них подходит к std::out_of_range первым?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "catch (const std::exception &) ловит любое стандартное исключение — поставленный первым, он перехватывает всё. Переставьте его в конец.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "10 20 30\n1\nx\n5\n",
+          "expected": "20\nне номер\nнет такого индекса\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "7\n0\n",
+          "expected": "7\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 2 3\n-1\n",
+          "expected": "нет такого индекса\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "5\nabc\n",
+          "expected": "не номер\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "5\n99999999999\n",
+          "expected": "нет такого индекса\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "4 5 6\n2\n3\n",
+          "expected": "6\nнет такого индекса\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "9 8\n0\n1\n2\n",
+          "expected": "9\n8\nнет такого индекса\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "1\n1x\n",
+          "expected": "нет такого индекса\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "3 3 3\nzero\n0\n",
+          "expected": "не номер\n3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "100\n10\n",
+          "expected": "нет такого индекса\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <sstream>\n#include <stdexcept>\n#include <string>\n#include <vector>\n\nint main() {\n    std::string line;\n    std::getline(std::cin, line);\n    std::istringstream in(line);\n    std::vector<int> values;\n    int x;\n    while (in >> x) {\n        values.push_back(x);\n    }\n    std::string query;\n    while (std::cin >> query) {\n        try {\n            int index = std::stoi(query);\n            std::cout << values.at(static_cast<std::size_t>(index)) << '\\n';\n        } catch (const std::invalid_argument &) {\n            std::cout << \"не номер\\n\";\n        } catch (const std::out_of_range &) {\n            std::cout << \"нет такого индекса\\n\";\n        } catch (const std::exception &) {\n            std::cout << \"ошибка\\n\";\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Обработчики `catch` проверяются сверху вниз, и срабатывает первый, чей тип подходит. `std::invalid_argument` и `std::out_of_range` — потомки `std::exception`, поэтому обработчик для `std::exception`, стоящий первым, перехватывает их все, а точные обработчики становятся недостижимыми. GCC предупреждает об этом: `exception of type 'std::invalid_argument' will be caught by earlier handler`.\n\nПравило: от частного к общему. Точные типы — первыми, общий `std::exception` — последним, как запасной вариант для непредвиденных ошибок. Отрицательный номер тоже даёт `out_of_range`: `-1`, приведённый к `std::size_t`, — огромное число, и `at` его отвергает.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-exceptions-task-4",
+      "title": "Калькулятор с ошибками",
+      "description": "Каждая строка ввода — выражение `a op b`, где `a` и `b` — целые числа, `op` — одна из операций `+`, `-`, `*`, `/` (деление целочисленное). Напечатайте результат или `ошибка: ТЕКСТ`, где текст — сообщение исключения:\n\n- `не число` — `a` или `b` не является целым числом целиком (используйте `std::stoll` и проверку разобранной длины) или не помещается в `long long`;\n- `неизвестная операция`;\n- `деление на ноль`;\n- `переполнение` — результат не помещается в `long long`.\n\nКаждую ошибку бросайте исключением из функции `long long calculate(const std::string &a, const std::string &op, const std::string &b)`, а перехватывайте в `main` одним обработчиком `catch (const std::exception &e)`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "7 * 6\n10 / 0\n",
+          "output": "42\nошибка: деление на ноль\n"
+        },
+        {
+          "input": "9223372036854775807 + 1\n2 ^ 3\nx + 1\n",
+          "output": "ошибка: переполнение\nошибка: неизвестная операция\nошибка: не число\n"
+        }
+      ],
+      "constraints": ["Строк не больше 30; в каждой ровно три слова."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Разбор числа: функция long long parse(const std::string &s) с std::stoll(s, &pos); если pos != s.size() — throw std::invalid_argument(\"не число\"). out_of_range от stoll тоже превратите в «не число»: перехватите и бросьте заново.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Переполнение проверяют до вычисления. Для + - * в GCC и Clang есть встроенные функции __builtin_add_overflow(a, b, &result) и аналогичные для вычитания и умножения: они возвращают true при переполнении. Для деления переполнение одно — LLONG_MIN / −1.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Используйте разные классы: std::invalid_argument, std::domain_error, std::overflow_error — все они потомки std::exception, и один обработчик в main напечатает what() любого из них.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "7 * 6\n10 / 0\n",
+          "expected": "42\nошибка: деление на ноль\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "9223372036854775807 + 1\n2 ^ 3\nx + 1\n",
+          "expected": "ошибка: переполнение\nошибка: неизвестная операция\nошибка: не число\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Деление к нулю",
+          "stdin": "-7 / 2\n",
+          "expected": "-3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Переполнение деления",
+          "stdin": "-9223372036854775808 / -1\n",
+          "expected": "ошибка: переполнение\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Переполнение вычитания",
+          "stdin": "-9223372036854775808 - 1\n",
+          "expected": "ошибка: переполнение\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Переполнение умножения",
+          "stdin": "3037000500 * 3037000500\n",
+          "expected": "ошибка: переполнение\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Умножение без переполнения",
+          "stdin": "3037000499 * 3037000499\n",
+          "expected": "9223372030926249001\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Слишком длинное число",
+          "stdin": "99999999999999999999 + 1\n",
+          "expected": "ошибка: не число\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Лишние символы",
+          "stdin": "12a + 1\n5 - 3b\n",
+          "expected": "ошибка: не число\nошибка: не число\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Обычные операции",
+          "stdin": "0 / 5\n-1 * -1\n100 - 250\n",
+          "expected": "0\n1\n-150\n"
+        }
+      ],
+      "referenceSolution": "#include <climits>\n#include <iostream>\n#include <stdexcept>\n#include <string>\n\nlong long parse(const std::string &s) {\n    std::size_t pos = 0;\n    long long value = 0;\n    try {\n        value = std::stoll(s, &pos);\n    } catch (const std::logic_error &) {\n        throw std::invalid_argument(\"не число\");\n    }\n    if (pos != s.size()) {\n        throw std::invalid_argument(\"не число\");\n    }\n    return value;\n}\n\nlong long calculate(const std::string &a_text, const std::string &op, const std::string &b_text) {\n    long long a = parse(a_text), b = parse(b_text), result = 0;\n    if (op == \"+\") {\n        if (__builtin_add_overflow(a, b, &result)) {\n            throw std::overflow_error(\"переполнение\");\n        }\n    } else if (op == \"-\") {\n        if (__builtin_sub_overflow(a, b, &result)) {\n            throw std::overflow_error(\"переполнение\");\n        }\n    } else if (op == \"*\") {\n        if (__builtin_mul_overflow(a, b, &result)) {\n            throw std::overflow_error(\"переполнение\");\n        }\n    } else if (op == \"/\") {\n        if (b == 0) {\n            throw std::domain_error(\"деление на ноль\");\n        }\n        if (a == LLONG_MIN && b == -1) {\n            throw std::overflow_error(\"переполнение\");\n        }\n        result = a / b;\n    } else {\n        throw std::invalid_argument(\"неизвестная операция\");\n    }\n    return result;\n}\n\nint main() {\n    std::string a, op, b;\n    while (std::cin >> a >> op >> b) {\n        try {\n            std::cout << calculate(a, op, b) << '\\n';\n        } catch (const std::exception &e) {\n            std::cout << \"ошибка: \" << e.what() << '\\n';\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Ошибки обнаруживаются в разных местах — при разборе числа, при выборе операции, при вычислении, — но обрабатываются в одном: исключение пролетает через `parse` и `calculate` до `main`, и промежуточным функциям не нужно передавать коды ошибок. Все классы ошибок — потомки `std::exception`, поэтому одного обработчика с `e.what()` достаточно; при необходимости `main` мог бы различать их отдельными `catch`.\n\n`parse` перехватывает исключения `std::stoll` (`invalid_argument` и `out_of_range` — потомки `std::logic_error`) и бросает своё, с понятным сообщением, — так исключения переводят с «языка библиотеки» на язык задачи. Переполнение проверяется **до** вычисления: переполнение знакового целого — неопределённое поведение, и UBSan остановил бы программу. Встроенные функции GCC и Clang `__builtin_*_overflow` вычисляют результат и сообщают, поместился ли он.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-exceptions-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «Exceptions: основы»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "Исключения отделяют нормальный путь от редкой ошибки и автоматически раскручивают стек. Они не должны заменять проверку ожидаемого пользовательского ввода в горячем цикле."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <stdexcept>\n\nint main() {\n    try {\n        std::cout << 'A';\n        throw std::runtime_error(\"x\");\n        std::cout << 'B';\n    } catch (const std::exception &) {\n        std::cout << 'C';\n    }\n    std::cout << 'D' << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "После throw оставшаяся часть try пропускается, выполняется обработчик, затем код после блока.",
+        "type": "text",
+        "answers": ["ACD"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
+        "id": "q2",
+        "question": "Что бросает std::stoi(\"hello\")?",
+        "explanation": "Строка не начинается с числа — invalid_argument. Для числа, не помещающегося в int, — out_of_range.",
         "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
+          "std::invalid_argument",
+          "std::out_of_range",
+          "Возвращает 0 без исключения",
+          "std::runtime_error"
         ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "correct": 0
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <stdexcept>\n#include <vector>\n\nint main() {\n    std::vector<int> v = {1, 2};\n    try {\n        v.at(5) = 10;\n    } catch (const std::out_of_range &) {\n        std::cout << \"диапазон \";\n    } catch (const std::exception &) {\n        std::cout << \"общее \";\n    }\n    std::cout << v.size() << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "at бросает std::out_of_range — срабатывает первый подходящий обработчик. Вектор не изменился.",
+        "type": "text",
+        "answers": ["диапазон 2"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Почему обработчик catch (const std::exception &) ставят последним?",
+        "explanation": "Обработчики проверяются по порядку, срабатывает первый подходящий. GCC предупреждает о недостижимых обработчиках.",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "Он ловит любое стандартное исключение, и обработчики после него никогда не сработают",
+          "Иначе программа не скомпилируется",
+          "Он медленнее остальных",
+          "Порядок не важен"
         ],
-        "correct": 0,
-        "explanation": "Используйте Exceptions: основы как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Как правильно ловить исключения?",
+        "explanation": "Ловля по значению копирует объект и обрезает потомка до базового класса. Указатель не подходит: бросают объекты, а не указатели.",
+        "options": [
+          "По константной ссылке: catch (const std::exception &e)",
+          "По значению: catch (std::exception e)",
+          "По указателю: catch (std::exception *e)",
+          "Без типа: catch ()"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что происходит с локальным std::vector функции, из которой вылетело исключение?",
+        "explanation": "При раскрутке стека все локальные объекты уничтожаются, как при обычном выходе из функции. Поэтому ресурсы в объектах не утекают.",
+        "options": [
+          "Он уничтожается, и его память освобождается",
+          "Память утекает до конца программы",
+          "Вектор продолжает существовать до catch",
+          "Неопределённое поведение"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что произойдёт, если исключение не перехватил ни один обработчик?",
+        "explanation": "Неперехваченное исключение вызывает std::terminate, которая обычно завершает программу сигналом SIGABRT.",
+        "options": [
+          "Программа аварийно завершится через std::terminate",
+          "Исключение будет проигнорировано",
+          "Функция вернёт 0",
+          "Программа продолжит работу с main"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Для каких ситуаций исключения подходят лучше всего?",
+        "explanation": "«Не найдено» и конец данных — обычный ход программы: для них есть end(), признаки и условия цикла.",
+        "type": "multiple",
+        "options": [
+          "Неверные входные данные, которые функция не может обработать",
+          "Не удалось открыть нужный файл",
+          "Элемент не найден при обычном поиске",
+          "Выход из цикла по достижении конца данных"
+        ],
+        "correct": [0, 1]
       }
     ]
   }

@@ -13,9 +13,9 @@
     "Выделять таблицу в одном блоке через указатель на строку переменной длины",
     "Строить таблицы со строками разной длины из массива указателей и освобождать их"
   ],
-  "tags": ["C17", "Память", "Указатели", "Двумерные массивы", "VLA"],
+  "tags": ["C23", "Память", "Указатели", "Двумерные массивы", "VLA"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-pointer-values-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint *max_row(int rows, int cols, int m[rows][cols]) {\n    // Найдите строку с наибольшей суммой.\n    return m[0];\n}\n\nint main(void) {\n    int rows, cols;\n    scanf(\"%d %d\", &rows, &cols);\n    int m[rows][cols];\n    for (int r = 0; r < rows; r++) {\n        for (int c = 0; c < cols; c++) {\n            scanf(\"%d\", &m[r][c]);\n        }\n    }\n    int *best = max_row(rows, cols, m);\n    printf(\"%td\\n\", (best - &m[0][0]) / cols);\n    for (int c = 0; c < cols; c++) {\n        printf(c + 1 < cols ? \"%d \" : \"%d\\n\", best[c]);\n    }\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -129,7 +129,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -238,7 +238,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

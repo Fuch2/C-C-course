@@ -9,10 +9,10 @@ Makefile из прошлого урока работает, но у него е�
 Описание проекта лежит в файле `CMakeLists.txt` в корне:
 
 ```text
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.25)
 project(calc LANGUAGES C)
 
-set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
@@ -25,7 +25,7 @@ target_compile_options(calc PRIVATE -Wall -Wextra)
 | ---------------------------- | ----------------------------------------------------------------- |
 | `cmake_minimum_required`     | минимальная версия CMake, поведение которой ожидает файл          |
 | `project`                    | имя проекта и языки                                               |
-| `set(CMAKE_C_STANDARD 17)`   | стандарт C17; `EXTENSIONS OFF` даёт `-std=c17`, а не `-std=gnu17` |
+| `set(CMAKE_C_STANDARD 23)`   | стандарт C23; `EXTENSIONS OFF` даёт `-std=c23`, а не `-std=gnu23` |
 | `add_executable(имя файлы…)` | **цель** — программа из этих исходников                           |
 | `target_include_directories` | каталоги `-I` для цели                                            |
 | `target_compile_options`     | дополнительные флаги компиляции цели                              |
@@ -138,9 +138,9 @@ $ cmake --build build && ctest --test-dir build
 
 </CommonMistake>
 
-<CommonMistake title="Удивляться -std=gnu17">
+<CommonMistake title="Удивляться -std=gnu23">
 
-`set(CMAKE_C_STANDARD 17)` без `set(CMAKE_C_EXTENSIONS OFF)` даёт `-std=gnu17` — C17 с расширениями GNU. Для строгого стандарта отключайте расширения.
+`set(CMAKE_C_STANDARD 23)` без `set(CMAKE_C_EXTENSIONS OFF)` даёт `-std=gnu23` — C23 с расширениями GNU. Для строгого стандарта отключайте расширения. Значение `23` CMake понимает начиная с версии 3.21.
 
 </CommonMistake>
 
@@ -163,5 +163,5 @@ $ cmake --build build && ctest --test-dir build
 - CMake описывает цели и генерирует сборочную систему; работа идёт в два шага: `cmake -S . -B build` и `cmake --build build`.
 - `add_executable` и `add_library` создают цели, `target_include_directories`, `target_compile_options`, `target_link_libraries` задают их требования.
 - `PRIVATE` — только для самой цели, `INTERFACE` — только для пользователей, `PUBLIC` — для обоих; требования распространяются по графу связей.
-- `CMAKE_BUILD_TYPE` выбирает набор флагов: `Debug` — `-g`, `Release` — `-O3 -DNDEBUG`; `CMAKE_C_EXTENSIONS OFF` даёт строгий `-std=c17`.
+- `CMAKE_BUILD_TYPE` выбирает набор флагов: `Debug` — `-g`, `Release` — `-O3 -DNDEBUG`; `CMAKE_C_EXTENSIONS OFF` даёт строгий `-std=c23`.
 - `enable_testing`, `add_test` и `ctest` запускают тесты; успех — код завершения 0.

@@ -1,126 +1,532 @@
 {
   "id": "cpp20-namespaces",
-  "title": "namespaces",
-  "description": "Пространства имён разделяют одинаковые короткие имена и делают границы API явными. В отличие от префиксов C разрешение проверяется компилятором.",
+  "title": "Пространства имён",
+  "description": "Столкновения имён и префиксы в C; объявление пространства имён и полные имена с ::; пространство std; using-объявление и using-директива и почему using namespace std опасен; вложенные пространства и псевдонимы; безымянное пространство вместо static.",
   "moduleId": "cpp-fundamentals",
   "order": 2,
   "difficulty": "beginner",
   "estimatedMinutes": 35,
   "prerequisites": ["cpp20-difference"],
   "objectives": [
-    "Объяснить, зачем появился namespaces и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Объявлять пространства имён и обращаться к именам через ::",
+    "Выбирать между полными именами, using-объявлением и using-директивой",
+    "Объяснять, чем опасен using namespace std",
+    "Скрывать внутренние функции файла безымянным пространством"
   ],
-  "tags": ["C++20", "основы C++", "namespaces"],
+  "tags": ["C++", "namespace", "std", "using"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-namespaces-exercise",
-    "title": "Две системы единиц",
-    "description": "Ввод: meters и feet, целые 0…10000. Создайте metric::length(int), возвращающую сантиметры (meters×100), и imperial::length(int), возвращающую дюймы (feet×12). Выведите два результата через пробел. Пространство имён выбирается явно.",
+    "id": "cpp20-namespaces-task-1",
+    "title": "Единицы длины",
+    "description": "Каждая строка ввода — целое число и единица длины: `mm`, `cm`, `m`, `in` или `ft`. Переведите длину в микрометры и напечатайте целое число.\n\nМножители: 1 mm = 1000 мкм, 1 cm = 10 000 мкм, 1 m = 1 000 000 мкм, 1 in = 25 400 мкм, 1 ft = 304 800 мкм.\n\nРазложите перевод по пространствам имён: метрические единицы — в `metric`, британские — в `imperial`, в каждом — функция `to_micrometers`.",
     "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "2 3",
-        "output": "200 36\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "5 cm\n",
+        "output": "50000\n"
       },
       {
-        "input": "0 0",
-        "output": "0 0\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "1 in\n2 ft\n",
+        "output": "25400\n609600\n"
       }
     ],
-    "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
-    ],
+    "constraints": ["|число| ≤ 10⁶; строк не больше 30; единица всегда одна из пяти."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "Объявите namespace metric { long long to_micrometers(long long value, const std::string &unit) { … } } и такое же imperial.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "Единицу читайте в std::string: std::cin >> value >> unit. Сравнение строк — обычный ==: unit == \"cm\". Результат до 3·10¹¹ — long long.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "2 3",
-        "expected": "200 36\n"
+        "stdin": "5 cm\n",
+        "expected": "50000\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "0 0",
-        "expected": "0 0\n"
+        "stdin": "1 in\n2 ft\n",
+        "expected": "25400\n609600\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "10000 10000",
-        "expected": "1000000 120000\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "1 mm\n",
+        "expected": "1000\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "1 12",
-        "expected": "100 144\n"
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "1 m\n",
+        "expected": "1000000\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "0 ft\n",
+        "expected": "0\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "-3 cm\n",
+        "expected": "-30000\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "1000000 ft\n",
+        "expected": "304800000000\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "-1000000 m\n",
+        "expected": "-1000000000000\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "12 in\n1 ft\n",
+        "expected": "304800\n304800\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "7 mm\n7 cm\n7 m\n7 in\n7 ft\n",
+        "expected": "7000\n70000\n7000000\n177800\n2133600\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n\nnamespace metric {\nint length(int meters) { return meters * 100; }\n}\nnamespace imperial {\nint length(int feet) { return feet * 12; }\n}\nint main() {\n    int meters{}, feet{};\n    if (!(std::cin >> meters >> feet)) return 1;\n    std::cout << metric::length(meters) << ' ' << imperial::length(feet) << '\\n';\n}\n",
-    "solutionExplanation": "Имена разрешаются при компиляции. Каждая функция выполняет одно умножение: время и память O(1). int достаточен для заданного диапазона на платформе runner. Пространство имён ещё не предотвращает передачу feet в metric::length: для этого нужны отдельные типы единиц.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <iostream>\n#include <string>\n\nnamespace metric {\nlong long to_micrometers(long long value, const std::string &unit) {\n    if (unit == \"mm\") {\n        return value * 1000;\n    }\n    if (unit == \"cm\") {\n        return value * 10000;\n    }\n    return value * 1000000;\n}\n}\n\nnamespace imperial {\nlong long to_micrometers(long long value, const std::string &unit) {\n    return unit == \"in\" ? value * 25400 : value * 304800;\n}\n}\n\nint main() {\n    long long value;\n    std::string unit;\n    while (std::cin >> value >> unit) {\n        bool british = unit == \"in\" || unit == \"ft\";\n        std::cout << (british ? imperial::to_micrometers(value, unit)\n                              : metric::to_micrometers(value, unit))\n                  << '\\n';\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Две функции называются одинаково — `to_micrometers`, — но живут в разных пространствах имён, поэтому не конфликтуют. Вызывающий код выбирает нужную полным именем: `imperial::to_micrometers`. В C пришлось бы назвать их `metric_to_micrometers` и `imperial_to_micrometers` и следить за этим соглашением вручную.\n\nСравнение `unit == \"cm\"` работает потому, что `unit` — `std::string`: оператор `==` сравнивает символы, а не адреса, как было бы с `char *`. Параметр `const std::string &` — константная ссылка, о ней будет отдельный урок.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-namespaces-task-2",
+      "title": "Статистика",
+      "description": "До конца ввода идут целые числа. Напечатайте строку `сумма S, минимум A, максимум B` или `пусто`, если чисел нет.\n\nПоложите функции в пространство имён `stats`: `stats::sum`, `stats::min`, `stats::max` принимают `const std::vector<long long> &`. Общую проверку пустоты вынесите в безымянное пространство имён.",
+      "difficulty": "beginner",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3 1 4 1 5\n",
+          "output": "сумма 14, минимум 1, максимум 5\n"
+        },
+        {
+          "input": "",
+          "output": "пусто\n"
+        }
+      ],
+      "constraints": ["Чисел не больше 1000; |числа| ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Прочитайте числа в std::vector<long long> values; — values.push_back(x) добавляет число в конец, values.size() — количество.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Внутри stats обращайтесь к своим функциям без префикса. Безымянное пространство: namespace { bool is_empty(const std::vector<long long> &v) { return v.size() == 0; } }.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 1 4 1 5\n",
+          "expected": "сумма 14, минимум 1, максимум 5\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "пусто\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "7\n",
+          "expected": "сумма 7, минимум 7, максимум 7\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "-5 -3 -9\n",
+          "expected": "сумма -17, минимум -9, максимум -3\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1000000000 1000000000 1000000000\n",
+          "expected": "сумма 3000000000, минимум 1000000000, максимум 1000000000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "-1000000000 1000000000\n",
+          "expected": "сумма 0, минимум -1000000000, максимум 1000000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "0 0 0\n",
+          "expected": "сумма 0, минимум 0, максимум 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n",
+          "expected": "сумма 55, минимум 1, максимум 10\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "5 -5 5 -5\n",
+          "expected": "сумма 0, минимум -5, максимум 5\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "42 -42\n",
+          "expected": "сумма 0, минимум -42, максимум 42\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <vector>\n\nnamespace {\nbool is_empty(const std::vector<long long> &values) {\n    return values.size() == 0;\n}\n}\n\nnamespace stats {\nlong long sum(const std::vector<long long> &values) {\n    long long total = 0;\n    for (std::size_t i = 0; i < values.size(); i++) {\n        total += values[i];\n    }\n    return total;\n}\n\nlong long min(const std::vector<long long> &values) {\n    long long best = values[0];\n    for (std::size_t i = 1; i < values.size(); i++) {\n        if (values[i] < best) {\n            best = values[i];\n        }\n    }\n    return best;\n}\n\nlong long max(const std::vector<long long> &values) {\n    long long best = values[0];\n    for (std::size_t i = 1; i < values.size(); i++) {\n        if (values[i] > best) {\n            best = values[i];\n        }\n    }\n    return best;\n}\n}\n\nint main() {\n    std::vector<long long> values;\n    long long x;\n    while (std::cin >> x) {\n        values.push_back(x);\n    }\n    if (is_empty(values)) {\n        std::cout << \"пусто\\n\";\n        return 0;\n    }\n    std::cout << \"сумма \" << stats::sum(values) << \", минимум \" << stats::min(values)\n              << \", максимум \" << stats::max(values) << '\\n';\n    return 0;\n}\n",
+      "solutionExplanation": "Функции `min` и `max` есть и в стандартной библиотеке — `std::min` и `std::max`. Благодаря пространству имён `stats` наши функции с ними не конфликтуют: `stats::max` и `std::max` — разные имена. С `using namespace std;` такой гарантии уже не было бы.\n\n`is_empty` — служебная функция этого файла, поэтому она лежит в безымянном пространстве: её не видно из других файлов, как если бы она была объявлена `static`. `std::vector` — массив, который растёт сам; подробно о нём — в отдельном уроке.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-namespaces-task-3",
+      "title": "Найди ошибку: count",
+      "description": "Программа читает целые числа до конца ввода и печатает, сколько из них положительных. Она не компилируется. Найдите причину и исправьте программу.",
+      "difficulty": "beginner",
+      "starterCode": "#include <algorithm>\n#include <iostream>\nusing namespace std;\n\nint count = 0;\n\nint main() {\n    int x;\n    while (cin >> x) {\n        if (x > 0) {\n            count++;\n        }\n    }\n    cout << count << '\\n';\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3 -1 4 0 5\n",
+          "output": "3\n"
+        },
+        {
+          "input": "",
+          "output": "0\n"
+        }
+      ],
+      "constraints": ["Чисел не больше 1000; числа int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Прочитайте сообщение компилятора: reference to count is ambiguous. Какие ещё сущности с именем count видны в этой точке?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "using namespace std; сделал видимой функцию std::count из <algorithm>. Уберите директиву и пишите std:: явно — или переименуйте переменную.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 -1 4 0 5\n",
+          "expected": "3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "-1 -2 -3\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "0\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "2147483647 -2147483648\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1 1 1 1 1\n",
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "5 -5 5 -5 5\n",
+          "expected": "3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "100\n-100\n100\n",
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "0 0 1\n",
+          "expected": "1\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n\nint positives = 0;\n\nint main() {\n    int x;\n    while (std::cin >> x) {\n        if (x > 0) {\n            positives++;\n        }\n    }\n    std::cout << positives << '\\n';\n    return 0;\n}\n",
+      "solutionExplanation": "`using namespace std;` вносит в глобальную область все имена из `std`, объявленные в подключённых заголовках, — в том числе функцию `std::count` из `<algorithm>`. Глобальная переменная `count` с ней сталкивается: в выражении `count++` компилятор не может решить, о чём речь, и сообщает `reference to 'count' is ambiguous`.\n\nЛучшее исправление — убрать директиву и писать `std::cin`, `std::cout` явно: тогда имена стандартной библиотеки и ваши никогда не пересекутся. Переименование переменной тоже помогает, но не защищает от следующего столкновения: в `std` сотни коротких имён.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-namespaces-task-4",
+      "title": "Текстовые команды",
+      "description": "Каждая строка ввода — команда и слово из латинских букв:\n\n- `upper слово` — напечатать слово заглавными буквами;\n- `reverse слово` — напечатать слово задом наперёд;\n- `palindrome слово` — напечатать `да`, если слово читается одинаково в обе стороны без учёта регистра, иначе `нет`.\n\nРазместите функции в пространстве имён `text`, а вспомогательные (перевод символа в верхний регистр) — во вложенном `text::detail`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "upper hello\nreverse hello\n",
+          "output": "HELLO\nolleh\n"
+        },
+        {
+          "input": "palindrome Level\npalindrome cpp\n",
+          "output": "да\nнет\n"
+        }
+      ],
+      "constraints": ["Слова длиной от 1 до 100; строк не больше 30."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Вложенное пространство: namespace text::detail { char to_upper(char c) { … } }. Изнутри text к нему можно обращаться как detail::to_upper.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Символ строки — s[i], длина — s.size(). Новую строку можно собрать: std::string result; result += символ;. Перевод в верхний регистр для латиницы — c - 'a' + 'A' при c от 'a' до 'z'.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "upper hello\nreverse hello\n",
+          "expected": "HELLO\nolleh\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "palindrome Level\npalindrome cpp\n",
+          "expected": "да\nнет\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна буква",
+          "stdin": "upper a\n",
+          "expected": "A\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Разворот одной буквы",
+          "stdin": "reverse a\n",
+          "expected": "a\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Смешанный регистр",
+          "stdin": "upper MixedCase\n",
+          "expected": "MIXEDCASE\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Короткие палиндромы",
+          "stdin": "palindrome A\npalindrome ab\n",
+          "expected": "да\nнет\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Регистр в палиндроме",
+          "stdin": "palindrome RaceCar\n",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Алфавит",
+          "stdin": "reverse abcdefghijklmnopqrstuvwxyz\n",
+          "expected": "zyxwvutsrqponmlkjihgfedcba\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Чётная и нечётная длина",
+          "stdin": "palindrome abba\npalindrome abcba\npalindrome abca\n",
+          "expected": "да\nда\nнет\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Все команды",
+          "stdin": "upper zz\nreverse Zy\npalindrome Zz\n",
+          "expected": "ZZ\nyZ\nда\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <string>\n\nnamespace text::detail {\nchar to_upper(char c) {\n    return c >= 'a' && c <= 'z' ? static_cast<char>(c - 'a' + 'A') : c;\n}\n}\n\nnamespace text {\nstd::string upper(const std::string &word) {\n    std::string result;\n    for (std::size_t i = 0; i < word.size(); i++) {\n        result += detail::to_upper(word[i]);\n    }\n    return result;\n}\n\nstd::string reverse(const std::string &word) {\n    std::string result;\n    for (std::size_t i = word.size(); i > 0; i--) {\n        result += word[i - 1];\n    }\n    return result;\n}\n\nbool palindrome(const std::string &word) {\n    std::string u = upper(word);\n    return u == reverse(u);\n}\n}\n\nint main() {\n    std::string command, word;\n    while (std::cin >> command >> word) {\n        if (command == \"upper\") {\n            std::cout << text::upper(word) << '\\n';\n        } else if (command == \"reverse\") {\n            std::cout << text::reverse(word) << '\\n';\n        } else if (command == \"palindrome\") {\n            std::cout << (text::palindrome(word) ? \"да\" : \"нет\") << '\\n';\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Пространство `text` объединяет публичные функции, а `text::detail` — подробности реализации. Имя `detail` — распространённое соглашение: «это внутреннее, не вызывайте снаружи». Изнутри `text` вложенное пространство доступно по короткому имени `detail::to_upper`, снаружи — по полному `text::detail::to_upper`.\n\nФункции принимают `const std::string &` — строку без копирования — и возвращают новую строку по значению: в C++ так можно, `std::string` сам управляет памятью результата. Обратный цикл идёт по беззнаковому `i` с условием `i > 0` и обращением `word[i - 1]` — так не возникает «бесконечного» `size_t` при уменьшении нуля.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-namespaces-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «namespaces»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "Пространства имён разделяют одинаковые короткие имена и делают границы API явными. В отличие от префиксов C разрешение проверяется компилятором."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n\nnamespace a {\nint value() { return 1; }\n}\nnamespace b {\nint value() { return 2; }\n}\n\nint main() {\n    std::cout << a::value() * 10 + b::value() << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "a::value() и b::value() — разные функции: 1 · 10 + 2 = 12.",
+        "type": "text",
+        "answers": ["12"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
-        "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
-        ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "id": "q2",
+        "question": "В каком пространстве имён лежат std::string, std::vector и std::sort?",
+        "explanation": "Вся стандартная библиотека C++ объявлена в пространстве имён std.",
+        "type": "text",
+        "answers": ["std"],
+        "placeholder": "Имя"
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Почему using namespace std; нельзя писать в заголовочном файле?",
+        "explanation": "Подключение заголовка — это текстовая вставка. Автор другого файла получит все имена std, даже не подозревая об этом.",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "Директива попадёт во все файлы, подключающие заголовок, и их имена начнут конфликтовать с именами из std",
+          "Заголовки не могут содержать using",
+          "Это замедлит компиляцию в сотни раз",
+          "Можно, это обычная практика"
         ],
-        "correct": 0,
-        "explanation": "Используйте namespaces как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Чем using std::cout; отличается от using namespace std;?",
+        "explanation": "using-объявление точечное и безопаснее: столкнуться может только одно, явно выбранное имя.",
+        "options": [
+          "Первое вводит одно имя cout, второе — все имена пространства std",
+          "Ничем",
+          "Первое работает только в C",
+          "Второе вводит только cout, cin и endl"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что заменяет в C++ ключевое слово static у функции, видимой только в своём файле?",
+        "explanation": "Имена в namespace { … } имеют внутреннее связывание, как static в C. static для функций тоже работает, но безымянное пространство принято в C++ и вмещает сразу и функции, и типы.",
+        "options": [
+          "Безымянное пространство имён",
+          "namespace std",
+          "using namespace",
+          "Ключевое слово private"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n\nint x = 1;\n\nnamespace inner {\nint x = 2;\nint sum() { return x + ::x; }\n}\n\nint main() {\n    std::cout << inner::sum() << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Внутри inner имя x означает inner::x = 2, а ::x — глобальную переменную, 1. Сумма 3.",
+        "type": "text",
+        "answers": ["3"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Какие записи корректны в C++17 и новее?",
+        "explanation": "Вложенное объявление через ::, псевдоним пространства и безымянное пространство корректны. Имя пространства подчиняется правилам идентификаторов и не может начинаться с цифры.",
+        "type": "multiple",
+        "options": [
+          "namespace app::net { int port = 80; }",
+          "namespace fs = std::filesystem;",
+          "namespace { int helper = 0; }",
+          "namespace 2d { int x; }"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q8",
+        "question": "Программа с using namespace std; объявляет глобальную переменную distance и подключает <iterator>. Что произойдёт при обращении distance++?",
+        "explanation": "Директива сделала видимыми оба имени, и компилятор не может выбрать.",
+        "options": [
+          "Ошибка компиляции: имя неоднозначно — переменная или функция std::distance",
+          "Увеличится переменная",
+          "Вызовется std::distance",
+          "Ошибка при запуске программы"
+        ],
+        "correct": 0
       }
     ]
   }

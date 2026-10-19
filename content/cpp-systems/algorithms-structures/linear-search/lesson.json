@@ -1,131 +1,538 @@
 {
   "id": "algo-linear-search",
-  "title": "Линейный поиск — Linear search",
-  "description": "Линейный поиск проверяет элементы в порядке хранения и завершает работу при первом совпадении.",
+  "title": "Линейный поиск",
+  "description": "Функция поиска с ранним выходом и её инвариант; поиск последнего вхождения, подсчёт и поиск по условию; поиск записи по ключу и strcmp; сложность в лучшем, худшем и среднем случае; поиск с барьером.",
   "moduleId": "algorithms-structures",
   "order": 8,
   "difficulty": "intermediate",
   "estimatedMinutes": 40,
   "prerequisites": ["algo-quadratic"],
   "objectives": [
-    "Объяснить инвариант: Проверяем кандидатов по очереди, сохраняя гарантию о пройденном префиксе.",
-    "Обосновать время: Лучший случай Θ(1), худший Θ(n); среднее зависит от распределения ключа.",
-    "Оценить память и компромиссы: Нет затрат на подготовку, но каждый новый неуспешный запрос снова просматривает всё."
+    "Писать функцию линейного поиска с ранним выходом",
+    "Изменять поиск под задачу: последнее вхождение, подсчёт, условие, ключ записи",
+    "Оценивать число сравнений в разных случаях",
+    "Применять поиск с барьером и проверять результат после цикла"
   ],
-  "tags": ["алгоритмы", "C17", "Линейный поиск — Linear search"],
+  "tags": ["Поиск", "Линейный поиск", "Барьер"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "algo-linear-search-exercise",
-    "title": "Первый индекс ключа",
-    "description": "Ввод n (0…256), n int −1000…1000 и target. Верните индекс первого совпадения или −1. Массив не отсортирован.",
-    "difficulty": "intermediate",
+    "id": "algo-linear-search-task-1",
+    "title": "Первое и последнее вхождение",
+    "description": "Первая строка — `n`, вторая — `n` целых чисел. Дальше до конца ввода идут запросы — числа `x`. Для каждого запроса напечатайте через пробел номера первого и последнего вхождения `x` (нумерация с 1) или `нет`, если `x` в массиве не встречается.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "3 8 3 8 8",
-        "output": "0\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "7\n3 7 -2 7 0 -5 7\n7\n-2\n4\n",
+        "output": "2 7\n3 3\nнет\n"
       },
       {
-        "input": "3 8 3 8 5",
-        "output": "-1\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "1\n5\n5\n",
+        "output": "1 1\n"
       }
     ],
-    "constraints": [
-      "Используйте C17 и диапазоны входа из условия.",
-      "Выводите только требуемый результат.",
-      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
-    ],
+    "constraints": ["1 ≤ n ≤ 1000; числа int; запросов не больше 100."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Проверяем кандидатов по очереди, сохраняя гарантию о пройденном префиксе."
+        "text": "Первое вхождение ищите проходом слева направо, последнее — проходом справа налево; оба с ранним выходом.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Возврат 0 для отсутствия конфликтует с корректным первым элементом."
-      },
-      {
-        "id": "hint-3",
-        "order": 3,
-        "text": "В [8,3,8] ключ 8 даёт индекс 0 после одного сравнения; ключ 5 — −1 после трёх."
+        "text": "Если первого вхождения нет, последнего тоже нет — второй проход можно не делать.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "3 8 3 8 8",
-        "expected": "0\n"
+        "stdin": "7\n3 7 -2 7 0 -5 7\n7\n-2\n4\n",
+        "expected": "2 7\n3 3\nнет\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "3 8 3 8 5",
-        "expected": "-1\n"
+        "stdin": "1\n5\n5\n",
+        "expected": "1 1\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "0 0",
-        "expected": "-1\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "1\n5\n6\n",
+        "expected": "нет\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "3 2 4 6 6",
-        "expected": "2\n"
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "4\n9 9 9 9\n9\n",
+        "expected": "1 4\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "5\n1 2 3 4 5\n1\n5\n3\n",
+        "expected": "1 1\n5 5\n3 3\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "6\n-1 0 -1 0 -1 0\n0\n-1\n1\n",
+        "expected": "2 6\n1 5\nнет\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "3\n2147483647 -2147483648 2147483647\n2147483647\n-2147483648\n",
+        "expected": "1 3\n2 2\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "8\n1 2 1 2 1 2 1 2\n2\n1\n",
+        "expected": "2 8\n1 7\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "2\n4 4\n4\n3\n",
+        "expected": "1 2\nнет\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "1\n0\n",
+        "expected": ""
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\nstatic int find_first(const int *a,int n,int target){\n    for(int i=0;i<n;++i) if(a[i]==target) return i;\n    return -1;\n}\nint main(void) {\nint a[256]; int n;\nif (scanf(\"%d\", &n)!=1 || n<0 || n>256) return 1;\nfor(int i=0;i<n;++i) if(scanf(\"%d\", &a[i])!=1) return 1;\nint target;if(scanf(\"%d\",&target)!=1)return 1;printf(\"%d\\n\",find_first(a,n,target));\nreturn 0;\n}\n",
-    "solutionExplanation": "Инвариант: Проверяем кандидатов по очереди, сохраняя гарантию о пройденном префиксе.\n\nВ [8,3,8] ключ 8 даёт индекс 0 после одного сравнения; ключ 5 — −1 после трёх.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. Возврат 0 для отсутствия конфликтует с корректным первым элементом.\n\nВремя: Лучший случай Θ(1), худший Θ(n); среднее зависит от распределения ключа.\nПамять: O(1) дополнительной памяти.\nКомпромисс: Нет затрат на подготовку, но каждый новый неуспешный запрос снова просматривает всё.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return 0;\n    }\n    int values[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    int x;\n    while (scanf(\"%d\", &x) == 1) {\n        int first = -1;\n        for (int i = 0; i < n; i++) {\n            if (values[i] == x) {\n                first = i;\n                break;\n            }\n        }\n        if (first < 0) {\n            printf(\"нет\\n\");\n            continue;\n        }\n        int last = first;\n        for (int i = n - 1; i > first; i--) {\n            if (values[i] == x) {\n                last = i;\n                break;\n            }\n        }\n        printf(\"%d %d\\n\", first + 1, last + 1);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Два прохода с ранним выходом: слева — до первого совпадения, справа — до последнего. Второй проход можно остановить на `first`: левее него `x` точно нет, а сам `first` уже известен. Если элемент встречается один раз, оба номера совпадают.\n\nОбратный цикл использует `int i`, а не `size_t`: условие `i > first` с беззнаковым счётчиком при `first = -1` сломалось бы. Здесь этот случай отсечён раньше, но привычка писать обратные циклы со знаковым индексом избавляет от целого класса ошибок.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "algo-linear-search-task-2",
+      "title": "Поиск по имени",
+      "description": "Первая строка — `n`, дальше `n` строк вида `имя балл`. Затем до конца ввода идут запросы — имена. Для каждого запроса напечатайте балл первого человека с таким именем или `не найден`.\n\nИмена состоят из латинских букв, регистр различается.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\nAnna 91\nBoris 78\nVera 85\nVera\nGleb\n",
+          "output": "85\nне найден\n"
+        },
+        {
+          "input": "2\nIvan 50\nIvan 70\nIvan\n",
+          "output": "50\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 100; имена от 1 до 20 символов без пробелов; 0 ≤ баллы ≤ 100; запросов не больше 50."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Храните записи в массиве структур { char name[21]; int score; } и читайте имя форматом \"%20s\".",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Ищите первую запись, для которой strcmp(records[i].name, query) == 0.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\nAnna 91\nBoris 78\nVera 85\nVera\nGleb\n",
+          "expected": "85\nне найден\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\nIvan 50\nIvan 70\nIvan\n",
+          "expected": "50\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Регистр",
+          "stdin": "1\nA 0\nA\na\n",
+          "expected": "0\nне найден\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Префиксы",
+          "stdin": "3\nAnn 1\nAnna 2\nAnnabel 3\nAnna\nAnn\nAnnabel\nAn\n",
+          "expected": "2\n1\n3\nне найден\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Длинное имя",
+          "stdin": "2\nabcdefghijklmnopqrst 100\nx 5\nabcdefghijklmnopqrst\n",
+          "expected": "100\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Первый и последний",
+          "stdin": "4\nZ 1\nY 2\nX 3\nW 4\nW\nZ\n",
+          "expected": "4\n1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Без запросов",
+          "stdin": "1\nSolo 42\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-6",
+          "name": "Повтор имени",
+          "stdin": "3\nKim 10\nLee 20\nKim 30\nKim\nLee\nPark\n",
+          "expected": "10\n20\nне найден\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Граничные баллы",
+          "stdin": "2\nmax 100\nmin 0\nmin\nmax\nmid\n",
+          "expected": "0\n100\nне найден\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Все записи",
+          "stdin": "5\na 1\nb 2\nc 3\nd 4\ne 5\ne\nd\nc\nb\na\n",
+          "expected": "5\n4\n3\n2\n1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    char name[21];\n    int score;\n} Record;\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 100) {\n        return 0;\n    }\n    Record records[100];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%20s %d\", records[i].name, &records[i].score);\n    }\n    char query[21];\n    while (scanf(\"%20s\", query) == 1) {\n        int found = -1;\n        for (int i = 0; i < n; i++) {\n            if (strcmp(records[i].name, query) == 0) {\n                found = i;\n                break;\n            }\n        }\n        if (found >= 0) {\n            printf(\"%d\\n\", records[found].score);\n        } else {\n            printf(\"не найден\\n\");\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Каждая запись хранит имя в массиве `char[21]`: 20 символов и завершающий ноль. Ширина `%20s` в `scanf` не даёт записать больше, чем помещается.\n\nПоиск — обычный линейный, только условие совпадения — `strcmp(...) == 0`. Ранний выход даёт первую запись с таким именем. `strcmp` различает регистр: `Anna` и `anna` — разные имена. Поиск строки длины `m` в `n` записях стоит `O(n · m)` сравнений символов.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-linear-search-task-3",
+      "title": "Найди ошибку: поиск с барьером",
+      "description": "Программа читает `n` и `n` целых чисел, а затем запросы до конца ввода. Для каждого запроса она печатает индекс первого вхождения (с нуля) или `-1`, используя поиск с барьером.\n\nНекоторые элементы массива программа «не находит». Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nstatic int find_sentinel(int *values, int n, int target) {\n    int last = values[n - 1];\n    values[n - 1] = target;\n    int i = 0;\n    while (values[i] != target) {\n        i++;\n    }\n    values[n - 1] = last;\n    if (i < n - 1) {\n        return i;\n    }\n    return -1;\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return 0;\n    }\n    int values[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    int target;\n    while (scanf(\"%d\", &target) == 1) {\n        printf(\"%d\\n\", find_sentinel(values, n, target));\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "4\n5 1 9 3\n9\n7\n",
+          "output": "2\n-1\n"
+        },
+        {
+          "input": "4\n5 1 9 3\n3\n",
+          "output": "3\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; числа int; запросов не больше 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какие элементы не находятся? Попробуйте искать последний элемент массива.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Если цикл остановился на i == n − 1, это может быть и барьер, и настоящий элемент. Настоящий — если last == target: проверьте и это условие.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\n5 1 9 3\n9\n7\n",
+          "expected": "2\n-1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "4\n5 1 9 3\n3\n",
+          "expected": "3\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1\n8\n8\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1\n8\n7\n",
+          "expected": "-1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "3\n1 2 1\n1\n2\n",
+          "expected": "0\n1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "5\n4 4 4 4 4\n4\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "5\n1 2 3 4 5\n5\n1\n6\n",
+          "expected": "4\n0\n-1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "3\n-7 0 -7\n-7\n0\n",
+          "expected": "0\n1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "6\n10 20 30 40 50 60\n60\n50\n61\n",
+          "expected": "5\n4\n-1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "2\n2147483647 -2147483648\n-2147483648\n2147483647\n",
+          "expected": "1\n0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic int find_sentinel(int *values, int n, int target) {\n    int last = values[n - 1];\n    values[n - 1] = target;\n    int i = 0;\n    while (values[i] != target) {\n        i++;\n    }\n    values[n - 1] = last;\n    if (i < n - 1 || last == target) {\n        return i;\n    }\n    return -1;\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return 0;\n    }\n    int values[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    int target;\n    while (scanf(\"%d\", &target) == 1) {\n        printf(\"%d\\n\", find_sentinel(values, n, target));\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Барьер записывается на место последнего элемента, поэтому цикл всегда останавливается не дальше позиции `n − 1`. Остановка раньше — точно настоящее совпадение. Остановка на `n − 1` неоднозначна: либо искомого нет, либо это и был последний элемент. Различить эти случаи помогает сохранённое значение `last`.\n\nЗаготовка проверяет только `i < n − 1` и поэтому теряет элементы, которые встречаются только на последней позиции. В массиве из одного элемента это вообще любой успешный поиск. Перед отправкой решения стоит проверять поиск на первом, последнем и отсутствующем элементе.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-linear-search-task-4",
+      "title": "Перемещение в начало",
+      "description": "Если одни ключи запрашивают намного чаще других, линейный поиск можно ускорить: найденный элемент **перемещается в начало** массива, сдвигая предшествующие на одну позицию вправо. Часто запрашиваемые ключи скоро окажутся впереди.\n\nПервая строка — `n`, вторая — `n` **различных** целых чисел. Дальше до конца ввода идут запросы. Выполните каждый запрос двумя способами:\n\n- обычный линейный поиск в исходном массиве;\n- линейный поиск с перемещением в начало (найденный элемент переносится на позицию 0; ненайденный ничего не меняет).\n\nСравнением считается каждая проверка `values[i] == x`. Напечатайте две строки: `обычный: A` и `в начало: B` — суммарное число сравнений каждого способа.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5\n1 2 3 4 5\n5\n5\n5\n5\n",
+          "output": "обычный: 20\nв начало: 8\n"
+        },
+        {
+          "input": "3\n7 8 9\n4\n",
+          "output": "обычный: 3\nв начало: 3\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; запросов не больше 2000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Заведите два массива: plain — неизменный, mtf — с перемещениями. Поиск в каждом — отдельная функция, возвращающая индекс и добавляющая сравнения к своему счётчику.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Перемещение элемента с позиции p в начало: сохраните value = mtf[p], сдвиньте mtf[p − 1], …, mtf[0] на одну позицию вправо (цикл от p вниз до 1), затем mtf[0] = value.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Ненайденный запрос стоит n сравнений в обоих способах.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5\n1 2 3 4 5\n5\n5\n5\n5\n",
+          "expected": "обычный: 20\nв начало: 8\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3\n7 8 9\n4\n",
+          "expected": "обычный: 3\nв начало: 3\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Один элемент",
+          "stdin": "1\n42\n42\n42\n7\n",
+          "expected": "обычный: 3\nв начало: 3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "По порядку",
+          "stdin": "4\n1 2 3 4\n1\n2\n3\n4\n",
+          "expected": "обычный: 10\nв начало: 10\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Худший порядок",
+          "stdin": "4\n1 2 3 4\n4\n3\n2\n1\n4\n3\n2\n1\n",
+          "expected": "обычный: 20\nв начало: 32\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Два частых ключа",
+          "stdin": "5\n10 20 30 40 50\n50\n40\n50\n40\n50\n40\n",
+          "expected": "обычный: 27\nв начало: 18\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Без запросов",
+          "stdin": "3\n5 6 7\n",
+          "expected": "обычный: 0\nв начало: 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Ненайденные запросы",
+          "stdin": "6\n1 2 3 4 5 6\n6\n6\n0\n6\n1\n6\n",
+          "expected": "обычный: 31\nв начало: 18\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Отрицательные",
+          "stdin": "5\n-1 -2 -3 -4 -5\n-5\n-4\n-3\n-2\n-1\n-1\n",
+          "expected": "обычный: 16\nв начало: 26\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Растущая группа",
+          "stdin": "8\n8 7 6 5 4 3 2 1\n1\n1\n2\n1\n2\n3\n1\n2\n3\n4\n",
+          "expected": "обычный: 70\nв начало: 46\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic int find(const int *values, int n, int x, long long *comparisons) {\n    for (int i = 0; i < n; i++) {\n        (*comparisons)++;\n        if (values[i] == x) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return 0;\n    }\n    int plain[1000], mtf[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &plain[i]);\n        mtf[i] = plain[i];\n    }\n    long long plain_cost = 0, mtf_cost = 0;\n    int x;\n    while (scanf(\"%d\", &x) == 1) {\n        find(plain, n, x, &plain_cost);\n        int p = find(mtf, n, x, &mtf_cost);\n        if (p > 0) {\n            int value = mtf[p];\n            for (int i = p; i > 0; i--) {\n                mtf[i] = mtf[i - 1];\n            }\n            mtf[0] = value;\n        }\n    }\n    printf(\"обычный: %lld\\n\", plain_cost);\n    printf(\"в начало: %lld\\n\", mtf_cost);\n    return 0;\n}\n",
+      "solutionExplanation": "Перемещение в начало — пример **самоорганизующегося** списка: структура подстраивается под поток запросов. Если запросы сосредоточены на нескольких ключах, эти ключи быстро оказываются в начале, и поиск дешевеет. В худшем случае (запросы по кругу ко всем ключам по очереди с конца) метод проигрывает обычному поиску, но, как доказали Слитор и Тарьян, в сумме сравнений он не хуже любого неизменного порядка ключей больше чем примерно вдвое.\n\nСдвиг элементов — `O(p)` на запрос, то есть столько же, сколько сам поиск, поэтому асимптотика не меняется. На связном списке (уроки о списках) перемещение элемента в начало стоит `O(1)`, и там этот приём особенно естественен. Его используют в кэшах, в сжатии данных (преобразование move-to-front в bzip2) и в таблицах символов компиляторов.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "algo-linear-search-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "invariant",
-        "question": "Почему ранний выход даёт первый индекс?",
-        "options": [
-          "Все более ранние элементы уже проверены",
-          "Потому что массив обязательно отсортирован"
-        ],
-        "correct": 0,
-        "explanation": "Проверяем кандидатов по очереди, сохраняя гарантию о пройденном префиксе. В [8,3,8] ключ 8 даёт индекс 0 после одного сравнения; ключ 5 — −1 после трёх."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nstatic int find(const int *a, int n, int x) {\n    for (int i = 0; i < n; i++) {\n        if (a[i] == x) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nint main(void) {\n    int a[] = {6, 2, 9, 2, 6};\n    printf(\"%d %d\\n\", find(a, 5, 6), find(a, 5, 7));\n    return 0;\n}",
+        "explanation": "Ранний выход возвращает первое вхождение 6 — индекс 0. Семёрки нет: −1.",
+        "type": "text",
+        "answers": ["0 -1"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "complexity",
-        "question": "Какая оценка соответствует рассмотренной реализации?",
+        "id": "q2",
+        "question": "Что не так с этой функцией?",
+        "code": "int find(const int *a, int n, int x) {\n    for (int i = 0; i < n; i++) {\n        if (a[i] == x) {\n            return i;\n        } else {\n            return -1;\n        }\n    }\n    return -1;\n}",
+        "codeLanguage": "c",
+        "explanation": "На первой же итерации выполнится один из двух return. «Не найдено» можно возвращать только после цикла.",
         "options": [
-          "Всегда O(1), потому что все тесты ограничены по размеру.",
-          "Лучший случай Θ(1), худший Θ(n); среднее зависит от распределения ключа."
+          "Она проверяет только первый элемент",
+          "Она возвращает последнее вхождение вместо первого",
+          "Она выходит за границу массива",
+          "Всё верно"
         ],
-        "correct": 1,
-        "explanation": "Нет затрат на подготовку, но каждый новый неуспешный запрос снова просматривает всё."
+        "correct": 0
       },
       {
-        "id": "engineering",
-        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "id": "q3",
+        "question": "Сколько сравнений с x сделает линейный поиск в массиве из 1000 элементов, если x нет в массиве?",
+        "explanation": "Чтобы убедиться, что элемента нет, нужно проверить все n элементов.",
+        "type": "text",
+        "answers": ["1000"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q4",
+        "question": "Почему строки в поиске по имени сравнивают strcmp, а не ==?",
+        "explanation": "Две одинаковые строки могут лежать в разных местах памяти. strcmp сравнивает их содержимое и возвращает 0 при совпадении.",
         "options": [
-          "Возврат 0 для отсутствия конфликтует с корректным первым элементом.",
-          "Совпадение Big O гарантирует одинаковое время на любой машине."
+          "== для указателей сравнивает адреса, а не символы",
+          "strcmp работает быстрее",
+          "== нельзя применять к указателям",
+          "Разницы нет"
         ],
-        "correct": 0,
-        "explanation": "Последовательные адреса часто делают линейный поиск конкурентным на маленьких массивах. O(1) дополнительной памяти."
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int a[] = {3, -1, 4, -1, 5};\n    int count = 0, last = -1;\n    for (int i = 0; i < 5; i++) {\n        if (a[i] < 0) {\n            count++;\n            last = i;\n        }\n    }\n    printf(\"%d %d\\n\", count, last);\n    return 0;\n}",
+        "explanation": "Цикл без раннего выхода проходит весь массив: два отрицательных числа, последнее — на индексе 3.",
+        "type": "text",
+        "answers": ["2 3"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Зачем в поиске с барьером после цикла проверяется last == target?",
+        "explanation": "Барьер заменил последний элемент. Остановка на n − 1 означает успех, только если там изначально и стоял искомый элемент.",
+        "options": [
+          "Если цикл остановился на последней позиции, нужно понять, настоящий это элемент или барьер",
+          "Чтобы вернуть массив в исходное состояние",
+          "Чтобы цикл не вышел за границу",
+          "Это проверка не нужна"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Чем опасен цикл for (size_t i = n - 1; i >= 0; i--)?",
+        "explanation": "После i = 0 декремент даёт SIZE_MAX, условие снова истинно, и цикл обращается далеко за границу массива.",
+        "options": [
+          "Он бесконечен: беззнаковое i всегда >= 0",
+          "Он пропускает последний элемент",
+          "Он не скомпилируется",
+          "Ничем"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Когда вместо многократного линейного поиска выгоднее отсортировать массив?",
+        "explanation": "q линейных поисков — O(n · q). Сортировка один раз — O(n log n), затем каждый запрос двоичным поиском — O(log n).",
+        "options": [
+          "Когда запросов к одним и тем же данным много",
+          "Когда запрос один",
+          "Когда массив из трёх элементов",
+          "Никогда"
+        ],
+        "correct": 0
       }
     ]
   }

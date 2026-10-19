@@ -1,146 +1,535 @@
 {
   "id": "lifetime-reference-counting",
-  "title": "Подсчёт ссылок — Reference counting",
-  "description": "Счётчик сильных владельцев меняется при копировании, разрушении, reset и присваивании shared_ptr.",
+  "title": "Подсчёт ссылок",
+  "description": "Как устроен shared_ptr изнутри: блок управления со счётчиком, собственный умный указатель с подсчётом ссылок; отличия настоящего shared_ptr — атомарный счётчик, счётчики владельцев и наблюдателей, удалитель, make_shared и задержка освобождения памяти; конструктор-псевдоним для указателей на поля; встроенный счётчик; порядок операций при присваивании.",
   "moduleId": "cpp-lifetime",
   "order": 21,
   "difficulty": "advanced",
   "estimatedMinutes": 55,
   "prerequisites": ["lifetime-shared-ptr"],
   "objectives": [
-    "Перечислить операции, меняющие сильный счётчик, и операции, которые его не меняют.",
-    "Проследить на MemoryDiagram счётчик через копию, ссылку, перемещение и выход из блока.",
-    "Вычислить use_count в каждой точке трассировки и объяснить расхождение объекта и блока управления."
+    "Реализовывать подсчёт ссылок по правилу пяти",
+    "Объяснять роли счётчиков владельцев и наблюдателей",
+    "Пользоваться конструктором-псевдонимом shared_ptr",
+    "Писать присваивание счётчика, корректное при самоприсваивании"
   ],
-  "tags": ["C++20", "время жизни", "управление ресурсами", "Подсчёт ссылок — Reference counting"],
+  "tags": ["C++23", "Время жизни", "shared_ptr", "Подсчёт ссылок", "Блок управления"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "lifetime-reference-counting-exercise",
-    "title": "Практика: Подсчёт ссылок — Reference counting",
-    "description": "В solve создайте shared_ptr p(a). Во вложенном блоке сделайте q = p и r = move(q), сохраните p.use_count(). После блока верните 10 * сохранённый счётчик + текущий счётчик. Аргумент b не используется.",
-    "difficulty": "advanced",
+    "title": "Свой счётчик",
+    "description": "Напишите шаблон `RefPtr<T>` с подсчётом ссылок: блок `{ T *object; long count; }`, пустое состояние (`nullptr`), конструктор из `T *`, все пять специальных функций, `get()`, `use_count()` (0 у пустого), `reset()`. Перемещение передаёт блок, не трогая счётчик.\n\nСтруктура `Item` печатает `создан имя` и `удалён имя`. Указатели `RefPtr<Item>` хранятся в `std::map<std::string, RefPtr<Item>>` (`operator[]` создаёт пустой). Команды:\n\n- `new X имя` — `ptrs[X] = RefPtr<Item>(new Item(имя))`;\n- `copy Y X` — `ptrs[Y] = ptrs[X]`;\n- `move Y X` — `ptrs[Y] = std::move(ptrs[X])`;\n- `reset X`;\n- `count X` — `X: имя (владельцев K)` или `X: пусто`.\n\nВ конце сбросьте указатели от последнего имени к первому.",
+    "difficulty": "intermediate",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 7)",
-        "output": "21\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "new a кот\ncopy b a\ncount a\nmove c b\ncount b\nreset a\ncount c\nreset c\n",
+        "output": "создан кот\na: кот (владельцев 2)\nb: пусто\nc: кот (владельцев 1)\nудалён кот\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "21\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "new a x\nnew a y\n",
+        "output": "создан x\nсоздан y\nудалён x\nудалён y\n"
       }
     ],
-    "constraints": [
-      "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Команд не больше 300."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Для каждой строки трассировки ответьте: появился ли новый владеющий shared_ptr? Ссылка и перемещение новых владельцев не создают."
+        "id": "hint-1",
+        "text": "Оба присваивания удобно сделать одним: RefPtr &operator=(RefPtr other) noexcept { std::swap(block_, other.block_); return *this; } — параметр копируется или перемещается.",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "Объект и блок управления живут по разным часам. При исчезновении последнего сильного владельца объект уничтожается; слабые наблюдатели могут удерживать блок управления, чтобы узнавать о смерти объекта. При make_shared объект и блок часто размещены в одном выделении, поэтому память возвращается аллокатору только после исчезновения слабых ссылок, хотя деструктор T уже выполнен. Проверка if (use_count() == 1) «можно менять безопасно» — ложное право: состояние может измениться между чтением и использованием.\n\nuse_count() == 1 не даёт права менять объект без синхронизации в многопоточном коде. Счётчик — снимок прошлого, а не гарантия будущего.\n\nДобавьте функцию read(shared_ptr<int> p) и сравните счётчик внутри неё с read(const shared_ptr<int>& p). Если функция только читает int, рассмотрите ещё более простой const int&."
+        "id": "hint-2",
+        "text": "Перемещающий конструктор: block_(std::exchange(other.block_, nullptr)) — счётчик не меняется.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 7],
-        "expected": "21\n"
+        "stdin": "new a кот\ncopy b a\ncount a\nmove c b\ncount b\nreset a\ncount c\nreset c\n",
+        "expected": "создан кот\na: кот (владельцев 2)\nb: пусто\nc: кот (владельцев 1)\nудалён кот\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "21\n"
+        "stdin": "new a x\nnew a y\n",
+        "expected": "создан x\nсоздан y\nудалён x\nудалён y\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный случай 1",
-        "arguments": [-8, 3],
-        "expected": "21\n"
+        "id": "hidden-1",
+        "name": "Пустой",
+        "stdin": "count z\n",
+        "expected": "z: пусто\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный случай 2",
-        "arguments": [5, -9],
-        "expected": "21\n"
+        "id": "hidden-2",
+        "name": "Самокопирование",
+        "stdin": "new a x\ncopy a a\ncount a\n",
+        "expected": "создан x\na: x (владельцев 1)\nудалён x\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный случай 3",
-        "arguments": [-1000, 1000],
-        "expected": "21\n"
+        "id": "hidden-3",
+        "name": "Самоперемещение",
+        "stdin": "new a x\nmove a a\ncount a\n",
+        "expected": "создан x\na: x (владельцев 1)\nудалён x\n"
       },
       {
-        "id": "case-6",
-        "name": "Граничный случай 4",
-        "arguments": [1000, -1000],
-        "expected": "21\n"
+        "id": "hidden-4",
+        "name": "Последний владелец",
+        "stdin": "new a x\ncopy b a\ncopy c b\nreset a\nreset b\ncount c\n",
+        "expected": "создан x\nc: x (владельцев 1)\nудалён x\n"
       },
       {
-        "id": "case-7",
-        "name": "Граничный случай 5",
-        "arguments": [4, 4],
-        "expected": "21\n"
+        "id": "hidden-5",
+        "name": "Копия поверх",
+        "stdin": "new a x\nnew b y\ncopy a b\ncount a\n",
+        "expected": "создан x\nсоздан y\nудалён x\na: y (владельцев 2)\nудалён y\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Копия пустого",
+        "stdin": "copy a b\ncount a\n",
+        "expected": "a: пусто\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Удаление в конце",
+        "stdin": "new z 1\nnew a 2\ncopy m z\n",
+        "expected": "создан 1\nсоздан 2\nудалён 1\nудалён 2\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Цепочка перемещений",
+        "stdin": "new a x\nmove b a\nmove c b\ncount c\nreset c\ncount c\n",
+        "expected": "создан x\nc: x (владельцев 1)\nудалён x\nc: пусто\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint solve(int a, int b) { (void)b; auto p = std::make_shared<int>(a); int during; { auto q = p; auto r = std::move(q); during = static_cast<int>(p.use_count()); } return 10 * during + static_cast<int>(p.use_count()); }",
-    "solutionExplanation": "Объект и блок управления живут по разным часам. При исчезновении последнего сильного владельца объект уничтожается; слабые наблюдатели могут удерживать блок управления, чтобы узнавать о смерти объекта. При make_shared объект и блок часто размещены в одном выделении, поэтому память возвращается аллокатору только после исчезновения слабых ссылок, хотя деструктор T уже выполнен. Проверка if (use_count() == 1) «можно менять безопасно» — ложное право: состояние может измениться между чтением и использованием.\n\nuse_count() == 1 не даёт права менять объект без синхронизации в многопоточном коде. Счётчик — снимок прошлого, а не гарантия будущего.\n\nДобавьте функцию read(shared_ptr<int> p) и сравните счётчик внутри неё с read(const shared_ptr<int>& p). Если функция только читает int, рассмотрите ещё более простой const int&.",
+    "referenceSolution": "#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Item {\n    static inline int alive = 0;\n    std::string name;\n    explicit Item(std::string n) : name(std::move(n)) {\n        ++alive;\n        std::println(\"создан {}\", name);\n    }\n    ~Item() {\n        --alive;\n        std::println(\"удалён {}\", name);\n    }\n};\n\ntemplate <class T>\nclass RefPtr {\npublic:\n    RefPtr() = default;\n    explicit RefPtr(T *p) : block_(new Block{p, 1}) {}\n    RefPtr(const RefPtr &other) : block_(other.block_) {\n        if (block_) {\n            ++block_->count;\n        }\n    }\n    RefPtr(RefPtr &&other) noexcept : block_(std::exchange(other.block_, nullptr)) {}\n    RefPtr &operator=(RefPtr other) noexcept {\n        std::swap(block_, other.block_);\n        return *this;\n    }\n    ~RefPtr() {\n        reset();\n    }\n\n    void reset() {\n        if (block_ && --block_->count == 0) {\n            delete block_->object;\n            delete block_;\n        }\n        block_ = nullptr;\n    }\n\n    T *get() const {\n        return block_ ? block_->object : nullptr;\n    }\n    long use_count() const {\n        return block_ ? block_->count : 0;\n    }\n\nprivate:\n    struct Block {\n        T *object;\n        long count;\n    };\n    Block *block_ = nullptr;\n};\n\nint main() {\n    std::map<std::string, RefPtr<Item>> ptrs;\n    std::string command, x;\n    while (std::cin >> command >> x) {\n        if (command == \"new\") {\n            std::string name;\n            std::cin >> name;\n            ptrs[x] = RefPtr<Item>(new Item(name));\n        } else if (command == \"copy\" || command == \"move\") {\n            std::string from;\n            std::cin >> from;\n            if (command == \"copy\") {\n                ptrs[x] = ptrs[from];\n            } else {\n                ptrs[x] = std::move(ptrs[from]);\n            }\n        } else if (command == \"reset\") {\n            ptrs[x].reset();\n        } else if (const Item *item = ptrs[x].get()) {\n            std::println(\"{}: {} (владельцев {})\", x, item->name, ptrs[x].use_count());\n        } else {\n            std::println(\"{}: пусто\", x);\n        }\n    }\n    for (auto it = ptrs.rbegin(); it != ptrs.rend(); ++it) {\n        it->second.reset();\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Вся логика владения — в трёх местах: конструктор копирования увеличивает счётчик, `reset` (и деструктор через него) уменьшает и удаляет объект с блоком на нуле, перемещение передаёт блок без изменения счётчика. Единый оператор присваивания по значению работает и для копирования, и для перемещения и безопасен при `copy X X`: параметр становится лишним владельцем до того, как старый указатель отпустит объект.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "lifetime-reference-counting-task-2",
+      "title": "Указатели на поля",
+      "description": "Конфигурация `Config` (поля `std::string name`, `int volume`, `std::string theme`) печатает `загружена имя` и `выгружена имя`. Текущая конфигурация хранится в `std::shared_ptr<Config> current`. Ручки на поля — псевдонимы: `std::shared_ptr<const int>` для громкости и `std::shared_ptr<const std::string>` для темы.\n\nКоманды:\n\n- `load имя громкость тема` — `current = std::make_shared<Config>(…)`;\n- `volume H` — ручка H на громкость текущей конфигурации; `theme H` — на тему (`std::map` для каждого вида ручек);\n- `drop` — `current.reset()`;\n- `get H` — `H = значение` (ручки громкости и темы имеют разные имена);\n- `release H` — сбросить ручку.\n\nВ конце сбросьте `current`, затем ручки громкости и ручки темы — каждые от последнего имени к первому.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "load прод 7 тёмная\nvolume v\ntheme t\nload тест 3 светлая\nget v\nrelease v\nget t\nrelease t\n",
+          "output": "загружена прод\nзагружена тест\nv = 7\nt = тёмная\nвыгружена прод\nвыгружена тест\n"
+        },
+        {
+          "input": "load a 1 x\ndrop\n",
+          "output": "загружена a\nвыгружена a\n"
+        }
+      ],
+      "constraints": [
+        "Команд не больше 200; volume и theme выполняются только при загруженной конфигурации; имена ручек уникальны."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "std::shared_ptr<const int> h(current, &current->volume); — указывает на поле, владеет всей конфигурацией.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Конфигурация выгружается, когда отпущены и current, и все ручки на её поля.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "load прод 7 тёмная\nvolume v\ntheme t\nload тест 3 светлая\nget v\nrelease v\nget t\nrelease t\n",
+          "expected": "загружена прод\nзагружена тест\nv = 7\nt = тёмная\nвыгружена прод\nвыгружена тест\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "load a 1 x\ndrop\n",
+          "expected": "загружена a\nвыгружена a\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ручка держит конфигурацию",
+          "stdin": "load a 5 x\nvolume v\ndrop\nget v\n",
+          "expected": "загружена a\nv = 5\nвыгружена a\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Отпущенная ручка",
+          "stdin": "load a 5 x\ntheme t\nrelease t\nget t\n",
+          "expected": "загружена a\nt = пусто\nвыгружена a\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Две ручки",
+          "stdin": "load a 1 x\nvolume v1\nvolume v2\ndrop\nrelease v1\nrelease v2\n",
+          "expected": "загружена a\nвыгружена a\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Замена без ручек",
+          "stdin": "load a 1 x\nload b 2 y\nload c 3 z\n",
+          "expected": "загружена a\nзагружена b\nвыгружена a\nзагружена c\nвыгружена b\nвыгружена c\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Ручки разных конфигураций",
+          "stdin": "load a 1 x\ntheme t\nload b 2 y\ntheme u\nget t\nget u\n",
+          "expected": "загружена a\nзагружена b\nt = x\nu = y\nвыгружена b\nвыгружена a\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Несуществующая ручка",
+          "stdin": "get nothing\n",
+          "expected": "nothing = пусто\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Обе ручки после drop",
+          "stdin": "load a 9 ночь\nvolume v\ntheme t\ndrop\nget v\nget t\n",
+          "expected": "загружена a\nv = 9\nt = ночь\nвыгружена a\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Одинаковые имена конфигураций",
+          "stdin": "load a 1 x\nvolume v\nload a 2 y\nget v\n",
+          "expected": "загружена a\nзагружена a\nv = 1\nвыгружена a\nвыгружена a\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Config {\n    std::string name;\n    int volume;\n    std::string theme;\n    Config(std::string n, int v, std::string t) : name(std::move(n)), volume(v), theme(std::move(t)) {\n        std::println(\"загружена {}\", name);\n    }\n    ~Config() {\n        std::println(\"выгружена {}\", name);\n    }\n};\n\ntemplate <class Map>\nvoid release_all(Map &handles) {\n    for (auto it = handles.rbegin(); it != handles.rend(); ++it) {\n        it->second.reset();\n    }\n}\n\nint main() {\n    std::shared_ptr<Config> current;\n    std::map<std::string, std::shared_ptr<const int>> volumes;\n    std::map<std::string, std::shared_ptr<const std::string>> themes;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"load\") {\n            std::string name, theme;\n            int volume;\n            std::cin >> name >> volume >> theme;\n            current = std::make_shared<Config>(name, volume, theme);\n        } else if (command == \"drop\") {\n            current.reset();\n        } else {\n            std::string h;\n            std::cin >> h;\n            if (command == \"volume\") {\n                volumes[h] = std::shared_ptr<const int>(current, &current->volume);\n            } else if (command == \"theme\") {\n                themes[h] = std::shared_ptr<const std::string>(current, &current->theme);\n            } else if (command == \"release\") {\n                if (volumes.contains(h)) {\n                    volumes[h].reset();\n                } else if (themes.contains(h)) {\n                    themes[h].reset();\n                }\n            } else if (auto v = volumes.find(h); v != volumes.end() && v->second) {\n                std::println(\"{} = {}\", h, *v->second);\n            } else if (auto t = themes.find(h); t != themes.end() && t->second) {\n                std::println(\"{} = {}\", h, *t->second);\n            } else {\n                std::println(\"{} = пусто\", h);\n            }\n        }\n    }\n    current.reset();\n    release_all(volumes);\n    release_all(themes);\n    return 0;\n}\n",
+      "solutionExplanation": "Ручка на поле указывает на `int` или строку, но владеет всей конфигурацией: она хранит указатель на поле и блок управления конфигурации. Поэтому `drop` или загрузка новой конфигурации не выгружают старую, пока на её поля есть ручки, — и обращение к полю никогда не повиснет.\n\nБез конструктора-псевдонима пришлось бы либо раздавать `shared_ptr<Config>` (и открывать всю конфигурацию), либо сырые указатели на поля (и рисковать висячими указателями).",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-reference-counting-task-3",
+      "title": "Найди ошибку: самоприсваивание",
+      "description": "Самодельный умный указатель `NotePtr` с подсчётом ссылок хранит заметки. Команды: `new X текст`, `copy Y X` (`notes[Y] = notes[X]`), `show X` — `X: текст (владельцев K)` или `X: пусто`. Заметка печатает `удалена текст` при удалении.\n\nПока имена в `copy` разные, всё работает. После команды вида `copy a a` заметка пропадает. Исправьте копирующее присваивание.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Note {\n    std::string text;\n    explicit Note(std::string t) : text(std::move(t)) {}\n    ~Note() {\n        std::println(\"удалена {}\", text);\n    }\n};\n\nclass NotePtr {\npublic:\n    NotePtr() = default;\n    explicit NotePtr(Note *p) : block_(new Block{p, 1}) {}\n    NotePtr(const NotePtr &other) : block_(other.block_) {\n        if (block_) {\n            ++block_->count;\n        }\n    }\n    NotePtr &operator=(const NotePtr &other) {\n        release();\n        block_ = other.block_;\n        if (block_) {\n            ++block_->count;\n        }\n        return *this;\n    }\n    ~NotePtr() {\n        release();\n    }\n\n    const Note *get() const {\n        return block_ ? block_->object : nullptr;\n    }\n    long use_count() const {\n        return block_ ? block_->count : 0;\n    }\n\nprivate:\n    struct Block {\n        Note *object;\n        long count;\n    };\n\n    void release() {\n        if (block_ && --block_->count == 0) {\n            delete block_->object;\n            delete block_;\n        }\n        block_ = nullptr;\n    }\n\n    Block *block_ = nullptr;\n};\n\nint main() {\n    std::map<std::string, NotePtr> notes;\n    std::string command, x;\n    while (std::cin >> command >> x) {\n        if (command == \"new\") {\n            std::string text;\n            std::cin >> text;\n            notes[x] = NotePtr(new Note(text));\n        } else if (command == \"copy\") {\n            std::string from;\n            std::cin >> from;\n            notes[x] = notes[from];\n        } else if (const Note *n = notes[x].get()) {\n            std::println(\"{}: {} (владельцев {})\", x, n->text, notes[x].use_count());\n        } else {\n            std::println(\"{}: пусто\", x);\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "new a заметка\ncopy a a\nshow a\n",
+          "output": "a: заметка (владельцев 1)\nудалена заметка\n"
+        },
+        {
+          "input": "new a x\ncopy b a\nshow b\n",
+          "output": "b: x (владельцев 2)\nудалена x\n"
+        }
+      ],
+      "constraints": ["Команд не больше 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что делает release(), если other — это *this и владелец единственный?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Запомните блок other в локальной переменной и увеличьте его счётчик до того, как отпустить старый: release() обнуляет block_, а при самоприсваивании это и other.block_.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "new a заметка\ncopy a a\nshow a\n",
+          "expected": "a: заметка (владельцев 1)\nудалена заметка\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "new a x\ncopy b a\nshow b\n",
+          "expected": "b: x (владельцев 2)\nудалена x\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "new a x\ncopy a a\ncopy a a\nshow a\n",
+          "expected": "a: x (владельцев 1)\nудалена x\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "new a x\ncopy b a\ncopy b b\nshow b\n",
+          "expected": "b: x (владельцев 2)\nудалена x\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "new a длинная-заметка\ncopy a a\nshow a\n",
+          "expected": "a: длинная-заметка (владельцев 1)\nудалена длинная-заметка\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "new a 1\nnew b 2\ncopy a b\ncopy a a\nshow a\n",
+          "expected": "удалена 1\na: 2 (владельцев 2)\nудалена 2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "new p q\ncopy p p\n",
+          "expected": "удалена q\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "new a x\ncopy b a\ncopy c b\ncopy c c\nshow c\n",
+          "expected": "c: x (владельцев 3)\nудалена x\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "new x y\ncopy x x\nshow x\nnew x z\n",
+          "expected": "x: y (владельцев 1)\nудалена y\nудалена z\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "new m n\ncopy m m\ncopy k m\nshow k\n",
+          "expected": "k: n (владельцев 2)\nудалена n\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Note {\n    std::string text;\n    explicit Note(std::string t) : text(std::move(t)) {}\n    ~Note() {\n        std::println(\"удалена {}\", text);\n    }\n};\n\nclass NotePtr {\npublic:\n    NotePtr() = default;\n    explicit NotePtr(Note *p) : block_(new Block{p, 1}) {}\n    NotePtr(const NotePtr &other) : block_(other.block_) {\n        if (block_) {\n            ++block_->count;\n        }\n    }\n    NotePtr &operator=(const NotePtr &other) {\n        Block *incoming = other.block_; // запомнить до release(): other может быть *this\n        if (incoming) {\n            ++incoming->count;\n        }\n        release();\n        block_ = incoming;\n        return *this;\n    }\n    ~NotePtr() {\n        release();\n    }\n\n    const Note *get() const {\n        return block_ ? block_->object : nullptr;\n    }\n    long use_count() const {\n        return block_ ? block_->count : 0;\n    }\n\nprivate:\n    struct Block {\n        Note *object;\n        long count;\n    };\n\n    void release() {\n        if (block_ && --block_->count == 0) {\n            delete block_->object;\n            delete block_;\n        }\n        block_ = nullptr;\n    }\n\n    Block *block_ = nullptr;\n};\n\nint main() {\n    std::map<std::string, NotePtr> notes;\n    std::string command, x;\n    while (std::cin >> command >> x) {\n        if (command == \"new\") {\n            std::string text;\n            std::cin >> text;\n            notes[x] = NotePtr(new Note(text));\n        } else if (command == \"copy\") {\n            std::string from;\n            std::cin >> from;\n            notes[x] = notes[from];\n        } else if (const Note *n = notes[x].get()) {\n            std::println(\"{}: {} (владельцев {})\", x, n->text, notes[x].use_count());\n        } else {\n            std::println(\"{}: пусто\", x);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Присваивание сначала отпускает свой блок, а потом берёт блок `other`. Если `other` — это `*this` и владелец единственный, `release()` удаляет заметку и блок и обнуляет указатель, а затем `block_ = other.block_` копирует уже обнулённое значение — заметка потеряна. Без обнуления в `release` было бы ещё хуже: увеличение счётчика записало бы в освобождённый блок.\n\nПравильный порядок — запомнить блок `other` в локальной переменной и увеличить его счётчик, потом отпустить старый и взять запомненный: при самоприсваивании счётчик на время станет 2, затем снова 1, и ничего не удалится. Запоминать обязательно: `release()` обнуляет `block_`, а когда `other` — это `*this`, вместе с ним обнуляется и `other.block_`; строка `block_ = other.block_` после `release()` потеряла бы блок с завышенным счётчиком — утечку. Вариант «по значению и обмен» получает правильный порядок автоматически.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-reference-counting-task-4",
+      "title": "Слабые ссылки своими руками",
+      "description": "Расширьте подсчёт ссылок слабыми ссылками. Блок управления: `{ Item *object; long strong; long weak; }`. Статические счётчики: живых объектов и живых блоков.\n\n- `Strong` — владелец: увеличивает `strong`; когда `strong` стал 0 — удаляет объект (`object = nullptr`), а если и `weak` = 0 — удаляет блок.\n- `Weak` — наблюдатель: увеличивает `weak`; когда `weak` стал 0 и `strong` = 0 — удаляет блок. `lock()` возвращает `Strong` на объект, если `strong > 0`, иначе пустой `Strong`. `expired()` — `strong == 0`.\n\nОбе обёртки копируемые и перемещаемые (присваивание по значению с обменом). `Item` печатает `создан имя`/`удалён имя`.\n\nКоманды (`std::map` для сильных и для слабых, `operator[]` создаёт пустые): `new S имя`, `watch W S` (`weak[W] = Weak(strong[S])`), `lock S W` (`strong[S] = weak[W].lock()`), `reset S`, `forget W`, `check W` — `W: жив имя` или `W: истёк`, `stats` — `объектов A, блоков B`. В конце сбросьте все сильные, затем все слабые (от последнего имени к первому) и напечатайте `stats`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "new a кот\nwatch w a\ncheck w\nstats\nreset a\ncheck w\nstats\nforget w\nstats\n",
+          "output": "создан кот\nw: жив кот\nобъектов 1, блоков 1\nудалён кот\nw: истёк\nобъектов 0, блоков 1\nобъектов 0, блоков 0\nобъектов 0, блоков 0\n"
+        },
+        {
+          "input": "new a x\nwatch w a\nlock b w\nreset a\ncheck w\n",
+          "output": "создан x\nw: жив x\nудалён x\nобъектов 0, блоков 0\n"
+        }
+      ],
+      "constraints": ["Команд не больше 300."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сильная сторона: void reset() { if (b_) { if (--b_->strong == 0) { delete b_->object; b_->object = nullptr; if (b_->weak == 0) { delete b_; --blocks; } } b_ = nullptr; } }",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "lock(): если блок есть и strong > 0 — создать Strong, разделяющий тот же блок (конструктор из блока, увеличивающий strong).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "new a кот\nwatch w a\ncheck w\nstats\nreset a\ncheck w\nstats\nforget w\nstats\n",
+          "expected": "создан кот\nw: жив кот\nобъектов 1, блоков 1\nудалён кот\nw: истёк\nобъектов 0, блоков 1\nобъектов 0, блоков 0\nобъектов 0, блоков 0\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "new a x\nwatch w a\nlock b w\nreset a\ncheck w\n",
+          "expected": "создан x\nw: жив x\nудалён x\nобъектов 0, блоков 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустая слабая ссылка",
+          "stdin": "check w\nstats\n",
+          "expected": "w: истёк\nобъектов 0, блоков 0\nобъектов 0, блоков 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "lock после удаления",
+          "stdin": "new a x\nwatch w a\nreset a\nlock b w\ncheck w\nstats\n",
+          "expected": "создан x\nудалён x\nw: истёк\nобъектов 0, блоков 1\nобъектов 0, блоков 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Слабая из пустой сильной",
+          "stdin": "new a x\nwatch w1 a\nwatch w2 w1\nstats\n",
+          "expected": "создан x\nобъектов 1, блоков 1\nудалён x\nобъектов 0, блоков 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Две слабые ссылки",
+          "stdin": "new a x\nwatch w a\nwatch v a\nreset a\nforget w\nstats\nforget v\nstats\n",
+          "expected": "создан x\nудалён x\nобъектов 0, блоков 1\nобъектов 0, блоков 0\nобъектов 0, блоков 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Замена объекта",
+          "stdin": "new a x\nnew a y\nwatch w a\ncheck w\n",
+          "expected": "создан x\nсоздан y\nудалён x\nw: жив y\nудалён y\nобъектов 0, блоков 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "lock пустой",
+          "stdin": "new a x\nlock b nothing\nstats\n",
+          "expected": "создан x\nобъектов 1, блоков 1\nудалён x\nобъектов 0, блоков 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Сначала забыть, потом сбросить",
+          "stdin": "new a x\nwatch w a\nforget w\nreset a\nstats\n",
+          "expected": "создан x\nудалён x\nобъектов 0, блоков 0\nобъектов 0, блоков 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Два объекта",
+          "stdin": "new a 1\nnew b 2\nwatch w a\nwatch v b\nreset b\ncheck w\ncheck v\n",
+          "expected": "создан 1\nсоздан 2\nудалён 2\nw: жив 1\nv: истёк\nудалён 1\nобъектов 0, блоков 0\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Item {\n    static inline int alive = 0;\n    std::string name;\n    explicit Item(std::string n) : name(std::move(n)) {\n        ++alive;\n        std::println(\"создан {}\", name);\n    }\n    ~Item() {\n        --alive;\n        std::println(\"удалён {}\", name);\n    }\n};\n\nstruct Block {\n    static inline int alive = 0;\n    Item *object;\n    long strong;\n    long weak;\n};\n\nclass Strong {\npublic:\n    Strong() = default;\n    explicit Strong(Item *p) : b_(new Block{p, 1, 0}) {\n        ++Block::alive;\n    }\n    explicit Strong(Block *b) : b_(b) {\n        ++b_->strong;\n    }\n    Strong(const Strong &o) : b_(o.b_) {\n        if (b_) {\n            ++b_->strong;\n        }\n    }\n    Strong(Strong &&o) noexcept : b_(std::exchange(o.b_, nullptr)) {}\n    Strong &operator=(Strong o) noexcept {\n        std::swap(b_, o.b_);\n        return *this;\n    }\n    ~Strong() {\n        reset();\n    }\n\n    void reset() {\n        if (b_) {\n            if (--b_->strong == 0) {\n                delete b_->object;\n                b_->object = nullptr;\n                if (b_->weak == 0) {\n                    delete b_;\n                    --Block::alive;\n                }\n            }\n            b_ = nullptr;\n        }\n    }\n\n    Block *block() const {\n        return b_;\n    }\n\nprivate:\n    Block *b_ = nullptr;\n};\n\nclass Weak {\npublic:\n    Weak() = default;\n    explicit Weak(const Strong &s) : b_(s.block()) {\n        if (b_) {\n            ++b_->weak;\n        }\n    }\n    Weak(const Weak &o) : b_(o.b_) {\n        if (b_) {\n            ++b_->weak;\n        }\n    }\n    Weak(Weak &&o) noexcept : b_(std::exchange(o.b_, nullptr)) {}\n    Weak &operator=(Weak o) noexcept {\n        std::swap(b_, o.b_);\n        return *this;\n    }\n    ~Weak() {\n        reset();\n    }\n\n    void reset() {\n        if (b_) {\n            if (--b_->weak == 0 && b_->strong == 0) {\n                delete b_;\n                --Block::alive;\n            }\n            b_ = nullptr;\n        }\n    }\n\n    bool expired() const {\n        return !b_ || b_->strong == 0;\n    }\n\n    Strong lock() const {\n        return expired() ? Strong() : Strong(b_);\n    }\n\n    const Item *peek() const {\n        return expired() ? nullptr : b_->object;\n    }\n\nprivate:\n    Block *b_ = nullptr;\n};\n\ntemplate <class Map>\nvoid reset_all(Map &m) {\n    for (auto it = m.rbegin(); it != m.rend(); ++it) {\n        it->second.reset();\n    }\n}\n\nvoid stats() {\n    std::println(\"объектов {}, блоков {}\", Item::alive, Block::alive);\n}\n\nint main() {\n    std::map<std::string, Strong> strong;\n    std::map<std::string, Weak> weak;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"stats\") {\n            stats();\n            continue;\n        }\n        std::string a;\n        std::cin >> a;\n        if (command == \"new\") {\n            std::string name;\n            std::cin >> name;\n            strong[a] = Strong(new Item(name));\n        } else if (command == \"watch\") {\n            std::string s;\n            std::cin >> s;\n            weak[a] = Weak(strong[s]);\n        } else if (command == \"lock\") {\n            std::string w;\n            std::cin >> w;\n            strong[a] = weak[w].lock();\n        } else if (command == \"reset\") {\n            strong[a].reset();\n        } else if (command == \"forget\") {\n            weak[a].reset();\n        } else if (const Item *item = weak[a].peek()) {\n            std::println(\"{}: жив {}\", a, item->name);\n        } else {\n            std::println(\"{}: истёк\", a);\n        }\n    }\n    reset_all(strong);\n    reset_all(weak);\n    stats();\n    return 0;\n}\n",
+      "solutionExplanation": "Два счётчика разделяют две жизни: объекта и блока. Объект живёт, пока есть сильные ссылки; блок — пока есть хоть какие-то, потому что слабые ссылки должны иметь возможность спросить «жив ли объект?» и после его удаления. Последний из всех ссылок удаляет блок. Именно так устроены `std::shared_ptr` и `std::weak_ptr`, только счётчики там атомарные, а `lock()` атомарно проверяет и увеличивает `strong`.\n\nИтоговая статистика — проверка баланса: после сброса всех ссылок не должно остаться ни объектов, ни блоков.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "lifetime-reference-counting-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Увеличивает ли перемещение shared_ptr число сильных владельцев?",
-        "options": ["Да: как любое присваивание", "Нет: оно передаёт существующую долю владения"],
-        "correct": 1,
-        "explanation": "Объект и блок управления живут по разным часам. При исчезновении последнего сильного владельца объект уничтожается; слабые наблюдатели могут удерживать блок управления, чтобы узнавать о смерти объекта. При make_shared объект и блок часто размещены в одном выделении, поэтому память возвращается аллокатору только после исчезновения слабых ссылок, хотя деструктор T уже выполнен. Проверка if (use_count() == 1) «можно менять безопасно» — ложное право: состояние может измениться между чтением и использованием."
-      },
-      {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["2 1", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "p = make_shared → сильных 1\nq = p           → сильных 2\nref = q по &    → сильных всё ещё 2\nr = move(q)     → сильных 2; q пуст\nвыход из блока  → сильных 1"
-      },
-      {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q1",
+        "question": "Где shared_ptr хранит счётчик владельцев?",
+        "explanation": "Встроенный счётчик в самом объекте — другая схема (intrusive).",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "use_count() == 1 не даёт права менять объект без синхронизации в многопоточном коде. Счётчик — снимок прошлого, а не гарантия будущего."
+          "В блоке управления, общем для всех копий",
+          "В самом объекте",
+          "В каждой копии shared_ptr отдельно",
+          "В глобальной таблице"
         ],
-        "correct": 1,
-        "explanation": "Добавьте функцию read(shared_ptr<int> p) и сравните счётчик внутри неё с read(const shared_ptr<int>& p). Если функция только читает int, рассмотрите ещё более простой const int&."
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Когда удаляется блок управления shared_ptr?",
+        "explanation": "weak_ptr должен уметь узнать, жив ли объект, даже после его удаления.",
+        "options": [
+          "Когда нет ни владельцев, ни наблюдателей (weak_ptr)",
+          "Когда нет владельцев",
+          "Вместе с первым shared_ptr",
+          "Никогда"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Объект создан через make_shared, остались только weak_ptr. Что с его памятью?",
+        "explanation": "Объект и блок — одно выделение памяти.",
+        "options": [
+          "Деструктор вызван, но память объекта освободится вместе с блоком",
+          "Память уже освобождена",
+          "Деструктор не вызван",
+          "Объект продолжает жить"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <memory>\n#include <print>\n\nstruct S {\n    int a = 1;\n    int b = 2;\n};\n\nint main() {\n    auto s = std::make_shared<S>();\n    std::shared_ptr<int> p(s, &s->b);\n    std::println(\"{}\", s.use_count());\n    s.reset();\n    std::println(\"{} {}\", *p, p.use_count());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Псевдоним p — второй владелец всего объекта S, хотя указывает на поле b.",
+        "type": "text",
+        "answers": ["2\n2 1"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Почему копирование std::shared_ptr дороже копирования сырого указателя?",
+        "explanation": "Атомарная операция синхронизирует кэши ядер процессора.",
+        "options": [
+          "Нужно атомарно увеличить счётчик в блоке управления",
+          "Копируется объект",
+          "Выделяется новый блок управления",
+          "Оно не дороже"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "В каком порядке безопасно выполнять присваивание p = q в своём счётчике ссылок?",
+        "explanation": "Иначе при p = p объект удалится раньше, чем счётчик увеличится.",
+        "options": [
+          "Сначала увеличить счётчик q, потом уменьшить счётчик старого p",
+          "Сначала уменьшить старый, потом увеличить новый",
+          "Порядок не важен",
+          "Только уменьшить старый"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Чем встроенный (intrusive) счётчик отличается от shared_ptr?",
+        "explanation": "Так устроены COM-объекты и boost::intrusive_ptr.",
+        "options": [
+          "Счётчик хранится в самом объекте, блок управления не нужен",
+          "Он всегда атомарный",
+          "Он не удаляет объект",
+          "Ничем"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Как называется конструктор shared_ptr, который указывает на одно, а владеет другим? Конструктор-…",
+        "explanation": "std::shared_ptr<U>(owner, ptr).",
+        "type": "text",
+        "answers": ["псевдоним", "aliasing", "алиас"],
+        "placeholder": "Одно слово"
       }
     ]
   }

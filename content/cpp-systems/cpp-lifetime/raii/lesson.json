@@ -1,149 +1,533 @@
 {
   "id": "lifetime-raii",
-  "title": "RAII — ресурс связан с владельцем",
-  "description": "RAII связывает право владения ресурсом со временем жизни объекта стека.",
+  "title": "RAII: ресурс принадлежит объекту",
+  "description": "Ресурсы — память, файлы, соединения, блокировки, потоки — и почему ручное освобождение ломается при раннем выходе и исключениях. Идиома RAII: захват в конструкторе, освобождение в деструкторе; некопируемый владелец; RAII-классы стандартной библиотеки — контейнеры, умные указатели, файловые потоки, scoped_lock, jthread; деструкторы не бросают исключений; объекты, восстанавливающие состояние.",
   "moduleId": "cpp-lifetime",
   "order": 4,
-  "difficulty": "advanced",
-  "estimatedMinutes": 55,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
   "prerequisites": ["lifetime-construction-destruction"],
   "objectives": [
-    "Объяснить, почему привязка ресурса к времени жизни объекта закрывает все пути выхода.",
-    "Проследить на MemoryDiagram восстановление состояния при раскрутке исключения.",
-    "Реализовать небросаемый guard с запретом копирования и проверить его на исключении."
+    "Объяснять, почему ручное освобождение ресурсов ненадёжно",
+    "Писать RAII-классы, захватывающие ресурс в конструкторе и освобождающие в деструкторе",
+    "Пользоваться RAII-типами стандартной библиотеки",
+    "Сохранять корректное состояние программы при исключениях"
   ],
-  "tags": ["C++20", "время жизни", "управление ресурсами", "RAII — ресурс связан с владельцем"],
+  "tags": ["C++23", "Время жизни", "RAII", "Ресурсы", "Исключения"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "lifetime-raii-exercise",
-    "title": "Практика: RAII — ресурс связан с владельцем",
-    "description": "Реализуйте Restore как в модели: конструктор сохраняет прежнее значение ссылки и записывает новое, деструктор восстанавливает, копирование запрещено. solve(a,b) временно заменяет a на b, сохраняет изменённое значение, бросает int и ловит его снаружи блока Restore; верните сумму сохранённого и восстановленного значений.",
-    "difficulty": "advanced",
+    "title": "Соединения",
+    "description": "Класс `Connection` — RAII-владелец соединения: конструктор печатает `открыто имя` и увеличивает глобальный счётчик открытых соединений, деструктор печатает `закрыто имя` и уменьшает его. Копирование запрещено.\n\nКаждая строка ввода — имя соединения и команды. Функция `handle(line)` открывает соединение и выполняет команды по порядку:\n\n- `ok` — напечатать `запрос выполнен`;\n- `return` — напечатать `ранний выход` и выйти из функции;\n- `fail` — бросить `std::runtime_error(\"сбой запроса\")`.\n\n`main` вызывает `handle` для каждой строки и ловит исключения, печатая `ошибка: текст`. В конце напечатайте `открытых: N`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 7)",
-        "output": "10\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "db ok ok\napi ok fail ok\ncache return ok\n",
+        "output": "открыто db\nзапрос выполнен\nзапрос выполнен\nзакрыто db\nоткрыто api\nзапрос выполнен\nзакрыто api\nошибка: сбой запроса\nоткрыто cache\nранний выход\nзакрыто cache\nоткрытых: 0\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "x\n",
+        "output": "открыто x\nзакрыто x\nоткрытых: 0\n"
       }
     ],
-    "constraints": [
-      "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Строк не больше 50, команд в строке не больше 20."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Перечислите все пути выхода из защищённого блока: обычный конец, return, throw. Деструктор владельца выполняется на каждом из них."
+        "id": "hint-1",
+        "text": "В handle нет ни одной строки закрытия: соединение — локальный объект, и его деструктор отработает при любом выходе.",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "У владельца нужно отдельно решить вопрос копирования и перемещения. Для guard, восстанавливающего настройку, копирование почти всегда ошибочно: два экземпляра восстановят одно значение дважды. Guard, заимствующий int&, обязан жить меньше самого int — сначала объявляется защищаемое состояние, затем guard. Деструктор не должен бросать. RAII обеспечивает очистку ресурсов, но не откатывает предметные изменения: добавленная запись в журнал и незакрытый файл — разные обязательства; для транзакции нужен явный договор commit/rollback.\n\nНе разбрасывайте delete и unlock по веткам — но и не считайте RAII гарантией при kill процесса или abort: эти примеры относятся к нормальному выходу и раскрутке стека.\n\nДобавьте ранний return и throw внутрь защищённого блока: в обоих случаях настройка восстанавливается. Сравните с ручным присваиванием в конце блока — до него исполнение может не дойти."
+        "id": "hint-2",
+        "text": "Деструктор Connection выполняется до того, как исключение попадёт в catch в main, поэтому «закрыто» печатается раньше «ошибка».",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 7],
-        "expected": "10\n"
+        "stdin": "db ok ok\napi ok fail ok\ncache return ok\n",
+        "expected": "открыто db\nзапрос выполнен\nзапрос выполнен\nзакрыто db\nоткрыто api\nзапрос выполнен\nзакрыто api\nошибка: сбой запроса\nоткрыто cache\nранний выход\nзакрыто cache\nоткрытых: 0\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "x\n",
+        "expected": "открыто x\nзакрыто x\nоткрытых: 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный случай 1",
-        "arguments": [-8, 3],
-        "expected": "-5\n"
+        "id": "hidden-1",
+        "name": "Пусто",
+        "stdin": "",
+        "expected": "открытых: 0\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный случай 2",
-        "arguments": [5, -9],
-        "expected": "-4\n"
+        "id": "hidden-2",
+        "name": "Сразу сбой",
+        "stdin": "a fail\n",
+        "expected": "открыто a\nзакрыто a\nошибка: сбой запроса\nоткрытых: 0\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный случай 3",
-        "arguments": [-1000, 1000],
-        "expected": "0\n"
+        "id": "hidden-3",
+        "name": "Сразу выход",
+        "stdin": "a return\n",
+        "expected": "открыто a\nранний выход\nзакрыто a\nоткрытых: 0\n"
       },
       {
-        "id": "case-6",
-        "name": "Граничный случай 4",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-4",
+        "name": "Три соединения",
+        "stdin": "a ok\nb ok\nc ok\n",
+        "expected": "открыто a\nзапрос выполнен\nзакрыто a\nоткрыто b\nзапрос выполнен\nзакрыто b\nоткрыто c\nзапрос выполнен\nзакрыто c\nоткрытых: 0\n"
       },
       {
-        "id": "case-7",
-        "name": "Граничный случай 5",
-        "arguments": [4, 4],
-        "expected": "8\n"
+        "id": "hidden-5",
+        "name": "Пустая строка",
+        "stdin": "\nz ok\n",
+        "expected": "открыто z\nзапрос выполнен\nзакрыто z\nоткрытых: 0\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Много запросов",
+        "stdin": "s ok ok ok ok ok\n",
+        "expected": "открыто s\nзапрос выполнен\nзапрос выполнен\nзапрос выполнен\nзапрос выполнен\nзапрос выполнен\nзакрыто s\nоткрытых: 0\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Все пути выхода",
+        "stdin": "p fail\nq return\nr ok\n",
+        "expected": "открыто p\nзакрыто p\nошибка: сбой запроса\nоткрыто q\nранний выход\nзакрыто q\nоткрыто r\nзапрос выполнен\nзакрыто r\nоткрытых: 0\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Кириллица",
+        "stdin": "база ok fail\n",
+        "expected": "открыто база\nзапрос выполнен\nзакрыто база\nошибка: сбой запроса\nоткрытых: 0\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct Restore { int& x; int old; Restore(int& v, int next): x(v), old(v) { x = next; } ~Restore() { x = old; } Restore(const Restore&) = delete; Restore& operator=(const Restore&) = delete; };\nint solve(int a, int b) { int inside = 0; try { Restore g{a, b}; inside = a; throw 1; } catch (int) {} return inside + a; }",
-    "solutionExplanation": "У владельца нужно отдельно решить вопрос копирования и перемещения. Для guard, восстанавливающего настройку, копирование почти всегда ошибочно: два экземпляра восстановят одно значение дважды. Guard, заимствующий int&, обязан жить меньше самого int — сначала объявляется защищаемое состояние, затем guard. Деструктор не должен бросать. RAII обеспечивает очистку ресурсов, но не откатывает предметные изменения: добавленная запись в журнал и незакрытый файл — разные обязательства; для транзакции нужен явный договор commit/rollback.\n\nНе разбрасывайте delete и unlock по веткам — но и не считайте RAII гарантией при kill процесса или abort: эти примеры относятся к нормальному выходу и раскрутке стека.\n\nДобавьте ранний return и throw внутрь защищённого блока: в обоих случаях настройка восстанавливается. Сравните с ручным присваиванием в конце блока — до него исполнение может не дойти.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n#include <sstream>\n#include <stdexcept>\n#include <string>\n#include <utility>\n\nint open_connections = 0;\n\nclass Connection {\npublic:\n    explicit Connection(std::string name) : name_(std::move(name)) {\n        ++open_connections;\n        std::println(\"открыто {}\", name_);\n    }\n    ~Connection() {\n        --open_connections;\n        std::println(\"закрыто {}\", name_);\n    }\n    Connection(const Connection &) = delete;\n    Connection &operator=(const Connection &) = delete;\n\nprivate:\n    std::string name_;\n};\n\nvoid handle(const std::string &line) {\n    std::istringstream in(line);\n    std::string name;\n    if (!(in >> name)) {\n        return;\n    }\n    const Connection connection(name);\n    std::string command;\n    while (in >> command) {\n        if (command == \"ok\") {\n            std::println(\"запрос выполнен\");\n        } else if (command == \"return\") {\n            std::println(\"ранний выход\");\n            return;\n        } else {\n            throw std::runtime_error(\"сбой запроса\");\n        }\n    }\n}\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        try {\n            handle(line);\n        } catch (const std::exception &e) {\n            std::println(\"ошибка: {}\", e.what());\n        }\n    }\n    std::println(\"открытых: {}\", open_connections);\n    return 0;\n}\n",
+    "solutionExplanation": "У функции три пути выхода — конец команд, `return` и исключение, — и на каждом соединение закрывается, хотя в коде нет ни одного вызова «закрыть». Деструктор локального объекта вызывается при раскрутке стека раньше, чем исключение дойдёт до обработчика, поэтому `закрыто` печатается перед `ошибка`. Счётчик в конце всегда равен нулю.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "lifetime-raii-task-2",
+      "title": "Отступы",
+      "description": "Глобальная переменная `depth` задаёт текущий отступ (по два пробела на уровень). Класс `Indent` — RAII-объект: конструктор увеличивает `depth`, деструктор восстанавливает **прежнее** значение.\n\nВвод — строки-команды:\n\n- `begin имя` — напечатать `имя:` с текущим отступом и обработать следующие строки как вложенный раздел (на уровень глубже) до парной команды `end`;\n- `item текст` — напечатать текст с текущим отступом;\n- `end` — закрыть раздел.\n\nЕсли ввод кончился внутри разделов, они закрываются сами. Решите рекурсией: раздел — вызов функции с локальным объектом `Indent`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "begin План\nitem чай\nbegin Покупки\nitem хлеб\nend\nitem звонок\nend\nitem конец\n",
+          "output": "План:\n  чай\n  Покупки:\n    хлеб\n  звонок\nконец\n"
+        },
+        {
+          "input": "begin a\nbegin b\nitem c\n",
+          "output": "a:\n  b:\n    c\n"
+        }
+      ],
+      "constraints": [
+        "Строк не больше 200; глубина не больше 50; end не встречается на верхнем уровне."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Отступ: std::string(depth * 2, ' ').",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "void section(std::istream &in) { const Indent indent; while (читается команда) { if (end) return; … if (begin) { печать; section(in); } } } — Indent восстановит depth при любом выходе.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "begin План\nitem чай\nbegin Покупки\nitem хлеб\nend\nitem звонок\nend\nitem конец\n",
+          "expected": "План:\n  чай\n  Покупки:\n    хлеб\n  звонок\nконец\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "begin a\nbegin b\nitem c\n",
+          "expected": "a:\n  b:\n    c\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-2",
+          "name": "Без разделов",
+          "stdin": "item один\nitem два\n",
+          "expected": "один\nдва\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Пустой раздел",
+          "stdin": "begin пустой\nend\nitem после\n",
+          "expected": "пустой:\nпосле\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Глубокая вложенность",
+          "stdin": "begin 1\nbegin 2\nbegin 3\nbegin 4\nitem дно\nend\nend\nend\nend\nitem верх\n",
+          "expected": "1:\n  2:\n    3:\n      4:\n        дно\nверх\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Соседние разделы",
+          "stdin": "begin a\nitem x\nend\nbegin b\nitem y\nend\n",
+          "expected": "a:\n  x\nb:\n  y\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Возврат на уровень",
+          "stdin": "begin a\nbegin b\nend\nitem в_a\n",
+          "expected": "a:\n  b:\n  в_a\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Незакрытый раздел",
+          "stdin": "begin незакрытый\nitem текст\n",
+          "expected": "незакрытый:\n  текст\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Смешанный",
+          "stdin": "item x\nbegin s\nitem y\nbegin t\nend\nitem z\nend\nitem w\n",
+          "expected": "x\ns:\n  y\n  t:\n  z\nw\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nint depth = 0;\n\nclass Indent {\npublic:\n    Indent() : saved_(depth) {\n        ++depth;\n    }\n    ~Indent() {\n        depth = saved_;\n    }\n    Indent(const Indent &) = delete;\n    Indent &operator=(const Indent &) = delete;\n\nprivate:\n    int saved_;\n};\n\nvoid print_line(const std::string &text) {\n    std::println(\"{}{}\", std::string(depth * 2, ' '), text);\n}\n\nvoid process(std::istream &in, bool nested);\n\nvoid section(std::istream &in) {\n    const Indent indent;\n    process(in, true);\n}\n\nvoid process(std::istream &in, bool nested) {\n    std::string command;\n    while (in >> command) {\n        if (command == \"end\" && nested) {\n            return;\n        }\n        std::string text;\n        in >> text;\n        if (command == \"begin\") {\n            print_line(text + \":\");\n            section(in);\n        } else {\n            print_line(text);\n        }\n    }\n}\n\nint main() {\n    process(std::cin, false);\n    return 0;\n}\n",
+      "solutionExplanation": "`Indent` запоминает прежнее значение и восстанавливает его в деструкторе, поэтому каждый вложенный раздел возвращает отступ ровно туда, где он был, — и при `end`, и при окончании ввода, когда разделы закрываются раскруткой рекурсии. Так же работают «сохранители» состояния в библиотеках: восстановление флагов потока, временная смена рабочего каталога, временное переключение режима.\n\nВосстанавливать **сохранённое** значение надёжнее, чем уменьшать на единицу: состояние вернётся правильным, даже если кто-то внутри изменил его не по правилам.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-raii-task-3",
+      "title": "Найди ошибку: утечка при ошибке разбора",
+      "description": "Каждая строка ввода — число `n` и `n` целых чисел. Программа печатает `сумма S` или, если среди чисел встретилось нечисло, `ошибка: не число X`.\n\nВывод правильный, но LeakSanitizer при завершении сообщает об утечке памяти, и проверка отклоняет решение. Найдите и исправьте причину.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <charconv>\n#include <iostream>\n#include <print>\n#include <sstream>\n#include <stdexcept>\n#include <string>\n\nint parse(const std::string &token) {\n    int value = 0;\n    const char *end = token.data() + token.size();\n    const auto [ptr, ec] = std::from_chars(token.data(), end, value);\n    if (ec != std::errc() || ptr != end) {\n        throw std::invalid_argument(\"не число \" + token);\n    }\n    return value;\n}\n\nlong long sum_line(const std::string &line) {\n    std::istringstream in(line);\n    int n = 0;\n    in >> n;\n    int *values = new int[n];\n    for (int i = 0; i < n; i++) {\n        std::string token;\n        in >> token;\n        values[i] = parse(token);\n    }\n    long long sum = 0;\n    for (int i = 0; i < n; i++) {\n        sum += values[i];\n    }\n    delete[] values;\n    return sum;\n}\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        try {\n            std::println(\"сумма {}\", sum_line(line));\n        } catch (const std::exception &e) {\n            std::println(\"ошибка: {}\", e.what());\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3 1 2 3\n2 5 x\n",
+          "output": "сумма 6\nошибка: не число x\n"
+        },
+        {
+          "input": "0\n",
+          "output": "сумма 0\n"
+        }
+      ],
+      "constraints": ["Строк не больше 50; 0 ≤ n ≤ 100; числа помещаются в int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какая строка sum_line не выполняется, если parse бросает исключение?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Замените new int[n] на std::vector<int> values(n): вектор освободит память при любом выходе из функции.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 1 2 3\n2 5 x\n",
+          "expected": "сумма 6\nошибка: не число x\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0\n",
+          "expected": "сумма 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 abc\n",
+          "expected": "ошибка: не число abc\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "2 1 2\n2 1 2x\n",
+          "expected": "сумма 3\nошибка: не число 2x\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "4 -1 -2 -3 -4\n",
+          "expected": "сумма -10\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "3 1 2 три\n3 4 5 6\n",
+          "expected": "ошибка: не число три\nсумма 15\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "5 2147483647 1 1 1 1\n",
+          "expected": "сумма 2147483651\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "2 +5 5\n",
+          "expected": "ошибка: не число +5\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "1 0\n1 -0\n1 --1\n",
+          "expected": "сумма 0\nсумма 0\nошибка: не число --1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "3 10 20 30\n",
+          "expected": "сумма 60\n"
+        }
+      ],
+      "referenceSolution": "#include <charconv>\n#include <iostream>\n#include <print>\n#include <sstream>\n#include <stdexcept>\n#include <string>\n#include <vector>\n\nint parse(const std::string &token) {\n    int value = 0;\n    const char *end = token.data() + token.size();\n    const auto [ptr, ec] = std::from_chars(token.data(), end, value);\n    if (ec != std::errc() || ptr != end) {\n        throw std::invalid_argument(\"не число \" + token);\n    }\n    return value;\n}\n\nlong long sum_line(const std::string &line) {\n    std::istringstream in(line);\n    int n = 0;\n    in >> n;\n    std::vector<int> values(n);\n    for (int i = 0; i < n; i++) {\n        std::string token;\n        in >> token;\n        values[i] = parse(token);\n    }\n    long long sum = 0;\n    for (int v : values) {\n        sum += v;\n    }\n    return sum;\n}\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        try {\n            std::println(\"сумма {}\", sum_line(line));\n        } catch (const std::exception &e) {\n            std::println(\"ошибка: {}\", e.what());\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`parse` бросает исключение из середины цикла, и управление уходит в `catch` в `main`, минуя `delete[] values`. Память, выделенная `new int[n]`, больше никому не принадлежит — утечка на каждую строку с ошибкой.\n\n`std::vector<int>` — RAII-владелец памяти: его деструктор вызывается при раскрутке стека, и освобождение нельзя пропустить. Заодно исчезла ручная работа с размером.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-raii-task-4",
+      "title": "Стек состояний рисования",
+      "description": "Графические библиотеки хранят текущее состояние рисования и позволяют сохранить его и потом восстановить. Глобальное состояние: цвет (сначала `чёрный`) и толщина (сначала `1`). RAII-класс `StateSaver` запоминает состояние в конструкторе и восстанавливает в деструкторе.\n\nКоманды:\n\n- `color C`, `width W` — изменить текущее состояние;\n- `draw имя` — напечатать `имя: цвет C, толщина W`;\n- `save` — начать вложенный блок (рекурсивный вызов с локальным `StateSaver`), `restore` — закончить его;\n- `error` — бросить `std::runtime_error(\"ошибка рисования\")`.\n\nГлавный цикл выполняет команды верхнего уровня по одной и ловит исключения, печатая их текст. После ошибки состояние должно оказаться таким, каким было на верхнем уровне перед входом во все прерванные блоки, а обработка продолжается со следующей команды на верхнем уровне. Команда `restore` на верхнем уровне игнорируется.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "draw a\nsave\ncolor красный\nwidth 3\ndraw b\nrestore\ndraw c\n",
+          "output": "a: цвет чёрный, толщина 1\nb: цвет красный, толщина 3\nc: цвет чёрный, толщина 1\n"
+        },
+        {
+          "input": "color синий\nsave\nwidth 5\nsave\ncolor зелёный\nerror\ndraw d\n",
+          "output": "ошибка рисования\nd: цвет синий, толщина 1\n"
+        }
+      ],
+      "constraints": [
+        "Команд не больше 200; глубина вложенности не больше 50; C — слово, 1 ≤ W ≤ 100."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "void block(std::istream &in) { const StateSaver saver; while (in >> cmd) { if (cmd == \"restore\") return; execute(cmd, in); } } — а execute для save вызывает block.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Ловите исключение только в main. Раскрутка стека уничтожит все StateSaver прерванных блоков, от внутреннего к внешнему, и каждый вернёт своё сохранённое состояние.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "draw a\nsave\ncolor красный\nwidth 3\ndraw b\nrestore\ndraw c\n",
+          "expected": "a: цвет чёрный, толщина 1\nb: цвет красный, толщина 3\nc: цвет чёрный, толщина 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "color синий\nsave\nwidth 5\nsave\ncolor зелёный\nerror\ndraw d\n",
+          "expected": "ошибка рисования\nd: цвет синий, толщина 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-2",
+          "name": "Начальное состояние",
+          "stdin": "draw x\n",
+          "expected": "x: цвет чёрный, толщина 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "restore на верхнем уровне",
+          "stdin": "restore\ncolor белый\ndraw y\n",
+          "expected": "y: цвет белый, толщина 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Вложенные сохранения",
+          "stdin": "save\ncolor a\nsave\ncolor b\ndraw in\nrestore\ndraw mid\nrestore\ndraw out\n",
+          "expected": "in: цвет b, толщина 1\nmid: цвет a, толщина 1\nout: цвет чёрный, толщина 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Незакрытый блок",
+          "stdin": "save\nwidth 7\ndraw z\n",
+          "expected": "z: цвет чёрный, толщина 7\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Ошибка на верхнем уровне",
+          "stdin": "width 2\nerror\ndraw after\n",
+          "expected": "ошибка рисования\nafter: цвет чёрный, толщина 2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Продолжение после ошибки",
+          "stdin": "save\ncolor red\nerror\ndraw a\nrestore\ndraw b\n",
+          "expected": "ошибка рисования\na: цвет чёрный, толщина 1\nb: цвет чёрный, толщина 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Ошибка на глубине три",
+          "stdin": "save\nsave\nsave\nwidth 100\nerror\nwidth 4\ndraw q\n",
+          "expected": "ошибка рисования\nq: цвет чёрный, толщина 4\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <stdexcept>\n#include <string>\n\nstruct State {\n    std::string color = \"чёрный\";\n    int width = 1;\n};\n\nState current;\n\nclass StateSaver {\npublic:\n    StateSaver() : saved_(current) {}\n    ~StateSaver() {\n        current = saved_;\n    }\n    StateSaver(const StateSaver &) = delete;\n    StateSaver &operator=(const StateSaver &) = delete;\n\nprivate:\n    State saved_;\n};\n\nvoid execute(const std::string &command, std::istream &in);\n\nvoid block(std::istream &in) {\n    const StateSaver saver;\n    std::string command;\n    while (in >> command) {\n        if (command == \"restore\") {\n            return;\n        }\n        execute(command, in);\n    }\n}\n\nvoid execute(const std::string &command, std::istream &in) {\n    if (command == \"color\") {\n        in >> current.color;\n    } else if (command == \"width\") {\n        in >> current.width;\n    } else if (command == \"draw\") {\n        std::string name;\n        in >> name;\n        std::println(\"{}: цвет {}, толщина {}\", name, current.color, current.width);\n    } else if (command == \"save\") {\n        block(in);\n    } else if (command == \"error\") {\n        throw std::runtime_error(\"ошибка рисования\");\n    }\n}\n\nint main() {\n    std::string command;\n    while (std::cin >> command) {\n        try {\n            execute(command, std::cin);\n        } catch (const std::exception &e) {\n            std::println(\"{}\", e.what());\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Исключение из глубины вложенных блоков раскручивает стек: каждый прерванный `block` уничтожает свой `StateSaver`, и состояние возвращается по цепочке до верхнего уровня. Ни одна функция не ловит исключение ради очистки — восстановление встроено во время жизни объектов.\n\nБез RAII каждому `save` понадобился бы `try`/`catch` с восстановлением и повторным пробросом, и пропуск хотя бы одного оставил бы программу в чужом цвете.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "lifetime-raii-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Что обеспечивает освобождение ресурса при исключении?",
+        "id": "q1",
+        "question": "Что означает RAII?",
+        "explanation": "Время жизни ресурса совпадает со временем жизни объекта-владельца.",
         "options": [
-          "Код cleanup, записанный после throw в том же блоке",
-          "Деструктор успешно созданного автоматического владельца при раскрутке стека"
+          "Ресурс захватывается в конструкторе объекта и освобождается в его деструкторе",
+          "Ресурсы выделяются только при инициализации программы",
+          "Все ресурсы освобождает сборщик мусора",
+          "Ресурс освобождают вручную сразу после использования"
         ],
-        "correct": 1,
-        "explanation": "У владельца нужно отдельно решить вопрос копирования и перемещения. Для guard, восстанавливающего настройку, копирование почти всегда ошибочно: два экземпляра восстановят одно значение дважды. Guard, заимствующий int&, обязан жить меньше самого int — сначала объявляется защищаемое состояние, затем guard. Деструктор не должен бросать. RAII обеспечивает очистку ресурсов, но не откатывает предметные изменения: добавленная запись в журнал и незакрытый файл — разные обязательства; для транзакции нужен явный договор commit/rollback."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["50 5", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "1. level = 5\n2. Guard сохраняет old = 5; level = 50\n3. throw внутри блока → раскрутка → ~Guard\n4. level снова 5; Guard уничтожен\n5. Любой другой выход из блока дал бы тот же результат"
+        "id": "q2",
+        "question": "Почему RAII надёжнее ручного освобождения?",
+        "explanation": "Ранний return, break и исключения не могут обойти деструктор.",
+        "options": [
+          "Деструктор локального объекта вызывается при любом выходе из блока, включая исключения",
+          "RAII-объекты быстрее",
+          "Компилятор запрещает исключения в таких функциях",
+          "Ресурсы освобождаются при завершении программы"
+        ],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct Guard {\n    ~Guard() { std::print(\"снято \"); }\n};\n\nint f(int x) {\n    const Guard g;\n    if (x > 0) {\n        return 1;\n    }\n    return 2;\n}\n\nint main() {\n    const int r = f(5);\n    std::println(\"{}\", r);\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Деструктор вызывается и при раннем return — до того, как управление вернётся в main.",
+        "type": "text",
+        "answers": ["снято 1"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Что не так со строкой std::scoped_lock(m);?",
+        "explanation": "RAII-объекту нужно имя, чтобы он жил до конца блока.",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Не разбрасывайте delete и unlock по веткам — но и не считайте RAII гарантией при kill процесса или abort: эти примеры относятся к нормальному выходу и раскрутке стека."
+          "Создаётся безымянный временный объект: блокировка снимается сразу на точке с запятой",
+          "Ничего, это правильная блокировка",
+          "scoped_lock нельзя создавать без шаблонного аргумента",
+          "Она не скомпилируется"
         ],
-        "correct": 1,
-        "explanation": "Добавьте ранний return и throw внутрь защищённого блока: в обоих случаях настройка восстанавливается. Сравните с ручным присваиванием в конце блока — до него исполнение может не дойти."
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Почему владельца ресурса обычно делают некопируемым?",
+        "explanation": "Копирование владельца должно либо создавать новый ресурс, либо быть запрещено.",
+        "options": [
+          "Две копии освободили бы один ресурс дважды",
+          "Копирование медленнее перемещения",
+          "Так требует стандарт",
+          "Чтобы его нельзя было передать в функцию"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что произойдёт, если исключение покинет деструктор?",
+        "explanation": "Деструкторы по умолчанию noexcept.",
+        "options": [
+          "Вызовется std::terminate",
+          "Исключение поймает ближайший catch",
+          "Оно будет проигнорировано",
+          "Объект не будет уничтожен"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Какие типы стандартной библиотеки являются RAII-владельцами? Выберите все.",
+        "explanation": "Сырой указатель ничем не владеет и ничего не освобождает сам.",
+        "type": "multiple",
+        "options": ["std::vector", "std::ofstream", "std::lock_guard", "int *"],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q8",
+        "question": "Какой тип потока из C++20 сам дожидается завершения потока в деструкторе?",
+        "explanation": "std::thread в деструкторе завершает программу, если поток не присоединён; std::jthread присоединяет его сам.",
+        "type": "text",
+        "answers": ["std::jthread", "jthread"],
+        "placeholder": "Тип"
       }
     ]
   }

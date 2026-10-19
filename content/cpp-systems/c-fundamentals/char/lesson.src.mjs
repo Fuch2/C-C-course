@@ -14,8 +14,8 @@ export default {
     'Классифицировать и преобразовывать символы функциями ctype.h',
     'Обрабатывать текст посимвольно через getchar до конца ввода',
   ],
-  tags: ['C17', 'char', 'ASCII', 'getchar'],
-  standard: 'c17',
+  tags: ['C23', 'char', 'ASCII', 'getchar'],
+  standard: 'c23',
   quiz: [
     {
       q: 'Что выведет программа?',
@@ -165,7 +165,7 @@ int main(void) {
 
 Функции \`<ctype.h>\` принимают \`int\` — значение \`c\` из \`getchar\` подходит напрямую.`,
       examples: [
-        { in: 'Hi, C17!\n', out: '3 2 2 2\n' },
+        { in: 'Hi, C23!\n', out: '3 2 2 2\n' },
         { in: '', out: '0 0 0 0\n' },
       ],
       hidden: [
@@ -203,7 +203,7 @@ int main(void) {
 
 Такие программы-«фильтры», читающие stdin и пишущие в stdout, — основа философии Unix: их можно соединять в цепочки командами терминала.`,
       examples: [
-        { in: 'Hello, world!\nc17\n', out: 'HELLO, WORLD!\nC17\n' },
+        { in: 'Hello, world!\nc23\n', out: 'HELLO, WORLD!\nC23\n' },
         { in: 'ABC', out: 'ABC' },
       ],
       hidden: [

@@ -1,131 +1,537 @@
 {
   "id": "oop-public-inheritance",
   "title": "Публичное наследование и подстановка",
-  "description": "public наследование позволяет клиенту неявно преобразовать указатель или ссылку на производный объект к доступной однозначной базе. Это обещание подстановки: функция, принимающая базу, должна корректно работать и с наследником. При этом private члены базы не становятся доступными наследнику. Для class отсутствие public после двоеточия означает private наследование.",
+  "description": "Объект наследника там, где ждут базу: неявное преобразование ссылок и указателей вверх по иерархии; что видно через ссылку на базу; виды наследования public, protected, private и закрытое наследование по умолчанию у class; принцип подстановки Лисков и пример с квадратом и прямоугольником; как проверить отношение «является» по договору.",
   "moduleId": "cpp-oop",
-  "order": 13,
-  "difficulty": "advanced",
-  "estimatedMinutes": 60,
+  "order": 14,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
   "prerequisites": ["oop-inheritance"],
   "objectives": [
-    "Применить Публичное наследование и подстановка в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Передавать объекты наследников в функции, принимающие базовый класс",
+    "Выбирать вид наследования и не забывать public",
+    "Проверять иерархию на принцип подстановки Лисков"
   ],
-  "tags": ["C++20", "ООП", "Публичное наследование и подстановка"],
+  "tags": ["C++23", "ООП", "Наследование", "LSP", "SOLID"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-public-inheritance-exercise",
-    "title": "Практика: Публичное наследование и подстановка",
-    "description": "Device хранит public int id и создаётся explicit Device(int). Probe публично наследует Device и создаётся explicit Probe(int). Реализуйте inspect(const Device&) -> int, возвращающую id. solve(a,b) создаёт два Probe и суммирует inspect каждого, без явных cast. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Бейджи",
+    "description": "Опишите класс `Employee` (имя, должность) и двух открытых наследников: `Manager` (добавляет размер команды) и `Intern` (добавляет имя наставника). Напишите **одну** функцию `void print_badge(const Employee &e)`, которая печатает `[имя | должность]`.\n\nСтроки ввода: `emp имя должность`, `mgr имя должность команда`, `int имя должность наставник`. Для каждой напечатайте бейдж через `print_badge`; для руководителя ниже — `  команда: N`, для стажёра — `  наставник: имя`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(2, 3)",
-        "output": "5\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "emp Ада аналитик\nmgr Алан руководитель 4\n",
+        "output": "[Ада | аналитик]\n[Алан | руководитель]\n  команда: 4\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "int Грейс разработчик Ада\n",
+        "output": "[Грейс | разработчик]\n  наставник: Ада\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Строк не больше 30; все слова без пробелов."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "print_badge принимает const Employee & — в неё можно передать и Manager, и Intern.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Дополнительные строки печатайте в main: через ссылку на Employee методы team() и mentor() не видны.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [2, 3],
-        "expected": "5\n"
+        "stdin": "emp Ада аналитик\nmgr Алан руководитель 4\n",
+        "expected": "[Ада | аналитик]\n[Алан | руководитель]\n  команда: 4\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "int Грейс разработчик Ада\n",
+        "expected": "[Грейс | разработчик]\n  наставник: Ада\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [-4, 1],
-        "expected": "-3\n"
+        "id": "hidden-1",
+        "name": "Пусто",
+        "stdin": "",
+        "expected": ""
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-2",
+        "name": "Один сотрудник",
+        "stdin": "emp a b\n",
+        "expected": "[a | b]\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Пустая команда",
+        "stdin": "mgr x y 0\n",
+        "expected": "[x | y]\n  команда: 0\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Два стажёра",
+        "stdin": "int a b c\nint d e f\n",
+        "expected": "[a | b]\n  наставник: c\n[d | e]\n  наставник: f\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Отдел",
+        "stdin": "mgr Иван директор 100\nemp Пётр инженер\nint Олег инженер Пётр\n",
+        "expected": "[Иван | директор]\n  команда: 100\n[Пётр | инженер]\n[Олег | инженер]\n  наставник: Пётр\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Латиница",
+        "stdin": "emp Ada dev\nmgr Linus lead 12\n",
+        "expected": "[Ada | dev]\n[Linus | lead]\n  команда: 12\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Наставник с тем же именем",
+        "stdin": "int a b a\n",
+        "expected": "[a | b]\n  наставник: a\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Два руководителя",
+        "stdin": "mgr m t 7\nmgr n u 8\n",
+        "expected": "[m | t]\n  команда: 7\n[n | u]\n  команда: 8\n"
       }
     ],
-    "referenceSolution": "struct Device { int id; explicit Device(int x) : id(x) {} };\nclass Probe : public Device { public: explicit Probe(int x) : Device(x) {} };\nint inspect(const Device& d) { return d.id; }\nint solve(int a,int b) { Probe x{a}, y{b}; return inspect(x)+inspect(y); }",
-    "solutionExplanation": "Device хранит public int id и создаётся explicit Device(int). Probe публично наследует Device и создаётся explicit Probe(int). Реализуйте inspect(const Device&) -> int, возвращающую id. solve(a,b) создаёт два Probe и суммирует inspect каждого, без явных cast. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не выбирайте public наследование только ради доступа к полезному коду. Если объект не соблюдает контракт базы, используйте поле и делегирование. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Employee {\npublic:\n    Employee(std::string name, std::string title) : name_(std::move(name)), title_(std::move(title)) {}\n\n    const std::string &name() const {\n        return name_;\n    }\n\n    const std::string &title() const {\n        return title_;\n    }\n\nprivate:\n    std::string name_;\n    std::string title_;\n};\n\nclass Manager : public Employee {\npublic:\n    Manager(std::string name, std::string title, int team) : Employee(std::move(name), std::move(title)), team_(team) {}\n\n    int team() const {\n        return team_;\n    }\n\nprivate:\n    int team_;\n};\n\nclass Intern : public Employee {\npublic:\n    Intern(std::string name, std::string title, std::string mentor)\n        : Employee(std::move(name), std::move(title)), mentor_(std::move(mentor)) {}\n\n    const std::string &mentor() const {\n        return mentor_;\n    }\n\nprivate:\n    std::string mentor_;\n};\n\nvoid print_badge(const Employee &e) {\n    std::println(\"[{} | {}]\", e.name(), e.title());\n}\n\nint main() {\n    std::string kind, name, title;\n    while (std::cin >> kind >> name >> title) {\n        if (kind == \"mgr\") {\n            int team;\n            std::cin >> team;\n            Manager m(name, title, team);\n            print_badge(m);\n            std::println(\"  команда: {}\", m.team());\n        } else if (kind == \"int\") {\n            std::string mentor;\n            std::cin >> mentor;\n            Intern i(name, title, mentor);\n            print_badge(i);\n            std::println(\"  наставник: {}\", i.mentor());\n        } else {\n            print_badge(Employee(name, title));\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "`print_badge` написана один раз для базы и работает с любым наследником: ей нужен только интерфейс `Employee`. Появится завтра `Contractor` — функция подойдёт и для него без изменений.\n\nОсобенности наследников — команда и наставник — через ссылку на базу не видны, поэтому их печатает `main`, который знает конкретный тип.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-public-inheritance-task-2",
+      "title": "Документы в архиве",
+      "description": "Базовый класс `Document` (название, число страниц) и наследники `Invoice` (сумма счёта) и `Contract` (число сторон). Класс `Archive` принимает **любой** документ методом `void add(const Document &d)`, запоминая только название и страницы, и умеет печатать опись: названия по алфавиту с числом страниц `название (N стр.)` и строку `страниц всего S`.\n\nСтроки ввода: `doc название страницы`, `inv название страницы сумма`, `con название страницы стороны`. После описи напечатайте `сумма счетов X` — её считает `main`, а не архив.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "inv счёт1 2 15000\ncon договор 12 2\ndoc акт 1\n",
+          "output": "акт (1 стр.)\nдоговор (12 стр.)\nсчёт1 (2 стр.)\nстраниц всего 15\nсумма счетов 15000\n"
+        },
+        {
+          "input": "",
+          "output": "страниц всего 0\nсумма счетов 0\n"
+        }
+      ],
+      "constraints": ["Документов не больше 30; названия — одно слово, без повторов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Archive хранит std::map<std::string, int> — название → страницы; map сам упорядочит по алфавиту.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "archive.add(invoice) работает, потому что Invoice — открытый наследник Document: ссылка на базу указывает на его базовую часть.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "inv счёт1 2 15000\ncon договор 12 2\ndoc акт 1\n",
+          "expected": "акт (1 стр.)\nдоговор (12 стр.)\nсчёт1 (2 стр.)\nстраниц всего 15\nсумма счетов 15000\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "страниц всего 0\nсумма счетов 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Один документ",
+          "stdin": "doc a 1\n",
+          "expected": "a (1 стр.)\nстраниц всего 1\nсумма счетов 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Два счёта",
+          "stdin": "inv a 1 100\ninv b 1 200\n",
+          "expected": "a (1 стр.)\nb (1 стр.)\nстраниц всего 2\nсумма счетов 300\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Порядок",
+          "stdin": "con b 5 3\ncon a 7 2\n",
+          "expected": "a (7 стр.)\nb (5 стр.)\nстраниц всего 12\nсумма счетов 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Большие суммы",
+          "stdin": "inv x 3 1000000000\ninv y 4 1000000000\n",
+          "expected": "x (3 стр.)\ny (4 стр.)\nстраниц всего 7\nсумма счетов 2000000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Регистр",
+          "stdin": "doc Z 1\ndoc a 1\n",
+          "expected": "Z (1 стр.)\na (1 стр.)\nстраниц всего 2\nсумма счетов 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Офис",
+          "stdin": "doc письмо 1\ninv счёт 2 500\ncon аренда 20 2\ndoc приказ 3\n",
+          "expected": "аренда (20 стр.)\nписьмо (1 стр.)\nприказ (3 стр.)\nсчёт (2 стр.)\nстраниц всего 26\nсумма счетов 500\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Пустой договор",
+          "stdin": "con c 0 2\n",
+          "expected": "c (0 стр.)\nстраниц всего 0\nсумма счетов 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Нулевой счёт",
+          "stdin": "inv a 10 0\ndoc b 10\n",
+          "expected": "a (10 стр.)\nb (10 стр.)\nстраниц всего 20\nсумма счетов 0\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Document {\npublic:\n    Document(std::string title, int pages) : title_(std::move(title)), pages_(pages) {}\n\n    const std::string &title() const {\n        return title_;\n    }\n\n    int pages() const {\n        return pages_;\n    }\n\nprivate:\n    std::string title_;\n    int pages_;\n};\n\nclass Invoice : public Document {\npublic:\n    Invoice(std::string title, int pages, long long amount) : Document(std::move(title), pages), amount_(amount) {}\n\n    long long amount() const {\n        return amount_;\n    }\n\nprivate:\n    long long amount_;\n};\n\nclass Contract : public Document {\npublic:\n    Contract(std::string title, int pages, int parties) : Document(std::move(title), pages), parties_(parties) {}\n\n    int parties() const {\n        return parties_;\n    }\n\nprivate:\n    int parties_;\n};\n\nclass Archive {\npublic:\n    void add(const Document &d) {\n        pages_[d.title()] = d.pages();\n    }\n\n    void print() const {\n        int total = 0;\n        for (const auto &[title, pages] : pages_) {\n            std::println(\"{} ({} стр.)\", title, pages);\n            total += pages;\n        }\n        std::println(\"страниц всего {}\", total);\n    }\n\nprivate:\n    std::map<std::string, int> pages_;\n};\n\nint main() {\n    Archive archive;\n    long long invoices = 0;\n    std::string kind, title;\n    int pages;\n    while (std::cin >> kind >> title >> pages) {\n        if (kind == \"inv\") {\n            long long amount;\n            std::cin >> amount;\n            Invoice inv(title, pages, amount);\n            archive.add(inv);\n            invoices += inv.amount();\n        } else if (kind == \"con\") {\n            int parties;\n            std::cin >> parties;\n            archive.add(Contract(title, pages, parties));\n        } else {\n            archive.add(Document(title, pages));\n        }\n    }\n    archive.print();\n    std::println(\"сумма счетов {}\", invoices);\n    return 0;\n}\n",
+      "solutionExplanation": "Архив зависит только от базового класса: ему нужны название и страницы, и он принимает любой документ. Новые виды документов не потребуют изменений в `Archive` — это и есть польза подстановки.\n\nСумма счетов — знание о конкретном наследнике, поэтому её считает код, который работает с `Invoice` напрямую. Архив копирует нужные данные, а не хранит ссылки на документы: временные объекты в `main` исчезают сразу после вызова `add`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-public-inheritance-task-3",
+      "title": "Найди ошибку: закрытый наследник",
+      "description": "Программа печатает карточки участников программы лояльности функцией `print_card(const Member &)`, а для VIP-участников — ещё и бонус. Строки ввода: `std имя баллы` или `vip имя баллы`:\n\n```text\nАда: 500 баллов\n  бонус 50\n```\n\nПрограмма не компилируется: компилятор говорит о недоступной базе. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Member {\npublic:\n    Member(std::string name, int points) : name_(std::move(name)), points_(points) {}\n\n    const std::string &name() const {\n        return name_;\n    }\n\n    int points() const {\n        return points_;\n    }\n\nprivate:\n    std::string name_;\n    int points_;\n};\n\nclass VipMember : Member {\npublic:\n    VipMember(std::string name, int points) : Member(std::move(name), points) {}\n\n    int bonus() const {\n        return points() / 10;\n    }\n};\n\nvoid print_card(const Member &m) {\n    std::println(\"{}: {} баллов\", m.name(), m.points());\n}\n\nint main() {\n    std::string kind, name;\n    int points;\n    while (std::cin >> kind >> name >> points) {\n        if (kind == \"vip\") {\n            VipMember v(name, points);\n            print_card(v);\n            std::println(\"  бонус {}\", v.bonus());\n        } else {\n            print_card(Member(name, points));\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "vip Ада 500\nstd Алан 30\n",
+          "output": "Ада: 500 баллов\n  бонус 50\nАлан: 30 баллов\n"
+        },
+        {
+          "input": "std x 0\n",
+          "output": "x: 0 баллов\n"
+        }
+      ],
+      "constraints": ["Строк не больше 20; баллы до 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сообщение: 'Member' is an inaccessible base of 'VipMember'. Какой вид наследования у class по умолчанию?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Без слова public наследование закрытое, и снаружи VipMember не считается Member. Напишите class VipMember : public Member.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "vip Ада 500\nstd Алан 30\n",
+          "expected": "Ада: 500 баллов\n  бонус 50\nАлан: 30 баллов\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "std x 0\n",
+          "expected": "x: 0 баллов\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "vip a 9\n",
+          "expected": "a: 9 баллов\n  бонус 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "vip b 1000000\n",
+          "expected": "b: 1000000 баллов\n  бонус 100000\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "std a 1\nstd b 2\n",
+          "expected": "a: 1 баллов\nb: 2 баллов\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "vip Грейс 1234\n",
+          "expected": "Грейс: 1234 баллов\n  бонус 123\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "std Иван 77\nvip Ольга 770\n",
+          "expected": "Иван: 77 баллов\nОльга: 770 баллов\n  бонус 77\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "vip z 10\n",
+          "expected": "z: 10 баллов\n  бонус 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "std q 5\nvip w 15\nstd e 25\n",
+          "expected": "q: 5 баллов\nw: 15 баллов\n  бонус 1\ne: 25 баллов\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "vip m 99\n",
+          "expected": "m: 99 баллов\n  бонус 9\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Member {\npublic:\n    Member(std::string name, int points) : name_(std::move(name)), points_(points) {}\n\n    const std::string &name() const {\n        return name_;\n    }\n\n    int points() const {\n        return points_;\n    }\n\nprivate:\n    std::string name_;\n    int points_;\n};\n\nclass VipMember : public Member {\npublic:\n    VipMember(std::string name, int points) : Member(std::move(name), points) {}\n\n    int bonus() const {\n        return points() / 10;\n    }\n};\n\nvoid print_card(const Member &m) {\n    std::println(\"{}: {} баллов\", m.name(), m.points());\n}\n\nint main() {\n    std::string kind, name;\n    int points;\n    while (std::cin >> kind >> name >> points) {\n        if (kind == \"vip\") {\n            VipMember v(name, points);\n            print_card(v);\n            std::println(\"  бонус {}\", v.bonus());\n        } else {\n            print_card(Member(name, points));\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "У `class` наследование по умолчанию **закрытое**. `VipMember` внутри себя пользуется `Member`, но снаружи никто не знает, что VIP-участник — это участник: преобразовать `VipMember &` в `const Member &` нельзя, и вызов `print_card(v)` не компилируется.\n\nОтношение «VIP-участник является участником» выражает только открытое наследование: `class VipMember : public Member`. Писать `public` стоит явно и у `struct`, где оно подразумевается, — так намерение видно сразу.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-public-inheritance-task-4",
+      "title": "Неизменяемые фигуры",
+      "description": "Решите проблему «квадрат — прямоугольник» без нарушения подстановки. Опишите **неизменяемые** классы `Rectangle` (ширина, высота) и `Square` (сторона) — без наследования между ними. Вместо сеттеров — методы, возвращающие **новую** фигуру:\n\n- `Rectangle::with_width(int w) const` → `Rectangle`;\n- `Square::to_rectangle() const` → `Rectangle` с равными сторонами.\n\nСтроки ввода: `rect w h` или `square s`, затем операция: `widen k` (ширина умножается на `k`) или `keep`. Для квадрата `widen` выполняется через `to_rectangle().with_width(…)`. Напечатайте результат: `прямоугольник W x H, площадь A` или `квадрат S, площадь A` — фигура, у которой стороны равны, печатается как квадрат.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "square 3 widen 2\nrect 2 5 keep\n",
+          "output": "прямоугольник 6 x 3, площадь 18\nпрямоугольник 2 x 5, площадь 10\n"
+        },
+        {
+          "input": "square 4 keep\nrect 3 6 widen 2\n",
+          "output": "квадрат 4, площадь 16\nквадрат 6, площадь 36\n"
+        }
+      ],
+      "constraints": ["Строк не больше 30; стороны и k от 1 до 10⁴."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "with_width возвращает Rectangle(w, height_): исходный объект не меняется, поэтому никакой договор нарушить нельзя.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Печать: если у прямоугольника ширина равна высоте, печатайте его как квадрат. Площадь — в long long.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "square 3 widen 2\nrect 2 5 keep\n",
+          "expected": "прямоугольник 6 x 3, площадь 18\nпрямоугольник 2 x 5, площадь 10\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "square 4 keep\nrect 3 6 widen 2\n",
+          "expected": "квадрат 4, площадь 16\nквадрат 6, площадь 36\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Растяжение в 1 раз",
+          "stdin": "square 1 widen 1\n",
+          "expected": "квадрат 1, площадь 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Большой квадрат",
+          "stdin": "rect 10000 10000 keep\n",
+          "expected": "квадрат 10000, площадь 100000000\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Огромная площадь",
+          "stdin": "square 10000 widen 10000\n",
+          "expected": "прямоугольник 100000000 x 10000, площадь 1000000000000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Длинный",
+          "stdin": "rect 5 1 widen 3\n",
+          "expected": "прямоугольник 15 x 1, площадь 15\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Стал квадратом",
+          "stdin": "rect 1 5 widen 5\n",
+          "expected": "квадрат 5, площадь 25\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-7",
+          "name": "Два квадрата",
+          "stdin": "square 7 keep\nsquare 7 widen 2\n",
+          "expected": "квадрат 7, площадь 49\nпрямоугольник 14 x 7, площадь 98\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Без изменений",
+          "stdin": "rect 2 3 keep\nrect 4 4 keep\n",
+          "expected": "прямоугольник 2 x 3, площадь 6\nквадрат 4, площадь 16\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nclass Rectangle {\npublic:\n    Rectangle(int width, int height) : width_(width), height_(height) {}\n\n    Rectangle with_width(int width) const {\n        return Rectangle(width, height_);\n    }\n\n    int width() const {\n        return width_;\n    }\n\n    int height() const {\n        return height_;\n    }\n\n    long long area() const {\n        return 1LL * width_ * height_;\n    }\n\nprivate:\n    int width_;\n    int height_;\n};\n\nclass Square {\npublic:\n    explicit Square(int side) : side_(side) {}\n\n    Rectangle to_rectangle() const {\n        return Rectangle(side_, side_);\n    }\n\nprivate:\n    int side_;\n};\n\nvoid print_shape(const Rectangle &r) {\n    if (r.width() == r.height()) {\n        std::println(\"квадрат {}, площадь {}\", r.width(), r.area());\n    } else {\n        std::println(\"прямоугольник {} x {}, площадь {}\", r.width(), r.height(), r.area());\n    }\n}\n\nint main() {\n    std::string kind, op;\n    while (std::cin >> kind) {\n        int a, b = 0;\n        std::cin >> a;\n        if (kind == \"rect\") {\n            std::cin >> b;\n        }\n        Rectangle shape = kind == \"rect\" ? Rectangle(a, b) : Square(a).to_rectangle();\n        std::cin >> op;\n        if (op == \"widen\") {\n            int k;\n            std::cin >> k;\n            shape = shape.with_width(shape.width() * k);\n        }\n        print_shape(shape);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Конфликт квадрата и прямоугольника возникает из-за **изменения**: прямоугольник обещает, что ширину можно поменять отдельно, а квадрат не может это обещание выполнить. Неизменяемые объекты ничего не обещают о будущих изменениях — «изменение» создаёт новую фигуру, — и противоречие исчезает.\n\nСвязь между фигурами выражена преобразованием `to_rectangle()`, а не наследованием: квадрат умеет стать прямоугольником, но не притворяется им. «Растянутый» квадрат честно становится прямоугольником, а прямоугольник с равными сторонами печатается как квадрат.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-public-inheritance-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Создаёт ли передача Probe в inspect(const Device&) копию базы?",
-        "options": [
-          "Нет, ссылка обозначает базовый подобъект",
-          "Да, всегда создаётся отдельный Device"
-        ],
-        "correct": 0,
-        "explanation": "Вызов функции inspect(const Device&) не создаёт копию Device: ссылка обозначает базовый подобъект исходного объекта. Так сохраняется полная сущность и её время жизни. Но если метод пока невиртуальный, выбор реализации определяется статическим типом выражения. Публичная доступность преобразования и динамический выбор метода — разные вопросы. Обещайте клиенту только то, что выполняется для каждого конкретного устройства."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct Animal {\n    int legs = 4;\n};\n\nstruct Bird : Animal {\n    Bird() { legs = 2; }\n    int wings = 2;\n};\n\nint count_legs(const Animal &a) { return a.legs; }\n\nint main() {\n    Bird b;\n    Animal a;\n    std::println(\"{} {}\", count_legs(b), count_legs(a));\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Ссылка на Animal указывает на базовую часть птицы, где legs = 2.",
+        "type": "text",
+        "answers": ["2 4"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "6", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 6. public наследование позволяет клиенту неявно преобразовать указатель или ссылку на производный объект к доступной однозначной базе. Это обещание подстановки: функция, принимающая базу, должна корректно работать и с наследником. При этом private члены базы не становятся доступными наследнику. Для class отсутствие public после двоеточия означает private наследование."
+        "id": "q2",
+        "question": "Какое преобразование происходит неявно при открытом наследовании?",
+        "explanation": "Внутри наследника есть базовая часть, и ссылка на базу указывает на неё. Обратное неверно: не каждый сотрудник — руководитель.",
+        "options": [
+          "Manager & → Employee & (от наследника к базе)",
+          "Employee & → Manager & (от базы к наследнику)",
+          "Manager → int",
+          "Никакое"
+        ],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q3",
+        "question": "Что видно через ссылку const Employee &e, указывающую на объект Manager?",
+        "explanation": "Тип ссылки определяет доступный интерфейс; e.team() не скомпилируется.",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Не выбирайте public наследование только ради доступа к полезному коду. Если объект не соблюдает контракт базы, используйте поле и делегирование."
+          "Только интерфейс Employee",
+          "Всё, что есть у Manager",
+          "Только поля Manager",
+          "Ничего"
         ],
-        "correct": 1,
-        "explanation": "Сравните public и private наследование на вызове inspect из main. Внутреннее устройство наследника остаётся похожим, но доступность преобразования для клиента меняется. Это проверяется компилятором и не является измеряемой ценой операции во время выполнения."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Какое наследование получается в записи class Manager : Employee { … }; без слова public?",
+        "explanation": "У class по умолчанию private, у struct — public. Пишите public явно.",
+        "options": [
+          "Закрытое (private)",
+          "Открытое (public)",
+          "Защищённое (protected)",
+          "Ошибка компиляции"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что утверждает принцип подстановки Лисков?",
+        "explanation": "Наследник не требует больше (предусловия не строже) и не обещает меньше (постусловия не слабее).",
+        "options": [
+          "Объект наследника должен годиться везде, где годится объект базы, выполняя её договор",
+          "Наследник должен переопределять все методы базы",
+          "База не может иметь больше трёх наследников",
+          "Наследник должен иметь больше полей, чем база"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Почему изменяемый Square — плохой наследник изменяемого Rectangle?",
+        "explanation": "Клиенты Rectangle сломаются на квадрате. Решения — отдельный класс или неизменяемые фигуры.",
+        "options": [
+          "Договор прямоугольника — независимые ширина и высота — квадрат выполнить не может",
+          "Квадрат не является прямоугольником в геометрии",
+          "У квадрата меньше полей",
+          "C++ запрещает такое наследование"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Какие признаки говорят о нарушении принципа подстановки? Выберите все.",
+        "explanation": "Новые методы договор базы не нарушают.",
+        "type": "multiple",
+        "options": [
+          "Метод наследника бросает исключение там, где база работает",
+          "Наследник требует от аргументов больше, чем база",
+          "Наследник «отключает» метод базы пустой реализацией",
+          "Наследник добавляет новый метод"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q8",
+        "question": "Какое сообщение выдаст GCC при передаче объекта закрыто унаследованного класса в функцию, принимающую ссылку на базу? Ключевые слова:",
+        "explanation": "Полностью: 'Employee' is an inaccessible base of 'Manager'.",
+        "options": [
+          "inaccessible base",
+          "undefined reference",
+          "ambiguous overload",
+          "no matching constructor"
+        ],
+        "correct": 0
       }
     ]
   }

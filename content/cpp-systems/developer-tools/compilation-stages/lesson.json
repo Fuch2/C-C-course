@@ -15,7 +15,7 @@
   ],
   "tags": ["Сборка", "GCC", "Препроцессор", "Линковка", "Объектный файл"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "compilation-stages-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -75,7 +75,7 @@
       {
         "id": "hidden-1",
         "name": "Обычная сборка",
-        "stdin": "gcc -std=c17 -Wall main.c -o app\n",
+        "stdin": "gcc -std=c23 -Wall main.c -o app\n",
         "expected": "стадия: линковка\nфайл: app\n"
       },
       {
@@ -148,7 +148,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -265,7 +265,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

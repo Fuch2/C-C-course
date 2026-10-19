@@ -14,9 +14,9 @@
     "Объявлять самоссылающуюся структуру и проходить цепочку узлов",
     "Понимать, что синоним не создаёт новый тип"
   ],
-  "tags": ["C17", "typedef", "Структуры"],
+  "tags": ["C23", "typedef", "Структуры"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-typedef-task-1",
@@ -25,7 +25,7 @@
     "difficulty": "intermediate",
     "starterCode": "#include <stdio.h>\n\ntypedef long long TimestampMs;\n\nint main(void) {\n    // Прочитайте записи, выведите длительности и их сумму.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -120,7 +120,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -212,7 +212,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -320,7 +320,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\ntypedef struct node {\n    int value;\n    struct node *next;\n} Node;\n\nint main(void) {\n    Node nodes[1000];\n    // Прочитайте узлы, свяжите их и пройдите цепочку от start.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

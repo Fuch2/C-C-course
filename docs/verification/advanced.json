@@ -1,635 +1,3461 @@
 {
-  "verifiedAt": "2026-10-15T20:28:17.587Z",
-  "complete": true,
+  "verifiedAt": "2026-10-17T13:37:53.368Z",
   "diagnostics": "ASan/UBSan",
+  "summary": {
+    "solutions": 200,
+    "negativeControls": 26,
+    "examples": 130,
+    "memoryExamples": 1,
+    "compileErrors": 23,
+    "runtimeErrors": 3,
+    "runs": 2461,
+    "failed": 0
+  },
   "checks": [
     {
-      "id": "advanced-translation-units-exercise",
+      "id": "advanced-translation-units-task-1",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "fb47c80ae5a228a85b986dd3977ce707e4a460b4c08d26759fabab0d9abe20fd",
+      "mode": "sanitizers",
+      "fingerprint": "0a95f9ff37fda69a2df26dcabd89f8e7f84912f26470c5510b5d64d1d5b8aa82",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-translation-units-exercise",
+      "id": "advanced-translation-units-task-1",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "9c92d665e18ddd8e0110f66fd6b0fd037fa40bd125fb52ece23f6b20b13d71cb",
+      "mode": "sanitizers",
+      "fingerprint": "6bd93592bca1ea87dac153c14492d006182fe7a29ac8b238d21d5cd9694d2a88",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-headers-exercise",
+      "id": "advanced-translation-units-task-2",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "5e9cff0ff0d4fbecb8f9490936e09938ca666fbd9e19f46330f90ea4a755957e",
+      "mode": "sanitizers",
+      "fingerprint": "3eed375f515504d31c6a5f1998307aa50d33a8cb6b3f5b0ff61ea67b8a22694a",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-headers-exercise",
+      "id": "advanced-translation-units-task-2",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "6a23d874e51c8879c7e42f6e80b357af07960c975cf8496ba0fa37202fc2e750",
+      "mode": "sanitizers",
+      "fingerprint": "a48e257809eec97eb3f9071dc0391e5b43f7eb56977d23a6411194628794fd70",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-header-guards-exercise",
+      "id": "advanced-translation-units-task-3",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "6da4bb0055d9e761b6ef9ae437fed0fd8f1bcd9a43324eae6cca3853aa490c71",
+      "mode": "sanitizers",
+      "fingerprint": "38e7267cce3b0dc1ae9e9744463c4fd96060b0da93a1c37b57a08c5a53a6b35d",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-header-guards-exercise",
+      "id": "advanced-translation-units-task-3",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "f7c63558070247d305aecb6e93612b91406143eb0abc4e63d5d51b92e8eea774",
+      "mode": "sanitizers",
+      "fingerprint": "fcace7c84919a66b9cd8fcd182fdf7ebf2ebf34e5639bf288068419f4a708fb5",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-preprocessor-exercise",
+      "id": "advanced-translation-units-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "98a8b122e4525370149bce4fcf29eebd8a3a1f8e54518654c55fb95991d18038",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-translation-units-task-4",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "81b5dc9cfcb533c1009aea15dc51856f4cc1f1b031d329deec0f9e7248c6ccf4",
+      "mode": "sanitizers",
+      "fingerprint": "543f999acc7b1a48d74c55b270fff36ae97138e3d0301ae876a575e566c6fd9a",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-preprocessor-exercise",
+      "id": "advanced-translation-units-task-4",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "a7a0ab684dae667a8931bf9ed9afc1e5ec2df928ffd6ee7999f9d0c4161986b5",
+      "mode": "sanitizers",
+      "fingerprint": "d2522090754516971775f848d9954fffe4df90d64b086b41d85e6f56712f4c8f",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-define-exercise",
+      "id": "advanced-translation-units#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "1dc7c5dfc236bacbdd9cfa93edc366d7b45791780097123e14ef0fdac09be45a",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-translation-units#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "fdc05b544b6bdd3b8408ef7e880c2d76d2a50ffd81e67fc1d1484cc454787d3a",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-translation-units#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ec4a80acac3fcf7d5148cef7fa2344b3e680d7235461a9a278f088b9d9f8942b",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-translation-units#4",
+      "kind": "compile-error",
       "compiler": "gcc",
-      "fingerprint": "1727b32305744796faf770cbab42c258ffca320ac583d23fc4c0077cbd270b4d",
+      "mode": "none",
+      "fingerprint": "d08662d8ad24c6558312ab1a44c2397d46844bc5f2c13c01f9ef73887132558f",
       "ok": true,
-      "tests": 3
+      "tests": 1
     },
     {
-      "id": "advanced-define-exercise",
+      "id": "advanced-translation-units#5",
+      "kind": "example",
       "compiler": "clang",
-      "fingerprint": "e27ac6b1548dbd9caae5080980022bcf4eadb278a3c22e9e1ae67906db113c47",
+      "mode": "sanitizers",
+      "fingerprint": "741a1d57bdcf4335f75ba81626955b8943448811bb766d77191c1ada47068610",
       "ok": true,
-      "tests": 3
+      "tests": 1
     },
     {
-      "id": "advanced-function-macros-exercise",
+      "id": "advanced-translation-units#6",
+      "kind": "compile-error",
       "compiler": "gcc",
-      "fingerprint": "38277bf58c11167145f72b1562171950bf3f8a6221caa552fdc23e4dc561fb7d",
+      "mode": "none",
+      "fingerprint": "ae5666bae98575a3c6185bb2814c31597806bfc3004e0ecb289aec010f0164f6",
       "ok": true,
-      "tests": 3
+      "tests": 1
     },
     {
-      "id": "advanced-function-macros-exercise",
+      "id": "advanced-translation-units#7",
+      "kind": "example",
       "compiler": "clang",
-      "fingerprint": "ef3cb1693777fdf5c4e3d8ac3604e7c8db56c723c2e4a660ac45da09b1c11d3e",
+      "mode": "sanitizers",
+      "fingerprint": "e2bf39f272fed1ef41d75b6ab4195abcf50d590348abbd0ef89c2a59ba700ff5",
       "ok": true,
-      "tests": 3
+      "tests": 1
     },
     {
-      "id": "advanced-macro-hazards-exercise",
+      "id": "advanced-headers-task-1",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "762c76d060c426126436882d824803f06e33718858535f80882c1ff8f473bc2c",
+      "mode": "sanitizers",
+      "fingerprint": "af5ccc9de6fdb9afa87eb59f7991541bf41f633eec1ab08a5289c431d25935f7",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-macro-hazards-exercise",
+      "id": "advanced-headers-task-1",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "565698cafedecdb258f43b7ab39c8eb80bc642c0822a0b415a4148e57d7947e1",
+      "mode": "sanitizers",
+      "fingerprint": "a34ebda33ce6c5938aac9397dc829787b2209389470fb761c72e6c67d59151aa",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-conditional-compilation-exercise",
+      "id": "advanced-headers-task-2",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "7b5ab0109b839431585c41bb75b9e7e3ffe09da7dc4ffc9809c6419a32f0df14",
+      "mode": "sanitizers",
+      "fingerprint": "f42818a2e61d92b017d9b6c7cc852561f7603ccf4a782759c2ebaf72ffb9bbc6",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-conditional-compilation-exercise",
+      "id": "advanced-headers-task-2",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "5964aed74d2fdd83e85d867df5a3a459f3ece70d0edb7a9b9c2ad3f6b2776f8a",
+      "mode": "sanitizers",
+      "fingerprint": "32fce67524bdb2769d15e971f5b6c5607eec95c67b89fdf23b3c06269598798a",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-static-exercise",
+      "id": "advanced-headers-task-3",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "a2196843a12b5d925257efed162729a506272ddb9b48aceb7981d66e84beb67e",
+      "mode": "sanitizers",
+      "fingerprint": "2155a8c279ddbb9e561244ff3a952ed886d98bb161e069c817bfff099fab6c11",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-static-exercise",
+      "id": "advanced-headers-task-3",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "9825f266a5b709a91ad6baa3ecd1b89206981a585be22134f0a9a2be074fa9d6",
+      "mode": "sanitizers",
+      "fingerprint": "df7887590ba50cad012056d8ba57c536fa9b92f3a41fbb027fd55a4e7be30e4b",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-extern-exercise",
+      "id": "advanced-headers#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "8a93091eec5360d0d74eeb8d5d1472a53c3074354b9029c3ee54acb87b688ed8",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-headers#2",
+      "kind": "compile-error",
       "compiler": "gcc",
-      "fingerprint": "0f9d4c7bb69a23dffa67b57e362fd6460fab9916a17f47040abad166d4fa9d3a",
+      "mode": "none",
+      "fingerprint": "4525c554433782378e8f1dd717824aa09d71465337f86d8ef6e0ecebd958e976",
       "ok": true,
-      "tests": 3
+      "tests": 1
     },
     {
-      "id": "advanced-extern-exercise",
-      "compiler": "clang",
-      "fingerprint": "ef5b893d383db55405cb381770052140c960a1c8cb775ea0259e3b317a8ac5b7",
-      "ok": true,
-      "tests": 3
-    },
-    {
-      "id": "advanced-linkage-exercise",
+      "id": "advanced-headers#3",
+      "kind": "compile-error",
       "compiler": "gcc",
-      "fingerprint": "7fce9ef51197ef625ab9a10744472bcf9c42050df6604c7d15abaed2b058ebe4",
+      "mode": "none",
+      "fingerprint": "cce21223b6811dcc4b322177fbc0f0b1dc7146fbb1691dd89f76eec0eaecf763",
       "ok": true,
-      "tests": 3
+      "tests": 1
     },
     {
-      "id": "advanced-linkage-exercise",
+      "id": "advanced-headers#4",
+      "kind": "example",
       "compiler": "clang",
-      "fingerprint": "570c68e85bcb50db68241276c9eefce42022d3a104858f08b5f9ad1eb64fd84d",
+      "mode": "sanitizers",
+      "fingerprint": "f46c10045dca37bfa1a56e3ac0f3baf16e002532e749e4ab820edd162761e902",
       "ok": true,
-      "tests": 3
+      "tests": 1
     },
     {
-      "id": "advanced-const-exercise",
+      "id": "advanced-headers#5",
+      "kind": "compile-error",
       "compiler": "gcc",
-      "fingerprint": "2b747d67072b9126279499f072238049b2fe09e479c8ba1d38ffad2e281092f6",
+      "mode": "none",
+      "fingerprint": "516b93125ec066c1e25f99047b37d0c3c5fb73a17229571479e610e60b00e107",
       "ok": true,
-      "tests": 3
+      "tests": 1
     },
     {
-      "id": "advanced-const-exercise",
-      "compiler": "clang",
-      "fingerprint": "64e848cf32b5cc7351c513d816315efe34b6d020ea35f23f3bd6a6e155c80f2c",
-      "ok": true,
-      "tests": 3
-    },
-    {
-      "id": "advanced-volatile-exercise",
+      "id": "advanced-header-guards-task-1",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "34f8fa9779ad99808d1d261b1150e32734298ff9a0f96aef9001c31894eb890e",
+      "mode": "sanitizers",
+      "fingerprint": "9533860389b4c8dd749157ca600a35e8c3ec690fe5bed7d8a9d0a5e7ea593215",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-volatile-exercise",
+      "id": "advanced-header-guards-task-1",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "e1cf882e7995d4fe8d92c953207e8918520c109e44a16917a90328592f5e749a",
+      "mode": "sanitizers",
+      "fingerprint": "43f2f9128357bbc30cedd8c78f03088379a964cc8ec1fd36335762ebac9f56ab",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-function-pointers-exercise",
+      "id": "advanced-header-guards-task-2",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "94330757e9eeeb380c589289569f62dab0f4bbe9fe26c85a923a4f8aadb57074",
+      "mode": "sanitizers",
+      "fingerprint": "c8df32c5f0bbc7f1f6a26e8328480f33bc197e93cb6ef8e1e9b31edeb94763e4",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-function-pointers-exercise",
+      "id": "advanced-header-guards-task-2",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "98693fe7d6a25e99f006722fdd96174415032a6860e333ec82dd024de21776db",
+      "mode": "sanitizers",
+      "fingerprint": "c59858f215f8306bbcb208e3d37fe84d7e843c8f70e47e041fbcb8d175989327",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-callbacks-exercise",
+      "id": "advanced-header-guards-task-2",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "fc0a7e66cc3c30514dcaffa2e77b2bb916a4ad3325d5276794848733d3c99450",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-header-guards-task-3",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "cada40102f9bcc6c5d02763061dab4699e40107e24e961c35d965ef1f7563326",
+      "mode": "sanitizers",
+      "fingerprint": "1028db865204543e6389ea79b41c31ab2a280b34f6f16c53dbaa29627ca7675e",
       "ok": true,
-      "tests": 3
+      "tests": 11
     },
     {
-      "id": "advanced-callbacks-exercise",
+      "id": "advanced-header-guards-task-3",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "ce7759f5b1591bf61c6b7c2672c81639921bfdccd2e416428b46d4401d0eb0d6",
+      "mode": "sanitizers",
+      "fingerprint": "907e7f5b06a7d4a777d9c9655dd2e68f5d92f5de6d2d01af4a6d074b59eb3ea9",
       "ok": true,
-      "tests": 3
+      "tests": 11
+    },
+    {
+      "id": "advanced-header-guards#1",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "5d78f67817473811319baf4340aa1c2027cbc72556a47640a9749828c96d1147",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-header-guards#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "edde9395631d8bbac1e7e2efa21e72baeab361d66a069e9944550355d68ed8a9",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-header-guards#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "415c5bcb12ce2f6a6f780f881e559bfd38f38ecef30f16a032865cbff6502194",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-header-guards#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ae71aeabaa0393732567f029d055c8b527178b508db8abbe3aec5d2324f556c0",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-static-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "0ad9c1ec58270663cb5f40571630035c2b30d79665d8e8b1af718f3a781b949b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-static-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c4fbd7b0ba6d3a64dacd45172e36db51a6e04345eb310c2eb5b5126691dd1bb4",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-static-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "074192fe4c21c9f186480db8bac9501273896178a9c7b63402fc867be64c9f4e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-static-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b14951f3aa679cec0f6e5e575d7dbcd28d644e4cc5182ed5000b088434cbfc0f",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-static-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "9df7c3a1474fb8717e561d482b73cae4a7c16e45aa90d7dc8f8b4338b0845a5b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-static-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "e325f49cb29651a73d1bae7471b01ac63ac959d5c24ac35331beb5d5887cb30b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-static-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "155ab70ab8f3ca3835fe5bdeb5944bee630b11c06a269939e30184e0bc61a478",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-static-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "4e6a284b23922e8056ffc7797e34f082c3cf15ccf5da1ef1cf98d980e9f4ac68",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-static-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c78be06a5274fc241ee2e6ec02e6ad95df98eb0f93ad2238b5b36269ae95b5a2",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-static#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "49d3ceff0b0f19322a31889c7f3738212e7e293cc8ad73faed7d5594b6603089",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-static#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "1cbd8e0002c8daa8efc7b183ff421125a5cbc45d8f3c19f9bae5cf200374d17d",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-static#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "e9465e81258baeb530a407c0798dedc199f01062d47be1bed0500f04f9f88b6e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-static#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "430d1402739982ee9c739b97e7d5987d4db014cc22f4df991373a1751fb51511",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-static#5",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "1b5bbac6d3da82a7caca02e398cee4d8213143a8545e7926825580cca65138ec",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-static#6",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b55ea6f54c84e1788d61e6d4f0b0ded666576db12aad8aa54cf5300f376f0188",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-static#7",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "e3b0159942cdd10bb26655fde46bbf32193a0f8d446dd27a279ab3ef2f9197bf",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-extern-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "174b77cb5e47f468057fcf0b056f3ae073955480c7c2731394ff86f1ca7b5d93",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-extern-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "53b41f75495eaec9b07032bdb72614c06564f3d7e1a00e956b03217adcaa02d1",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-extern-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "ce77a210c7bbc65d0a6d9da4f6f3052e73f325eb4aefcb73784872567eda000d",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-extern-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d820e49065fa118fd5c73565cbfae439532479a227b27a776cf5a6c9f98eefde",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-extern-task-2",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "2795bc956d7d1d7dc891d12051d03f390bb8f806756e13d982d5d956b0bd119e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-extern-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "d7565ca0b4edd766fcf52d6c13eb415680a3e6e8960a665aa115b99b4161b5ae",
+      "ok": true,
+      "tests": 12
+    },
+    {
+      "id": "advanced-extern-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "177606a2daa8547cc7ca3e13d0ccc1a1c655a9d008a3395c62b2864f8c0195c6",
+      "ok": true,
+      "tests": 12
+    },
+    {
+      "id": "advanced-extern#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b3bf41d8207a5f158528f50606db7edc61e738e4a0629c50c5ab46ba9dd9538a",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-extern#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "64d811fdc8725c043b076d71b1b63facb10f3a8a022a2a7c263c5b7247ffc0d7",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-extern#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "7f9110bc7ffebde8e245d6d3699fc4af345bcfcfef2fa917ad2fa34b4fa414eb",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-extern#4",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "7d4520042b042a790d1a66cb27b8f49e49615290f297a343d35c44dead6bbd25",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-extern#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "0036348392a54c88647dce1c38b74ee735d93b33153a0ee6957813e87d1e8156",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-extern#6",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ef7683c21b1c1ddd698a56832052da2db2b2a3bdd03043a6a8c1dc963eba6855",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-extern#7",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "1f8bf735076aff414308012e7e323ac7606beeba4374aefa4ca5b0cc9cf39588",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-linkage-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "81140fdecac8b268a0f93d7c45826d7fe1873cd11b8ba65b22c9f3c22e1a90de",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-linkage-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a07d466ce17925863963e1df236ea6668e3fbd98e604d6f542f34fe632b892f0",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-linkage-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "9c67293c772c670e4913c4bf862fe63e356ef087c0b35f41968a66aa59619fc6",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-linkage-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "7e253608ed7d6dad719b32ac9c2147bf5e1a56caa223de300e447eeebea00f52",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-linkage-task-2",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "e77762e9164b68c346fe0cc79e8b35d229faefe81a727824ae0a92f3593aca0d",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-linkage-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "1c27ca33036bbdaf977beec85bd151e39f3ac9b662a5a5ac79961499fab31847",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-linkage-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "4e5446249d8ac50561dd5320370290b79173d428267a3be47507a081ce62c9a5",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-linkage#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "667ea01abbc8030576f0f74bda2b109e7e256e751bee47c8d2cf90f5a7cca85d",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-linkage#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "3889cba0041438a20c9cdd0d7b9e658ce36c09c0223d2b11e71117c9a3d07e42",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-linkage#3",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "f604c1cfaaf145352231522dc490206d4d21930cfd8184a87e5d71527063a8e3",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-linkage#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a89e11fef70077f990763c3b0f88e4fdcf06fdcc91ab3465220922718fa2e696",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-preprocessor-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "89288784ec7624bcdd257898b4e076195a04512830e15de034666ec4f6632d49",
+      "ok": true,
+      "tests": 11
+    },
+    {
+      "id": "advanced-preprocessor-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "293b200db30675dcd10429d0daa08b40ca5cef91c328b8542bf11617873465a7",
+      "ok": true,
+      "tests": 11
+    },
+    {
+      "id": "advanced-preprocessor-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "cc65da2b422c5a1c21658beae556795004ad4a75c2d68eb889854918f2c26d69",
+      "ok": true,
+      "tests": 11
+    },
+    {
+      "id": "advanced-preprocessor-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "6a7f3e598eb0be7a7322d01b9970115d57d2a5d1bc089515db58c0487ef7339f",
+      "ok": true,
+      "tests": 11
+    },
+    {
+      "id": "advanced-preprocessor-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "cd95bebcdf4b82e28a07c6ef1d5efd133114c57d23f2bf4699aff5acd1221560",
+      "ok": true,
+      "tests": 12
+    },
+    {
+      "id": "advanced-preprocessor-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "dbe453c82a67d41d5b75902062815cbd47f1cca9321e9508562d3f7b6f529c1d",
+      "ok": true,
+      "tests": 12
+    },
+    {
+      "id": "advanced-preprocessor#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c1a88014c9bac7b63aec41e4cdb2b3b6ed617b6589ed7726c19d9eac2fd3abc5",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-preprocessor#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ec572032a8e1ec8f797d00bb4b63b89ff17b40bee60ebf9d01ebe558b3ce27f2",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-preprocessor#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d545f43249efc87040ec42bf8830fad03c8aeeb94b56e07d750999f869b417a4",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-preprocessor#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "1aa55bd697841acd0b5d98a8e28c22c3c6024b6150b5f2188aa9dff8720988ab",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-preprocessor#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "79fb02003fc34e372a5ff7702092a5f5d5048cb8241574645282ebd454441a40",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-preprocessor#6",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "a536bd66d0aa164a769a2ed0348039b7f05ad98b60aff2319b8179a93d9c61bf",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-define-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "605eb9e620229d174d14ef4491a4e6fef4b02d78f82bf5d71f6ccbfd9d6d1f3c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-define-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b11318b55a4531653a8bbfd8055bda2b56ba9ff8a2d518ddddd4c4ecfa428719",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-define-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "41e8a846bbf4c557e76fd4465e111de114200cac159eb22de008c32f4bd9b0a4",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-define-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "6e82a674490fafc95516b660cb5609b78200329d599d533176852a7f0393466e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-define-task-2",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "1c870a25d02cd14aa1ba61ae0eefe2ef9fc7731541b6cb1179f2310a65862861",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-define-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "7ec3ee6864ca4ccfbc7d47384c5b26238255554308a48e4b21d1e72aac9d2cb5",
+      "ok": true,
+      "tests": 11
+    },
+    {
+      "id": "advanced-define-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "12a0b96169651cc1576caf3a07ad73bb827a1f97779a99fdcecf68b7757b1dea",
+      "ok": true,
+      "tests": 11
+    },
+    {
+      "id": "advanced-define#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d1e1364c935172166c7c1c802660844143624266b90394efc0ae0ee188edf522",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-define#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d80728bf602a50e853c87534fb6ec822e07bdf4d998c0cbe448f18f7fd71cb00",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-define#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "4aedeec50ea3a72935b0d699c1114d1440a650f673245a0cbe54a6ec0ac52e9c",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-define#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "fab6e729dcaa5befb337ffe41961845869f2720543e8e4ef6f1d2b23054e3780",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-define#5",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "3b541d45dc49207d017b0d00ab9178d3ed0e1a2448bbb45a04d234b7395dd98c",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-define#6",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d0f8d0b69141184f3ab116fb99c905588ef8f5e2df7b964885d883935ad64f7c",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-define#7",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a5a77e89828e5d3fca582ca9e26055dee9ef41c6b20c7224000481ad833a6ee3",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-define#8",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "349c86c497cd34bed78abd26f278f40dbaa60b27b4d49c2e190f47db24254fd4",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-macros-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "f86e434992d665765050cd32d1ee3e399ed9947be7deddba104d934cd74d4cbc",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-function-macros-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "cc29e48c86e892e7c52b1adb1d65b7de3cb82857d55cc26d24a0d64fde056f3e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-function-macros-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "d0351b5eaa22d8b0c99defb691c674614e61b62da9caff13a6f72cd5f2f46dbb",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-function-macros-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "0e5793e3bf92e49bf65ea41289f4d29567125026af39369203a3e2c3fee944c6",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-function-macros-task-2",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a26640e129bb92b4e37dd129243992a0ec731b6b972dc9b7186874db61bd727a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-function-macros-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "3426033e805cfa2cc044752be20975f43223723bcaf5d35fd610e6f59a6d0f45",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-function-macros-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "64f985e2c2cd47f81fbeeb455288db79f5f26a2b80427d2182680ed0da20f5ca",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-function-macros-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "b92186cf22add7526b83f32b9536e607e902f7fadef0799d5d98e1ed08a09cc9",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-function-macros-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "4872d32b875631f57b41d074a0f264454c27459865b63f7b3d12db53ec2a9d37",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-function-macros#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d827998a1ffde26a2e271db891c05411c28b2fea6958269af99311e99fa6ba96",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-macros#2",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "e3aebf3bc5c5c77c85bf30008db1f32625e42edc90fac327682ebd86a45025f6",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-macros#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "0cd138bb8e7f8d7878fecb1bb6ab48446a7b5b8f30d9ef55a6e5d66c1fd1d150",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-macros#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "20b1163cd697b1e50257b53e980ebd072552c2e7287df69faa96eb912e343c6f",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-macros#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "26998863e08c8509f46346643f59543847ee73326d103c78c8ca7b5bd5dd2598",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-macros#6",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "416b41a5d00097273ece074691fc15aa68bafd9aa51de43b44837fc91030c2d0",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-macros#7",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "0838dcc4ca9692e73d016d763eba21bc92873bf3040de1ca9d8603c679a54b17",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-macros#8",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "e919dd1e793ad802dd945d3b80d24761c5edc066b052b029dc618d5d4de88b9c",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-macros#9",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "88294ba06c169e4612addb1a981a45d74418bd34644f080bf0a57fe3ed6febe2",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-macros#10",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a0991f3fbf38714d8dd3ad6828b05d29ba790b3fea8f2728f241246a9be59e63",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-macro-hazards-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "4bd07216cfff18508a8311f691268c2fd209fadcef733f557b347daeb5f212b0",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-macro-hazards-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "766f5d3f72403b5b49e3f3aae5d08a95a84c8fbd80ada4e87980ff5726769736",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-macro-hazards-task-1",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "38acde3f96441c63d095322d37c3c2ecac2ed864987e854370f339d1e333c497",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-macro-hazards-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "de4e2554f4503f0e3eac182487ed90706eca187d14720dc72a3d2c3be97441d2",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-macro-hazards-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b1056fe44b40b9e8457089ccf1ae627d21928da4a81b3d5f566a38a4f7d38981",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-macro-hazards-task-2",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "7d4a12578a59d001ec0ba22a2246c66b30c5d73e003249236b87f44ca9347f60",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-macro-hazards-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "f032f4331a5334ddc65cc5e71189028598aa56bcc2eab018d7a2bd7e27d59aa6",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-macro-hazards-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "6f59c653accb980cb6c01ab3a784165959351e46deafe35338a050a497fb5189",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-macro-hazards#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "949b6d09b990f4fec6b47fa63e9cf2e3b09210cba48aae14f2f4518bb23cacf8",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-macro-hazards#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "e2f4ab7aef072e8e9c2656aa6ac4e569d8c93c5eea27f16e51036f2a253d0584",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-macro-hazards#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "2a2a90cfbb25c0b312526e219e279211d27fdecdec2e4c8d50ee292794cc50cc",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-macro-hazards#4",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "d3b895f35050b22ef001fb6fed0199481321df4a0b51aed9f3a7e741839d3c4c",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-macro-hazards#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "5ba1b19a19d3a5a8525593927a445e42b2db0353f4a2bfc7c83fbdd6b6474705",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-conditional-compilation-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "db0b02366fcda458ac6a8cb5acbaf3ab6850d47937f0878ea78f05ca6c17c9be",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-conditional-compilation-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "36d6aeaaf79a5918c08372ad701b8831252cc76994051ce41010e3e205d6b663",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-conditional-compilation-task-1",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "cb3a86e255094d7068641d9e49cd1c2ae529d727b101736e6cde0026146023a8",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-conditional-compilation-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "60f5710ba44ecbd72084939fdd73b6b27c3e761e7e8c2cea4ff8e225cd47ad3e",
+      "ok": true,
+      "tests": 11
+    },
+    {
+      "id": "advanced-conditional-compilation-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a812df36abd90b6881198fb01a0a5e256159669ad39c2163753b335a8602cf9a",
+      "ok": true,
+      "tests": 11
+    },
+    {
+      "id": "advanced-conditional-compilation-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "ee29bfae0d91c31130f0a5ed21c3ea82b90bd8771fea12380afe4d888ed95549",
+      "ok": true,
+      "tests": 12
+    },
+    {
+      "id": "advanced-conditional-compilation-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "654d99135098b290c1caebc9c0c811fdb6624b8fdee3e0c9b62cec6f8533ab6c",
+      "ok": true,
+      "tests": 12
+    },
+    {
+      "id": "advanced-conditional-compilation#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "de04f58150cd9596b90240c279d62ec6181bf975b5631aedf42d1678e1154369",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-conditional-compilation#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "95158d9c186f7d2847806171b930f29a6723a4f16dd0e66dfba481ca1788d994",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-conditional-compilation#3",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "a19f64d6bd66121b0be08c87a20c184279eca5114a9c1a05adaf9536062b2365",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-conditional-compilation#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d7350d5f65605d39f52f3e72a9caf95d8a287c78c52e4cd86b7cc98dcd9df8d2",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-conditional-compilation#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "61b45eb0706e0d0c2d4e6b88a3a49c17a0c6dea3aadf5332b4d840e6fd793789",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-conditional-compilation#6",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "e9a9202ce9b5c83206a976bf76815046d141f4debeb944e91f343ff68b77740d",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-conditional-compilation#7",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d3c3651dfa81125498909f7eab5e841015e4c1dd8f3865a88d26221cdd4d5d91",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-conditional-compilation#8",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "f835233ba1afd30f8b8a8c8f824d85a5bc8972ca87f576ec2f2c9b1d98e06d93",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-conditional-compilation#9",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "87df641beb508f138ee88a1f83be5c0c452dfdbcd04121c3888fe3af66709648",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-const-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "eef637c6b13e5370f8536174bb3f29352276943fe3528de350deef060cf023ad",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-const-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "bacce762e4cb3c5572be29940f1fa27950b7b09e2f37ff7e8050932825b18102",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-const-task-1",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "4f13e2073f3ec200c914f824f670799c116f8d9b5077be11fd671ed9fefb197e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-const-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "6c03bfb6e329b6f649ebf44c05b3be77528064d428f7f7aadf1c329ef45e5601",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-const-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c6e76759f8c641d21eb45e0b178526767cdbacdb306e71f41b1ba79a6321828b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-const-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "af24e91b77aa08ff8702933fc5aa788bff54978e8748cf9bc40b81076438a51d",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-const-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "0172dae546b6b2bf8d6f4e6e6ca34f61dcccefe5e26589b2fa80d54b1cbba233",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-const#1",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "db0fb57aa3b74a7fac0cba95d50c8e5a3b6e9c43485bcb225dd8dab719fa76a4",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-const#2",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "e5dc8e57fdf4770699e3e39ff6ddc4adf41f02aea0929180ce4baa6c72a2d638",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-const#3",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "fb6063083ba1648e182b93d33dfc77815c88c4c0e256844fe41318c03315d003",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-const#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "1a8d9ab7941f933b13dd657837234c9ae41ff3e444936bdea2858f0ba1f4a303",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-const#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "7937aec4154630cb050bc5b6edcdccfb10cb8ac51600fd5e011292c6625f24c3",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-const#6",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "e103f9cee1efbf6fabcbf7eb47acafd9cffca20f0f453916b12383c257e7e9f7",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-const#7",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "7f189ccf00c268f1d8dbeabf8d8eabe1b1d11f2dcb6c9f9fb7fcd34d8ebbdcda",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-const#8",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "8feadf04f81e0b09179901cc04c1ea7daac2f1c1ad7673a3f9a10741c99d9aad",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-const#9",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "bca934a627c16174b530633837f8f66f9b80bb5bfe96967747a226879b29dcca",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-pointers-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "6ca566e8a5587e18ef5c2e73a346daf13533f067fffed83994ff468a6ccf12dc",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-function-pointers-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ddd8f1c12e54e33c090eb2e47215a7e2d14a16900925b07bde1fab0f28b3fde1",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-function-pointers-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "ad0384357d59f69713d8aa1eb6348d20d200d5a8eb6f13b20d2143305b711ccf",
+      "ok": true,
+      "tests": 11
+    },
+    {
+      "id": "advanced-function-pointers-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b7fc444949484b0d4e2aa7c9887bcba8acdb54ea9c0c3c1ec1ff09dda2fe44df",
+      "ok": true,
+      "tests": 11
+    },
+    {
+      "id": "advanced-function-pointers-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "63a1b95bffa1c6b56b894da210d7542b0ba25f6e50aad7cee0c28fffef92b280",
+      "ok": true,
+      "tests": 12
+    },
+    {
+      "id": "advanced-function-pointers-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "9643406d60d97bc009cb9766adf4945cd5984a2c838987e7c8769a823545fa5a",
+      "ok": true,
+      "tests": 12
+    },
+    {
+      "id": "advanced-function-pointers#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "704cdb8b24afae742ea10d86a80b73583843eda8119c80d7145b4861d17dfcad",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-pointers#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "2bdf4b62f0c3ab4e7dba74616ab43bdcdf69056531a2c57302135b0db583d9e1",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-pointers#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "df9380125bb823c0f28ae7bebd6894716d06e274c78c83ebbf8a5023fbea7f85",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-pointers#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "72a9de4e5624b09f5cfda322743e27cd8030a10de8324bc5465adffc4e415f49",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-function-pointers#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c9337c248d059e6bd40e9563b38318725797465d931196fe0fa11a9a249aaf06",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-callbacks-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "b2b158b5e0cc13f25956acb6a917aed61d5b5c7fb93a1117d0e1da79e3e5ed93",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-callbacks-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "41c6f2ce0bd4b70842405297c76dd8621f30491ee24df1e80c0af02837c8be73",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-callbacks-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "b7c199f255501f37bcc22d84c0916690b3e083786d94c68b003a2a874f24037d",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-callbacks-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "fa398e99bc0a5721de561b1cd3635f5e495b3a2d97b07d03ddc59e8f57d79904",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-callbacks-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "8257e0519b8153898b9dd76af653e5d1f9160177de173ee0b3c44f23b6686934",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-callbacks-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "9a153ac25daf65840028be83bcc44813dbe2324735aec478f8f9af9e6880dfc3",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-callbacks-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "c3d46280cd06c7b26a4fb6d97a1e882c5fc4083ace9e53dc21cfc094d9520dd2",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-callbacks-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "09b29118ed08b9d866d804c5315b866284a33b4d0b49a8110a4d80ee7f611583",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-callbacks#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b2caec0652bdf02284c865641917b6501d4307ebf4a52ac691357dab3ba6e2d2",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-callbacks#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ad9da5228df4bf02a95658081a0bd61dfc54a5e3ccce79b56d156c215011bae4",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-callbacks#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "952cf60b9dd8b27a9fbd84d07ffdd87aaf7618a558e1276ac14c05849bd3b6ef",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-callbacks#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "cb6ab2ae1f8352d24eb9272ff7aad743e6d0ac986a11be4e10f42a882d82fff3",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-callbacks#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d395bb52f30de645bb2ccb8d9324b64da496b9e648e532516f90d51cc2ad0c7f",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-callbacks#6",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "bad62bd85b61237fd0844fac14eecb4431a17fa1f3df6bf0e4acaea8a898fd92",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-void-pointer-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "be7b93c0e7abb876857ade0228a05d108b539ae7ee7190c54e8bf38cac2ff833",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-void-pointer-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "357bbadc22488f277a12ca1c6eb1c27e105c96582801f67537216989d2c1a2e0",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-void-pointer-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "f65dc410d75d99ae625cad0c097b77414396eb89cce0fb789c20099fce052199",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-void-pointer-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "00170c1d7a37e627a6954cc121c402bafd7796100dad53189a00cc41cbfd3545",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-void-pointer-task-2",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "5f0c260020b43fa79de7dd8e12ef7ecde775e441b8feee99b758693cc68d1f96",
+      "ok": true,
+      "tests": 10
     },
     {
       "id": "advanced-project-vector",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "3860d05b5f3d924f1f80e8f0253cde85820d655ff161fe953ad0d1cbb0b7eb5e",
+      "mode": "sanitizers",
+      "fingerprint": "710b57f6f3a6354e089174c735d306b702e8f942e9ecc0e23d3989ce842dec6e",
       "ok": true,
-      "tests": 6
+      "tests": 10
     },
     {
       "id": "advanced-project-vector",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "b19dfb217331c3492ec64dfc922494a33ed2a562d9ac8690a814e011fdfd68a0",
+      "mode": "sanitizers",
+      "fingerprint": "849625a73c25d0fbd62c2f1db4be433e312a02b0d302d31757acb01030e57d99",
       "ok": true,
-      "tests": 6
+      "tests": 10
     },
     {
-      "id": "advanced-void-pointer-exercise",
+      "id": "advanced-void-pointer#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ea977cf4d722431d6a98e8d88016c2b12abe72671ef87b56a02919bec485a39b",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-void-pointer#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "03513d4d099d7f62ffa8a86b3c91fcad3dacbdceb6caf108716edea0155ef313",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-void-pointer#3",
+      "kind": "memory-example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "edda726c3ad3e1134cea6296f230d00dcdec213d58601c3d5b5463bc07577c90",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-void-pointer#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "1e0a21da27ba6381daa9585d4a93106739003493db2b8aa40516c9e9cae8141a",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bitwise-and-task-1",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "68e79ddc4bb1d68b023313f7b9074c536fb640a53aa7e70fbef56fcb38397839",
+      "mode": "sanitizers",
+      "fingerprint": "4b0037de1c0599d717d40871425b27793ae283365f93ca0e08a3f2385b363e9f",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-void-pointer-exercise",
+      "id": "advanced-bitwise-and-task-1",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "c290a07430d1028843a366d80498091a57a2471afbcdf5418658a39a6414d6d9",
+      "mode": "sanitizers",
+      "fingerprint": "51e759d63970b4804fe354e7ee111ac28ddfcd49a3ca34dbf2dd737ba8e5162f",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-bitwise-and-exercise",
+      "id": "advanced-bitwise-and-task-2",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "f07f319f224b4cd8e09f52c49fd6b0b31d9a950d381e7687fad53c32443a81cb",
+      "mode": "sanitizers",
+      "fingerprint": "df5dae824d6cf9eb357547300844c2b6addf92f728bc84db4716f65fb5ad8a66",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-bitwise-and-exercise",
+      "id": "advanced-bitwise-and-task-2",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "af22a4af1d3dd6f9b1d7360d9028d8f94440d6a08a4d8d7ec3376408717b1406",
+      "mode": "sanitizers",
+      "fingerprint": "a06d8e5188d2e357e16cb1cdac2c5c8512a10ac34b8dd97c2b57c5feed387cc0",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-bitwise-or-exercise",
+      "id": "advanced-bitwise-and-task-3",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "7f149672dcce95c62ee8f6c59533690035998ccdf4e2da526c9fb1f94f983d8e",
+      "mode": "sanitizers",
+      "fingerprint": "c885f208d4245b5fb8b735d96950aa74a721e1411b01c5a1d75b14b5723dafa6",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-bitwise-or-exercise",
+      "id": "advanced-bitwise-and-task-3",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "967e2ab3031b0e29e3e21b0a2f4a36d310c40915064995da55b1cadf07d1117b",
+      "mode": "sanitizers",
+      "fingerprint": "48eda6239e112735349472023502b9a6654734c2d7e69e13d3bf7f1117e92fe6",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-xor-exercise",
+      "id": "advanced-bitwise-and-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "35bdefeae2ecbbc54bf3fdc4d98156fbb59882123abe58e91ba6604f299c81c1",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bitwise-and-task-4",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "13e174be3181386648cbdba0361ab776a52bf95688bab2154f4ba1abef47d3d6",
+      "mode": "sanitizers",
+      "fingerprint": "418c084112102517baf9d41bc92a4ef94ce32876c1463a707743c89b63901b8e",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-xor-exercise",
+      "id": "advanced-bitwise-and-task-4",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "095d1c067a24b9c56904d60e053e7c82e59e09faab9b0cc338aa7d84a8e856b9",
+      "mode": "sanitizers",
+      "fingerprint": "aec383885ec83974a2638244389f289055f965c78de16795e92a8aac7be0e1c7",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-bit-shifts-exercise",
+      "id": "advanced-bitwise-and#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c55da7ae2222fb2deb6a1d71183c906379dd61c07461d16f7567615dcdb7bc19",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bitwise-and#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "f404494b5d9a19b986686fb8aba7f51682c95dd8d71e62e2549bfe8b70118c7d",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bitwise-and#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "863044b42b82d3467695ee9553aba828bd46a9f25ecb8a485688bdf9b362cc39",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bitwise-and#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "650ad08744d48b199a7b3ecb8bb0d0a3b22daaf510be8edfb3370b8e9bb644fe",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bitwise-and#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b662a2b6d87b02e62a42c08e70f5ceafed9fb0074ab312e517214671cdef533c",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bitwise-and#6",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "5d32b6e118aa74c3dbad69eb47571d6476a634065c4f1db943735d3fb798addf",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bitwise-or-task-1",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "0c21880d9784c2f666b988d6efc2f36b9ec68642ddfb0d25a8abe831b1791fa9",
+      "mode": "sanitizers",
+      "fingerprint": "03906042ed13edf65c9f547d12049fe53f59d98aa6f9b5faeb553d8dde645f97",
       "ok": true,
-      "tests": 4
+      "tests": 10
     },
     {
-      "id": "advanced-bit-shifts-exercise",
+      "id": "advanced-bitwise-or-task-1",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "e435ffc3a19f40a2d867fffd59867f799a62cad42d7d4329e0303e666a6ab01f",
+      "mode": "sanitizers",
+      "fingerprint": "b11b5e244d28cb6b10d082f7a9c24f6479fabb2ac7f14fca9ae8afa67b552a14",
       "ok": true,
-      "tests": 4
+      "tests": 10
     },
     {
-      "id": "advanced-bit-masks-exercise",
+      "id": "advanced-bitwise-or-task-2",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "21e523b654cec29e1cdd69bfab66272654b83c45a30817b23e00939d74a9d79a",
+      "mode": "sanitizers",
+      "fingerprint": "3d0061b07899a4832445539a853a363124d79aaa2b86aadf9096f758bf17366e",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-bit-masks-exercise",
+      "id": "advanced-bitwise-or-task-2",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "7fba314f860e787c6b6a7bc3b90b3918d297a4b554fdb80853aebdd5521d5559",
+      "mode": "sanitizers",
+      "fingerprint": "5ff5df6de2ce3fa732ff51eaae70d9a439c22fbdccafcda7c5b5044b6738c04f",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-registers-exercise",
+      "id": "advanced-bitwise-or-task-3",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "746ac5e653b01763da5f74629da419b521fc726c9c31ab3e037f0fb7432c20f7",
+      "mode": "sanitizers",
+      "fingerprint": "8c560982385172f9f3a7c369f134c8e14fed3f8961de3497f61db83e8aa5d332",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-registers-exercise",
+      "id": "advanced-bitwise-or-task-3",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "25e10b9b83218bf851d8c52fb674ff9d483353694deb9f2c5e05d915462f92f1",
+      "mode": "sanitizers",
+      "fingerprint": "5465a8a99f75e0014e47d90fbc181176db2a2615bf5f7a3b738e68a976fe327c",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-binary-files-exercise",
+      "id": "advanced-bitwise-or-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "1bb3056e0da745707517e582d579391fd5a97a7afd52f6351b2d6a1f1eb952da",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bitwise-or-task-4",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "566148064a0c244d76bdb2c5e0989f8333525e8b624f6cbe76782b1421c944c1",
+      "mode": "sanitizers",
+      "fingerprint": "40c35f81767bddd9f6b2bdf0667a5264eda63a44714ddb8b53dce07ac781b120",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-binary-files-exercise",
+      "id": "advanced-bitwise-or-task-4",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "c2d014f4c15a81df874edeb0dee896c9880c1177c20572af61037eca71932d49",
+      "mode": "sanitizers",
+      "fingerprint": "39f2292fb9d402ae01618f6f26070a0abe7351a2658d980bd026325e509d7620",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-file-stream-exercise",
+      "id": "advanced-bitwise-or#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c50889ef4c20d47f381edadfdf31ca8eac0d6d8e3e48348358e4f3a66485c7d8",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bitwise-or#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "7bc23780115d273921a380b5e2f29830d0e7e985a65852c24e2647300fb5f21e",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bitwise-or#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "4ea836c8ae0e13a5cf371d348c4142ff013f0fab1d867a869db9f82c2bee4cae",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bitwise-or#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "904d480889fa67a0b6e53b2f585f3a3593442517bbb996997d981c626f5b3226",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bitwise-or#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b86c2e41013927b547b8c7f66dc2291ee49cba73cd554b485476b3614223a520",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bitwise-or#6",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "87424289d8bc54b64a092fde642e14b018fea9a1f4f628a11e2f181b4f752c37",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bitwise-or#7",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b40a9a2e501f8981901d05a4420fcacb19735d635d3c52e3ed4cf9717787666f",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-xor-task-1",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "daa87a0140ff8e571dbe90a036dfa6dcd7f64f3b4b03ea223ba95a51fb06b563",
+      "mode": "sanitizers",
+      "fingerprint": "b505aa1bee86c1a09c33a158aa421d474f30832c51b4fbc065498159401fd7a5",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-file-stream-exercise",
+      "id": "advanced-xor-task-1",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "3f4857f10d229e50507138b72e52c4350cd0d72c1c7ab38ab1b179ee573fac2f",
+      "mode": "sanitizers",
+      "fingerprint": "df2532bb04fd7607f6b5a89f332cf08a46319630a49ecf380e9065d1f4d2f2a6",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-fread-fwrite-exercise",
+      "id": "advanced-xor-task-2",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "fc6f0ff35ee59986148c1114327bac70a051f2a7c2aa8d5a7092a82ed3ce3b98",
+      "mode": "sanitizers",
+      "fingerprint": "ff76d4a1ce55d974062e7494c544337948cfa0f513f42a45d5e137a7b249ea62",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-fread-fwrite-exercise",
+      "id": "advanced-xor-task-2",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "957ca9180b5212e25b5ffe213a5b8172e4cc213d2441f5021f790249da3f4608",
+      "mode": "sanitizers",
+      "fingerprint": "56712f483630325e136c47046e21fa57618514958a1295b89b1ff03b70b80564",
       "ok": true,
-      "tests": 3
+      "tests": 10
+    },
+    {
+      "id": "advanced-xor-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "f803ee110391c9ad76357f58561a4ae7384e50daa05d4466089f54710d69ccd1",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-xor-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b461f66b33cb219ec9d08efac6724bbd73eca3d823ab3c42ba48e104d14103cc",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-xor-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "6195022e85f2e8614cc70551cd3b710823d9d3debb8e0f6914f385cace4edf1b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-xor-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "c9bc5012d383a223219f7e2b16f00a212022f787a6135cf70b9c2bd6c4f0f6ef",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-xor-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "0e66d9912d01e2ffac569630d3b89b9e6addad937e97926d624b76632c1b6fdb",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-xor#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d7c9bede91741120b41599cb585f4c98dfad43d99a0d2692d89c436d24a6f1e6",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-xor#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "daeeca51b0c0da162a734377670cb5bb0638f91e2ff1cb7b027fcf3740522a47",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-xor#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "2bc38fe82f063a85314458b9d7d928d2d89a3534a3fa19cfb1655b2e4ec4d82d",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-xor#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "52fa0e1fba15dac845f6168051f9f0e576612df8b6af6b5bc69834fc29910431",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-xor#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "e5fa5f91cdcd220d88950bafd5f169ad322809e16003bb4ee73400cde10d5cb2",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-xor#6",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "2db04a6cc54ce03c0ae9227c57a45be2a69e2714cc6a10ef40b9a8286bab0f39",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-xor#7",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d630757f18572793247dd95e42216b6cd8cbdec0ac9398d5ecc858cb67fcf500",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bit-shifts-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "19729de7220881efe7396a51a1f5db26603e03a75be1562baa0b35cf79a5171f",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-shifts-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "84ae5a7a044d120090c95bc5c74e71b19256441368fdd0693933099dbdd2c869",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-shifts-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "2671a84772849e095c672e99e37df2edc70bc67012465565e2a19b4d8049d7b4",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-shifts-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a9bf6f0abcb126b844f3b931954eb168b3a4bcc8d08cefc4968de03cc06b432d",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-shifts-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "52c586c8bbfdc45f4e2ac164d9053ccffcc10bcdedc72c6e3fbb0964fd46bb52",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-shifts-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "f5c4b8e8d22ea45dbe9ca983179c2852b43b161c29afb39c38481757b484575d",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-shifts-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "687eb87c2cee78696c021a92c94429a8a21f2a116536979d54d2d8fdb2bb9372",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-shifts-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "cbdf1eca2371b914f74c3d9b3d0d7f520159812c5754475a240cd1f45beea342",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-shifts-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a696bc284a2c43b60f9ca5bd82584b5ae3f920613999ce0220b730231165fc5b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-shifts#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "96430bb7f472bdd9971f2438123010ec35c516179e463311a0e7a4fb2dc8482f",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bit-shifts#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "5be632fa9248efeb969f390a02cb1afd024d425a5857f0e979373dc8452ef243",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bit-shifts#3",
+      "kind": "runtime-error",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b64a2cac34fe3e778ab3b5317a54000fb43c20fe44ae4b85a94b1a7084e9b4c6",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bit-shifts#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "5a7d51a5efd3eb9262853222d50ee18fffa0a0d2bddb13c17b6444d20773d887",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bit-shifts#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "dda9ba5066250b1b4c1c447b91a62d7b6896301e976d39c015685bf27280fe49",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bit-shifts#6",
+      "kind": "runtime-error",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "765266f1c93af8736d57f325580fac946f88e134dc127dd630cc23a4f0f8d52b",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bit-shifts#7",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "1c6ff78a73c19fdda2755a7739d2486a44a4b4187f68ebd247d406bfe70ef9a1",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bit-masks-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "addab5a6710b7c6f38f3a297fbf1119231fb73349a52a9cf11316a1cec6cb5ef",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-masks-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "57ba76191772c253b4d3391613ae21488f9675e8f0e41a83592dcd440c1f8d53",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-masks-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "b1ced5a07cbbc91f661e86f380d5890997af93c90a194f530a3ce0a540396ec2",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-masks-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "3d28502226c4ae14c09b53c13d9a597d8107cab3f3c2d288fc667a27179a608e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-masks-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "7e35cc581c14d9621a768384e54f889e17fdfbebc70ef60aa0cddd72b75f021c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-masks-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d6ec5e6bd3aaaeb792ab9ca164c99b50cf8978211c4a509ffdcfc1963136cb38",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-masks-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "2542cfb66e49536df6c5cd91fc46b2547765aceef81a7ab82d6fa1de2d1f3251",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-masks-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "7db44edffe74d4fc80bf942a2ef1ca4ef5dafcb94f601abeac594ac8eb61ef55",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-masks-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "990b0195ae61f781668c0a8ba812e4fc9783986bb05f2ee64ad3c616029b364a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-bit-masks#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "8b84ffac4f9e0e0a5e866848823830bb52baf6af3b180de1019461afe98f78f5",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bit-masks#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "da55ee7aad9c3c9d5eca47f12ea69942d7fd03b023b3bf08025daf58512b368d",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bit-masks#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "4e6fe28ce88dfba8bf548f623ff69d61a759fb5f22e091a4ca0bd537d7ad367b",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bit-masks#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "af7b49f949ad798e3d9b23de685c89c4ad02c6e62756d448f3f3fb231131e5c5",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-bit-masks#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "eb0f7a958c8b48fcc6570afaa0d87ca78fa70522f025e73e626962dc6a76e33a",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-volatile-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "6a6790e97c460df7201155e5e0cc163584e00960baba393a029f5edc1ea8d5a2",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-volatile-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "043fcfee05eb5c50891ffde3ba9b17d6e459ea4438c2a9d7108793b0f94f6887",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-volatile-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "f8a409720dc17a219a45f52238cfcc810932929ea21e7b155671fb78bbed9935",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-volatile-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "7763521033fcd98f70caafe1a9f51e4a787df1543db9de428fdff3a0a07cd3e6",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-volatile-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "69eef40173469ce1ed1b64e5803dbf116dd26ce26444ee21e46f92409df369e1",
+      "ok": true,
+      "tests": 12
+    },
+    {
+      "id": "advanced-volatile-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "e692cdbd7b39c5262da39c9c22731f9f80ce5aba6e4f05f99c4ab841a7c9e2dc",
+      "ok": true,
+      "tests": 12
+    },
+    {
+      "id": "advanced-volatile#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "2539b0237b1835c12f6ac8cfba8511479981ef4a976618f4fb437532a74bc5c9",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-volatile#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c95387522e4fe6ab69b2d7a67fc6cbe50e48fca9efc0dac7c137a511b890f5ce",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-registers-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "086100fa55dab245548e7e6394a8abc7df3cdb47f26bd0b845b5347cd922d01a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-registers-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "f6948025d4be319e2a8b11a25689be13b0d64b1a9710f8f7a746aa2adc23c87d",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-registers-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "1d183e430cf7747987eb1f8dd468a3ad52d31442c6057dd86d60cba178c80514",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-registers-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "04de8f6e344e2a342138375549fc2f1fd0f8def1edcc362724c19021cd53a125",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-registers-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "ee6882b0e694dd6b8c1f6343aced3192cef9ac8a5e20e7166f7e1515c628bf8c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-registers-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "efe1bb2b1b2b3c6dcd933dcd5711757d0fcf0a4e7c8224612722a6a40dbc1c02",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-registers-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ad41d04fe57f706b73362ab96ae5972643e15cfe7332546423bd79b40f048410",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-registers-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "21bd4b056d440df670d9940a4e3db15d340b7a70dc9004cb0c661be65b139d0a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-registers-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "f92819ee9843efdffcfad872e4d49db858e2144a37476b45726e7199e1ed69b4",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-registers-task-4",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "fa5d881b832fe33fcef37796dd1237983d102c994e151f6e2bcd0b3cbc5de57f",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-registers#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "db9dffd43f100c628470989efebf9c0d6d8be8391235df85e7d7c42b43096b57",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-registers#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "8a2ea572b0e31340f3bf246b9f228ecef61c1d4400ea59ce9eecdff3b9e67997",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-registers#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "05a1963a35b3299a0c748a988ad6fa13d07424befc73d7f7660cd54a7a47a0e6",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-file-stream-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "3d2cad3dd984455fa3bfef4a5a01619da9d3927a8ed298ad11c17f442857321a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-file-stream-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "21cf95bc2a8231b783542d10cad221f0bf3049233beba4178deff318d65f4414",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-file-stream-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "2e6e06639b89182f7fbe41e7226d87fb6a6eac0ff20f752de458d9f3cef6b86c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-file-stream-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "86e7593ddc4a6e8bd55baf53a0c9c4b7fb0fed4be22521752f62fc769ba1fe63",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-file-stream-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "5a476d55dc9908373b2c7af077e360f49e174b5d9723001d486311554606eaa2",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-file-stream-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "cb84a70b350b9c887901b41bdf6fe5b5b4ba4b6164787b13cd95cdee1d01c23f",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-file-stream-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "29fe062abcdae387a38acaf903da762da81797628b596abc8f0fe8abcaf07e8f",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-file-stream-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "2332083a8828881c741077067676fed92690a438458e9c681b5d7c2d4e13c722",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-file-stream-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a0c6ab9aa17a5b14a49ebe9e945ae19b0d86c672092092933b163c9f53f78039",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-file-stream#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "6e19389f595793abf0e560e59d48faf31251e11b04b0209baed2bb3317d9e90a",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-file-stream#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "bbb970c5a268bf11b6138e0afdbbb3e37cdc8c994079f92cae6cda0bed3ac026",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-file-stream#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "4197ffe9e26457d17d53a58b981c338a3fcda63d7410e518586d63142060f572",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-file-stream#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "db7908cd6ce771020db3a01004b017490867337911006ad1099e6130de7c1520",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-file-stream#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "bbf72b0dcf64bb3b737ef3b026113657db336d08d939283a048bcf1766761247",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-fread-fwrite-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "c5e4ec896802f6f4abc78650efe6cdb792aa049f89e335e3b0d71f49333dd58b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-fread-fwrite-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d6ebcc379f2ee657f67fb812f673be4796f5649181c696b8bdaf7b5ec1bf5d26",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-fread-fwrite-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "e3f475a2b31a0e6db3e615c825e9cef20c21aa60a81ee516153d1178846f5347",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-fread-fwrite-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "9d33500cfe70360aa95cee3385b83b38c74ae61e2877f198f938ebde19835251",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-fread-fwrite-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "8411698d1445a9dbc2dd54921b35b353facea33aab184f10faed70ace7dbdef4",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-fread-fwrite-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "5b30d974feeb4205d75e01c5d8dab72c0fd95638388ce43a88c6b35267adedaa",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-fread-fwrite-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "9faa34174918ea90ae8904fcc766c632f9a0397e158980b3baf855650e131394",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-fread-fwrite-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "6f3c21ff610b35a3f6211232e3108632278f09ab14a7c1ec8aaba94211ab032d",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-fread-fwrite-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a487686cd5b34b7b1a42ca35722e6071f52c1d572e014942ce75a4f22e6bd59b",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-fread-fwrite#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "fd560f59293366c8527c2af8893d72de773ed5939bcc641ba3c5087fe35ff1d9",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-fread-fwrite#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "79c3275859180616167592d1a9dc3e9e74ba6c8fd7562ec17e82a9fc80913cbc",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-fread-fwrite#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "9430b764433b8af58c50d279d420ca0d5d85f681ef7b3ba80277b4b36c6417e9",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-fread-fwrite#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "99dbf23489648adfaea452c039b7f50eaaa70b35e4d7175405475eb77f41ac35",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-fread-fwrite#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "451854856c885cf6ca9e3c996304e37a1946059a54bd3fefd619d7fe44c189b6",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-binary-files-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "e300baa1ea1dfadb269083357dbb1fbee5f9fa30a8a5d7714333cee5980ccd7e",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-binary-files-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "bb3d45659d37ac44be8a81ff272ec2823d0840cd357e8e3a970cccad0f724627",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-binary-files-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "6e6193e820813fca13c30952bf9451af49d52c3611109ae78dc803bdae0daf17",
+      "ok": true,
+      "tests": 11
+    },
+    {
+      "id": "advanced-binary-files-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "82e2376f388abedb490b2a477f0a5f30c81f3d38c1385fd691c73755bba6836f",
+      "ok": true,
+      "tests": 11
+    },
+    {
+      "id": "advanced-binary-files-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "0c48d7d4867a081a0603da02dde6caeefbc261cea8665b00a57f4f3070b42e3a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-binary-files-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "81276f1060a065e661f1b551ad7d367d527315b0f96f860b5af4681e2f2ef58e",
+      "ok": true,
+      "tests": 10
     },
     {
       "id": "advanced-project-binary-parser",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "dbdf65435a9740f0fc2de8d57f4e5dfa67ba28611bb9328ae29a6b518655b10d",
+      "mode": "sanitizers",
+      "fingerprint": "4683d9b8de90b1f73183aa1bf0a94a2e4343781baf49dfb38bb2ae8610b8dcdc",
       "ok": true,
-      "tests": 9
+      "tests": 12
     },
     {
       "id": "advanced-project-binary-parser",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "b305b983ec2d2695c86dd207d598d0a45948e1a88d919e7ca1ee36fcd986156b",
+      "mode": "sanitizers",
+      "fingerprint": "47b6a00589b0940db02842d66a9178ec50a59c0498ec0256e0db445196f82a7c",
       "ok": true,
-      "tests": 9
+      "tests": 12
     },
     {
-      "id": "advanced-error-handling-exercise",
+      "id": "advanced-binary-files#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c0ded2c9b119fce6e9bc6fab7c5e2298fb1ab6f42ae835aa597758a38f4ae72b",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-binary-files#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "fc4649907ab84dee869351b0813209c800653afd1c3a6a9025f0e3d93d24735d",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-binary-files#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "f6918b374dedec884189a9fc7d40c7dd63a11e18b7f4cb614a2be786227ee4db",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-errno-task-1",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "1f2b6ffa8ad9d795a16c01fccb7b7832f4f62c4da8d74abdac092c157aad59a7",
+      "mode": "sanitizers",
+      "fingerprint": "621fcc086d472291c88b966182714cac04dde08d40c40d60b7d5b43191dac449",
       "ok": true,
-      "tests": 4
+      "tests": 10
     },
     {
-      "id": "advanced-error-handling-exercise",
+      "id": "advanced-errno-task-1",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "253445e67b62e5af07a639b93ca7acf6459ec260ee1c054e51c4c6e961a76923",
+      "mode": "sanitizers",
+      "fingerprint": "a63d99f42dddca8be49d0cbffff3ce362c316745e14dffaaa6e1ba60bd9eea05",
       "ok": true,
-      "tests": 4
+      "tests": 10
+    },
+    {
+      "id": "advanced-errno-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "7d433441c42f7dff63847e61964c9a28795dfe3ac02821595611a68f0c7a96fc",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-errno-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ce9febcc8a6169535bc0e4d735ac5c246c68aaaad35cc9983cfbb58b75076d77",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-errno-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "aebc9bb1c44db191029c4570602323876a19f28075886bec7576bb85069c0e31",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-errno-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "0e3bc8e0acef5587de7f040d578d44ea092524ebba9135feba3a4f08f47c59d9",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-errno-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "12841336ea3297b669efc5dd6e1f7db0626c0593fe746ad60e17ae56c687001d",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-errno-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "40eded73a4cfee28aa86edb41ad45f498613136f92009812f0838b832676d371",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-errno-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "3383f25b56dd933efba16a3ca9130bc30812e6bca02bd3ee3e9a2ccf1783c8c3",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-errno#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b0dd77d244d9ce9350bc9d73e9f8d245df8d004c465bac811005813433988a2c",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-errno#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "6d5816085f1bd893326e191f3dc28be8bf1be036c1012d649ed3e2df8a8888f6",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-errno#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "878de22cf6412a1f0c31354f922a2a10a03fdad94478bc01eee26051ba61f570",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-errno#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "78dafe7d46374ed5dfc8c3fd403a28eeee9e42cc2da0084999f195a2c9f6d164",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-error-handling-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "4eb35919eb3c15662a161e04a457d5007961a28a6b02a596b613e51d4182f3c8",
+      "ok": true,
+      "tests": 11
+    },
+    {
+      "id": "advanced-error-handling-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ebb4ba6f6dc75cf5518de87591dae37249d4080bcc76c3004e1a776c41e0a8f5",
+      "ok": true,
+      "tests": 11
+    },
+    {
+      "id": "advanced-error-handling-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "29b038fd4bf09f29d2822abf377a813a34c1f09128e665034b05b68d003bdd64",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-error-handling-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "6c9449ca6d9343e0f78756dbd8614e9632cad881560159a95ca22509984c3e00",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-error-handling-task-2",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d1d8c356b29b60c6f88e299769cb8fb7ba6a0d3faa27652e4130e77444f6ae4a",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-error-handling-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "d41fe174412cba33cdae2879973ce571b46424b0adcc73f2249ddbc8e6becd81",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-error-handling-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "38f1c36bce81ebbc70a853b8db1f5c85520b819920067507922fe9ddc1dc69ba",
+      "ok": true,
+      "tests": 10
     },
     {
       "id": "advanced-project-measurement-log",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "879a2a478586ca887b096c1f07b67037a8dd92507dc77989ca7680c1002e7d83",
+      "mode": "sanitizers",
+      "fingerprint": "cd1a0c0a547b39eeb13181f29a271afa5a46af6f956a67a8d2076948fd6bae86",
       "ok": true,
-      "tests": 9
+      "tests": 12
     },
     {
       "id": "advanced-project-measurement-log",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "79786192ee08c6125ab387c24b16bfac386cd0b477e27deda26ac05cbb00f828",
+      "mode": "sanitizers",
+      "fingerprint": "cedc401dc785c651d65fd82e226ee704718de915babc7739f4236c1d1646b839",
       "ok": true,
-      "tests": 9
+      "tests": 12
     },
     {
-      "id": "advanced-errno-exercise",
+      "id": "advanced-error-handling#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "970a9c02207858b876e27225af843f81bef574d6b6faef02c01aff18e1e6beec",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-error-handling#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "033c61e214943f2b794811f728c6d8543db82a7a44f591a70065ee80c25bcfa3",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "advanced-assertions-task-1",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "0f3d957aecc6505bec3d304f4f11f785a2f4624ffede39a7edc9641390dbc50f",
+      "mode": "sanitizers",
+      "fingerprint": "40b7ddb1e5194f09be769a18729694fc5d619d3168677784a21eed2b06ee55a7",
       "ok": true,
-      "tests": 4
+      "tests": 10
     },
     {
-      "id": "advanced-errno-exercise",
+      "id": "advanced-assertions-task-1",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "e78631120e2f7dc4c82c606d1d92b766a654c3e31e7832458dee41f6a181b1aa",
+      "mode": "sanitizers",
+      "fingerprint": "9e657e54d5a088518ba676a2065f892b6b4bf5e45b15a195b7e410b2cedaac73",
       "ok": true,
-      "tests": 4
+      "tests": 10
     },
     {
-      "id": "advanced-assertions-exercise",
+      "id": "advanced-assertions-task-1",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a1c43634580c8549e51306bd99897b018495ce4b972032a26de4905cb15939fe",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "advanced-assertions-task-2",
+      "kind": "solution",
       "compiler": "gcc",
-      "fingerprint": "4509e57f57eaf64456487137ad1a919b420f687952f8cbb1346fd6ea1c7992e5",
+      "mode": "sanitizers",
+      "fingerprint": "7c3d9221ce723fcc7ef2efdb4cb925c1cfff75b19e0f3b8bdd76d04011c13cab",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-assertions-exercise",
+      "id": "advanced-assertions-task-2",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "c5aade4f71c366cc3323217f94bbb0d27afaab0fcc9e7f20ffd561bb221b7712",
+      "mode": "sanitizers",
+      "fingerprint": "da07a387f881cea91c00104dfb7b06f3df1ab7e36f33f54c8cfd9594cb07793c",
       "ok": true,
-      "tests": 3
+      "tests": 10
     },
     {
-      "id": "advanced-translation-units-example",
+      "id": "advanced-assertions-task-2",
+      "kind": "negative-control",
       "compiler": "clang",
-      "fingerprint": "f1acb0c1c3c1d8be60adfd7ce5791b7a5276420bb647791a8d39f5ba32bc29dd",
+      "mode": "sanitizers",
+      "fingerprint": "b82c90950edc85047d5a4ffd630a39f63685baa544d0ac0a8988303b15e8b102",
       "ok": true,
-      "tests": 1
+      "tests": 10
     },
     {
-      "id": "advanced-headers-example",
-      "compiler": "clang",
-      "fingerprint": "9bbcf5174ed36aa0c634f9fef1819d3c058daea248a48763721b6635fc093468",
+      "id": "advanced-assertions-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "fa48e61ae6494df9c8a690383f97ed150d33577ff49564f66d13ec7a4862e0c0",
       "ok": true,
-      "tests": 1
+      "tests": 10
     },
     {
-      "id": "advanced-header-guards-example",
+      "id": "advanced-assertions-task-3",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "83b6711724d143a4c3b3afc7c81125bedf3c97363d5b5375e729dd12f62a3051",
+      "mode": "sanitizers",
+      "fingerprint": "22d96918ffdc1cb953d2abe444f09a2baf874cef56976eea77d81b32b3732870",
       "ok": true,
-      "tests": 1
+      "tests": 10
     },
     {
-      "id": "advanced-preprocessor-example",
+      "id": "advanced-assertions-task-3",
+      "kind": "negative-control",
       "compiler": "clang",
-      "fingerprint": "c8e702382c11c3bb6ceafbf9541e8cc74fcde19da2f328bcc9a33d1748036d23",
+      "mode": "sanitizers",
+      "fingerprint": "945e937ea5049147cb79c1b1050d05ef61dafdcc78ffd543d976ce96508123f3",
       "ok": true,
-      "tests": 1
+      "tests": 10
     },
     {
-      "id": "advanced-define-example",
-      "compiler": "clang",
-      "fingerprint": "0692aa4c859a0c6a66758a50d5d88dc9b96ec47ea568d0892ded52e37e95304f",
+      "id": "advanced-assertions-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "4f2dce1891bb9cc1d58d60c19388eb1e946a5c0a89f0cd7eedc4bd6bcd6b74d6",
       "ok": true,
-      "tests": 1
+      "tests": 10
     },
     {
-      "id": "advanced-function-macros-example",
+      "id": "advanced-assertions-task-4",
+      "kind": "solution",
       "compiler": "clang",
-      "fingerprint": "a1903edc4a23341d49de0083fe9c2a5747ea62d891de218e9070cf05d7fc1cbf",
+      "mode": "sanitizers",
+      "fingerprint": "e41de511399e30951c6daef52dd0fcbb240423220ab19f0ba49fd47661871605",
       "ok": true,
-      "tests": 1
+      "tests": 10
     },
     {
-      "id": "advanced-macro-hazards-example",
+      "id": "advanced-assertions#1",
+      "kind": "runtime-error",
       "compiler": "clang",
-      "fingerprint": "689d083b43b26f962752ec8c2d3a0d2eef1b50f270ec431858c2e1dd4809a3b5",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-conditional-compilation-example",
-      "compiler": "clang",
-      "fingerprint": "f685db25bbfde1882dfdc2ef909c5a80d8948c2d7abd81deccee099c759468b7",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-static-example",
-      "compiler": "clang",
-      "fingerprint": "f0bf84689b64d45613df40e195b685fda2a34a6c2072be9dec653326da35f621",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-extern-example",
-      "compiler": "clang",
-      "fingerprint": "b1be12254e32617293d8e7ef0eaca0a1d6b732d87b204d46dc1d09cb1ea655c1",
+      "mode": "sanitizers",
+      "fingerprint": "5344b80ae8e8b28cc05e4694f0629dda2afa23286c103c8e30430cac90931bf9",
       "ok": true,
       "tests": 1
     },
     {
-      "id": "advanced-linkage-example",
+      "id": "advanced-assertions#2",
+      "kind": "example",
       "compiler": "clang",
-      "fingerprint": "4e91bf1cf690f13dba3fcd0672c5ae5860ede939e027e33d0aee75c786256ae8",
+      "mode": "sanitizers",
+      "fingerprint": "2c1703a47e58b545b52618b6de5895422e9fbcd79f6c0f0680abfc99b2e133bd",
       "ok": true,
       "tests": 1
     },
     {
-      "id": "advanced-const-example",
+      "id": "advanced-assertions#3",
+      "kind": "example",
       "compiler": "clang",
-      "fingerprint": "d78f093b2c6b8d4adbf7dfa8066b2a1230df758776db1e273b93101104447d80",
+      "mode": "sanitizers",
+      "fingerprint": "53a5317af1cf23560b9d02effca794677cfea8c1fa83c99cb3d39acb4a548b7a",
       "ok": true,
       "tests": 1
     },
     {
-      "id": "advanced-volatile-example",
-      "compiler": "clang",
-      "fingerprint": "13d54daffe064a504a4f50054428460065e89f8a783f8270ae279687f589034f",
+      "id": "advanced-assertions#4",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "a8340ca7cdf52bbb26a01a2b054ff113ee939954f9904a55d9d9eb8101d9c7ff",
       "ok": true,
       "tests": 1
     },
     {
-      "id": "advanced-function-pointers-example",
+      "id": "advanced-assertions#5",
+      "kind": "example",
       "compiler": "clang",
-      "fingerprint": "9cdc578b0cf687c6637eed93725d86f88c7946f3f4b1df5ffc186b21b174d552",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-callbacks-example",
-      "compiler": "clang",
-      "fingerprint": "fdce9a2d21bcb89649acb4a90608944316193ea8c02774ff54e9b87f3d7a4241",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-void-pointer-example",
-      "compiler": "clang",
-      "fingerprint": "c866ef805b241f227c858b53da8f4fe1ec6a9ce7fc0845cd07ca878c667546e5",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-bitwise-and-example",
-      "compiler": "clang",
-      "fingerprint": "08c0f3328a02e9efc88a7cb155bc7e709eb18114b543e92fe81e26c1bb2300ad",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-bitwise-or-example",
-      "compiler": "clang",
-      "fingerprint": "b2740d6625d1ff4ea4cec7469a99c36e97e780ce0c89d0c83664fa1972cb7090",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-xor-example",
-      "compiler": "clang",
-      "fingerprint": "e69f6b50faca58ed7af9bff624f7be56dbca8392c99997cc52ff687bf32007f5",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-bit-shifts-example",
-      "compiler": "clang",
-      "fingerprint": "32e43018e047716ee72278db998a9ff93d3d976b5cf2a8be387d5fad779e761a",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-bit-masks-example",
-      "compiler": "clang",
-      "fingerprint": "febd85e6d22838dee72b24d9255360a3011414bbaa8f034b2ce8fdd3c90d8411",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-registers-example",
-      "compiler": "clang",
-      "fingerprint": "f33d1010f4096cf35e34df2e968332012adfdaa280319a15949036057f208279",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-binary-files-example",
-      "compiler": "clang",
-      "fingerprint": "ed5764cece3bf3f80f08777c3411902dd6bee26b9b091a6b6cbf99c44e93fafc",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-file-stream-example",
-      "compiler": "clang",
-      "fingerprint": "c74c9879f5a5e501ee077e43f283301803f3b8f686853886c0ffc6e9087627a4",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-fread-fwrite-example",
-      "compiler": "clang",
-      "fingerprint": "1067a04150ddcf005177ab0d73c736ce17c5c35d0d8b89183fb0dcaaea0424e9",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-error-handling-example",
-      "compiler": "clang",
-      "fingerprint": "8093cd14d9a9f27dd9e751a3d2d0523b9928c6a76794151fee212b0ac449d600",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-errno-example",
-      "compiler": "clang",
-      "fingerprint": "bfd02fc95827dc8c879f390433866618cbe0f9997a6c285c275391d97b2b5e97",
-      "ok": true,
-      "tests": 1
-    },
-    {
-      "id": "advanced-assertions-example",
-      "compiler": "clang",
-      "fingerprint": "75a4019509b1c69b69bd357e48855a03d689a56988cb48321c18f11d45a6b9a8",
+      "mode": "sanitizers",
+      "fingerprint": "846d1088fd6c4e5b30e003ead3b6d72f1d8095856905950895b2b36b58890e3b",
       "ok": true,
       "tests": 1
     }

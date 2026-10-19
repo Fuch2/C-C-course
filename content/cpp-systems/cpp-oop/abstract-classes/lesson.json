@@ -1,131 +1,537 @@
 {
   "id": "oop-abstract-classes",
-  "title": "Абстрактный класс: общий контракт и состояние",
-  "description": "Абстрактный класс нельзя создать как самостоятельный полный объект, но он существует как базовая часть конкретного наследника. Поэтому у него могут быть поля, конструктор и обычные методы. Это полезно, когда всем реализациям нужен одинаковый идентификатор с едиными правилами. Ссылка на абстрактный тип допустима и образует границу между алгоритмом и устройством.",
+  "title": "Абстрактный класс: общий договор и общее состояние",
+  "description": "Абстрактный класс с общими полями, реализованными методами и чисто виртуальными шагами; защищённый конструктор; что выносить в базу, что делать чисто виртуальным, когда уместна реализация по умолчанию; абстрактный класс и интерфейс — сочетание договора для клиентов и общей реализации для наследников.",
   "moduleId": "cpp-oop",
-  "order": 18,
-  "difficulty": "advanced",
-  "estimatedMinutes": 60,
+  "order": 20,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
   "prerequisites": ["oop-pure-virtual"],
   "objectives": [
-    "Применить Абстрактный класс: общий контракт и состояние в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Выносить общее состояние и поведение в абстрактный класс",
+    "Решать, что сделать чисто виртуальным, а что реализовать в базе",
+    "Сочетать интерфейс и абстрактный класс"
   ],
-  "tags": ["C++20", "ООП", "Абстрактный класс: общий контракт и состояние"],
+  "tags": ["C++23", "ООП", "Абстрактный класс", "NVI"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-abstract-classes-exercise",
-    "title": "Практика: Абстрактный класс: общий контракт и состояние",
-    "description": "Абстрактный Source хранит private int id_, создаётся explicit Source(int), имеет id() const, pure virtual read() const и virtual destructor. Sample(int id,int value) наследует его и возвращает своё value в read. solve(a,b) через const Source& возвращает id()+read(). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Транспорт",
+    "description": "Опишите абстрактный класс `Vehicle` с закрытыми полями «название» и «скорость» (км/ч), защищённым конструктором, реализованным методом `double hours(double km) const` (`км / скорость`) и чисто виртуальным `long long cost(double km) const`. Наследники:\n\n| Вид     | Название    | Скорость | Стоимость                  |\n| ------- | ----------- | -------- | -------------------------- |\n| `Car`   | `машина`    | 90       | 8 руб. за км (с округлением вниз) |\n| `Train` | `поезд`     | 120      | 300 руб. + 2 руб. за км (вниз) |\n| `Bike`  | `велосипед` | 15       | 0                          |\n\nДля каждого расстояния из ввода напечатайте строку `D км`, а под ней для каждого вида `  название: T ч, C руб.` (часы — с двумя знаками).",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 9)",
-        "output": "12\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "180\n",
+        "output": "180 км\n  машина: 2.00 ч, 1440 руб.\n  поезд: 1.50 ч, 660 руб.\n  велосипед: 12.00 ч, 0 руб.\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "0\n",
+        "output": "0 км\n  машина: 0.00 ч, 0 руб.\n  поезд: 0.00 ч, 300 руб.\n  велосипед: 0.00 ч, 0 руб.\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Расстояний не больше 20, от 0 до 10 000 км (целые)."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "Базовый класс хранит name_ и speed_; метод hours одинаков для всех и реализован в базе.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Стоимость: static_cast<long long>(8 * km) — отбрасывание дробной части. Все три объекта можно создать один раз и обходить через const Vehicle *.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 9],
-        "expected": "12\n"
+        "stdin": "180\n",
+        "expected": "180 км\n  машина: 2.00 ч, 1440 руб.\n  поезд: 1.50 ч, 660 руб.\n  велосипед: 12.00 ч, 0 руб.\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "0\n",
+        "expected": "0 км\n  машина: 0.00 ч, 0 руб.\n  поезд: 0.00 ч, 300 руб.\n  велосипед: 0.00 ч, 0 руб.\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [-2, 4],
-        "expected": "2\n"
+        "id": "hidden-1",
+        "name": "Один километр",
+        "stdin": "1\n",
+        "expected": "1 км\n  машина: 0.01 ч, 8 руб.\n  поезд: 0.01 ч, 302 руб.\n  велосипед: 0.07 ч, 0 руб.\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-2",
+        "name": "Десять тысяч",
+        "stdin": "10000\n",
+        "expected": "10000 км\n  машина: 111.11 ч, 80000 руб.\n  поезд: 83.33 ч, 20300 руб.\n  велосипед: 666.67 ч, 0 руб.\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Два расстояния",
+        "stdin": "45\n90\n",
+        "expected": "45 км\n  машина: 0.50 ч, 360 руб.\n  поезд: 0.38 ч, 390 руб.\n  велосипед: 3.00 ч, 0 руб.\n90 км\n  машина: 1.00 ч, 720 руб.\n  поезд: 0.75 ч, 480 руб.\n  велосипед: 6.00 ч, 0 руб.\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Час на велосипеде",
+        "stdin": "15\n",
+        "expected": "15 км\n  машина: 0.17 ч, 120 руб.\n  поезд: 0.12 ч, 330 руб.\n  велосипед: 1.00 ч, 0 руб.\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Дробные часы",
+        "stdin": "7\n",
+        "expected": "7 км\n  машина: 0.08 ч, 56 руб.\n  поезд: 0.06 ч, 314 руб.\n  велосипед: 0.47 ч, 0 руб.\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Час на поезде",
+        "stdin": "120\n",
+        "expected": "120 км\n  машина: 1.33 ч, 960 руб.\n  поезд: 1.00 ч, 540 руб.\n  велосипед: 8.00 ч, 0 руб.\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Пусто",
+        "stdin": "",
+        "expected": ""
+      },
+      {
+        "id": "hidden-8",
+        "name": "Произвольное",
+        "stdin": "333\n",
+        "expected": "333 км\n  машина: 3.70 ч, 2664 руб.\n  поезд: 2.77 ч, 966 руб.\n  велосипед: 22.20 ч, 0 руб.\n"
       }
     ],
-    "referenceSolution": "class Source { int id_; public: explicit Source(int id) : id_(id) {} int id() const { return id_; } virtual int read() const = 0; virtual ~Source() = default; };\nclass Sample : public Source { int value_; public: Sample(int id,int value) : Source(id), value_(value) {} int read() const override { return value_; } };\nint solve(int a,int b) { Sample x{a,b}; const Source& s=x; return s.id()+s.read(); }",
-    "solutionExplanation": "Абстрактный Source хранит private int id_, создаётся explicit Source(int), имеет id() const, pure virtual read() const и virtual destructor. Sample(int id,int value) наследует его и возвращает своё value в read. solve(a,b) через const Source& возвращает id()+read(). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не делайте чистый метод фиктивно реализованным ради возможности создать базу в тесте. Для теста напишите маленький конкретный источник. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Vehicle {\npublic:\n    virtual ~Vehicle() = default;\n\n    const std::string &name() const {\n        return name_;\n    }\n\n    double hours(double km) const {\n        return km / speed_;\n    }\n\n    virtual long long cost(double km) const = 0;\n\nprotected:\n    Vehicle(std::string name, double speed) : name_(std::move(name)), speed_(speed) {}\n\nprivate:\n    std::string name_;\n    double speed_;\n};\n\nclass Car : public Vehicle {\npublic:\n    Car() : Vehicle(\"машина\", 90) {}\n\n    long long cost(double km) const override {\n        return static_cast<long long>(8 * km);\n    }\n};\n\nclass Train : public Vehicle {\npublic:\n    Train() : Vehicle(\"поезд\", 120) {}\n\n    long long cost(double km) const override {\n        return 300 + static_cast<long long>(2 * km);\n    }\n};\n\nclass Bike : public Vehicle {\npublic:\n    Bike() : Vehicle(\"велосипед\", 15) {}\n\n    long long cost(double) const override {\n        return 0;\n    }\n};\n\nint main() {\n    Car car;\n    Train train;\n    Bike bike;\n    const Vehicle *all[] = {&car, &train, &bike};\n    double km;\n    while (std::cin >> km) {\n        std::println(\"{} км\", km);\n        for (const Vehicle *v : all) {\n            std::println(\"  {}: {:.2f} ч, {} руб.\", v->name(), v->hours(km), v->cost(km));\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Название, скорость и расчёт времени общие для всех видов транспорта и одинаково устроены — они в базе. Стоимость устроена по-разному — она чисто виртуальная. Конструктор базы защищённый: наследник обязан передать название и скорость, иначе не скомпилируется.\n\nУ `Bike::cost` параметр без имени: велосипеду расстояние для стоимости не нужно, а безымянный параметр не вызывает предупреждения о неиспользуемой переменной.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-abstract-classes-task-2",
+      "title": "Персонажи",
+      "description": "Абстрактный класс `Character` хранит имя и здоровье и реализует общий метод `take_hit(damage)`: реальный урон — `damage − defense()`, но не меньше 0; здоровье не опускается ниже 0. Защита — закрытая чисто виртуальная функция. Наследники: `Warrior` (120 hp, защита 8) и `Mage` (70 hp, защита 2).\n\nКоманды: `warrior имя`, `mage имя` — создать персонажа; `hit имя урон` — нанести удар (персонажам с 0 hp удары не наносятся); `status` — для всех персонажей в порядке создания `имя: N hp` и, если 0, ` (выбыл)`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "warrior Боромир\nmage Гэндальф\nhit Боромир 30\nhit Гэндальф 80\nstatus\n",
+          "output": "Боромир: 98 hp\nГэндальф: 0 hp (выбыл)\n"
+        },
+        {
+          "input": "mage M\nhit M 1\nstatus\n",
+          "output": "M: 70 hp\n"
+        }
+      ],
+      "constraints": [
+        "Персонажей не больше 20, имена уникальны; команд не больше 100; урон от 0 до 1000."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Объекты храните в векторах Warrior и Mage с reserve(20), указатели в порядке создания — в std::vector<Character *>; поиск по имени — циклом.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "take_hit: int real = std::max(0, damage - defense()); hp_ = std::max(0, hp_ - real);",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "warrior Боромир\nmage Гэндальф\nhit Боромир 30\nhit Гэндальф 80\nstatus\n",
+          "expected": "Боромир: 98 hp\nГэндальф: 0 hp (выбыл)\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "mage M\nhit M 1\nstatus\n",
+          "expected": "M: 70 hp\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Урон равен защите",
+          "stdin": "warrior W\nhit W 8\nstatus\n",
+          "expected": "W: 120 hp\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Удар по выбывшему",
+          "stdin": "warrior W\nhit W 1000\nhit W 1000\nstatus\n",
+          "expected": "W: 0 hp (выбыл)\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Два мага",
+          "stdin": "mage A\nmage B\nhit B 20\nstatus\n",
+          "expected": "A: 70 hp\nB: 52 hp\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Пустой отряд",
+          "stdin": "status\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-5",
+          "name": "Нет такого имени",
+          "stdin": "warrior X\nhit Y 50\nstatus\n",
+          "expected": "X: 120 hp\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Ровно до нуля",
+          "stdin": "mage M\nhit M 72\nstatus\n",
+          "expected": "M: 0 hp (выбыл)\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Бой",
+          "stdin": "warrior A\nmage B\nhit A 50\nhit A 50\nhit B 30\nstatus\nhit A 50\nstatus\n",
+          "expected": "A: 36 hp\nB: 42 hp\nA: 0 hp (выбыл)\nB: 42 hp\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Нулевой урон",
+          "stdin": "warrior W\nhit W 0\nstatus\n",
+          "expected": "W: 120 hp\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Character {\npublic:\n    virtual ~Character() = default;\n\n    void take_hit(int damage) {\n        int real = std::max(0, damage - defense());\n        hp_ = std::max(0, hp_ - real);\n    }\n\n    bool alive() const {\n        return hp_ > 0;\n    }\n\n    const std::string &name() const {\n        return name_;\n    }\n\n    void status() const {\n        std::println(\"{}: {} hp{}\", name_, hp_, alive() ? \"\" : \" (выбыл)\");\n    }\n\nprotected:\n    Character(std::string name, int hp) : name_(std::move(name)), hp_(hp) {}\n\nprivate:\n    virtual int defense() const = 0;\n\n    std::string name_;\n    int hp_;\n};\n\nclass Warrior : public Character {\npublic:\n    explicit Warrior(std::string name) : Character(std::move(name), 120) {}\n\nprivate:\n    int defense() const override {\n        return 8;\n    }\n};\n\nclass Mage : public Character {\npublic:\n    explicit Mage(std::string name) : Character(std::move(name), 70) {}\n\nprivate:\n    int defense() const override {\n        return 2;\n    }\n};\n\nint main() {\n    std::vector<Warrior> warriors;\n    std::vector<Mage> mages;\n    warriors.reserve(20);\n    mages.reserve(20);\n    std::vector<Character *> party;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"status\") {\n            for (const Character *c : party) {\n                c->status();\n            }\n            continue;\n        }\n        std::string name;\n        std::cin >> name;\n        if (command == \"warrior\") {\n            warriors.emplace_back(name);\n            party.push_back(&warriors.back());\n        } else if (command == \"mage\") {\n            mages.emplace_back(name);\n            party.push_back(&mages.back());\n        } else {\n            int damage;\n            std::cin >> damage;\n            for (Character *c : party) {\n                if (c->name() == name && c->alive()) {\n                    c->take_hit(damage);\n                }\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Механика урона — общая и одинаковая, поэтому живёт в базе и не дублируется. Наследник определяет лишь защиту — закрытым переопределением, которое вызывает только база. Добавить разбойника или лучника — значит написать класс из пары строк, а правило урона останется единым.\n\nКонструктор базы защищённый: создать «просто персонажа» нельзя, а наследник обязан передать имя и здоровье.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-abstract-classes-task-3",
+      "title": "Найди ошибку: класс остался абстрактным",
+      "description": "Абстрактный класс `Item` вычисляет итоговую цену товара со скидкой, а процент скидки — закрытый чисто виртуальный шаг наследника. Обычный товар (`Regular`) идёт без скидки, товар распродажи (`Sale`) — со скидкой 30 %. Строки ввода: `regular имя цена` или `sale имя цена`; программа печатает `имя: итоговая цена`.\n\nПрограмма не компилируется: компилятор жалуется на абстрактный тип. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Item {\npublic:\n    virtual ~Item() = default;\n\n    long long final_price() const {\n        return price_ - price_ * discount_percent() / 100;\n    }\n\n    const std::string &name() const {\n        return name_;\n    }\n\nprotected:\n    Item(std::string name, long long price) : name_(std::move(name)), price_(price) {}\n\nprivate:\n    virtual long long discount_percent() const = 0;\n\n    std::string name_;\n    long long price_;\n};\n\nclass Regular : public Item {\npublic:\n    Regular(std::string name, long long price) : Item(std::move(name), price) {}\n\nprivate:\n    long long discount_percent() const override {\n        return 0;\n    }\n};\n\nclass Sale : public Item {\npublic:\n    Sale(std::string name, long long price) : Item(std::move(name), price) {}\n\nprivate:\n    long long discount_percent() {\n        return 30;\n    }\n};\n\nvoid show(const Item &item) {\n    std::println(\"{}: {}\", item.name(), item.final_price());\n}\n\nint main() {\n    std::string kind, name;\n    long long price;\n    while (std::cin >> kind >> name >> price) {\n        if (kind == \"sale\") {\n            show(Sale(name, price));\n        } else {\n            show(Regular(name, price));\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "sale куртка 10000\nregular шапка 1500\n",
+          "output": "куртка: 7000\nшапка: 1500\n"
+        },
+        {
+          "input": "sale x 1\n",
+          "output": "x: 1\n"
+        }
+      ],
+      "constraints": ["Строк не больше 20; цены от 0 до 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сравните сигнатуру discount_percent в базе и в Sale символ за символом.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "В Sale метод объявлен без const, поэтому не реализует чисто виртуальную функцию базы. Добавьте const и override — override сразу укажет на подобную ошибку в будущем.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "sale куртка 10000\nregular шапка 1500\n",
+          "expected": "куртка: 7000\nшапка: 1500\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "sale x 1\n",
+          "expected": "x: 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "sale a 0\n",
+          "expected": "a: 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "sale b 1000000000\n",
+          "expected": "b: 700000000\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "regular c 99\n",
+          "expected": "c: 99\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "sale d 99\n",
+          "expected": "d: 70\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "sale e 333\nregular f 333\n",
+          "expected": "e: 234\nf: 333\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "sale g 100\n",
+          "expected": "g: 70\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "regular h 0\n",
+          "expected": "h: 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "sale i 7\n",
+          "expected": "i: 5\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Item {\npublic:\n    virtual ~Item() = default;\n\n    long long final_price() const {\n        return price_ - price_ * discount_percent() / 100;\n    }\n\n    const std::string &name() const {\n        return name_;\n    }\n\nprotected:\n    Item(std::string name, long long price) : name_(std::move(name)), price_(price) {}\n\nprivate:\n    virtual long long discount_percent() const = 0;\n\n    std::string name_;\n    long long price_;\n};\n\nclass Regular : public Item {\npublic:\n    Regular(std::string name, long long price) : Item(std::move(name), price) {}\n\nprivate:\n    long long discount_percent() const override {\n        return 0;\n    }\n};\n\nclass Sale : public Item {\npublic:\n    Sale(std::string name, long long price) : Item(std::move(name), price) {}\n\nprivate:\n    long long discount_percent() const override {\n        return 30;\n    }\n};\n\nvoid show(const Item &item) {\n    std::println(\"{}: {}\", item.name(), item.final_price());\n}\n\nint main() {\n    std::string kind, name;\n    long long price;\n    while (std::cin >> kind >> name >> price) {\n        if (kind == \"sale\") {\n            show(Sale(name, price));\n        } else {\n            show(Regular(name, price));\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`long long discount_percent()` без `const` — **другая** функция: она не переопределяет `discount_percent() const` базы, и чисто виртуальная функция в `Sale` остаётся без реализации. Значит, `Sale` абстрактный, и создать его объект нельзя. Ошибка видна только в месте создания объекта, далеко от причины.\n\nС `override` компилятор указал бы прямо на метод: «помечен override, но ничего не переопределяет». Поэтому `override` пишут у каждого переопределения — включая закрытые.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-abstract-classes-task-4",
+      "title": "Банковские продукты",
+      "description": "Абстрактный класс `Product` хранит название и баланс (в копейках) и реализует общий месячный цикл `void month_end()`: прибавляет `interest()` и вычитает `fee()` — закрытые чисто виртуальные шаги. Наследники:\n\n- `Deposit` (`deposit`): начисление `баланс · 8 / 1200`, комиссия 0;\n- `Credit` (`credit`): баланс отрицательный (долг); начисление `баланс · 20 / 1200` (то есть долг растёт), комиссия 10000;\n- `Savings` (`savings`): начисление `баланс · 5 / 1200`, комиссия 5000, если баланс меньше 1 000 000, иначе 0.\n\nВсе деления — целочисленные, к нулю. Команды: `new вид название сумма` (для кредита сумма — размер долга, баланс становится отрицательным), `month` — месячный цикл для всех продуктов, `show` — `название: баланс` в порядке создания.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "new deposit Вклад 1200000\nnew credit Кредит 600000\nmonth\nshow\n",
+          "output": "Вклад: 1208000\nКредит: -620000\n"
+        },
+        {
+          "input": "new savings Копилка 120000\nmonth\nshow\n",
+          "output": "Копилка: 115500\n"
+        }
+      ],
+      "constraints": ["Продуктов не больше 10; суммы до 10⁹; команд не больше 30."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "month_end(): balance_ += interest(); balance_ -= fee(); — оба шага получают текущий баланс через защищённый метод balance() const.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Комиссия Savings проверяет баланс после начисления процентов — так и получается при порядке «сначала interest, потом fee».",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "new deposit Вклад 1200000\nnew credit Кредит 600000\nmonth\nshow\n",
+          "expected": "Вклад: 1208000\nКредит: -620000\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "new savings Копилка 120000\nmonth\nshow\n",
+          "expected": "Копилка: 115500\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "show\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-2",
+          "name": "Без комиссии",
+          "stdin": "new savings S 1000000\nmonth\nshow\n",
+          "expected": "S: 1004166\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Порог после процентов",
+          "stdin": "new savings S 995000\nmonth\nshow\n",
+          "expected": "S: 994145\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Маленький вклад",
+          "stdin": "new deposit D 100\nmonth\nshow\n",
+          "expected": "D: 100\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Нулевой долг",
+          "stdin": "new credit C 0\nmonth\nmonth\nshow\n",
+          "expected": "C: -20166\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Три месяца",
+          "stdin": "new deposit D 1000000000\nmonth\nmonth\nmonth\nshow\n",
+          "expected": "D: 1020133628\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Все виды",
+          "stdin": "new deposit A 1200\nnew savings B 1200\nnew credit C 1200\nmonth\nshow\n",
+          "expected": "A: 1208\nB: -3795\nC: -11220\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "До и после",
+          "stdin": "new credit C 1000000\nshow\nmonth\nshow\n",
+          "expected": "C: -1000000\nC: -1026666\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Product {\npublic:\n    virtual ~Product() = default;\n\n    void month_end() {\n        balance_ += interest();\n        balance_ -= fee();\n    }\n\n    void show() const {\n        std::println(\"{}: {}\", name_, balance_);\n    }\n\nprotected:\n    Product(std::string name, long long balance) : name_(std::move(name)), balance_(balance) {}\n\n    long long balance() const {\n        return balance_;\n    }\n\nprivate:\n    virtual long long interest() const = 0;\n    virtual long long fee() const = 0;\n\n    std::string name_;\n    long long balance_;\n};\n\nclass Deposit : public Product {\npublic:\n    Deposit(std::string name, long long balance) : Product(std::move(name), balance) {}\n\nprivate:\n    long long interest() const override {\n        return balance() * 8 / 1200;\n    }\n\n    long long fee() const override {\n        return 0;\n    }\n};\n\nclass Credit : public Product {\npublic:\n    Credit(std::string name, long long debt) : Product(std::move(name), -debt) {}\n\nprivate:\n    long long interest() const override {\n        return balance() * 20 / 1200;\n    }\n\n    long long fee() const override {\n        return 10000;\n    }\n};\n\nclass Savings : public Product {\npublic:\n    Savings(std::string name, long long balance) : Product(std::move(name), balance) {}\n\nprivate:\n    long long interest() const override {\n        return balance() * 5 / 1200;\n    }\n\n    long long fee() const override {\n        return balance() < 1000000 ? 5000 : 0;\n    }\n};\n\nint main() {\n    std::vector<Deposit> deposits;\n    std::vector<Credit> credits;\n    std::vector<Savings> savings;\n    deposits.reserve(10);\n    credits.reserve(10);\n    savings.reserve(10);\n    std::vector<Product *> all;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"new\") {\n            std::string kind, name;\n            long long amount;\n            std::cin >> kind >> name >> amount;\n            if (kind == \"deposit\") {\n                deposits.emplace_back(name, amount);\n                all.push_back(&deposits.back());\n            } else if (kind == \"credit\") {\n                credits.emplace_back(name, amount);\n                all.push_back(&credits.back());\n            } else {\n                savings.emplace_back(name, amount);\n                all.push_back(&savings.back());\n            }\n        } else if (command == \"month\") {\n            for (Product *p : all) {\n                p->month_end();\n            }\n        } else {\n            for (const Product *p : all) {\n                p->show();\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Месячный цикл — «начислить, затем списать» — общий для всех продуктов, и порядок шагов задаёт база: наследник не может, например, списать комиссию раньше процентов. Наследники определяют только формулы. Баланс закрыт, а для формул открыт защищённым методом `balance()` только для чтения: изменить его наследник может лишь через общий цикл.\n\nКредит сохраняет общее представление (баланс со знаком), поэтому его конструктор превращает размер долга в отрицательный баланс, а формула начисления та же, что у вклада, — отрицательный баланс просто растёт по модулю.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-abstract-classes-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Может ли абстрактная база иметь конструктор?",
-        "options": [
-          "Да, он создаёт базовую часть наследника",
-          "Нет, абстрактные классы не имеют состояния"
-        ],
-        "correct": 0,
-        "explanation": "Общее состояние оправдано лишь при действительно одинаковой семантике. Если конкретные источники идентифицируются совершенно по-разному, лучше оставить абстрактный метод id(), а хранение поручить реализации. Не раздувайте базовый класс логированием, очередями и фильтрами. В примере идентификатор создаётся конструктором базы, а чтение значения обязано предоставить устройство. Конструктор базы не пытается читать ещё не готовый датчик."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nclass Counter {\npublic:\n    virtual ~Counter() = default;\n    void add(int n) { total_ += n * weight(); }\n    int total() const { return total_; }\n\nprivate:\n    virtual int weight() const = 0;\n    int total_ = 0;\n};\n\nclass Double : public Counter {\n    int weight() const override { return 2; }\n};\n\nint main() {\n    Double d;\n    d.add(3);\n    d.add(4);\n    std::println(\"{}\", d.total());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Общий метод add в базе вызывает закрытый чисто виртуальный шаг weight: (3 + 4) · 2.",
+        "type": "text",
+        "answers": ["14"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "3 8", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 3 8. Абстрактный класс нельзя создать как самостоятельный полный объект, но он существует как базовая часть конкретного наследника. Поэтому у него могут быть поля, конструктор и обычные методы. Это полезно, когда всем реализациям нужен одинаковый идентификатор с едиными правилами. Ссылка на абстрактный тип допустима и образует границу между алгоритмом и устройством."
+        "id": "q2",
+        "question": "Что может содержать абстрактный класс? Выберите все.",
+        "explanation": "Абстрактность означает лишь наличие хотя бы одной чисто виртуальной функции.",
+        "type": "multiple",
+        "options": [
+          "Закрытые поля",
+          "Реализованные методы",
+          "Чисто виртуальные функции",
+          "Объекты самого себя по значению"
+        ],
+        "correct": [0, 1, 2]
       },
       {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q3",
+        "question": "Зачем делать конструктор абстрактного класса защищённым?",
+        "explanation": "Объект абстрактного класса и так создать нельзя; protected делает намерение явным.",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Не делайте чистый метод фиктивно реализованным ради возможности создать базу в тесте. Для теста напишите маленький конкретный источник."
+          "Он нужен только наследникам, и protected сообщает этот замысел",
+          "Иначе абстрактный класс можно будет создать",
+          "Без этого наследник не сможет его вызвать",
+          "Так быстрее"
         ],
-        "correct": 1,
-        "explanation": "Напишите вспомогательную функцию, принимающую const Source&, и передайте TestSource. Объясните, почему ссылка допустима, а локальная переменная Source — нет. Проверьте, что общий id не дублируется в наследнике и инициализируется только конструктором базы."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "У всех наследников есть операция, но устроена по-разному. Как её объявить в базе?",
+        "explanation": "Общее и одинаковое — метод базы; общее, но разное — чисто виртуальная функция.",
+        "options": [
+          "Чисто виртуальной функцией",
+          "Обычным методом базы",
+          "Полем",
+          "Только в наследниках"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Когда уместна виртуальная функция с реализацией по умолчанию, а не = 0?",
+        "explanation": "Иначе наследник, забывший переопределение, будет вести себя неверно без единого предупреждения.",
+        "options": [
+          "Когда реализация по умолчанию верна почти для всех наследников",
+          "Всегда: это удобнее",
+          "Никогда",
+          "Когда у класса нет полей"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Наследник объявил int defense() без const, а в базе private: virtual int defense() const = 0. Что произойдёт при создании объекта наследника?",
+        "explanation": "Функция без const — другая функция; чисто виртуальная осталась без реализации. override указал бы на ошибку сразу.",
+        "options": [
+          "Ошибка компиляции: наследник остался абстрактным",
+          "Будет вызвана функция наследника",
+          "Будет вызвана функция базы",
+          "Неопределённое поведение"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Чем чистый интерфейс отличается от абстрактного класса с полями?",
+        "explanation": "Абстрактный класс экономит код, но связывает наследников общим состоянием.",
+        "options": [
+          "Интерфейс ничего не навязывает наследникам — ни полей, ни конструктора, и класс может реализовать несколько интерфейсов",
+          "Интерфейс можно создать как объект",
+          "В интерфейсе нельзя объявлять функции",
+          "Ничем"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct Payable {\n    virtual ~Payable() = default;\n    virtual long long amount() const = 0;\n};\n\nstruct Bill : Payable {\n    long long amount() const final { return base * 12 / 10; }\n    long long base = 100;\n};\n\nstruct Fine : Payable {\n    long long amount() const override { return 50; }\n};\n\nint main() {\n    Bill b;\n    Fine f;\n    const Payable &x = b, &y = f;\n    std::println(\"{}\", x.amount() + y.amount());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Счёт с надбавкой 20 % даёт 120, штраф — 50.",
+        "type": "text",
+        "answers": ["170"],
+        "placeholder": "Вывод программы"
       }
     ]
   }

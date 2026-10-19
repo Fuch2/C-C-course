@@ -14,8 +14,8 @@ export default {
     'Сообщать об успехе через return, а результат — через указатель',
     'Отличать входные const-параметры от выходных',
   ],
-  tags: ['C17', 'Указатели', 'Функции', 'swap'],
-  standard: 'c17',
+  tags: ['C23', 'Указатели', 'Функции', 'swap'],
+  standard: 'c23',
   quiz: [
     {
       q: 'Что выведет программа?',
@@ -367,7 +367,6 @@ int main(void) {
       ],
       starter: String.raw`
 #include <stdio.h>
-#include <stdbool.h>
 #include <ctype.h>
 
 bool parse_time(const char *s, int *minutes) {
@@ -389,7 +388,6 @@ int main(void) {
 }`,
       solution: String.raw`
 #include <stdio.h>
-#include <stdbool.h>
 #include <ctype.h>
 
 bool parse_time(const char *s, int *minutes) {

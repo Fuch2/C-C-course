@@ -14,9 +14,9 @@
     "Связывать перечисление с массивом названий через константу-счётчик и проверять входные значения",
     "Описывать конечный автомат через перечисление состояний"
   ],
-  "tags": ["C17", "Перечисления", "switch"],
+  "tags": ["C23", "Перечисления", "switch"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-enum-task-1",
@@ -25,7 +25,7 @@
     "difficulty": "intermediate",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -117,7 +117,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nenum state { IDLE, RUNNING, FAULT, STATE_COUNT };\n\nconst char *state_names[STATE_COUNT] = {\"IDLE\", \"RUNNING\", \"FAULT\"};\n\nenum state step(enum state s, int event) {\n    // Верните новое состояние.\n    return s;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    enum state s = IDLE;\n    for (int i = 0; i < n; i++) {\n        int event;\n        scanf(\"%d\", &event);\n        s = step(s, event);\n        printf(\"%s\\n\", state_names[s]);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -208,7 +208,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <string.h>\n\nenum weekday { MON, TUE, WED, THU, FRI, SAT, SUN, DAY_COUNT };\n\nconst char *day_names[DAY_COUNT] = {\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Sat\", \"Sun\"};\n\nint main(void) {\n    char name[4];\n    int k;\n    while (scanf(\"%3s %d\", name, &k) == 2) {\n        // Найдите день и выведите название дня через k дней.\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -299,7 +299,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

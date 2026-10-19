@@ -13,9 +13,9 @@
     "Обрабатывать NULL, возвращаемый функциями библиотеки",
     "Писать функции, возвращающие указатель на найденный элемент или NULL"
   ],
-  "tags": ["C17", "NULL", "Указатели", "Обработка ошибок"],
+  "tags": ["C23", "NULL", "Указатели", "Обработка ошибок"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-null-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "intermediate",
     "starterCode": "#include <stdio.h>\n\nint *first_negative(int a[], int n) {\n    // Верните адрес первого отрицательного элемента или NULL.\n    return NULL;\n}\n\nint main(void) {\n    int a[1000];\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    int *p = first_negative(a, n);\n    if (p == NULL) {\n        printf(\"нет\\n\");\n        return 0;\n    }\n    *p = -*p;\n    for (int i = 0; i < n; i++) {\n        printf(i > 0 ? \" %d\" : \"%d\", a[i]);\n    }\n    printf(\"\\n\");\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -116,7 +116,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -207,7 +207,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint *at(int a[], int n, int i) {\n    // Верните &a[i] для допустимого индекса, иначе NULL.\n    return NULL;\n}\n\nint main(void) {\n    int a[1000];\n    int n;\n    scanf(\"%d\", &n);\n    for (int k = 0; k < n; k++) {\n        scanf(\"%d\", &a[k]);\n    }\n    int i;\n    while (scanf(\"%d\", &i) == 1) {\n        int *p = at(a, n, i);\n        if (p != NULL) {\n            printf(\"%d\\n\", *p);\n        } else {\n            printf(\"вне массива\\n\");\n        }\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -360,6 +360,19 @@
           "Произошла ошибка памяти, программу нужно завершить"
         ],
         "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Что верно о nullptr в C23? Выберите все подходящие варианты.",
+        "explanation": "nullptr — встроенный нулевой указатель собственного типа. Он ни на что не указывает, как и NULL, поэтому разыменовывать его так же нельзя.",
+        "type": "multiple",
+        "options": [
+          "Это ключевое слово языка, заголовок подключать не нужно",
+          "Его тип — nullptr_t, а не целое число",
+          "Сравнение p == nullptr проверяет то же, что p == NULL",
+          "Разыменовывать nullptr, в отличие от NULL, безопасно"
+        ],
+        "correct": [0, 1, 2]
       }
     ]
   }

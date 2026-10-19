@@ -1,134 +1,638 @@
 {
   "id": "algo-binary-search",
-  "title": "Двоичный поиск — Binary search",
-  "description": "Двоичный поиск использует отсортированный диапазон.",
+  "title": "Двоичный поиск",
+  "description": "Идея деления пополам; классический поиск на отрезке, его инвариант и трассировка; середина без переполнения; нижняя и верхняя границы на полуинтервале, число вхождений и место вставки; двоичный поиск по ответу и целый корень; bsearch и std::lower_bound.",
   "moduleId": "algorithms-structures",
   "order": 9,
   "difficulty": "intermediate",
-  "estimatedMinutes": 40,
+  "estimatedMinutes": 55,
   "prerequisites": ["algo-linear-search"],
   "objectives": [
-    "Объяснить инвариант: Граница между «ещё мало» и «уже достаточно», а не угадывание случайного совпадения.",
-    "Обосновать время: O(log n) сравнений; сортировка исходных данных при необходимости стоит отдельно.",
-    "Оценить память и компромиссы: Отсортированный массив удобен для чтений; вставки требуют сдвигов O(n)."
+    "Писать двоичный поиск и объяснять его инвариант",
+    "Находить нижнюю и верхнюю границы и выражать через них число вхождений",
+    "Избегать бесконечного цикла, переполнения середины и выхода за массив",
+    "Применять двоичный поиск по ответу к монотонному условию"
   ],
-  "tags": ["алгоритмы", "C17", "Двоичный поиск — Binary search"],
+  "tags": ["Поиск", "Двоичный поиск", "lower_bound", "Поиск по ответу"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "algo-binary-search-exercise",
-    "title": "Первая позиция в журнале",
-    "description": "Ввод n (0…256), n отсортированных по неубыванию int −1000…1000 и target. Выведите индекс первого совпадения или −1. Реализуйте lower_bound на полуинтервале.",
-    "difficulty": "intermediate",
+    "id": "algo-binary-search-task-1",
+    "title": "Есть ли число",
+    "description": "Первая строка — `n`, вторая — `n` целых чисел, отсортированных по неубыванию. Дальше до конца ввода идут запросы. Для каждого запроса напечатайте `да`, если число есть в массиве, и `нет` иначе.\n\nИспользуйте двоичный поиск: `n` и число запросов бывают до 10⁵.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "4 1 3 3 7 3",
-        "output": "1\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "5\n1 3 5 7 9\n7\n4\n",
+        "output": "да\nнет\n"
       },
       {
-        "input": "4 1 3 3 7 8",
-        "output": "-1\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "1\n-5\n-5\n5\n",
+        "output": "да\nнет\n"
       }
     ],
-    "constraints": [
-      "Используйте C17 и диапазоны входа из условия.",
-      "Выводите только требуемый результат.",
-      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
-    ],
+    "constraints": ["1 ≤ n ≤ 10⁵; числа int; запросов не больше 10⁵."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Граница между «ещё мало» и «уже достаточно», а не угадывание случайного совпадения."
+        "text": "Классический поиск: lo = 0, hi = n − 1, пока lo <= hi — сравнение с values[mid] и сдвиг одной из границ за mid.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Запуск на неотсортированном диапазоне не имеет обещанного результата."
-      },
-      {
-        "id": "hint-3",
-        "order": 3,
-        "text": "В [1,3,3,7], target=3: [0,4) → [0,2) → [0,1) → [1,1). Первая позиция равна 1."
+        "text": "Массив на 10⁵ элементов объявите static. Середину считайте как lo + (hi − lo) / 2.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "4 1 3 3 7 3",
-        "expected": "1\n"
+        "stdin": "5\n1 3 5 7 9\n7\n4\n",
+        "expected": "да\nнет\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "4 1 3 3 7 8",
-        "expected": "-1\n"
+        "stdin": "1\n-5\n-5\n5\n",
+        "expected": "да\nнет\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "0 0",
-        "expected": "-1\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "3\n2 2 2\n2\n1\n3\n",
+        "expected": "да\nнет\nнет\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "1 -3 -3",
-        "expected": "0\n"
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "5\n1 3 5 7 9\n1\n9\n0\n10\n",
+        "expected": "да\nда\nнет\nнет\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный сценарий 3",
-        "stdin": "4 2 2 2 2 2",
-        "expected": "0\n"
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "6\n-10 -5 0 5 10 15\n0\n-10\n15\n-11\n16\n",
+        "expected": "да\nда\nда\nнет\nнет\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "2\n-2147483648 2147483647\n-2147483648\n2147483647\n0\n",
+        "expected": "да\nда\nнет\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "7\n1 2 3 4 5 6 7\n1\n2\n3\n4\n5\n6\n7\n8\n",
+        "expected": "да\nда\nда\nда\nда\nда\nда\nнет\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "4\n10 20 30 40\n25\n35\n15\n",
+        "expected": "нет\nнет\nнет\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "1\n0\n0\n",
+        "expected": "да\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "8\n1 1 2 2 3 3 4 4\n3\n5\n",
+        "expected": "да\nнет\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\nstatic int lower(const int *a,int n,int target){\n    int left=0,right=n;\n    while(left<right){\n        int middle=left+(right-left)/2;\n        if(a[middle]<target) left=middle+1; else right=middle;\n    }\n    return left;\n}\nint main(void) {\nint a[256]; int n;\nif (scanf(\"%d\", &n)!=1 || n<0 || n>256) return 1;\nfor(int i=0;i<n;++i) if(scanf(\"%d\", &a[i])!=1) return 1;\nint target;if(scanf(\"%d\",&target)!=1)return 1;int i=lower(a,n,target);printf(\"%d\\n\",i<n && a[i]==target?i:-1);\nreturn 0;\n}\n",
-    "solutionExplanation": "Инвариант: Граница между «ещё мало» и «уже достаточно», а не угадывание случайного совпадения.\n\nВ [1,3,3,7], target=3: [0,4) → [0,2) → [0,1) → [1,1). Первая позиция равна 1.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. Запуск на неотсортированном диапазоне не имеет обещанного результата.\n\nВремя: O(log n) сравнений; сортировка исходных данных при необходимости стоит отдельно.\nПамять: O(1) в итеративной реализации.\nКомпромисс: Отсортированный массив удобен для чтений; вставки требуют сдвигов O(n).\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <stdio.h>\n\nstatic int values[100000];\n\nstatic bool contains(int n, int x) {\n    int lo = 0, hi = n - 1;\n    while (lo <= hi) {\n        int mid = lo + (hi - lo) / 2;\n        if (values[mid] == x) {\n            return true;\n        }\n        if (values[mid] < x) {\n            lo = mid + 1;\n        } else {\n            hi = mid - 1;\n        }\n    }\n    return false;\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 100000) {\n        return 0;\n    }\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    int x;\n    while (scanf(\"%d\", &x) == 1) {\n        printf(\"%s\\n\", contains(n, x) ? \"да\" : \"нет\");\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Инвариант: если `x` есть в массиве, он лежит на отрезке `[lo, hi]`. Сравнение с серединой позволяет отбросить `mid` и одну из половин: если `values[mid] < x`, то все элементы до `mid` включительно тоже меньше `x`. Отрезок сокращается минимум вдвое, поэтому на запрос уходит не больше 17 итераций при `n = 10⁵`.\n\nЛинейный поиск на `10⁵` запросов к массиву из `10⁵` элементов сделал бы до 10¹⁰ сравнений, двоичный — около 1,7·10⁶.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "algo-binary-search-task-2",
+      "title": "Числа в диапазоне",
+      "description": "Первая строка — `n`, вторая — `n` целых чисел, отсортированных по неубыванию. Дальше до конца ввода идут запросы — пары `a b`. Для каждого запроса напечатайте, сколько элементов массива лежат на отрезке `[a, b]`. Если `a > b`, ответ 0.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "6\n1 3 3 3 7 9\n3 7\n4 6\n",
+          "output": "4\n0\n"
+        },
+        {
+          "input": "3\n5 5 5\n5 5\n6 4\n",
+          "output": "3\n0\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 10⁵; числа int; запросов не больше 10⁵."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Элементы на [a, b] занимают позиции от lower_bound(a) — первой с элементом ≥ a — до upper_bound(b) — первой с элементом > b, не включая её.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Ответ — upper_bound(b) − lower_bound(a), если он положительный; при a > b разность может оказаться отрицательной.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "6\n1 3 3 3 7 9\n3 7\n4 6\n",
+          "expected": "4\n0\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3\n5 5 5\n5 5\n6 4\n",
+          "expected": "3\n0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Весь массив",
+          "stdin": "5\n1 2 3 4 5\n-100 100\n",
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Мимо массива",
+          "stdin": "5\n1 2 3 4 5\n6 10\n-5 0\n",
+          "expected": "0\n0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Края",
+          "stdin": "5\n1 2 3 4 5\n1 1\n5 5\n",
+          "expected": "1\n1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "a > b рядом с повтором",
+          "stdin": "5\n1 3 3 3 5\n4 3\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Крайние значения",
+          "stdin": "4\n-2147483648 0 0 2147483647\n-2147483648 2147483647\n0 0\n",
+          "expected": "4\n2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Чётные",
+          "stdin": "6\n2 4 6 8 10 12\n3 9\n5 5\n1 13\n",
+          "expected": "3\n0\n6\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Один элемент",
+          "stdin": "1\n7\n7 7\n8 9\n",
+          "expected": "1\n0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Повторы",
+          "stdin": "8\n1 1 1 2 2 3 3 3\n1 2\n2 3\n2 2\n",
+          "expected": "5\n5\n2\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic int values[100000];\n\nstatic int lower_bound(int n, int x) {\n    int lo = 0, hi = n;\n    while (lo < hi) {\n        int mid = lo + (hi - lo) / 2;\n        if (values[mid] < x) {\n            lo = mid + 1;\n        } else {\n            hi = mid;\n        }\n    }\n    return lo;\n}\n\nstatic int upper_bound(int n, int x) {\n    int lo = 0, hi = n;\n    while (lo < hi) {\n        int mid = lo + (hi - lo) / 2;\n        if (values[mid] <= x) {\n            lo = mid + 1;\n        } else {\n            hi = mid;\n        }\n    }\n    return lo;\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 100000) {\n        return 0;\n    }\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    int a, b;\n    while (scanf(\"%d %d\", &a, &b) == 2) {\n        int count = upper_bound(n, b) - lower_bound(n, a);\n        printf(\"%d\\n\", count > 0 ? count : 0);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Элементы из `[a, b]` в отсортированном массиве стоят подряд: левее — меньшие `a`, правее — большие `b`. Начало этого блока — нижняя граница `a`, конец (не включительно) — верхняя граница `b`. Две функции различаются одним символом: `<` против `<=`.\n\nПри `a > b` блок пуст, но разность границ может стать отрицательной — например, для `a = b + 1`, когда `b` есть в массиве. Поэтому ответ ограничен снизу нулём. Каждый запрос — два двоичных поиска, `O(log n)`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-binary-search-task-3",
+      "title": "Найди ошибку: потерянный кандидат",
+      "description": "Программа читает `n` и отсортированный массив, затем запросы до конца ввода. Для каждого запроса она печатает индекс первого вхождения числа (с нуля) или `-1`, используя нижнюю границу на полуинтервале `[lo, hi)`.\n\nНекоторые числа, которые есть в массиве, программа не находит. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nstatic int lower_bound(const int *values, int n, int x) {\n    int lo = 0, hi = n;\n    while (lo < hi) {\n        int mid = lo + (hi - lo) / 2;\n        if (values[mid] < x) {\n            lo = mid + 1;\n        } else {\n            hi = mid - 1;\n        }\n    }\n    return lo;\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return 0;\n    }\n    int values[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    int x;\n    while (scanf(\"%d\", &x) == 1) {\n        int pos = lower_bound(values, n, x);\n        printf(\"%d\\n\", pos < n && values[pos] == x ? pos : -1);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "6\n1 3 3 3 7 9\n3\n9\n4\n",
+          "output": "1\n5\n-1\n"
+        },
+        {
+          "input": "2\n1 2\n2\n",
+          "output": "1\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 1000; числа int, отсортированы по неубыванию; запросов не больше 100."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Выполните поиск вручную для массива 1 3 3 3 7 9 и запроса 3. На каком шаге из отрезка выпадает правильный ответ — индекс 1?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Если values[mid] >= x, элемент mid может быть ответом. На полуинтервале [lo, hi) присваивание hi = mid − 1 выбрасывает и mid, и ещё один элемент. Правильно — hi = mid.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "6\n1 3 3 3 7 9\n3\n9\n4\n",
+          "expected": "1\n5\n-1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\n1 2\n2\n",
+          "expected": "1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1\n5\n5\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1\n5\n6\n",
+          "expected": "-1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1\n5\n4\n",
+          "expected": "-1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "4\n2 2 2 2\n2\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "5\n1 2 3 4 5\n5\n1\n3\n",
+          "expected": "4\n0\n2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "5\n10 20 30 40 50\n35\n55\n",
+          "expected": "-1\n-1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "3\n-3 -2 -1\n-1\n0\n",
+          "expected": "2\n-1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "7\n1 1 2 2 3 3 4\n4\n3\n2\n",
+          "expected": "6\n4\n2\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic int lower_bound(const int *values, int n, int x) {\n    int lo = 0, hi = n;\n    while (lo < hi) {\n        int mid = lo + (hi - lo) / 2;\n        if (values[mid] < x) {\n            lo = mid + 1;\n        } else {\n            hi = mid;\n        }\n    }\n    return lo;\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return 0;\n    }\n    int values[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    int x;\n    while (scanf(\"%d\", &x) == 1) {\n        int pos = lower_bound(values, n, x);\n        printf(\"%d\\n\", pos < n && values[pos] == x ? pos : -1);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Нижняя граница ищется на полуинтервале `[lo, hi)`: `hi` в отрезок не входит. Ветка `values[mid] >= x` означает, что `mid` — возможный ответ, поэтому он должен остаться в отрезке: `hi = mid`. Заготовка присваивает `hi = mid − 1` — по правилам **отрезка** `[lo, hi]` это исключило бы только `mid`, а на полуинтервале выпадает ещё и `mid − 1`. Если ответ — один из этих двух элементов, поиск его теряет.\n\nЭто главная ловушка двоичного поиска: правила обновления границ зависят от того, входит ли `hi` в отрезок. Выберите одно соглашение — отрезок или полуинтервал — и для каждой ветки спросите себя: «может ли `mid` быть ответом?». Если может — он остаётся внутри границ, если нет — граница сдвигается за него.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-binary-search-benchmark",
+      "title": "Benchmark: сравнения поиска",
+      "description": "Сравним линейный и двоичный поиск не по времени, а по числу сравнений — оно не зависит от компьютера.\n\nПервая строка — `n`, вторая — `n` целых чисел по неубыванию (при `n = 0` строка пустая). Дальше до конца ввода идут запросы `x`. Для каждого найдите нижнюю границу — первую позицию `pos` (с нуля), где элемент не меньше `x`, или `n`, — двумя способами и посчитайте вычисления условия `values[i] < x`:\n\n```c\n// линейный\ni = 0;\nwhile (i < n && values[i] < x) i++;\n\n// двоичный\nlo = 0; hi = n;\nwhile (lo < hi) {\n    mid = lo + (hi - lo) / 2;\n    if (values[mid] < x) lo = mid + 1; else hi = mid;\n}\n```\n\nВ линейном варианте условие `values[i] < x` не вычисляется, когда `i == n`. Для каждого запроса напечатайте `pos L B` — позицию и число сравнений линейного и двоичного поиска. В конце напечатайте `итого: SL SB` — суммы по всем запросам.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "6\n1 3 3 3 7 9\n3\n10\n0\n",
+          "output": "1 2 3\n6 6 2\n0 1 3\nитого: 9 8\n"
+        },
+        {
+          "input": "0\n\n5\n",
+          "output": "0 0 0\nитого: 0 0\n"
+        }
+      ],
+      "constraints": ["0 ≤ n ≤ 1000; числа int; запросов не больше 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Добавьте счётчик в каждую реализацию ровно там, где вычисляется values[...] < x. В линейном цикле условие i < n проверяется первым, и при i == n сравнения нет.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Линейный поиск, остановившийся на pos < n, делает pos + 1 сравнение; дошедший до конца — n. Двоичный — около log₂ n при любом x.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "6\n1 3 3 3 7 9\n3\n10\n0\n",
+          "expected": "1 2 3\n6 6 2\n0 1 3\nитого: 9 8\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0\n\n5\n",
+          "expected": "0 0 0\nитого: 0 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Один элемент",
+          "stdin": "1\n5\n5\n6\n4\n",
+          "expected": "0 1 1\n1 1 1\n0 1 1\nитого: 3 3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Восемь элементов",
+          "stdin": "8\n1 2 3 4 5 6 7 8\n1\n4\n8\n9\n",
+          "expected": "0 1 4\n3 4 3\n7 8 3\n8 8 3\nитого: 21 13\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Все равны",
+          "stdin": "5\n2 2 2 2 2\n2\n3\n1\n",
+          "expected": "0 1 3\n5 5 2\n0 1 3\nитого: 7 8\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Пустой массив без запросов",
+          "stdin": "0\n\n",
+          "expected": "итого: 0 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Десять элементов",
+          "stdin": "10\n0 10 20 30 40 50 60 70 80 90\n95\n-5\n45\n90\n",
+          "expected": "10 10 3\n0 1 4\n5 6 3\n9 10 3\nитого: 27 13\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Крайние значения",
+          "stdin": "3\n-2147483648 0 2147483647\n2147483647\n-2147483648\n",
+          "expected": "2 3 2\n0 1 2\nитого: 4 4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Шестнадцать элементов",
+          "stdin": "16\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16\n17\n16\n1\n8\n",
+          "expected": "16 16 4\n15 16 4\n0 1 5\n7 8 4\nитого: 41 17\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Повторы",
+          "stdin": "7\n1 1 2 2 3 3 4\n2\n3\n5\n0\n",
+          "expected": "2 3 3\n4 5 3\n7 7 3\n0 1 3\nитого: 16 12\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 0 || n > 1000) {\n        return 0;\n    }\n    int values[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    long long total_linear = 0, total_binary = 0;\n    int x;\n    while (scanf(\"%d\", &x) == 1) {\n        int linear = 0;\n        int i = 0;\n        while (i < n) {\n            linear++;\n            if (!(values[i] < x)) {\n                break;\n            }\n            i++;\n        }\n        int binary = 0;\n        int lo = 0, hi = n;\n        while (lo < hi) {\n            int mid = lo + (hi - lo) / 2;\n            binary++;\n            if (values[mid] < x) {\n                lo = mid + 1;\n            } else {\n                hi = mid;\n            }\n        }\n        printf(\"%d %d %d\\n\", lo, linear, binary);\n        total_linear += linear;\n        total_binary += binary;\n    }\n    printf(\"итого: %lld %lld\\n\", total_linear, total_binary);\n    return 0;\n}\n",
+      "solutionExplanation": "Оба способа находят одну и ту же позицию, но цена разная. Линейный поиск платит за каждую пройденную позицию: запрос «за концом массива» стоит `n` сравнений, «перед началом» — одно. Двоичный платит около `log₂ n` за любой запрос: для `n = 1000` — 9 или 10 сравнений.\n\nСчётчик операций — воспроизводимая метрика: она одинакова на любом компьютере и под любым компилятором, в отличие от времени, которое зависит от кэша, частоты процессора и нагрузки. При `n = 0` оба цикла не делают ни одного сравнения, а позиция равна 0. На маленьких массивах линейный поиск по сравнениям бывает не хуже двоичного — а по времени часто лучше, потому что идёт по памяти подряд.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-binary-search-task-5",
+      "title": "Деление на отрезки",
+      "description": "Первая строка — `n` и `k`, вторая — `n` положительных целых чисел. Разбейте массив на **не больше** `k` отрезков подряд идущих элементов так, чтобы наибольшая из сумм отрезков была как можно меньше. Напечатайте эту наименьшую возможную наибольшую сумму.\n\nНапример, `7 2 5 10 8` при `k = 2` лучше всего разбить как `7 2 5 | 10 8`: суммы 14 и 18, ответ 18.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5 2\n7 2 5 10 8\n",
+          "output": "18\n"
+        },
+        {
+          "input": "3 3\n4 1 9\n",
+          "output": "9\n"
+        }
+      ],
+      "constraints": ["1 ≤ k ≤ n ≤ 10⁵; 1 ≤ числа ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Проверить, хватит ли k отрезков при ограничении суммы limit, легко: идите слева направо и начинайте новый отрезок, когда очередной элемент не помещается в текущий. Это жадный алгоритм за O(n).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Условие «limit годится» монотонно: если годится limit, годится и любое большее. Значит, наименьший подходящий limit можно найти двоичным поиском между наибольшим элементом и суммой всех элементов.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Сумма бывает до 10¹⁴ — границы и суммы храните в long long.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5 2\n7 2 5 10 8\n",
+          "expected": "18\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3 3\n4 1 9\n",
+          "expected": "9\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Один элемент",
+          "stdin": "1 1\n5\n",
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Один отрезок",
+          "stdin": "4 1\n1 2 3 4\n",
+          "expected": "10\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "По элементу",
+          "stdin": "4 4\n1 2 3 4\n",
+          "expected": "4\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Равные",
+          "stdin": "6 3\n1 1 1 1 1 1\n",
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Большой в конце",
+          "stdin": "5 2\n1 1 1 1 100\n",
+          "expected": "100\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Большие числа",
+          "stdin": "5 3\n1000000000 1000000000 1000000000 1000000000 1000000000\n",
+          "expected": "2000000000\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Произвольные",
+          "stdin": "7 3\n2 3 1 2 4 3 5\n",
+          "expected": "8\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Убывание",
+          "stdin": "9 4\n9 8 7 6 5 4 3 2 1\n",
+          "expected": "15\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic long long values[100000];\n\nstatic bool fits(int n, int k, long long limit) {\n    int segments = 1;\n    long long current = 0;\n    for (int i = 0; i < n; i++) {\n        if (values[i] > limit) {\n            return false;\n        }\n        if (current + values[i] > limit) {\n            segments++;\n            current = 0;\n        }\n        current += values[i];\n    }\n    return segments <= k;\n}\n\nint main(void) {\n    int n, k;\n    if (scanf(\"%d %d\", &n, &k) != 2 || n < 1 || n > 100000) {\n        return 0;\n    }\n    long long lo = 0, hi = 0;\n    for (int i = 0; i < n; i++) {\n        scanf(\"%lld\", &values[i]);\n        if (values[i] > lo) {\n            lo = values[i];\n        }\n        hi += values[i];\n    }\n    while (lo < hi) {\n        long long mid = lo + (hi - lo) / 2;\n        if (fits(n, k, mid)) {\n            hi = mid;\n        } else {\n            lo = mid + 1;\n        }\n    }\n    printf(\"%lld\\n\", lo);\n    return 0;\n}\n",
+      "solutionExplanation": "Искать разбиение напрямую трудно, а проверять ответ — легко. Функция `fits` жадно набирает отрезки: если элемент не помещается в текущий, начинается новый. Жадность здесь оптимальна: продлевать отрезок, пока можно, никогда не вредит — оставшимся элементам достаётся меньше работы.\n\nУсловие «`limit` годится» монотонно, поэтому наименьший подходящий `limit` находит двоичный поиск. Нижняя граница — наибольший элемент (его нельзя разделить), верхняя — сумма всех (один отрезок). Итог — `O(n log S)`, где `S` — сумма: около `10⁵ · 47` операций. Так решают задачи о распределении нагрузки: разбить главы книги между переписчиками, пакеты — между серверами, грузы — между рейсами.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "algo-binary-search-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "invariant",
-        "question": "Может ли lower_bound вернуть n?",
-        "options": ["Да, когда все элементы меньше ключа", "Нет, он всегда указывает на элемент"],
-        "correct": 0,
-        "explanation": "Граница между «ещё мало» и «уже достаточно», а не угадывание случайного совпадения. В [1,3,3,7], target=3: [0,4) → [0,2) → [0,1) → [1,1). Первая позиция равна 1."
+        "id": "q1",
+        "question": "Какое наибольшее число сравнений с серединой понадобится двоичному поиску в отсортированном массиве из 1000 элементов?",
+        "explanation": "Каждое сравнение вдвое сокращает отрезок: ⌊log₂ 1000⌋ + 1 = 10.",
+        "type": "text",
+        "answers": ["10"],
+        "placeholder": "Число"
       },
       {
-        "id": "complexity",
-        "question": "Какая оценка соответствует рассмотренной реализации?",
-        "options": [
-          "Всегда O(1), потому что все тесты ограничены по размеру.",
-          "O(log n) сравнений; сортировка исходных данных при необходимости стоит отдельно."
-        ],
-        "correct": 1,
-        "explanation": "Отсортированный массив удобен для чтений; вставки требуют сдвигов O(n)."
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int a[] = {1, 4, 4, 4, 6, 8};\n    int lo = 0, hi = 6, x = 4;\n    while (lo < hi) {\n        int mid = lo + (hi - lo) / 2;\n        if (a[mid] < x) {\n            lo = mid + 1;\n        } else {\n            hi = mid;\n        }\n    }\n    printf(\"%d\\n\", lo);\n    return 0;\n}",
+        "explanation": "Это нижняя граница: первая позиция, где элемент не меньше 4, — индекс 1.",
+        "type": "text",
+        "answers": ["1"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "engineering",
-        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "id": "q3",
+        "question": "Почему середину вычисляют как lo + (hi - lo) / 2?",
+        "explanation": "При больших индексах сумма lo + hi выходит за INT_MAX — неопределённое поведение. Результат обеих формул одинаков, когда переполнения нет.",
         "options": [
-          "Запуск на неотсортированном диапазоне не имеет обещанного результата.",
-          "Совпадение Big O гарантирует одинаковое время на любой машине."
+          "lo + hi может переполнить int, а разность hi − lo — нет",
+          "Так быстрее",
+          "Так середина получается точнее",
+          "Иначе поиск будет искать в неверной половине"
         ],
-        "correct": 0,
-        "explanation": "На больших массивах скачки ухудшают локальность, хотя сравнений намного меньше. O(1) в итеративной реализации."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "В отсортированном массиве lower_bound(x) = 3, upper_bound(x) = 7. Сколько раз x встречается в массиве?",
+        "explanation": "Вхождения x занимают позиции 3, 4, 5, 6: upper − lower = 4.",
+        "type": "text",
+        "answers": ["4"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q5",
+        "question": "Почему этот цикл может никогда не закончиться?",
+        "code": "while (lo < hi) {\n    int mid = lo + (hi - lo) / 2;\n    if (a[mid] < x) {\n        lo = mid;\n    } else {\n        hi = mid;\n    }\n}",
+        "codeLanguage": "c",
+        "explanation": "Деление округляет вниз, поэтому mid == lo, когда в отрезке два элемента. Ветка lo = mid отрезок не уменьшает — нужно lo = mid + 1.",
+        "options": [
+          "При hi = lo + 1 середина равна lo, и присваивание lo = mid ничего не меняет",
+          "mid может выйти за границу массива",
+          "Условие lo < hi никогда не станет ложным из-за переполнения",
+          "Цикл всегда заканчивается"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Чему равна нижняя граница числа 100 в массиве 1 5 9 (n = 3)?",
+        "explanation": "Все элементы меньше 100, поэтому первая позиция с элементом ≥ 100 — за концом массива, n = 3. Обращаться к values[3] нельзя.",
+        "type": "text",
+        "answers": ["3"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q7",
+        "question": "Какие задачи можно решить двоичным поиском?",
+        "explanation": "Двоичному поиску нужна монотонность: корень и ёмкость — монотонные условия, отсортированный массив — монотонная последовательность. В неотсортированном массиве монотонности нет.",
+        "type": "multiple",
+        "options": [
+          "Найти целую часть квадратного корня из 10¹⁸",
+          "Найти первую позицию в отсортированном массиве, где элемент ≥ x",
+          "Найти наименьшую ёмкость грузовика, при которой все грузы перевезутся за k рейсов",
+          "Найти число в неотсортированном массиве"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q8",
+        "question": "Что возвращает bsearch из stdlib.h, если искомое значение встречается в массиве несколько раз?",
+        "explanation": "Стандарт C не уточняет, какое вхождение вернёт bsearch. Если нужно первое — пишите нижнюю границу.",
+        "options": [
+          "Указатель на какое-то из вхождений — не обязательно первое",
+          "Указатель на первое вхождение",
+          "Указатель на последнее вхождение",
+          "NULL"
+        ],
+        "correct": 0
       }
     ]
   }

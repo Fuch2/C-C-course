@@ -13,9 +13,9 @@
     "Выравнивать числа по ширине поля, дополнять нулями и печатать знак",
     "Распознавать предупреждения о несоответствии спецификаторов и аргументов"
   ],
-  "tags": ["C17", "printf", "Вывод", "Форматирование"],
+  "tags": ["C23", "printf", "Вывод", "Форматирование"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-printf-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf(\"%d %d\", &a, &b);\n    // Напечатайте пример сложения.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -122,7 +122,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int t;\n    scanf(\"%d\", &t);\n    // Вычислите часы и минуты и напечатайте ЧЧ:ММ.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -220,7 +220,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int bread, milk, cheese;\n    scanf(\"%d %d %d\", &bread, &milk, &cheese);\n    // Напечатайте чек.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -320,7 +320,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int done, total;\n    scanf(\"%d %d\", &done, &total);\n    // Напечатайте строку прогресса.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -421,7 +421,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int yesterday, today;\n    scanf(\"%d %d\", &yesterday, &today);\n    // Напечатайте изменение со знаком.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

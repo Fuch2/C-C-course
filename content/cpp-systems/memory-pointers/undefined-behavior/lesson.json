@@ -13,9 +13,9 @@
     "Находить и исправлять переполнение знаковых целых, ошибочные сдвиги и деление",
     "Проверять переполнение до выполнения операции"
   ],
-  "tags": ["C17", "Память", "Неопределённое поведение", "UBSan", "Переполнение"],
+  "tags": ["C23", "Память", "Неопределённое поведение", "UBSan", "Переполнение"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-undefined-behavior-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int total = 0;\n    for (int i = 0; i < n; i++) {\n        int sale;\n        scanf(\"%d\", &sale);\n        total += sale;\n    }\n    printf(\"total=%d average=%.2f\\n\", total, (double)total / n);\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -129,7 +129,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <limits.h>\n#include <stdio.h>\n\nint add_checked(int a, int b, int *out) {\n    return -1;\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        int a, b, sum;\n        scanf(\"%d %d\", &a, &b);\n        if (add_checked(a, b, &sum) == 0) {\n            printf(\"%d\\n\", sum);\n        } else {\n            printf(\"overflow\\n\");\n        }\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -233,7 +233,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nunsigned low_mask(int n) {\n    return (1u << n) - 1u;\n}\n\nint main(void) {\n    int n;\n    while (scanf(\"%d\", &n) == 1) {\n        printf(\"%2d: %08x\\n\", n, low_mask(n));\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -337,7 +337,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    long long total = 0, best = 0;\n    for (int i = 0; i < n; i++) {\n        int w, h;\n        scanf(\"%d %d\", &w, &h);\n        long long area = w * h;\n        total += area;\n        if (area > best) {\n            best = area;\n        }\n    }\n    printf(\"total=%lld max=%lld\\n\", total, best);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

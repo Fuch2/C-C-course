@@ -30,12 +30,12 @@
     "content:check": "node scripts/tool.mjs tsx scripts/check-content.ts",
     "test:memory": "node scripts/tool.mjs tsx scripts/verify-memory.ts",
     "test:advanced": "node scripts/tool.mjs tsx scripts/verify-advanced.ts",
-    "test:algorithms": "node --import tsx scripts/verify-algorithms.ts",
-    "test:cpp-fundamentals": "node --import tsx scripts/verify-cpp-fundamentals.ts",
+    "test:algorithms": "node scripts/tool.mjs tsx scripts/verify-algorithms.ts",
+    "test:cpp-fundamentals": "node scripts/tool.mjs tsx scripts/verify-cpp-fundamentals.ts",
     "test:advanced-projects": "RUN_DOCKER_TESTS=1 node scripts/tool.mjs vitest run tests/runner/advanced-projects.test.ts --maxWorkers=1",
-    "test:oop": "node --import tsx scripts/verify-oop.ts",
+    "test:oop": "node scripts/tool.mjs tsx scripts/verify-oop.ts",
     "test:oop-project": "RUN_DOCKER_TESTS=1 node scripts/tool.mjs vitest run tests/runner/oop-project.test.ts --maxWorkers=1",
-    "test:lifetime": "node --import tsx scripts/verify-lifetime.ts"
+    "test:lifetime": "node scripts/tool.mjs tsx scripts/verify-lifetime.ts"
   },
   "dependencies": {
     "@prisma/client": "6.19.2",

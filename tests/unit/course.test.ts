@@ -10,7 +10,7 @@ import {
 describe('Движок курса', () => {
   const loaded = loadCourse();
   it('загружает оригинальные уроки и разрешает prerequisites', () => {
-    expect(loaded.lessons.length).toBe(215);
+    expect(loaded.lessons.length).toBe(226);
     expect(loaded.lessons[0]?.prerequisites).toEqual([]);
     expect(loaded.course.modules).toHaveLength(9);
     expect(loaded.course.modules[0]).toMatchObject({

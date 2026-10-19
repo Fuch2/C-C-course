@@ -13,18 +13,18 @@
     "Обнаруживать переполнение при вычислении размера до вызова malloc",
     "Обрабатывать отказ выделения без утечек и создавать структуры и строки в куче"
   ],
-  "tags": ["C17", "Память", "malloc", "Куча", "Переполнение"],
+  "tags": ["C23", "Память", "malloc", "Куча", "Переполнение"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-malloc-task-1",
     "title": "Копия строки",
-    "description": "Реализуйте функцию `char *copy_string(const char *s)`, которая создаёт в куче копию строки (аналог `strdup`) или возвращает `NULL` при ошибке.\n\nФункция `main` дана: она читает `n` слов в **один и тот же** буфер и сохраняет копии в массив указателей, затем печатает слова в обратном порядке и освобождает копии. Без настоящего копирования все элементы указывали бы на один буфер.",
+    "description": "Реализуйте функцию `char *copy_string(const char *s)`, которая создаёт в куче копию строки или возвращает `NULL` при ошибке. Это аналог `strdup`: в C23 она вошла в стандартную библиотеку (раньше была только в POSIX), и в реальном коде вы будете вызывать её. Здесь вы напишете её сами, чтобы увидеть, что внутри.\n\nФункция `main` дана: она читает `n` слов в **один и тот же** буфер и сохраняет копии в массив указателей, затем печатает слова в обратном порядке и освобождает копии. Без настоящего копирования все элементы указывали бы на один буфер.",
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nchar *copy_string(const char *s) {\n    return NULL;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    char *words[50];\n    char buffer[51];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%50s\", buffer);\n        words[i] = copy_string(buffer);\n        if (words[i] == NULL) {\n            return 1;\n        }\n    }\n    for (int i = n - 1; i >= 0; i--) {\n        printf(i > 0 ? \"%s \" : \"%s\\n\", words[i]);\n    }\n    for (int i = 0; i < n; i++) {\n        free(words[i]);\n    }\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -129,7 +129,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nchar *repeat(const char *s, int k, char sep) {\n    return NULL;\n}\n\nint main(void) {\n    char s[51];\n    int k;\n    scanf(\"%50s %d\", s, &k);\n    char *r = repeat(s, k, '-');\n    if (r == NULL) {\n        return 1;\n    }\n    printf(\"[%s]\\n\", r);\n    free(r);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -239,7 +239,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdint.h>\n#include <stdio.h>\n\nint checked_mul(size_t a, size_t b, size_t *out) {\n    return -1;\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        size_t a, b, product;\n        scanf(\"%zu %zu\", &a, &b);\n        if (checked_mul(a, b, &product) == 0) {\n            printf(\"%zu\\n\", product);\n        } else {\n            printf(\"overflow\\n\");\n        }\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -346,7 +346,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nstruct Task {\n    char title[31];\n    int priority;\n    int done;\n};\n\nstruct Task *task_create(const char *title, int priority) {\n    return NULL;\n}\n\nint main(void) {\n    // Прочитайте задачи, отметьте выполненные и напечатайте остальные.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

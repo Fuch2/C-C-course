@@ -1,0 +1,2635 @@
+{
+  "verifiedAt": "2026-10-17T23:35:44.295Z",
+  "diagnostics": "ASan/UBSan",
+  "summary": {
+    "solutions": 168,
+    "negativeControls": 21,
+    "examples": 95,
+    "memoryExamples": 2,
+    "compileErrors": 4,
+    "runtimeErrors": 1,
+    "runs": 1992,
+    "failed": 277
+  },
+  "checks": [
+    {
+      "id": "cpp20-difference-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "a08bce9f37dd2d158efb2159ae980f3a11f5bd77ee3075ca9e303994bbdd7b2c",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-difference-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "631a2bba51b72bd53a4a68e3a4f52427c165827cab6d11e671a670610efdc355",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-difference-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "4544a6b383085abf5e6e325655075cb9759c559fd9e6025ae0bf9a2a4746d076",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-difference-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "5c494af3c4721f56786d8c8096024bd17461a5570830ccdee9d5649ba1154c86",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-difference-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "789b8e0de040499da1454ebb4de570eb614a4e62e7e0247ed1a0e035e2d0a8af",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-difference-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d23ca7ccb342c6b5ed369810cfa3b04529221eb3a6e85290757c99bf37150418",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-difference-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c31917611bffd9ed77cb7551cb648db67810e05b3f1d350a63eda3137772214d",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-difference-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "fae2d3f153a80b2e948d237bc72cad96819394d6156386b85ceca896a5b0cc26",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-difference-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "73a1581169feca9988cfd568f2e6af4768f32d04d18ea68785980abde85b7e41",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-difference#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "8630dd602bd33918926814130e96990068b3b6807857580c194ba705331276b7",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-difference#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d4fb8dbfa7f03596134df6f1df6eb01ab861fa0421c481b21cdca335a18293ee",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-difference#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "2936465e6b398b0f6f0f7828d3851f8ae9127e60ce19cbfdd4051ba027447e79",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-difference#4",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "402680c3b9a7b5aba6242b01e37d5b060e88c59cd8508be333bd63e0cdc3a4af",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-difference#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "5a007fcea53feccc829b56b14484646d577b5ded04841dbcea397e8510b24a52",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-difference#6",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "e4882c52eecfb3e60883ea3546aad89e65b2f967d50c39d489e2bd4273dbbfa7",
+      "ok": true,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-namespaces-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "564b9ad85d58fd8973c6001a8d4c6ac980ccad8a25c9b393d79c42caec3b06dd",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-namespaces-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d8e67428f41f86adeb7fc4481d5671880e107f81959c9f70e026c6f38f7be6bd",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-namespaces-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "3762f510c05a0f2ca92e410599100433a2da190c80db7b5776a7aafbacbedcde",
+      "ok": true,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-namespaces-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d9ac868db02a382521a5d65c5f3012c31512a74c4b71431dc0d5c42d01923819",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-namespaces-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "a5a8f39ed020cf812ac92397fe91ca1d989f78daa03332c25cf852b93e31fb0b",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-namespaces-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "fceb8ff93b3c960c95257154b16b13f8a708d7515bb5df69b314329f77e47e65",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-namespaces-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "527e184d0e027d4559ae27e7696e4cdcc13a75227ea43fd74799747ffab1669e",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-namespaces-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "8701530cfc06579eb66397f7d293b781613a9d3d77d618f8eb3cb8c8d2a32d28",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-namespaces-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "077e43bea9929cf6f76077d4ea875e9d88aa1eca71d5f8effbfb5e60efd8f3ed",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-namespaces#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d1eda3e43ceca2e81268f791c412721fd6c05b3883df3e954a56967bd3f3ac31",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-namespaces#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c9d05e6a379337cc1c1a435f947c53d8015903833d347bb6257fb9b8de257880",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-namespaces#3",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "4a386c6e79942873e5194ef32bf20a8face6e032743e7145c26c229076544c18",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-namespaces#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a5a043bc22994c7a9df73338a72efed7604b8fdd6e6e0a41e05c079e4077d363",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-namespaces#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "526eb5147418a4a873313d8d7bcfd681f03c9ec37d938b6ee2fb4bd45c21816c",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-cout-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "85b0bfbb2823988cb43fd640c225ac53bb438c9c27284fa6c42dcc05526586ce",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cout-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "61f7f1edb86a008965fe9ddad2f65af539a00470102cace8ddd02dab24d942af",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cout-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "ce05f926f250e919207ea376fd71ac0d4a2a2655289be30601c7a4b79e1f6145",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cout-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "0cd349c4793731e8c393aa3da7771ddfd4b2ca1eba0f7c0d0de98b19601a367d",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cout-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "9be9577b1b388ed01524159b35d893a1151b83291428c9c6d9a96a650284709c",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cout-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "62a74922c2dfccaa113eed53f4e979e98af3bd45b0fbd13362a8ab5269b551e1",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cout-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "5c237e809664cfdd8634f811ed4fcefeb241b1f57d22209d67aaced22a3b7a08",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cout-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "276a41ddc6f225250c4a0121863a7fd9fa371960faa4a5696da0d0fe93818ae2",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cout-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "31b6d8b313427b262b0bbd2f658baac2d43668bbe0afadd3b2d9853bee8b7379",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cout#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "29d1752e730a1b85d73dbd8f966fa4e3831a31d53bd4e126d91a48a0769976e0",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-cout#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "aa82f54a85d3bda7356cc01909b0fc5da8547948b5743ac3f483aff6a8cb1ac9",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-cout#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "6e179d0165a16f301b36dadadaf447736446c0e5b1cb1d6ad6117a6dce2fa3e7",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-cout#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "2def49c79e68076772dcd35b3801968af106338254f5f2102d3d44603d7450fc",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-cout#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "92edf1f2ca392aa13b9332857d6ebcfb2b78fe66f395e58a70bf2e1c9ade2001",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-cin-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "02a81ab2d90ba538eda64dfda5d9cce8603b1650976d24f1edc568c159cbbe14",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cin-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d47080c0b10af34dd19522b9d9b332c6de058fa6a9d789ea1db5833031af5a0b",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cin-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "267ef5bbd892851bb214369d84324530fa4562aa95c2728c5c4444539b18edde",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cin-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "7ec58cddc6731eb5b561d506fccc775aa8d78b3871df588f5416a0068b388f6c",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cin-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "f9efda14a8a4ad51332c101b32ed4de11958638de27f617db5e4b535358f7703",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cin-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "dbe71e3856fcbb84fb1245da4fa88573ae68f2eb180c98db41d7d4a3c11e46db",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cin-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c016058015eed66e420638958a96b281312346064eb027919dfe4d39220f189f",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cin-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "554b6b3a32e48641a70fd9ef2ef0310733fb9a5b27fea76c5f061a7d8e2721cd",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cin-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "f3bc89645126fba9f2e8f94818c06466aab573fa2f1dcf333cf26609e4f9a9fc",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-cin#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "fca436ab3902c926137cc097d252ceb12d448d24624868f65a5bb59b90524b97",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-cin#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "88658bc8d0c61e9192f57c99c1936a99b3ac6f33a89b35e4ea6e7344d136af0f",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-cin#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b4e00fa42b35872acad091c6b1f7a090245a1aa3706526a09918f5a3e7a56589",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-cin#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "960b22deee8368a7abde88722c247a4a74315f05a8e0018a3261c03f99c98b58",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-cin#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d8ed66319455a2b48d934f32c91837b379b8f33a9155ac34d99aacf05ff149a7",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-cin#6",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a1f85212d89a82724c51d4cf992e2ddbb1ec8ee1d99d2d2b8c54d5a67c8bfbc2",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-string-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "5e2c394b79e215d3605261fa976113ecbf9397d056dac8b76bc48b00d54bcde9",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-string-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "17816608d490f79b90f7746e94bbc9c6829950d8f1e969eb982b3423412133b4",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-string-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "a8971cc50137aeba5d9664764997e05fc81c6dda716eeccb0307dc31a3b8a430",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-string-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ea984f5e2f12158781af2767fe6ce16451f03d0697693ffe75bc3bca53e785e4",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-string-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "b9079c8fab574109050bfb383ba49ca2c0381f471bcb02ccf5d1d0a32afcf476",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-string-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "1782d5a01cc957e9dd6b98e91ece2ca938c13a93a60a550a726c50debc8ed8ad",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-string-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c0c0ba9849d0e0004db52ff0b1396b17210064c6010a4ab5905c81cfe643877a",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-string-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "5a397612ae2b6435806ed2b7cda8456831e95dd07e82634ac65f1aa4ce688d5d",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-string-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ca9206dac8c747ac9a83111cf7f49ac048b2e87acba836694eb684ce5dc1aa73",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-string#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "f295242f7e22b0f64d0928332e4fe1b90ca8b0afcf6493e8c55166a5ca7586e4",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-string#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "476fea08752fe0c3310576424aef5e23df4a2d6626c81cba9584dba06d5992c9",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-string#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "9be7006b4043c017337a94a0dcd45060c37ff87079667ff890819cc61eccc529",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-string#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "4c1292e8e0fe98ad75a6e894f7ede850d8e8ad54269d4f0fa836a6e88306a6e3",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-string#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "e08e89ee035da6bce6c1c5fdc25ba829d5a6ad7e9a73d2ecbcbda8e331cc97c2",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-string#6",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "2f7ed063e197fbd37c203a3bf0ff6f31d7641418a95839646991fe6607030306",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-references-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "790d7d1badcf21b0f9c67687fc3082c72ed7ef44e4d224a1a2a5282ca2101c29",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-references-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "9d3a80f2c5f561b36f8e994bc629ec88d2794b19575fde52c9a8b1ca525c9003",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-references-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "4c46ff306f2491632f92eb15c662437927ba129989a72d6e78230090033d9359",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-references-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "5eac182551ad95885ace0b9c4e7a559ca6869f404f1943ef0b8a37d3371d4673",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-references-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "63633d78900d44c48232798bb85d35b97a2029d865ebaabaf5c79cac1ba9b83f",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-references-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "6a96dc14d84bcab3f3a3cb95f7744593436a1edbf6236c9fa507f0f92c4aa75a",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-references-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "22cd2b104fd10a82a9857f2754a552b215e991b8eecdbb1e7c7ac148f9b4ff89",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-references-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "3813b40cda0e5ebdb13f9725c3258b4f8b86048f743f26f754b9b174cb9e7d26",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-references-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "2b08abfe5f3646df19de87c5c839cf6e5a516a3b2048a52baa960b76d1dbc21f",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-references#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "6ba513ba81241e99eab1c2436a88d33609b80aa1600d9a92abb4c2bc21f92e55",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-references#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "0793002f5d99c6baf41c80a59f6beb54d62a76fa6af55b6047b51a753f496ad3",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-references#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c9883299855ac1e3ace646155d4d008c75df37044a5f572f168de60ead7b9ad7",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-references#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "cfdb73f01bd957f900f83dc8fa31afc806c642d0a519d56d1cda51ce91e56d07",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-references#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "59623f76b21c2e016f9ab3eaca1e7c8e552335accb3c89d3c17f0be05ab28cba",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-references#6",
+      "kind": "memory-example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "96d45df92930b1caf319ee3a73f67dc1c8cc6161e9a64616e35c0babcaf1eeea",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-const-references-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "736e133fab5de8f5aa7c06c9134ebfebcc6d52817581537f52bc9b537f5918a8",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-const-references-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "52792824f2d67826b9132e63798ab98bb45e34a591d139f5ddb7e3ac38a9710e",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-const-references-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "199a84f55fee52e1debbfd12f8b242592594747c0590ecbb2c6403da87eae097",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-const-references-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "151285e3fab76087e791dd4f8491066720c955cca1ad2c1179b69126997f8b31",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-const-references-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "32e49c3ea276a8e67985e6185eb845ba557e695ac51c2211b5536be089e87735",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-const-references-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "845e03bd4ebd1a9af8cc141c73599f1b446d6032a8227702cc106143e51a1a57",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-const-references-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "9eecf5e66acbb84cddc2e90f5c9bf47b1b4c0ae613572bfc8c1525d92504d5a9",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-const-references-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "e98c29c6a15053888d26f5de27e340e460940939d07fec10a23c3e7efb29d491",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-const-references-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "7639cfe332b41cc5076501a99c77eca5288e5ef878e22b439e05332de4758fea",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-const-references#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "2da66ab8d8a1375e70254fe9581f885d2e6b115dad886ea2dfe79f340435b358",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-const-references#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "69644a49ad1bc3157956687c28ca4a631688912c63bce8ff84cc18c32b5f7942",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-const-references#3",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "459d95d326d6b3d6f1d5cd7bae4d5b5028b5c50b1174e7b66f418ebf048819c0",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-const-references#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "17d0b87470557747d17f03e9ff1bd24af31df5b7169c714229ac2137af2651bd",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-const-references#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "29cd49a0d30175034d489a915c6247e94ed7cd1f188aa2bf87c827fa3f1f6f06",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-const-references#6",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "97e2e1253b769c4fb9abcf06bc548214888adb72dbc9b7c33c95c34613e4a8e9",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-auto-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "a752af471d5123dc7adb5ca4d6dd8ebf821a4d4ea743d288f4a909f4a0cbd69e",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-auto-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "4d9ddfc2add060adc56586c600d37a9c528a56437cde9995d7f9222a33cb78c5",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-auto-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "bb05116e4d043c198d5e80028c67da6c0fc786a314fb687217665556c0ff0ea8",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-auto-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "f30267a1f400269b5dcd5dfc6738d8ffea6540ac59c01c993a239fb8f9a5f4f1",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-auto-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "a40c1b1f9de2d939d9bfe15b8b66bd8a5db57b15614fcbe06a176ef011f34a0b",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-auto-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "bd2d02e1edde249dde857104d35b8aec8383d85c25276f14639eb0bf7559d591",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-auto-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "f75902293acf55a952d59b0bf05af1b068dd8fe75a58093749afa3c8826ff941",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-auto-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "5e75a5a505dcebf382678bcfd29e2c1fad4f6411117e4a9cdcb932c105f4df75",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-auto-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a95f0fdf1703dc07f3fa9aa37d5bc04773d5f0cd67df5a6834cd64ae2b7f0075",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-auto#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "1264ba979fefd03fc2a2e17f2ae4dd3291e34267f0d21ba4af10d67c81761185",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-auto#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "11f05d21246e72465f6fda3aae8c68a7857b72cd156da12f9e537dbf7171fc00",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-auto#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "881860adba2818a20469b1a0ed5b642fcc290ae734a1e5fbd9488b69fafe0c33",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-auto#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "22f384c889dd683c17e7e950d25a26c27dfae62b2fbe781fa3dc177f47045f47",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-auto#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "badf9c67376fb3a5c5a9bf7132e897556d419551ae332dc5e5d2f9651614545c",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-auto#6",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "2bd219b14bad79ab64adc1559bcb0924073090bf2763e36d790d39bb720bf0e5",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-range-for-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "739432b00a51f9959a5cb488fc71bb00c0dc674f5ab87775de436b04a95b13ae",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-range-for-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "811cbf04e4453da0717a1fede2044d574946538c188de7758e7038cb333dfb7d",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-range-for-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "79d4a71f28fc3b47b240d5e9b79b0caaaf5defc9a4831d8b466630a6db03605a",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-range-for-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ce5fb92b50ae500d9f8a19879d8ecf32c0ed03ec2dba9b88149ec04b4df149df",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-range-for-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "eb4585ca0bcb7b500f59ed7b52925c7a9932767fc2230d876b0aad39f93c77db",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-range-for-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "9868b114ad9353c331f96ed9535e8e057ade12de861aaab6cb589c10a19239ce",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-range-for-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "7f26705b327785b62b34ad2f90182f863b308643a9aaec7e56f2686ec7d3f7aa",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-range-for-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "ac7f80644eed6cc8cbb69a7c877d20bb2c0667c67acdce631f0e4df429764b71",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-range-for-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "084c22f9e0de02c4d64b814d659ae0953cd14482e59cb439d8948f20ba9b885d",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-range-for#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "130fa86322484eabd01722942923867dec8ca80597583b6f2d4a41ca1d226423",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-range-for#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "4c8287d8d4ab8bd29d387a266b5a2802fc82bd290226143956de80ef5520981e",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-range-for#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "fde9b8e9d1a744ba9a1135d7828c9d51e5cce3b55276439448e7bdbf39207699",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-range-for#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "7cb315bdad23e575cc155c52a7b5897d633204273f9f2aa016ab23b88977f620",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-range-for#5",
+      "kind": "memory-example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "421b3349eac9b4c443177ee68f0d9c07f5a685d2e805e080ca5391cbd5ef8f5d",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-overload-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "ce934d608fd5be09b5d7ace4bfdcdc63d63d08f260bddbc20dfd128a0e61d151",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-overload-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "8fc12bbbbbbf790721b7aee9ba0df2348c138883b13395987852e79a41e9eada",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-overload-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "94fcc0b74675c515755f0f81473370bb26a74b6cb55ccddef9ee9586d3c0920e",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-overload-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "93fd331dfe7f1f5cabbd153d0bf9043878450f13ea2d2033e5fd573f8620c57e",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-overload-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "d9dfc8f6ff745d972baa6d9859a7586720f7fc413cd393c2894b326070afe880",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-overload-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "74c1c6bc0da5dea9e76f5711321d2a6cc5536b656aa05949266d9fdee72113d5",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-overload-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a55fec3029fdfb57d6034fd829758b7f9984703279ba2a6c94e9b42765e7ba91",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-overload-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "212ae79f0923bf202e4e3f2f275535bffb190c706a7c38b8e15173bcfc91fc09",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-overload-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "04cdb6c164ddefade45fae619f74838543036a58c43adabb6b37a847cb2ec3f7",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-overload#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "9f62194c7dab0ce078ea814272c9338bbefedaff267f86269a68b253c45eb0d2",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-overload#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "cd3b7ec89bc3d5037147464b451f661def653a06c24d81ca0fffa0a14b9cd892",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-overload#3",
+      "kind": "compile-error",
+      "compiler": "gcc",
+      "mode": "none",
+      "fingerprint": "95bf43d688cddec5433c8a36caeff85c4a99f97a265315c4b2a8543dca4b70dc",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-overload#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ef668b67989ee28e67636c690f80c54ea762909052c2e0ee82771fc6de81b267",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-overload#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "94211d8b400187b8ade902b84774757be0ea0104986b915670643643f814d09a",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-default-arguments-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "c9fc051c7a3ed7f6de90679d0f6afe22f96980d33461d71b17cf829551a77047",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-default-arguments-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "e4f6ad749fedc43864f1e326d3d76f4fa3d5c192791cc34fb42cf168ce78c99c",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-default-arguments-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "97667e46c4c7be634ea27cbfdb968aded91afd374ed30045faefcb9bdc093ca0",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-default-arguments-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "359594b800dd98182a6429d0804b288e51e9a04dc9c6e60ee7bc11704c9c4a84",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-default-arguments-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "cef109dc01bc8030370b344e3860abcee156ce14d2196d4f59fcc9e850f84c95",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-default-arguments-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "f9374ae8d1fffcfb7bccf810f9fae456e4baf2f4942f1997b3131c5e848efd28",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-default-arguments-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "1fa29c0687a4b8efcdd8dc0745437b45225e2a3e148fbe3b516261c1fc3ef8a4",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-default-arguments-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "c77ae62c2aa3623e8a21d214224fd358a2612c213704c3a924ccd1a718dd3d39",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-default-arguments-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "fffe7ce446a847630ab5ff85d6826a90f12cc5b1533a1f336ba924bfd0cce82d",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-default-arguments#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "51f67ca58009768784eb93039c77fef2c8d18155a1b97af47119ad9a06d2a18b",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-default-arguments#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "8278a46946fe0bce941887195ef1757645f0c360f96e5d8bb017456a6fb3e34f",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-default-arguments#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "bed413818c19e99397e6421107384dd89ce67e06261199e16b4524a221d0dc83",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-enum-class-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "5a8a68b61d7a4904f9a7eb122780e7bd4995988123f3392f7840419a1e5f4f1a",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-enum-class-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "37b4bef66add35dce79ba2e5f96dc1197b1f151ae76b3f0c0d14004823490690",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-enum-class-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "3c1de8b032af8737d89a3af847ef08f8f3c4af4662bf4d040cc3b9db8ddb89fe",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-enum-class-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "5a5dcc81bb0c6ebf18376a01dcb7732898b95d3bf7e26925c4edefa86a742fd0",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-enum-class-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "897e251a9b6cee390069350f96fd08d6f15380a1a6d0a8cee85ad0a1abb1545f",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-enum-class-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "5804c676a151ac8665df01795bdbefab14f80f8214d3f7e6263406dcc9d6a2ac",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-enum-class-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "7712ea1cedfc7b360309a567c9f00ee807ad07dc9d7428c62cbfee70a8cb1d85",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-enum-class-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "ceb9a39337a7d20c92dfa889a3a69863cdbed5869c904a64ba92241ed4b6a9e2",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-enum-class-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "31378bc3e149d99e40a625e248efef2aac389d13fdac0088cfca1878639a9b89",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-enum-class#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "1a04acab6333ae5419688faebbc02a95a5cfbd0b003a28aecc70392e7b4fa19f",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-enum-class#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "32a8470496b1132c255a9231bba145900172479d7671e8e5b16a1042e6b1fb47",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-enum-class#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "5a8971aa38fca4d358a899f3cc05ffc51931c91380e345200b55ceefe89907dd",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-enum-class#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ff6d05811d8f15241a9c813761a3f4c9a07b449303f62d4f10f4194e05f6911c",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-vector-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "f2bf1ce40da16a23adcb4a6be0f761b6440893657f385699c6524ee904289714",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-vector-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "e3112061419760d533d19c03af1cdcc5ade10d6c75d4bcc1c21e160a210eee5a",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-vector-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "40c72b7f8b5fc9beca955ba5e0b89a43e493dde6ebd7df494f4b5740513a4d88",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-vector-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b35e5a6d08f56a3b04d88870e4cbac12f23d089039a6c72b624bcaf6d81fce81",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-vector-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "92c2948f2cdcaeefde9e0e363f0ab1d0433dd3cca08383e71908e253a614023d",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-vector-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ae6261960b97b798f39a980b2967b97f40d04816f45ba9b5b701de6a7000052a",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-vector-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d7eb1816f1b15bab090ee6c16595bc1e9d167f28c0c9b26f4bab39b59d799995",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-vector-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "a463be9042cb5bab5a10ee2a7a4abb1e9442a0394693ebf6796b93b502bf7454",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-vector-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c33871a9e4ff0c6ca31850b9b43a3503fa73be50dfcd9459d852d443e92c130a",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-vector#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "24493ff14d0210f45175e6964fc96842721352d1323b4465beb5313bcd33d45e",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-vector#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "5b60bcc0f6053b498b15142ebf1d034f2f552a5b45d2ac13f91a0c68565618d9",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-vector#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "47e044e9fb7f63692eae9e33c95bc1d1bb9140aabb17dd1574a4eb89cd649ce8",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-vector#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "7c260cd410de47fdc63e3fe0d382971359af3f12fc6b129f168e1e72af73a59d",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-vector#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "cbf03fbc17c8c32f2c7e196d7d30f66b7fba54ffad86cb9fd6d56e6c21509c04",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-vector#6",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "98546e0d01a70c4024362d2ff8d9a14e2717c7bd8364f505fd483c841a2c9476",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-array-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "38df849e488804a5dd48ff6a98e68245e8140f25f603e42d935d5aaa510776d7",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-array-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d7cb5ad1f30576b66d9d3d427579f813d21bfa499bd0c142e338e90a1dbb59dd",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-array-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "b692060de046fb4257502cc4cfe4a6875caae433e901a0e98c0191d8690833d1",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-array-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "2a704258bfec0f84324dea42ef617575cae9d5e5c8e251005a4c284f0b4f0058",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-array-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "0e43fdb2ae96de112c89046bb0c025bd9cd91e3c1eae3b4e770e16adafdf03ad",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-array-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "daa08136450c53475d45e4e09aaa56c74b323d01ff822af505e50c144978e2c4",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-array-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "63eb6cb980892895177061274b622420a347a98b1a0802ae844744845ae0b155",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-array-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "2ae75e3d089b6acb462c9fe85602953a106c5295dcc2790fa8b80c8c6f58040d",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-array-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "bf1ef32c0a1aced3e2d1cc617e9f5dae94182e0bd4916a251d7ee611780c60dc",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-array#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d13fe754db53bdf273fcedc4a994e043f33648065446e3e83fff3efa38ff10ec",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-array#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d1d55ed62d51d1591658e5457fdf69de1507d38f5f1b54d9833670592dc1a096",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-array#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "3b30cf67cc1b1bf1aee79b2a56a6ae40e6b246387b2fa60357016440b6ca4819",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-array#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "fe130f2fc64d8d923d6c317f17d8f1345536908bbf253470b4bdc4ee976c3529",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-deque-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "a893c7cf95551633ddd78e241e9d8722a9add2cc1b33ca91b7e64475cc3c91c1",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-deque-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "9a726f6aae118549ba79abf36b5d93b37770062dc7c587633f8cddce04b9eff1",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-deque-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "b83ba5a2d9e979c5229db6a80e57ed389204151a3888f68a11e0ed88ca5638ba",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-deque-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "8442de18dffdb2d8f8f12db36b8feb2fac4c4d4cc5868c01f0fa41705abc36a2",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-deque-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "68e7bcf4383189ce94bea8e20f46ccf69fa8185f01cc8bf6a32f7e2147dc8864",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-deque-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "766bfe8bdd1dac2a6da5e9bf5e3d940727dbec771141b8743f99a39d50fc248c",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-deque-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "8c04c72ab9cb892fe3eee7cbbf61b0f86bd8bbf7f04211a1aef287b2d7b13af9",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-deque-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "5718f9edce9a0945fe0a474027c8cd0ed517dea790f228b81be3b8223b254077",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-deque-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b25983a2072181cd42d7bb05864fb088d3b76bf7bf40e353fe7ff614b4a19fb2",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-deque#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "7445f39cf540fab2cb9fd77dc53c098a9a4ac6b6db1d977b6f4dcdd794881549",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-deque#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c8e54fc24111a50b6e36e4295f84b328d9f5c759c87816afbd125f65111f1ab7",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-deque#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ea6f1de832d96260d49ae7e958c7d4d107aa75b46e85d503094e7f660078ecb6",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-deque#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "f8552e2e45c6376541d967297f1f89b8c9c73efb6ab314a006aab3a5110b8740",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-pair-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "68739ba137082c754bc376bcc44ad719cba4825e574cfa4550d13175f0962b08",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-pair-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a355f22d58f4bc92346535b07346df1b21a0a42b3b2e226120c78e736a8f27cc",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-pair-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "af19f8c7c5eaf0ff3fb4402f33d9f73c6160a9d466fa1f2007a3c734ec3ed72e",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-pair-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "4973d797c0ba9ee04b2dd02cb1ce2f9482d082c67b65694d4a2a79bb330fa8a8",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-pair-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "fcf37c18611671cc74dcf25f8cb52a2c41c343a906fec2689f20a3b424bf2231",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-pair-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "e95148286c4c6dcfd8e2ead2069a30a678590ebcf7713d792bfeed1d9bfc49b1",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-pair-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "2775c8d9e75771d882c7a902c1f1baecfd7efc278ed08a93e86836a0487ad1bd",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-pair-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "e207956586db7679fc2b3830db626f243143056863f53a4206a2f9a89b061d6c",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-pair-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "336e5e94c2a98a96d3442633c9224b90c649cf05cd71b6a6f89ceb6013a77064",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-pair#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d4f6bbc7261ab10c5b92eff013dfc10f4059f3d96806ff9f1a048ab5cf023a68",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-pair#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "cbaf2830c1fa2de1cb3e9cc820ec755fb99786b5a881f679a3b2304a96a19912",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-pair#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "9b09c1ab10653502a5952f499328652eae42320698fbe3e4629bd6ce542c1802",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-pair#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a98c0398a31ec31f15d78ade44334a79d5a42cc8f78e354ba1a470daa7c51cb4",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-tuple-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "9b2b3b950c5094f1342bdc695bfefa71a0eb9484a9e9ffe151ac77c68ff1a3f3",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-tuple-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "8b33f729bfe51cfe856de08bb4fdd0247f50996b9c44f1cc78c0206faf7588f1",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-tuple-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "a70542d2feb188c75b1e01f74582f63294a4363bad9ebc23adbcb92dbb39a5ca",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-tuple-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "09f8f645a72239faad3a26d1cc8f4dd7fa83ce3b9c3ad661da4c118499bfbab0",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-tuple-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "18667194019392261cd0c3e8b06e7d44e6a268ae1ca92b83d2a6ccb38b4bb3c3",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-tuple-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "8e536311f6091ba3709464967f0604dcee132b239dfaed4d030f2b46c9106019",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-tuple-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "4642a12141842d854a1aafea2804aeb1932b91e3d11f39ae6cc7e0e9b24e5a24",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-tuple-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "b870542b4116ac54f031e484db93629ccc69f8b9ce4768ace3399cfe647f15b0",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-tuple-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "0636abb838728bd3449daac424b12866a58f4209797eccb8b69022e322959e19",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-tuple#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "2e25335c6713b898af4f713a70611d01aadbfcb7fbc4d749ba2aa5da7e908e2b",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-tuple#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "4fcdee1a7cfa85caeecb5983260513215d4246abe48634e2af517230caae4980",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-tuple#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "19011a014159b4fd08b18d850dfc5b61327ee3b0d973aa504f1645800ce4f469",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-map-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "913b24cb2abe899e10cea1d565ca189cfa3f506da24e458accd3e1ce6c9e2657",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-map-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "fa6c11b7aa61d78da6d27713537dbf2c907b1b724a9b97ba7e19edce54b6958a",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-map-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "5a7b17b91e35d7efcd9cab1c94632407683b1c9666a68d4d4e09882fa8ed4222",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-map-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "cca19291f13a41da843272a654c2dd2cb9b3d176430e7df5a14da8d55784230c",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-map-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "46d8f66fbd16e2663778aae82d51bf462f24871c7b0da387a40e4bf6b6c3600e",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-map-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d02de7daaf02c45bdacaf249bf7dbbb7ade62957cf1d3fce5bffb7ea9e7a64b7",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-map-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "add233505de530f6d7e8205e58dca83760069ab9a6d5bc6b510a69e520f3d96c",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-map-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "a0c41b183166a4966e3bf81abc4a00cadf5423893193ab22b7baad86b5f84c3a",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-map-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "81ac29889b19a2d4474f386db226183b66379c8e95f9c32aa1bea81291553edd",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-map#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b19a3562fdda7ef042d9087f325ca5acccb693b9447d1ac361674cfe2ac94bfa",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-map#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "473128b5b96c17670694b131f648a39d63eb6399af67f5ca738593cdf33fff50",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-map#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "f9c1f3273c25f03708436209bc1728b0acf09b53010051f044219a42b21747e2",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-map#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "6989c8564486a6dbdeef0d5d99aef5970bd16eea859bab2c8407544bda9d64d5",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-map#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "8b923029c098dc0579895fe5b4092845938087964be4642a111daf6b121caeaf",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-unordered-map-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "b2fa07a7c91039fa6343dfbfefe53d83b6da8166dde6fc4a4c75860bf184f5e7",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-unordered-map-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "5e62bdd93615750d2a1d5ec69828126698c1a399a0b4801dc1d1eb575729a71b",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-unordered-map-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "3a7a13d6ca2a0b34b62a85d3d7a48ecbe3f9df54da717bb6085ec2c538e6ef1a",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-unordered-map-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "78a248ac427b06d94064f3a95c6748e28d92a17a264e1844fb0740e1e73b105e",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-unordered-map-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "e5a56310cda13078ef595953ce34e6e3c99b13e0eb99b6381c6836e871affcc9",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-unordered-map-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "02576b8445993e4fbe71f9302da49d1feb6f1e09da9ead5c5e7d71b659bfa4c3",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-unordered-map-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "7fa9a71a38f6406bc804210b91fcb9e370402d700bf59cd7a2cd512e02eae218",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-unordered-map-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "c8995147c442c2d08e991d9a241736e3284fb5b77bb09fd102a51fa0fe7af5f0",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-unordered-map-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "1cd46a1a239dfaf2dcf9963b3203f9e0a8493e826fd135d6ccddc8c0950dc24c",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-unordered-map#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c1be46e0214a4cc30635bd84fc2d6b891203f2c1bec64df1cc868285116dec32",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-unordered-map#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "555e5455a8ee57e41579fff7513ea869f61dbe83d6a994b9e4fe2b52b4734ec0",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-unordered-map#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "5b3b3820bcbb969e03eb386b6547600942a1ebb4b578a1a099ea458102284fb6",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-set-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "9fffd9d7957e7b40a11ddf4b66aff158c66a5e4f0afb146eaa9507a6a0015d22",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-set-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a13905ebe6341458938f1b93bbd8a5cb425b77b7beacebd43a3d95e73afaff31",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-set-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "901fc1c53c16faef1bb339b53dfe7bc3f1121184812e3109976602783fa1c92a",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-set-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "db7b8acc5d8b1393eb47c366f0b9dcdf58a39d933ba3cc3c0d7ed136604f2f7a",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-set-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "9163872802b4e4bc3a5a69b9f8a450127cb7a144837c30dbd4fdafaac6d68b27",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-set-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "ce510debc26507bda23e1d4600dac091f28ea7fed9e07ac465e9329e8a2cdd23",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-set-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "cdfda363627041735f41114aeec11c8af486ebabd72a65a7defbae9bd338735c",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-set-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "ef7343595a91038ec9a3d69dba480da20e9a024eed085160df15f1153e078368",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-set-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "d323126f0e9494b7641642a007b2495a152fde8f499570564841ccb10df9be8f",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-set#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b7fea032cd8bae531ab2da7d48451fefce419f4afca89c5ce1a7eccf7c7bed89",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-set#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "61f100c73144131afd14074bff0a71a9cdf7f61a528ff137891c9acb18a9b2ab",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-set#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "9755e258a20eb6b7acf4e8325058c1e8c72c38d27c9e63bf38111b915c2885c1",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-set#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "a89bb6344cbb3a5dcf89e961ff1eb1cd1643d21ae8c6c57f1711321b77150564",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-set#5",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "9c0c329ea3233d661a0301cb0f24d44998742c26fd181e0d27408031901619af",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-exceptions-task-1",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "b88950d88fe70dbadfbe806aba7d3602355d197ffe4059e59dad71f9dfb90373",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-exceptions-task-1",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "fecb523b85a2354fd416fa59fe5f97efeb84ca7c000d4762ced5333df0fc17d5",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-exceptions-task-2",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "62edcc98f28c43afa930ddc2be619a9367a3526e3b5fd70cb9c9049a1121303e",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-exceptions-task-2",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "24d8694ac8054bc2b0cd20327f831d22acb6b1c5361edba4c0bc744e35784045",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-exceptions-task-3",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "b599175d58c5a8c3bc564d3fd89426881c44e7a4d3da9219a9fcff2b47e4a32f",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-exceptions-task-3",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "55c706ed54021f31e303dafda721fb72af3c926b70973954e2670bea65b57258",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-exceptions-task-3",
+      "kind": "negative-control",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "021dd27e3d904d891c75cd955844ce38fa1f1f3c37e068f7f983f8d652e0a839",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-exceptions-task-4",
+      "kind": "solution",
+      "compiler": "gcc",
+      "mode": "sanitizers",
+      "fingerprint": "2a140446d8b8652f436f4ee3d20bd0ef4bca81f531e9bf1837a855481ace2440",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-exceptions-task-4",
+      "kind": "solution",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "c00acef7efdf46af747d41f4584c0409cbec0442cc3fc9557f6992ba39a9c816",
+      "ok": false,
+      "tests": 10
+    },
+    {
+      "id": "cpp20-exceptions#1",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "0b2fc516b316fc31d22d68ee03a40906d7a344672744021721af41735c969432",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-exceptions#2",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "72c0834926bb690bc88ecd6677217bbae0de15f6376a5e5c9831a23a911841a9",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-exceptions#3",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "899d9bb26cd8a4d62f591f5799f0ddbb2260a0570787d527590c51378820c5a1",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-exceptions#4",
+      "kind": "example",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "3faa45a7a9837aa65d9b4f8c4ab20bd3e70fc0a199a3c544a4b10a6ad3671da0",
+      "ok": false,
+      "tests": 1
+    },
+    {
+      "id": "cpp20-exceptions#5",
+      "kind": "runtime-error",
+      "compiler": "clang",
+      "mode": "sanitizers",
+      "fingerprint": "b5966b709ff59a130f01802976d3255fda0d0447952a909e9bdd176a67f691d7",
+      "ok": false,
+      "tests": 1
+    }
+  ]
+}

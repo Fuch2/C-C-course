@@ -1,115 +1,522 @@
 {
   "id": "cpp20-map",
-  "title": "std::map",
-  "description": "map хранит уникальные ключи упорядоченно. Поиск O(log n), но узлы требуют указателей и отдельных аллокаций.",
+  "title": "Словарь std::map",
+  "description": "Упорядоченный словарь std::map на дереве поиска; operator[] и ловушка создания элементов; contains, count, find и at для чтения; подсчёт частот; insert и erase; запросы по диапазону ключей lower_bound и upper_bound.",
   "moduleId": "cpp-fundamentals",
-  "order": 15,
-  "difficulty": "advanced",
+  "order": 23,
+  "difficulty": "intermediate",
   "estimatedMinutes": 50,
-  "prerequisites": ["cpp20-deque"],
+  "prerequisites": ["cpp23-optional"],
   "objectives": [
-    "Объяснить, зачем появился std::map и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Хранить пары «ключ → значение» в std::map и обходить их по порядку ключей",
+    "Читать из словаря, не создавая элементы",
+    "Считать частоты и обновлять значения",
+    "Выполнять запросы по диапазону ключей"
   ],
-  "tags": ["C++20", "основы C++", "std::map"],
+  "tags": ["C++", "map", "Словарь", "Контейнеры"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-map-exercise",
-    "title": "Упорядоченный журнал",
-    "description": "Ввод пар name value до n. Последняя запись заменяет предыдущую. Напечатайте std::map в лексикографическом порядке.",
-    "difficulty": "advanced",
+    "id": "cpp20-map-task-1",
+    "title": "Словарь частот",
+    "description": "До конца ввода идут слова. Напечатайте каждое различное слово и число его вхождений в алфавитном порядке (по кодам символов): `слово число`.\n\nИспользуйте `std::map<std::string, int>` и `++count[word]`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "3 b 1 a 2 b 9",
-        "output": "a 2\nb 9\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "to be or not to be\n",
+        "output": "be 2\nnot 1\nor 1\nto 2\n"
       },
       {
-        "input": "0",
-        "output": "",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "b a B\n",
+        "output": "B 1\na 1\nb 1\n"
       }
     ],
-    "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
-    ],
+    "constraints": ["Слов не больше 3000; слова — латинские буквы до 30 символов."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "Новый ключ в operator[] начинается с 0, поэтому ++count[word] сразу даёт правильный счёт.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "Обход for (const auto &[word, c] : count) идёт в порядке ключей — сортировать не нужно.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "3 b 1 a 2 b 9",
-        "expected": "a 2\nb 9\n"
+        "stdin": "to be or not to be\n",
+        "expected": "be 2\nnot 1\nor 1\nto 2\n"
       },
-      { "id": "case-2", "name": "Пример 2", "stdin": "0", "expected": "" }
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "b a B\n",
+        "expected": "B 1\na 1\nb 1\n"
+      }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "2 x 1 x 2",
-        "expected": "x 2\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "",
+        "expected": ""
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "solo\n",
+        "expected": "solo 1\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "a a a a\n",
+        "expected": "a 4\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "z y x w\n",
+        "expected": "w 1\nx 1\ny 1\nz 1\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "ab a abc ab\n",
+        "expected": "a 1\nab 2\nabc 1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "the cat the dog the end\n",
+        "expected": "cat 1\ndog 1\nend 1\nthe 3\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "Zebra apple Apple zebra\n",
+        "expected": "Apple 1\nZebra 1\napple 1\nzebra 1\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "x\ny\nx\n",
+        "expected": "x 2\ny 1\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <map>\n#include <string>\n\n\nint main() {\n    int n{};if(!(std::cin>>n)||n<0||n>100)return 1;std::map<std::string,int> m;for(int i=0;i<n;++i){std::string k;int v;if(!(std::cin>>k>>v))return 1;m.insert_or_assign(k,v);}for(const auto& [k,v]:m)std::cout<<k<<' '<<v<<'\\n';\n}\n",
-    "solutionExplanation": "map хранит уникальные ключи упорядоченно. Операции поиска и вставки O(log n), узлы требуют дополнительной памяти и хуже используют кеш, чем плотный vector.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <iostream>\n#include <map>\n#include <string>\n\nint main() {\n    std::map<std::string, int> count;\n    std::string word;\n    while (std::cin >> word) {\n        ++count[word];\n    }\n    for (const auto &[w, c] : count) {\n        std::cout << w << ' ' << c << '\\n';\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Здесь создание элемента по `operator[]` — именно то, что нужно: встреченное впервые слово получает счётчик 0, и `++` превращает его в 1. Обход `std::map` идёт по возрастанию ключей, поэтому алфавитный порядок получается бесплатно. Каждое слово — `O(log n)` сравнений строк.\n\nВ модуле «Алгоритмы» та же задача потребовала хеш-таблицы с цепочками и отдельного массива для порядка; здесь — пять строк.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-map-task-2",
+      "title": "Телефонная книга",
+      "description": "Выполните команды над телефонной книгой:\n\n- `add имя телефон` — записать телефон (если имя есть — заменить);\n- `del имя` — удалить запись; напечатать `удалено` или `нет такого`;\n- `find имя` — напечатать телефон или `нет такого`;\n- `list` — напечатать все записи `имя телефон` в алфавитном порядке или `пусто`.\n\nКоманды `find` и `del` не должны добавлять записи.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "add Ann 111\nadd Bob 222\nfind Ann\nfind Cid\nlist\n",
+          "output": "111\nнет такого\nAnn 111\nBob 222\n"
+        },
+        {
+          "input": "del X\nlist\n",
+          "output": "нет такого\nпусто\n"
+        }
+      ],
+      "constraints": ["Команд не больше 1000; имена и телефоны без пробелов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "add: book[name] = phone. find: auto it = book.find(name); if (it != book.end()) печать it->second.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "del: book.erase(name) возвращает число удалённых элементов — 0 или 1.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add Ann 111\nadd Bob 222\nfind Ann\nfind Cid\nlist\n",
+          "expected": "111\nнет такого\nAnn 111\nBob 222\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "del X\nlist\n",
+          "expected": "нет такого\nпусто\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Замена",
+          "stdin": "add A 1\nadd A 2\nfind A\n",
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Поиск не создаёт",
+          "stdin": "find Ghost\nlist\n",
+          "expected": "нет такого\nпусто\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Двойное удаление",
+          "stdin": "add A 1\ndel A\ndel A\nlist\n",
+          "expected": "удалено\nнет такого\nпусто\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Алфавитный порядок",
+          "stdin": "add Zed 9\nadd Amy 1\nadd Max 5\nlist\n",
+          "expected": "Amy 1\nMax 5\nZed 9\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Регистр",
+          "stdin": "add a 1\nadd B 2\nlist\n",
+          "expected": "B 2\na 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Телефон с символами",
+          "stdin": "add P +7-900\nfind P\n",
+          "expected": "+7-900\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Несколько поисков",
+          "stdin": "add A 1\nfind B\nfind C\nlist\n",
+          "expected": "нет такого\nнет такого\nA 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пусто и обратно",
+          "stdin": "list\nadd Q 7\nlist\ndel Q\nlist\n",
+          "expected": "пусто\nQ 7\nудалено\nпусто\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <string>\n\nint main() {\n    std::map<std::string, std::string> book;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"add\") {\n            std::string name, phone;\n            std::cin >> name >> phone;\n            book[name] = phone;\n        } else if (command == \"del\") {\n            std::string name;\n            std::cin >> name;\n            std::cout << (book.erase(name) > 0 ? \"удалено\" : \"нет такого\") << '\\n';\n        } else if (command == \"find\") {\n            std::string name;\n            std::cin >> name;\n            auto it = book.find(name);\n            std::cout << (it != book.end() ? it->second : \"нет такого\") << '\\n';\n        } else if (command == \"list\") {\n            if (book.empty()) {\n                std::cout << \"пусто\\n\";\n            }\n            for (const auto &[name, phone] : book) {\n                std::cout << name << ' ' << phone << '\\n';\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Запись — `operator[]`: он создаёт ключ или заменяет значение, и это ровно поведение команды `add`. Чтение — `find`: он возвращает итератор на элемент или `end()` и ничего не добавляет. Если бы `find` был написан через `book[name]`, каждый поиск несуществующего имени добавлял бы пустую запись, и `list` начал бы показывать людей без телефонов.\n\n`erase(key)` возвращает число удалённых элементов: в `std::map` ключ уникален, поэтому это 0 или 1 — готовый ответ «удалено или нет».",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-map-task-3",
+      "title": "Найди ошибку: проверка имён",
+      "description": "Первая строка — `n`, вторая — `n` зарегистрированных имён. Дальше до конца ввода идут запросы — имена. Для каждого запроса программа печатает `есть` или `нет`, а в конце — `в базе: K`, число зарегистрированных имён.\n\nЧисло в последней строке получается больше правильного. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <map>\n#include <string>\n\nint main() {\n    int n;\n    if (!(std::cin >> n)) {\n        return 0;\n    }\n    std::map<std::string, bool> registered;\n    for (int i = 0; i < n; i++) {\n        std::string name;\n        std::cin >> name;\n        registered[name] = true;\n    }\n    std::string query;\n    while (std::cin >> query) {\n        std::cout << (registered[query] ? \"есть\" : \"нет\") << '\\n';\n    }\n    std::cout << \"в базе: \" << registered.size() << '\\n';\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\nAnn Bob\nAnn\nBob\n",
+          "output": "есть\nесть\nв базе: 2\n"
+        },
+        {
+          "input": "1\nAnn\nZed\n",
+          "output": "нет\nв базе: 1\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; запросов не больше 1000; имена без пробелов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что делает operator[] словаря, если ключа ещё нет?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "registered[query] для незарегистрированного имени создаёт запись со значением false — словарь растёт с каждым неудачным запросом. Проверяйте наличие через registered.contains(query).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\nAnn Bob\nAnn\nBob\n",
+          "expected": "есть\nесть\nв базе: 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nAnn\nZed\n",
+          "expected": "нет\nв базе: 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1\nX\n",
+          "expected": "в базе: 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "2\nA B\nC\nD\nE\n",
+          "expected": "нет\nнет\nнет\nв базе: 2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "3\nA B C\nA\nZ\nZ\n",
+          "expected": "есть\nнет\nнет\nв базе: 3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1\nSolo\nSolo\nsolo\n",
+          "expected": "есть\nнет\nв базе: 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "2\nA A\nA\n",
+          "expected": "есть\nв базе: 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "3\nx y z\nw\nx\nv\n",
+          "expected": "нет\nесть\nнет\nв базе: 3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "2\nP Q\nQ\nP\nR\n",
+          "expected": "есть\nесть\nнет\nв базе: 2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "1\nOne\nTwo\nThree\nOne\n",
+          "expected": "нет\nнет\nесть\nв базе: 1\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <string>\n\nint main() {\n    int n;\n    if (!(std::cin >> n)) {\n        return 0;\n    }\n    std::map<std::string, bool> registered;\n    for (int i = 0; i < n; i++) {\n        std::string name;\n        std::cin >> name;\n        registered[name] = true;\n    }\n    std::string query;\n    while (std::cin >> query) {\n        std::cout << (registered.contains(query) ? \"есть\" : \"нет\") << '\\n';\n    }\n    std::cout << \"в базе: \" << registered.size() << '\\n';\n    return 0;\n}\n",
+      "solutionExplanation": "Ответы «есть/нет» получаются правильными: для отсутствующего имени `registered[query]` возвращает `false`. Но по пути `operator[]` **вставляет** это имя со значением по умолчанию — и каждый запрос незарегистрированного имени увеличивает словарь. В итоге `size()` считает и зарегистрированные имена, и все неудачные запросы.\n\n`contains` (или `count`, или `find`) только проверяет наличие ключа. Правило: `operator[]` — для записи, а для чтения — методы, которые словарь не меняют. Тип `std::map<std::string, bool>` здесь, кстати, избыточен: для множества имён есть `std::set` — о нём урок после следующего.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-map-task-4",
+      "title": "Журнал измерений",
+      "description": "Первая строка — `n`, дальше `n` строк `время значение` (времена — различные целые числа, не обязательно по порядку). Затем запросы:\n\n- `sum a b` — сумма значений с временем от `a` до `b` включительно (0, если таких нет);\n- `next t` — первое измерение со временем строго больше `t`: `время значение` или `нет`;\n- `prev t` — последнее измерение со временем строго меньше `t`: `время значение` или `нет`.\n\nХраните журнал в `std::map<long long, long long>` и отвечайте через `lower_bound` и `upper_bound`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "4\n900 5\n1015 7\n930 2\n1200 10\nsum 930 1100\nnext 1015\nprev 900\n",
+          "output": "9\n1200 10\nнет\n"
+        },
+        {
+          "input": "1\n0 -3\nsum -5 5\nprev 1\n",
+          "output": "-3\n0 -3\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 10⁴; |время| ≤ 10⁹; |значение| ≤ 10⁶; запросов не больше 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "sum: идите итератором от lower_bound(a) до upper_bound(b), складывая it->second. Если a > b, диапазон пуст.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "next t — upper_bound(t). prev t — lower_bound(t), и если это не begin(), шаг назад: --it.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\n900 5\n1015 7\n930 2\n1200 10\nsum 930 1100\nnext 1015\nprev 900\n",
+          "expected": "9\n1200 10\nнет\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n0 -3\nsum -5 5\nprev 1\n",
+          "expected": "-3\n0 -3\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустые диапазоны",
+          "stdin": "2\n1 1\n2 2\nsum 3 4\nsum 2 1\n",
+          "expected": "0\n0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Границы включительно",
+          "stdin": "3\n10 1\n20 2\n30 3\nsum 10 30\nsum 10 10\nsum 11 29\n",
+          "expected": "6\n1\n2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "next",
+          "stdin": "3\n10 1\n20 2\n30 3\nnext 30\nnext 29\nnext -100\n",
+          "expected": "нет\n30 3\n10 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "prev",
+          "stdin": "3\n10 1\n20 2\n30 3\nprev 10\nprev 11\nprev 1000\n",
+          "expected": "нет\n10 1\n30 3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Крайние времена",
+          "stdin": "2\n-1000000000 1000000\n1000000000 -1000000\nsum -1000000000 1000000000\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Не по порядку",
+          "stdin": "4\n5 1\n1 1\n3 1\n2 1\nsum 1 3\nnext 3\nprev 3\n",
+          "expected": "3\n5 1\n2 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Одно измерение",
+          "stdin": "1\n7 7\nnext 7\nprev 7\nsum 7 7\n",
+          "expected": "нет\nнет\n7\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Подряд",
+          "stdin": "5\n1 10\n2 20\n3 30\n4 40\n5 50\nsum 2 4\nprev 2\nnext 4\n",
+          "expected": "90\n1 10\n5 50\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <string>\n\nint main() {\n    int n;\n    if (!(std::cin >> n)) {\n        return 0;\n    }\n    std::map<long long, long long> journal;\n    for (int i = 0; i < n; i++) {\n        long long time, value;\n        std::cin >> time >> value;\n        journal[time] = value;\n    }\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"sum\") {\n            long long a, b, total = 0;\n            std::cin >> a >> b;\n            if (a <= b) {\n                for (auto it = journal.lower_bound(a); it != journal.upper_bound(b); ++it) {\n                    total += it->second;\n                }\n            }\n            std::cout << total << '\\n';\n        } else if (command == \"next\") {\n            long long t;\n            std::cin >> t;\n            auto it = journal.upper_bound(t);\n            if (it == journal.end()) {\n                std::cout << \"нет\\n\";\n            } else {\n                std::cout << it->first << ' ' << it->second << '\\n';\n            }\n        } else if (command == \"prev\") {\n            long long t;\n            std::cin >> t;\n            auto it = journal.lower_bound(t);\n            if (it == journal.begin()) {\n                std::cout << \"нет\\n\";\n            } else {\n                --it;\n                std::cout << it->first << ' ' << it->second << '\\n';\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Ключи `std::map` упорядочены, поэтому «все измерения с временем от `a` до `b`» — непрерывный участок обхода от `lower_bound(a)` (первый ключ `≥ a`) до `upper_bound(b)` (первый ключ `> b`). Поиск границ — `O(log n)`, обход — по числу попавших ключей. Хеш-таблица на такие вопросы не отвечает: у неё нет порядка.\n\n`prev t` — «последний ключ `< t`» — получается шагом назад от `lower_bound(t)`: всё, что левее первого ключа `≥ t`, меньше `t`. Шагать назад от `begin()` нельзя, поэтому этот случай проверяется отдельно. Итераторы `map` двунаправленные: `--it` работает, а `it + 5` — нет.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-map-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «std::map»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "map хранит уникальные ключи упорядоченно. Поиск O(log n), но узлы требуют указателей и отдельных аллокаций."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <map>\n\nint main() {\n    std::map<int, int> m;\n    m[3] = 30;\n    m[1] = 10;\n    m[3] += 3;\n    for (const auto &[k, v] : m) {\n        std::cout << k << ':' << v << ' ';\n    }\n    std::cout << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Обход идёт по возрастанию ключей; m[3] += 3 меняет существующее значение.",
+        "type": "text",
+        "answers": ["1:10 3:33"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
-        "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
-        ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <map>\n#include <string>\n\nint main() {\n    std::map<std::string, int> m = {{\"a\", 1}};\n    int x = m[\"b\"];\n    std::cout << x << ' ' << m.size() << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "operator[] для отсутствующего ключа создаёт элемент со значением 0 — словарь вырос до двух элементов.",
+        "type": "text",
+        "answers": ["0 2"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Какие способы проверяют наличие ключа, не изменяя словарь?",
+        "explanation": "m[k] создаёт отсутствующий ключ.",
+        "type": "multiple",
+        "options": ["m.contains(k)", "m.count(k)", "m.find(k) != m.end()", "m[k] != 0"],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q4",
+        "question": "Какова сложность поиска по ключу в std::map из n элементов?",
+        "explanation": "std::map — сбалансированное дерево поиска, его высота O(log n).",
+        "options": ["O(log n)", "O(1)", "O(n)", "O(n log n)"],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <map>\n#include <string>\n\nint main() {\n    std::map<std::string, int> m = {{\"x\", 1}};\n    auto [it, ok] = m.insert({\"x\", 5});\n    std::cout << it->second << ' ' << ok << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "insert не заменяет существующее значение: возвращается итератор на старый элемент и false.",
+        "type": "text",
+        "answers": ["1 0"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Что делает m.at(k), если ключа k нет?",
+        "explanation": "at — проверяемый доступ: ошибка становится явной, а словарь не меняется.",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "Бросает исключение std::out_of_range",
+          "Создаёт элемент со значением по умолчанию",
+          "Возвращает end()",
+          "Неопределённое поведение"
         ],
-        "correct": 0,
-        "explanation": "Используйте std::map как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <map>\n\nint main() {\n    std::map<int, char> m = {{10, 'a'}, {20, 'b'}, {30, 'c'}};\n    std::cout << m.lower_bound(20)->second << m.upper_bound(20)->second\n              << m.lower_bound(15)->second << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "lower_bound(20) — ключ 20; upper_bound(20) — первый больше 20, то есть 30; lower_bound(15) — первый не меньше 15, то есть 20.",
+        "type": "text",
+        "answers": ["bcb"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q8",
+        "question": "Почему нельзя изменить ключ элемента через итератор: it->first = \"new\";?",
+        "explanation": "Элемент map — std::pair<const Key, Value>. Значение менять можно, ключ — нет.",
+        "options": [
+          "Ключ константный: его изменение нарушило бы порядок в дереве",
+          "Итераторы map только для чтения целиком",
+          "Можно, это обычная операция",
+          "Ключи строки нельзя менять в C++"
+        ],
+        "correct": 0
       }
     ]
   }

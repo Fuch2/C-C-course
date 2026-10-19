@@ -5,7 +5,7 @@ import type { Compiler, Standard } from '@course/shared';
 const suite = process.env.RUN_DOCKER_TESTS === '1' ? describe : describe.skip;
 suite('Реальные программы в Docker', () => {
   for (const compiler of ['gcc', 'clang'] as Compiler[]) {
-    for (const standard of ['c11', 'c17', 'c++17', 'c++20'] as Standard[]) {
+    for (const standard of ['c11', 'c17', 'c23', 'c++17', 'c++20', 'c++23'] as Standard[]) {
       it(`${compiler} ${standard}: компилирует, читает stdin, отделяет stderr`, async () => {
         const result = await executeSandbox({
           source:

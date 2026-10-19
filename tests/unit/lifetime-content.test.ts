@@ -1,73 +1,131 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { loadCourse, toPublicLesson, searchCourseItems } from '@course/course-engine';
+import { loadCourse, searchCourseItems, toPublicLesson } from '@course/course-engine';
+
+const moduleDir = 'content/cpp-systems/cpp-lifetime';
 const course = loadCourse();
-const lessons = course.lessons.filter((l) => l.moduleId === 'cpp-lifetime');
-describe('Время жизни и управление ресурсами C++20', () => {
-  it('публикует 24 темы с последовательными prerequisites, схемами и примерами', () => {
+const lessons = course.lessons.filter((lesson) => lesson.moduleId === 'cpp-lifetime');
+const report = JSON.parse(readFileSync('docs/verification/lessons.json', 'utf8')) as {
+  exercises: Record<string, { gcc: boolean; clang: boolean; bugDetected?: boolean }>;
+};
+const sourceDirs = readdirSync(moduleDir, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => `${moduleDir}/${entry.name}`);
+
+describe('Модуль «Время жизни объектов»', () => {
+  it('содержит 24 последовательных урока C++23 после ООП', () => {
     expect(lessons).toHaveLength(24);
+    expect(sourceDirs).toHaveLength(24);
+    expect(existsSync(`${moduleDir}/examples.json`)).toBe(false);
+    for (const dir of sourceDirs) expect(existsSync(`${dir}/lesson.src.mjs`), dir).toBe(true);
     expect(course.course.modules.find((m) => m.id === 'cpp-lifetime')?.prerequisites).toEqual([
       'cpp-oop',
     ]);
-    const examples = JSON.parse(
-      readFileSync('content/cpp-systems/cpp-lifetime/examples.json', 'utf8'),
-    ) as { lessonId: string; source: string }[];
-    expect(examples).toHaveLength(24);
+    expect(lessons.map((lesson) => lesson.id.replace(/^lifetime-/, ''))).toEqual([
+      'object-lifetime',
+      'scope-lifetime',
+      'construction-destruction',
+      'raii',
+      'ownership',
+      'copy-constructor',
+      'copy-assignment',
+      'shallow-copy',
+      'deep-copy',
+      'rule-of-three',
+      'move-semantics',
+      'rvalue-references',
+      'std-move',
+      'move-constructor',
+      'move-assignment',
+      'rule-of-five',
+      'rule-of-zero',
+      'unique-ptr',
+      'make-unique',
+      'shared-ptr',
+      'reference-counting',
+      'weak-ptr',
+      'cyclic-references',
+      'custom-deleters',
+    ]);
     for (const [i, lesson] of lessons.entries()) {
       expect(lesson.order).toBe(i + 1);
-      expect(lesson.effectivePrerequisites).toContain(
-        i ? lessons[i - 1]!.id : 'oop-composition-vs-inheritance',
-      );
-      expect(lesson.body).toContain('<MemoryDiagram');
-      expect(lesson.body).toContain('Механика и гарантии');
-      expect(lesson.quiz.questions).toHaveLength(3);
-      const source = [...lesson.body.matchAll(/```cpp\n([\s\S]*?)```/g)][0]?.[1]?.trim();
-      expect(examples.find((e) => e.lessonId === lesson.id)?.source.trim()).toBe(source);
-    }
-  });
-  it('проверяет диагноз и исправление для всех шести категорий', () => {
-    const paired = lessons.filter((l) => l.additionalExercises.length);
-    expect(paired.map((l) => l.id)).toEqual(
-      [
-        'scope-lifetime',
-        'ownership',
-        'shallow-copy',
-        'move-constructor',
-        'unique-ptr',
-        'cyclic-references',
-      ].map((s) => `lifetime-${s}`),
-    );
-    expect(lessons.flatMap((l) => [l.exercise, ...l.additionalExercises])).toHaveLength(30);
-    for (const lesson of paired) {
-      expect(lesson.exercise.id).toMatch(/-diagnose$/);
-      expect(lesson.additionalExercises).toHaveLength(1);
-      expect(lesson.additionalExercises[0]!.starterCode).not.toBe(
-        lesson.additionalExercises[0]!.referenceSolution,
-      );
+      expect(lesson.standard).toBe('c++23');
       expect(lesson.completion).toBe('practice');
-      expect(lesson.exercise.description).toContain('Сначала диагностируйте');
-      expect(lesson.exercise.hiddenTests).toHaveLength(2);
+      expect(lesson.prerequisites).toEqual([
+        i ? lessons[i - 1]!.id : 'oop-composition-vs-inheritance',
+      ]);
     }
-    expect(
-      searchCourseItems('double delete', course).some((e) => e.id.startsWith('lifetime-')),
-    ).toBe(true);
   });
-  it('сохраняет диагностику доверенной и не публикует решения или ответы', () => {
+
+  it('соответствует стандарту урока и проверен в sandbox на GCC и Clang с ASan/UBSan', () => {
+    for (const lesson of lessons) {
+      const questions = lesson.quiz.questions;
+      expect(questions.length, lesson.id).toBeGreaterThanOrEqual(8);
+      expect(
+        questions.some((q) => q.type === 'text'),
+        lesson.id,
+      ).toBe(true);
+      expect(lesson.body, lesson.id).toContain('<MemoryDiagram');
+      expect(lesson.body, lesson.id).toMatch(/^## Частые ошибки/m);
+      expect(lesson.body, lesson.id).toMatch(/^## Итоги/m);
+      expect(lesson.body, lesson.id).toMatch(/```cpp\n/);
+      expect(lesson.body, lesson.id).not.toMatch(
+        /Механика и гарантии|Модель и назначение|C\+\+20 коде/,
+      );
+      const exercises = [lesson.exercise, ...lesson.additionalExercises];
+      expect(exercises.length, lesson.id).toBeGreaterThanOrEqual(4);
+      for (const exercise of exercises) {
+        const tests = [...exercise.publicTests, ...exercise.hiddenTests];
+        expect(exercise.language, exercise.id).toBe('cpp');
+        expect(exercise.standard, exercise.id).toBe('c++23');
+        expect(tests.length, exercise.id).toBeGreaterThanOrEqual(8);
+        expect(tests.length, exercise.id).toBeLessThanOrEqual(12);
+        expect(exercise.hints.length, exercise.id).toBeGreaterThanOrEqual(2);
+        expect(exercise.diagnostics, exercise.id).toBe('sanitizers');
+        expect(exercise.solutionExplanation.length, exercise.id).toBeGreaterThan(100);
+        expect(report.exercises[exercise.id], exercise.id).toMatchObject({
+          gcc: true,
+          clang: true,
+        });
+      }
+    }
+  });
+
+  it('проверяет задания «Найди ошибку» отрицательными контролями', () => {
+    const bugs = lessons.flatMap((lesson) =>
+      [lesson.exercise, ...lesson.additionalExercises].filter((e) =>
+        e.title.startsWith('Найди ошибку'),
+      ),
+    );
+    expect(bugs).toHaveLength(24);
+    for (const exercise of bugs) {
+      expect(exercise.starterCode, exercise.id).not.toBe(exercise.referenceSolution);
+      expect(report.exercises[exercise.id]?.bugDetected, exercise.id).toBe(true);
+    }
+  });
+
+  it('индексирует задачи и не публикует скрытые тесты, ответы и решения', () => {
+    expect(
+      searchCourseItems('двойное освобождение', course).some((item) =>
+        item.id.startsWith('lifetime-'),
+      ),
+    ).toBe(true);
     for (const lesson of lessons) {
       const published = toPublicLesson(lesson);
-      const exercises = [lesson.exercise, ...lesson.additionalExercises];
-      for (const exercise of exercises) {
-        expect(exercise.diagnostics).toBe('sanitizers');
-        expect(exercise.hiddenTests.length).toBeGreaterThan(0);
+      for (const exercise of [lesson.exercise, ...lesson.additionalExercises]) {
+        expect(searchCourseItems(exercise.title, course)).toContainEqual(
+          expect.objectContaining({ kind: 'exercise', id: exercise.id }),
+        );
         expect(published.body).not.toContain(exercise.referenceSolution);
       }
-      for (const exercise of [published.exercise, ...(published.additionalExercises ?? [])]) {
-        for (const key of ['referenceSolution', 'hiddenTests', 'solutionExplanation'])
-          expect(exercise).not.toHaveProperty(key);
+      for (const exercise of [published.exercise, ...published.additionalExercises!]) {
+        expect(exercise).not.toHaveProperty('hiddenTests');
+        expect(exercise).not.toHaveProperty('referenceSolution');
+        expect(exercise).not.toHaveProperty('solutionExplanation');
       }
-      for (const q of published.quiz.questions) {
-        expect(q).not.toHaveProperty('correct');
-        expect(q).not.toHaveProperty('explanation');
+      for (const question of published.quiz.questions) {
+        expect(question).not.toHaveProperty('correct');
+        expect(question).not.toHaveProperty('explanation');
       }
     }
   });

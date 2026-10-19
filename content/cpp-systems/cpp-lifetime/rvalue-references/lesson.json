@@ -1,146 +1,519 @@
 {
   "id": "lifetime-rvalue-references",
-  "title": "Rvalue-ссылки — Rvalue references",
-  "description": "Категория значения принадлежит выражению, а не переменной навсегда.",
+  "title": "Rvalue-ссылки и категории значений",
+  "description": "Категории значений lvalue, prvalue и xvalue; rvalue-ссылка T && и к чему привязываются ссылки разных видов; перегрузка const T & и T && — копировать или забрать; std::move как приведение типа; именованная rvalue-ссылка — lvalue; пробрасывающие ссылки и std::forward; методы с квалификаторами & и &&.",
   "moduleId": "cpp-lifetime",
   "order": 12,
   "difficulty": "advanced",
   "estimatedMinutes": 55,
   "prerequisites": ["lifetime-move-semantics"],
   "objectives": [
-    "Классифицировать выражения по категориям lvalue, prvalue и xvalue.",
-    "Проследить на MemoryDiagram, почему именованная rvalue-ссылка сама является lvalue.",
-    "Реализовать перегрузки route и предсказать выбор компилятора для каждого вызова."
+    "Определять категорию значения выражения",
+    "Перегружать функции для копирования и перемещения",
+    "Передавать именованные rvalue-ссылки дальше через std::move",
+    "Понимать пробрасывающие ссылки и квалификаторы методов"
   ],
-  "tags": ["C++20", "время жизни", "управление ресурсами", "Rvalue-ссылки — Rvalue references"],
+  "tags": ["C++23", "Время жизни", "rvalue", "std::move", "std::forward"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "lifetime-rvalue-references-exercise",
-    "title": "Практика: Rvalue-ссылки — Rvalue references",
-    "description": "Реализуйте route(const int&) с результатом 1 и route(int&&) с результатом 2. solve(a,b) связывает int&& ref со std::move(a) и возвращает 10 * route(ref) + route(std::move(b)). Не изменяйте a и b.",
-    "difficulty": "advanced",
+    "title": "lvalue или rvalue",
+    "description": "Три перегрузки функции `kind` возвращают строку: `kind(int &)` — `изменяемое lvalue`, `kind(const int &)` — `константное lvalue`, `kind(int &&)` — `rvalue`.\n\nВ программе есть `int x = 1;`, `const int cx = 2;`, `std::vector<int> v{3};`, `int *p = &x;`, функции `int make()` (возвращает 5) и `int &ref()` (возвращает ссылку на глобальную переменную). Для каждой команды вызовите `kind` с выражением и напечатайте `команда: результат`:\n\n| команда | выражение |\n| --- | --- |\n| var | `x` |\n| const | `cx` |\n| literal | `42` |\n| sum | `x + 1` |\n| move | `std::move(x)` |\n| elem | `v[0]` |\n| deref | `*p` |\n| call | `make()` |\n| refcall | `ref()` |",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 7)",
-        "output": "12\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "var\nconst\nliteral\nmove\n",
+        "output": "var: изменяемое lvalue\nconst: константное lvalue\nliteral: rvalue\nmove: rvalue\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "12\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "refcall\ncall\n",
+        "output": "refcall: изменяемое lvalue\ncall: rvalue\n"
       }
     ],
-    "constraints": [
-      "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Команд не больше 100."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Для каждого вызова выпишите категорию аргумента: имя переменной — lvalue, std::move(...) — xvalue, литерал — prvalue. Выбор перегрузки следует из категории."
+        "id": "hint-1",
+        "text": "Не угадывайте результат — напишите три перегрузки и вызовите их: выбор сделает компилятор.",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "Именованный параметр T&& внутри функции — lvalue-выражение: у него есть имя, и его можно использовать несколько раз. Чтобы передать разрешение на перемещение дальше, нужен явный std::move; само связывание ссылки ничего не переносит. const T& принимает и lvalue, и rvalue для чтения. Не смешивайте rvalue-ссылку конкретного типа с forwarding reference T&& в шаблоне с выводимым T: там действуют вывод типа и схлопывание ссылок — это отдельная тема perfect forwarding.\n\nТип int&& не делает каждое использование имени перемещением: иначе повторное чтение параметра молча опустошало бы объект. Категорию задаёт форма выражения, а не объявленный тип.\n\nЗамените route(std::move(ref)) на route(ref) и предскажите выбранную перегрузку. Затем добавьте const int и объясните, почему int&& не связывается с const xvalue."
+        "id": "hint-2",
+        "text": "Функция, возвращающая ссылку, даёт lvalue; возвращающая значение — prvalue.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 7],
-        "expected": "12\n"
+        "stdin": "var\nconst\nliteral\nmove\n",
+        "expected": "var: изменяемое lvalue\nconst: константное lvalue\nliteral: rvalue\nmove: rvalue\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "12\n"
+        "stdin": "refcall\ncall\n",
+        "expected": "refcall: изменяемое lvalue\ncall: rvalue\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный случай 1",
-        "arguments": [-8, 3],
-        "expected": "12\n"
+        "id": "hidden-1",
+        "name": "Пусто",
+        "stdin": "",
+        "expected": ""
       },
       {
-        "id": "case-4",
-        "name": "Граничный случай 2",
-        "arguments": [5, -9],
-        "expected": "12\n"
+        "id": "hidden-2",
+        "name": "Сумма",
+        "stdin": "sum\n",
+        "expected": "sum: rvalue\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный случай 3",
-        "arguments": [-1000, 1000],
-        "expected": "12\n"
+        "id": "hidden-3",
+        "name": "Элемент вектора",
+        "stdin": "elem\n",
+        "expected": "elem: изменяемое lvalue\n"
       },
       {
-        "id": "case-6",
-        "name": "Граничный случай 4",
-        "arguments": [1000, -1000],
-        "expected": "12\n"
+        "id": "hidden-4",
+        "name": "Разыменование",
+        "stdin": "deref\n",
+        "expected": "deref: изменяемое lvalue\n"
       },
       {
-        "id": "case-7",
-        "name": "Граничный случай 5",
-        "arguments": [4, 4],
-        "expected": "12\n"
+        "id": "hidden-5",
+        "name": "После move переменная — снова lvalue",
+        "stdin": "var\nmove\nvar\n",
+        "expected": "var: изменяемое lvalue\nmove: rvalue\nvar: изменяемое lvalue\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Повтор",
+        "stdin": "const\nconst\n",
+        "expected": "const: константное lvalue\nconst: константное lvalue\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Все команды",
+        "stdin": "var\nconst\nliteral\nsum\nmove\nelem\nderef\ncall\nrefcall\n",
+        "expected": "var: изменяемое lvalue\nconst: константное lvalue\nliteral: rvalue\nsum: rvalue\nmove: rvalue\nelem: изменяемое lvalue\nderef: изменяемое lvalue\ncall: rvalue\nrefcall: изменяемое lvalue\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Функции и литерал",
+        "stdin": "call\nrefcall\nliteral\n",
+        "expected": "call: rvalue\nrefcall: изменяемое lvalue\nliteral: rvalue\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint route(const int&) { return 1; } int route(int&&) { return 2; }\nint solve(int a, int b) { int&& ref = std::move(a); return 10 * route(ref) + route(std::move(b)); }",
-    "solutionExplanation": "Именованный параметр T&& внутри функции — lvalue-выражение: у него есть имя, и его можно использовать несколько раз. Чтобы передать разрешение на перемещение дальше, нужен явный std::move; само связывание ссылки ничего не переносит. const T& принимает и lvalue, и rvalue для чтения. Не смешивайте rvalue-ссылку конкретного типа с forwarding reference T&& в шаблоне с выводимым T: там действуют вывод типа и схлопывание ссылок — это отдельная тема perfect forwarding.\n\nТип int&& не делает каждое использование имени перемещением: иначе повторное чтение параметра молча опустошало бы объект. Категорию задаёт форма выражения, а не объявленный тип.\n\nЗамените route(std::move(ref)) на route(ref) и предскажите выбранную перегрузку. Затем добавьте const int и объясните, почему int&& не связывается с const xvalue.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nstd::string kind(int &) {\n    return \"изменяемое lvalue\";\n}\n\nstd::string kind(const int &) {\n    return \"константное lvalue\";\n}\n\nstd::string kind(int &&) {\n    return \"rvalue\";\n}\n\nint global = 7;\n\nint make() {\n    return 5;\n}\n\nint &ref() {\n    return global;\n}\n\nint main() {\n    int x = 1;\n    const int cx = 2;\n    std::vector<int> v{3};\n    int *p = &x;\n    std::string command;\n    while (std::cin >> command) {\n        std::string result;\n        if (command == \"var\") {\n            result = kind(x);\n        } else if (command == \"const\") {\n            result = kind(cx);\n        } else if (command == \"literal\") {\n            result = kind(42);\n        } else if (command == \"sum\") {\n            result = kind(x + 1);\n        } else if (command == \"move\") {\n            result = kind(std::move(x));\n        } else if (command == \"elem\") {\n            result = kind(v[0]);\n        } else if (command == \"deref\") {\n            result = kind(*p);\n        } else if (command == \"call\") {\n            result = kind(make());\n        } else {\n            result = kind(ref());\n        }\n        std::println(\"{}: {}\", command, result);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Всё, что обозначает существующий объект, — lvalue: переменная, элемент вектора, разыменованный указатель, результат функции, возвращающей ссылку. Литерал, результат арифметики и функции, возвращающей значение, — временные prvalue. `std::move(x)` — xvalue: объект тот же, но помечен как «можно забрать».\n\nОбратите внимание, что `kind(std::move(x))` ничего с `x` не делает: `std::move` лишь меняет категорию, а перегрузка `kind(int &&)` ничего не забирает.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "lifetime-rvalue-references-task-2",
+      "title": "Почтовый ящик",
+      "description": "Сообщение `Message` хранит текст и считает свои копии и перемещения. `Mailbox` хранит сообщения в векторе (место зарезервировано на 1000) и имеет две перегрузки: `add(const Message &)` — копирует в ящик, `add(Message &&)` — перемещает.\n\nКоманды:\n\n- `send текст` — `mailbox.add(Message(текст))`;\n- `keep текст` — создать именованное сообщение, передать в `add` и напечатать `у отправителя: текст` (сообщение осталось у отправителя целым);\n- `forward текст` — создать именованное сообщение и передать его через `std::move`;\n- `list` — тексты в ящике через пробел;\n- `stats` — `копий C, перемещений M`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "send a\nkeep b\nforward c\nlist\nstats\n",
+          "output": "у отправителя: b\na b c\nкопий 1, перемещений 2\n"
+        },
+        {
+          "input": "stats\n",
+          "output": "копий 0, перемещений 0\n"
+        }
+      ],
+      "constraints": ["Команд не больше 300."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Внутри add(Message &&m) параметр m — имя, то есть lvalue: box_.push_back(std::move(m));",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Перегрузку выбирает компилятор по категории аргумента: временный объект и std::move — rvalue, именованная переменная — lvalue.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "send a\nkeep b\nforward c\nlist\nstats\n",
+          "expected": "у отправителя: b\na b c\nкопий 1, перемещений 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "stats\n",
+          "expected": "копий 0, перемещений 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Только временные",
+          "stdin": "send x\nsend y\nstats\n",
+          "expected": "копий 0, перемещений 2\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Только копии",
+          "stdin": "keep x\nkeep y\nstats\nlist\n",
+          "expected": "у отправителя: x\nу отправителя: y\nкопий 2, перемещений 0\nx y\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Одно перемещение",
+          "stdin": "forward x\nstats\n",
+          "expected": "копий 0, перемещений 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Пустой ящик",
+          "stdin": "list\n",
+          "expected": "\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Длинный текст",
+          "stdin": "keep длинное-сообщение-которое-не-влезет-в-короткую-строку\nlist\n",
+          "expected": "у отправителя: длинное-сообщение-которое-не-влезет-в-короткую-строку\nдлинное-сообщение-которое-не-влезет-в-короткую-строку\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Одинаковые тексты",
+          "stdin": "send a\nkeep a\nforward a\nsend a\nstats\n",
+          "expected": "у отправителя: a\nкопий 1, перемещений 3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смешанные",
+          "stdin": "forward 1\nforward 2\nkeep 3\nlist\nstats\n",
+          "expected": "у отправителя: 3\n1 2 3\nкопий 1, перемещений 2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Статистика по ходу",
+          "stdin": "keep q\nstats\nsend w\nstats\n",
+          "expected": "у отправителя: q\nкопий 1, перемещений 0\nкопий 1, перемещений 1\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nstruct Message {\n    static inline int copies = 0;\n    static inline int moves = 0;\n    std::string text;\n\n    explicit Message(std::string t) : text(std::move(t)) {}\n    Message(const Message &o) : text(o.text) {\n        ++copies;\n    }\n    Message(Message &&o) noexcept : text(std::move(o.text)) {\n        ++moves;\n    }\n};\n\nclass Mailbox {\npublic:\n    Mailbox() {\n        box_.reserve(1000);\n    }\n\n    void add(const Message &m) {\n        box_.push_back(m);\n    }\n\n    void add(Message &&m) {\n        box_.push_back(std::move(m));\n    }\n\n    void list() const {\n        std::string s;\n        for (const Message &m : box_) {\n            s += (s.empty() ? \"\" : \" \") + m.text;\n        }\n        std::println(\"{}\", s);\n    }\n\nprivate:\n    std::vector<Message> box_;\n};\n\nint main() {\n    Mailbox mailbox;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"list\") {\n            mailbox.list();\n        } else if (command == \"stats\") {\n            std::println(\"копий {}, перемещений {}\", Message::copies, Message::moves);\n        } else {\n            std::string text;\n            std::cin >> text;\n            if (command == \"send\") {\n                mailbox.add(Message(text));\n            } else if (command == \"keep\") {\n                const Message m(text);\n                mailbox.add(m);\n                std::println(\"у отправителя: {}\", m.text);\n            } else {\n                Message m(text);\n                mailbox.add(std::move(m));\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Пара перегрузок `const T &` и `T &&` — тот же приём, что у `push_back` в стандартной библиотеке. Временное сообщение и сообщение, отданное через `std::move`, выбирают версию для rvalue и перемещаются; именованное сообщение, которое ещё нужно отправителю, — копируется.\n\nВнутри `add(Message &&m)` параметр снова нужно передать через `std::move`: у него есть имя, и без этого `push_back` выбрал бы копирование.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-rvalue-references-task-3",
+      "title": "Найди ошибку: медленная доставка",
+      "description": "Каждая строка ввода — отправитель и текст письма. Программа складывает письма в ящик и печатает их, а затем статистику копий и перемещений. По замыслу письма должны попадать в ящик без единой копии, но статистика показывает обратное. Найдите и исправьте ошибку.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nstruct Letter {\n    static inline int copies = 0;\n    static inline int moves = 0;\n    std::string from;\n    std::string text;\n\n    Letter(std::string f, std::string t) : from(std::move(f)), text(std::move(t)) {}\n    Letter(const Letter &o) : from(o.from), text(o.text) {\n        ++copies;\n    }\n    Letter(Letter &&o) noexcept : from(std::move(o.from)), text(std::move(o.text)) {\n        ++moves;\n    }\n};\n\nclass Inbox {\npublic:\n    Inbox() {\n        letters_.reserve(1000);\n    }\n\n    void receive(Letter &&letter) {\n        letters_.push_back(letter);\n    }\n\n    void print() const {\n        for (const Letter &l : letters_) {\n            std::println(\"{}: {}\", l.from, l.text);\n        }\n    }\n\nprivate:\n    std::vector<Letter> letters_;\n};\n\nint main() {\n    Inbox inbox;\n    std::string from, text;\n    while (std::cin >> from >> text) {\n        inbox.receive(Letter(from, text));\n    }\n    inbox.print();\n    std::println(\"копий {}, перемещений {}\", Letter::copies, Letter::moves);\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "Ада привет\nАлан ответ\n",
+          "output": "Ада: привет\nАлан: ответ\nкопий 0, перемещений 2\n"
+        },
+        {
+          "input": "X Y\n",
+          "output": "X: Y\nкопий 0, перемещений 1\n"
+        }
+      ],
+      "constraints": ["Писем не больше 500."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какая категория у выражения letter внутри receive(Letter &&letter)?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Именованная rvalue-ссылка — lvalue. Передайте её дальше через std::move(letter).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "Ада привет\nАлан ответ\n",
+          "expected": "Ада: привет\nАлан: ответ\nкопий 0, перемещений 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "X Y\n",
+          "expected": "X: Y\nкопий 0, перемещений 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "a b\nc d\ne f\n",
+          "expected": "a: b\nc: d\ne: f\nкопий 0, перемещений 3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "Грейс отчёт\n",
+          "expected": "Грейс: отчёт\nкопий 0, перемещений 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "p q\np q\n",
+          "expected": "p: q\np: q\nкопий 0, перемещений 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "отправитель-с-длинным-именем письмо-с-длинным-текстом\n",
+          "expected": "отправитель-с-длинным-именем: письмо-с-длинным-текстом\nкопий 0, перемещений 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1 2\n3 4\n5 6\n7 8\n",
+          "expected": "1: 2\n3: 4\n5: 6\n7: 8\nкопий 0, перемещений 4\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "z w\n",
+          "expected": "z: w\nкопий 0, перемещений 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "Бьёрн C++\nДеннис C\n",
+          "expected": "Бьёрн: C++\nДеннис: C\nкопий 0, перемещений 2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "k l\nm n\n",
+          "expected": "k: l\nm: n\nкопий 0, перемещений 2\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nstruct Letter {\n    static inline int copies = 0;\n    static inline int moves = 0;\n    std::string from;\n    std::string text;\n\n    Letter(std::string f, std::string t) : from(std::move(f)), text(std::move(t)) {}\n    Letter(const Letter &o) : from(o.from), text(o.text) {\n        ++copies;\n    }\n    Letter(Letter &&o) noexcept : from(std::move(o.from)), text(std::move(o.text)) {\n        ++moves;\n    }\n};\n\nclass Inbox {\npublic:\n    Inbox() {\n        letters_.reserve(1000);\n    }\n\n    void receive(Letter &&letter) {\n        letters_.push_back(std::move(letter));\n    }\n\n    void print() const {\n        for (const Letter &l : letters_) {\n            std::println(\"{}: {}\", l.from, l.text);\n        }\n    }\n\nprivate:\n    std::vector<Letter> letters_;\n};\n\nint main() {\n    Inbox inbox;\n    std::string from, text;\n    while (std::cin >> from >> text) {\n        inbox.receive(Letter(from, text));\n    }\n    inbox.print();\n    std::println(\"копий {}, перемещений {}\", Letter::copies, Letter::moves);\n    return 0;\n}\n",
+      "solutionExplanation": "`receive` принимает `Letter &&` — сигнатура обещает «заберу ваше письмо». Но внутри `letter` — имя, то есть lvalue, и `push_back(letter)` выбирает перегрузку для `const Letter &`: письмо копируется, а временный оригинал потом уничтожается. Программа работает правильно, но делает вдвое больше работы.\n\n`std::move(letter)` выполняет обещание сигнатуры. Компиляторы не предупреждают о такой ошибке; её находят профилировщиком, счётчиками или проверкой `clang-tidy` (performance-move-const-arg и родственные правила).",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-rvalue-references-task-4",
+      "title": "Строитель",
+      "description": "Класс `Builder` собирает строку из слов (через пробел). У него две пары методов с квалификаторами ссылки:\n\n- `Builder &add(std::string_view) &` и `Builder &&add(std::string_view) &&` — добавить слово и вернуть себя в той же категории;\n- `std::string build() const &` — вернуть **копию** строки (увеличивает статический счётчик `copies`), `std::string build() &&` — **забрать** строку (увеличивает `moves`).\n\nКоманды:\n\n- `once a b c` — `Builder().add(a).add(b).add(c).build()` одним выражением (ровно три слова);\n- `named n w₁ … wₙ` — именованный строитель; напечатать `build()` дважды (объект остаётся пригодным);\n- `take n w₁ … wₙ` — именованный строитель, результат через `std::move(b).build()`;\n- `stats` — `копий C, перемещений M`.\n\nКаждый результат печатайте как `результат: строка`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "once a b c\nnamed 2 x y\ntake 1 z\nstats\n",
+          "output": "результат: a b c\nрезультат: x y\nрезультат: x y\nрезультат: z\nкопий 2, перемещений 2\n"
+        },
+        {
+          "input": "stats\n",
+          "output": "копий 0, перемещений 0\n"
+        }
+      ],
+      "constraints": ["Команд не больше 100; слов в команде до 20."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Builder &&add(std::string_view s) && { append(s); return std::move(*this); } — у временного объекта цепочка остаётся rvalue до самого build().",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "build() &&: ++moves; return std::move(text_); build() const &: ++copies; return text_;",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "once a b c\nnamed 2 x y\ntake 1 z\nstats\n",
+          "expected": "результат: a b c\nрезультат: x y\nрезультат: x y\nрезультат: z\nкопий 2, перемещений 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "stats\n",
+          "expected": "копий 0, перемещений 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна цепочка",
+          "stdin": "once p q r\nstats\n",
+          "expected": "результат: p q r\nкопий 0, перемещений 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Пустой именованный",
+          "stdin": "named 0\nstats\n",
+          "expected": "результат: \nрезультат: \nкопий 2, перемещений 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Пустой с move",
+          "stdin": "take 0\nstats\n",
+          "expected": "результат: \nкопий 0, перемещений 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Кириллица",
+          "stdin": "named 3 один два три\n",
+          "expected": "результат: один два три\nрезультат: один два три\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Две цепочки",
+          "stdin": "once a a a\nonce b b b\nstats\n",
+          "expected": "результат: a a a\nрезультат: b b b\nкопий 0, перемещений 2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "take и named",
+          "stdin": "take 4 w x y z\nnamed 1 q\nstats\n",
+          "expected": "результат: w x y z\nрезультат: q\nрезультат: q\nкопий 2, перемещений 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Все команды",
+          "stdin": "named 1 x\nnamed 1 y\ntake 1 z\nonce 1 2 3\nstats\n",
+          "expected": "результат: x\nрезультат: x\nрезультат: y\nрезультат: y\nрезультат: z\nрезультат: 1 2 3\nкопий 4, перемещений 2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Двадцать слов",
+          "stdin": "take 20 a b c d e f g h i j k l m n o p q r s t\n",
+          "expected": "результат: a b c d e f g h i j k l m n o p q r s t\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <string_view>\n#include <utility>\n#include <vector>\n\nclass Builder {\npublic:\n    static inline int copies = 0;\n    static inline int moves = 0;\n\n    Builder &add(std::string_view s) & {\n        append(s);\n        return *this;\n    }\n\n    Builder &&add(std::string_view s) && {\n        append(s);\n        return std::move(*this);\n    }\n\n    std::string build() const & {\n        ++copies;\n        return text_;\n    }\n\n    std::string build() && {\n        ++moves;\n        return std::move(text_);\n    }\n\nprivate:\n    void append(std::string_view s) {\n        if (!text_.empty()) {\n            text_ += ' ';\n        }\n        text_ += s;\n    }\n\n    std::string text_;\n};\n\nstd::vector<std::string> read_words(std::istream &in) {\n    std::size_t n;\n    in >> n;\n    std::vector<std::string> words(n);\n    for (std::string &w : words) {\n        in >> w;\n    }\n    return words;\n}\n\nint main() {\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"once\") {\n            std::string a, b, c;\n            std::cin >> a >> b >> c;\n            std::println(\"результат: {}\", Builder().add(a).add(b).add(c).build());\n        } else if (command == \"named\") {\n            Builder b;\n            for (const std::string &w : read_words(std::cin)) {\n                b.add(w);\n            }\n            std::println(\"результат: {}\", b.build());\n            std::println(\"результат: {}\", b.build());\n        } else if (command == \"take\") {\n            Builder b;\n            for (const std::string &w : read_words(std::cin)) {\n                b.add(w);\n            }\n            std::println(\"результат: {}\", std::move(b).build());\n        } else {\n            std::println(\"копий {}, перемещений {}\", Builder::copies, Builder::moves);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Квалификатор после списка параметров выбирает метод по категории **самого объекта**. У временного `Builder()` вся цепочка остаётся rvalue — каждый `add &&` возвращает `Builder &&`, — и `build() &&` забирает строку без копирования. Именованный строитель — lvalue: `build() const &` отдаёт копию, и объект можно использовать снова. `std::move(b).build()` явно говорит: «строитель больше не нужен, забери».\n\nВ C++23 то же самое можно записать одним методом с явным параметром объекта: `template <class Self> auto build(this Self &&self)` — и выбирать поведение по типу `Self`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "lifetime-rvalue-references-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Какова категория выражения ref, объявленного как int&& ref?",
-        "options": ["Всегда rvalue: это следует из типа int&&", "lvalue: у выражения есть имя"],
-        "correct": 1,
-        "explanation": "Именованный параметр T&& внутри функции — lvalue-выражение: у него есть имя, и его можно использовать несколько раз. Чтобы передать разрешение на перемещение дальше, нужен явный std::move; само связывание ссылки ничего не переносит. const T& принимает и lvalue, и rvalue для чтения. Не смешивайте rvalue-ссылку конкретного типа с forwarding reference T&& в шаблоне с выводимым T: там действуют вывод типа и схлопывание ссылок — это отдельная тема perfect forwarding."
+        "id": "q1",
+        "question": "Какие выражения — rvalue (x — переменная типа int)? Выберите все.",
+        "explanation": "x — lvalue: у него есть имя и адрес.",
+        "type": "multiple",
+        "options": ["x + 1", "42", "std::move(x)", "x"],
+        "correct": [0, 1, 2]
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["1 2 2", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "int value = 9           → выражение value: lvalue\nstd::move(value)         → xvalue; объект тот же\nint&& ref = ...          → ref обозначает value\nВыражение ref            → lvalue, несмотря на тип int&&"
-      },
-      {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q2",
+        "question": "Что делает std::move сама по себе?",
+        "explanation": "Перемещает конструктор или присваивание, выбранные благодаря этому приведению.",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Тип int&& не делает каждое использование имени перемещением: иначе повторное чтение параметра молча опустошало бы объект. Категорию задаёт форма выражения, а не объявленный тип."
+          "Приводит выражение к rvalue-ссылке — разрешает забрать ресурсы",
+          "Перемещает объект в новую память",
+          "Очищает объект",
+          "Копирует объект в временную переменную"
         ],
-        "correct": 1,
-        "explanation": "Замените route(std::move(ref)) на route(ref) и предскажите выбранную перегрузку. Затем добавьте const int и объясните, почему int&& не связывается с const xvalue."
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <string>\n#include <utility>\n\nvoid f(const std::string &) { std::print(\"R\"); }\nvoid f(std::string &&) { std::print(\"M\"); }\n\nvoid g(std::string &&s) {\n    f(s);\n    f(std::move(s));\n}\n\nint main() {\n    std::string a = \"a\";\n    f(a);\n    g(std::move(a));\n    f(a + \"b\");\n    std::println();\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "f(a) — lvalue; внутри g параметр s — имя, то есть lvalue (R), затем std::move (M); a + \"b\" — временное (M).",
+        "type": "text",
+        "answers": ["RRMM"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "К чему привязывается параметр std::string &&s?",
+        "explanation": "Передать в такую функцию переменную можно только через std::move.",
+        "options": ["Только к rvalue", "Только к lvalue", "К чему угодно", "Только к литералам"],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Чем является T && в template <typename T> void f(T &&x)?",
+        "explanation": "При выводе типа T запоминает категорию аргумента; передают дальше через std::forward<T>(x).",
+        "options": [
+          "Пробрасывающей ссылкой: принимает и lvalue, и rvalue",
+          "rvalue-ссылкой: принимает только rvalue",
+          "Ссылкой на ссылку",
+          "Ошибкой компиляции"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Почему компилятор не перемещает из именованной rvalue-ссылки автоматически?",
+        "explanation": "Исключение — return локальной переменной: после него имя уже не используется.",
+        "options": [
+          "Имя можно использовать несколько раз; молча забрать данные при первом обращении было бы опасно",
+          "Это запрещено стандартом для любых ссылок",
+          "Из ссылки нельзя перемещать",
+          "Перемещает, если включена оптимизация"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Какой метод выберется для Builder().build(), если есть build() const & и build() &&?",
+        "explanation": "Объект временный — rvalue, поэтому выбирается версия, которая может забрать данные.",
+        "options": ["build() &&", "build() const &", "Ошибка неоднозначности", "Любой"],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какая функция стандартной библиотеки передаёт аргумент дальше, сохраняя его категорию lvalue или rvalue?",
+        "explanation": "Её используют с пробрасывающими ссылками в шаблонах.",
+        "type": "text",
+        "answers": ["std::forward", "forward"],
+        "placeholder": "Имя функции"
       }
     ]
   }

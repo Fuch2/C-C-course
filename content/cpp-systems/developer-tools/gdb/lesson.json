@@ -15,7 +15,7 @@
   ],
   "tags": ["GDB", "Отладка", "Точки останова", "Стек вызовов", "watch"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "advanced-gdb-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -142,7 +142,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -254,7 +254,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -369,7 +369,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstatic int longest(char *const *words, int count) {\n    int best = 0;\n    for (int i = 0; i <= count; i++) {\n        if (strlen(words[i]) > strlen(words[best])) {\n            best = i;\n        }\n    }\n    return best;\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1) {\n        return 0;\n    }\n    char **words = malloc((size_t)n * sizeof *words);\n    char buffer[64];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%63s\", buffer);\n        words[i] = malloc(strlen(buffer) + 1);\n        strcpy(words[i], buffer);\n    }\n    int best = longest(words, n);\n    printf(\"%zu %s\\n\", strlen(words[best]), words[best]);\n    for (int i = 0; i < n; i++) {\n        free(words[i]);\n    }\n    free(words);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

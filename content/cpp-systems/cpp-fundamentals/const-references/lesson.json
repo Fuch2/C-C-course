@@ -1,121 +1,536 @@
 {
   "id": "cpp20-const-references",
-  "title": "const references",
-  "description": "const-ссылка передаёт большой объект без копии и запрещает изменение через параметр. Временные значения можно безопасно привязать на время вызова.",
+  "title": "Константные ссылки",
+  "description": "Цена передачи по значению; const T& — передача без копирования и без права изменять; константная ссылка и временные значения; константные переменные и контейнеры; как выбирать способ передачи параметра; обход контейнера без копий; возврат константной ссылки.",
   "moduleId": "cpp-fundamentals",
-  "order": 7,
+  "order": 8,
   "difficulty": "intermediate",
-  "estimatedMinutes": 50,
+  "estimatedMinutes": 40,
   "prerequisites": ["cpp20-references"],
   "objectives": [
-    "Объяснить, зачем появился const references и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Передавать большие объекты константной ссылкой",
+    "Объяснять, почему неконстантная ссылка не принимает временные значения",
+    "Выбирать способ передачи параметра по его размеру и назначению",
+    "Обходить контейнеры без копирования элементов"
   ],
-  "tags": ["C++20", "основы C++", "const references"],
+  "tags": ["C++", "const", "Ссылки", "Параметры функций"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-const-references-exercise",
-    "title": "Контрольная сумма без копии",
-    "description": "Прочитайте ASCII-строку длиной 0…200 с пробелами. checksum(const std::string& text) суммирует коды байтов в unsigned long long. Выведите сумму, затем исходную строку. Пустой stdin — пустая строка. При передаче в функцию строка не копируется и не изменяется.",
-    "difficulty": "intermediate",
+    "id": "cpp20-const-references-task-1",
+    "title": "Самая длинная строка",
+    "description": "Первая строка — `n`, вторая — `n` слов. Напишите функцию\n\n```cpp\nconst std::string &longest(const std::vector<std::string> &words);\n```\n\nкоторая возвращает ссылку на самое длинное слово (первое из самых длинных), и напечатайте результат и его длину.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "AB",
-        "output": "131\nAB\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "3\nab abcde abc\n",
+        "output": "abcde 5\n"
       },
       {
-        "input": "",
-        "output": "0\n\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "1\nx\n",
+        "output": "x 1\n"
       }
     ],
-    "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
-    ],
+    "constraints": ["1 ≤ n ≤ 1000; слова из латинских букв длиной до 100."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "Храните индекс лучшего слова, а в конце верните words[best] — это ссылка на элемент вектора.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "Сравнивайте длины строго (>), чтобы при равенстве осталось первое слово.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "AB",
-        "expected": "131\nAB\n"
+        "stdin": "3\nab abcde abc\n",
+        "expected": "abcde 5\n"
       },
-      { "id": "case-2", "name": "Пример 2", "stdin": "", "expected": "0\n\n" }
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1\nx\n",
+        "expected": "x 1\n"
+      }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "a b",
-        "expected": "227\na b\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "2\naa bb\n",
+        "expected": "aa 2\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "0",
-        "expected": "48\n0\n"
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "4\na bb ccc dd\n",
+        "expected": "ccc 3\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "3\nlongest short tiny\n",
+        "expected": "longest 7\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "5\nq w e r t\n",
+        "expected": "q 1\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "3\nab abc abcd\n",
+        "expected": "abcd 4\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "2\nabcdefghij abcdefghij\n",
+        "expected": "abcdefghij 10\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "6\nz yy xxx wwww vvv uu\n",
+        "expected": "wwww 4\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "3\nCpp Cplusplus C\n",
+        "expected": "Cplusplus 9\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <string>\n\nunsigned long long checksum(const std::string& text) {\n    unsigned long long sum = 0;\n    for (unsigned char byte : text) sum += byte;\n    return sum;\n}\nint main() {\n    std::string text;\n    std::getline(std::cin, text);\n    std::cout << checksum(text) << '\\n' << text << '\\n';\n}\n",
-    "solutionExplanation": "Параметр заимствует строку и запрещает изменение через эту ссылку. Преобразование к unsigned char исключает влияние знака char на сумму. Для литерала в демонстрации создаётся временный std::string: отсутствие копии параметра не исключает конверсию аргумента. Время O(n), рабочая память функции O(1).",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <iostream>\n#include <string>\n#include <vector>\n\nconst std::string &longest(const std::vector<std::string> &words) {\n    std::size_t best = 0;\n    for (std::size_t i = 1; i < words.size(); i++) {\n        if (words[i].size() > words[best].size()) {\n            best = i;\n        }\n    }\n    return words[best];\n}\n\nint main() {\n    int n;\n    if (!(std::cin >> n) || n < 1) {\n        return 0;\n    }\n    std::vector<std::string> words(static_cast<std::size_t>(n));\n    for (std::string &w : words) {\n        std::cin >> w;\n    }\n    const std::string &answer = longest(words);\n    std::cout << answer << ' ' << answer.size() << '\\n';\n    return 0;\n}\n",
+    "solutionExplanation": "Функция ничего не копирует: вектор приходит константной ссылкой, а ответ возвращается константной ссылкой на его элемент. Это безопасно, потому что вектор `words` живёт в `main` дольше, чем используется `answer`, и после вызова не меняется.\n\nЧтение слов идёт циклом `for (std::string &w : words)` — ссылка на каждый элемент позволяет записать в него прочитанное слово. Вектор заранее создан из `n` пустых строк.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-const-references-task-2",
+      "title": "Шаблон с вопросами",
+      "description": "Первая строка — шаблон из латинских букв и знаков `?`. Дальше до конца ввода идут слова. Напечатайте слова, подходящие под шаблон, по одному в строке, в порядке ввода; если подходящих нет — `нет`.\n\nСлово подходит, если его длина равна длине шаблона и в каждой позиции символ шаблона — `?` или совпадает с символом слова. Напишите функцию `bool matches(const std::string &pattern, const std::string &word)`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "c?t\ncat cot coat cut dog\n",
+          "output": "cat\ncot\ncut\n"
+        },
+        {
+          "input": "a?\nabc b\n",
+          "output": "нет\n"
+        }
+      ],
+      "constraints": ["Шаблон и слова длиной до 50; слов не больше 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сначала сравните длины; затем в цикле по позициям верните false при первом несовпадении, где в шаблоне не ?.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Оба параметра — константные ссылки: функция только читает строки и не копирует их.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "c?t\ncat cot coat cut dog\n",
+          "expected": "cat\ncot\ncut\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "a?\nabc b\n",
+          "expected": "нет\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Только вопросы",
+          "stdin": "???\nabc de fgh ijkl\n",
+          "expected": "abc\nfgh\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Без вопросов",
+          "stdin": "abc\nabc abd abc\n",
+          "expected": "abc\nabc\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Один символ",
+          "stdin": "?\na b cc\n",
+          "expected": "a\nb\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Два вопроса",
+          "stdin": "h?ll?\nhello hallo hullu help\n",
+          "expected": "hello\nhallo\nhullu\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Нет слов",
+          "stdin": "xyz\n",
+          "expected": "нет\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Регистр",
+          "stdin": "A?c\nabc Abc ABc\n",
+          "expected": "Abc\nABc\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Буква в конце",
+          "stdin": "??a\naaa baa aab\n",
+          "expected": "aaa\nbaa\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Повторы",
+          "stdin": "q\nq q q\n",
+          "expected": "q\nq\nq\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <string>\n\nbool matches(const std::string &pattern, const std::string &word) {\n    if (pattern.size() != word.size()) {\n        return false;\n    }\n    for (std::size_t i = 0; i < word.size(); i++) {\n        if (pattern[i] != '?' && pattern[i] != word[i]) {\n            return false;\n        }\n    }\n    return true;\n}\n\nint main() {\n    std::string pattern, word;\n    if (!(std::cin >> pattern)) {\n        return 0;\n    }\n    bool any = false;\n    while (std::cin >> word) {\n        if (matches(pattern, word)) {\n            std::cout << word << '\\n';\n            any = true;\n        }\n    }\n    if (!any) {\n        std::cout << \"нет\\n\";\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Функция получает обе строки константными ссылками: ничего не копируется, и по сигнатуре видно, что строки не меняются. Её можно вызвать и с временными значениями — например, `matches(\"c?t\", word)`: литерал превратится во временную строку, и константная ссылка с ней свяжется.\n\nПроверка длины идёт первой: без неё цикл по позициям слова мог бы выйти за границу более короткого шаблона.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-const-references-task-3",
+      "title": "Найди ошибку: подсчёт символов",
+      "description": "Программа читает строки и для каждой печатает, сколько в ней букв `a` без учёта регистра: строка переводится в нижний регистр функцией `lower`, а результат передаётся в `count_char`.\n\nПрограмма не компилируется. Найдите причину и исправьте её.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <string>\n\nstd::string lower(const std::string &text) {\n    std::string result = text;\n    for (char &c : result) {\n        if (c >= 'A' && c <= 'Z') {\n            c = static_cast<char>(c - 'A' + 'a');\n        }\n    }\n    return result;\n}\n\nint count_char(std::string &text, char wanted) {\n    int count = 0;\n    for (char c : text) {\n        if (c == wanted) {\n            count++;\n        }\n    }\n    return count;\n}\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        std::cout << count_char(lower(line), 'a') << '\\n';\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "Banana\n",
+          "output": "3\n"
+        },
+        {
+          "input": "AAA aaa\nxyz\n",
+          "output": "6\n0\n"
+        }
+      ],
+      "constraints": ["Строк не больше 30, длиной до 200 символов, ASCII."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Прочитайте сообщение компилятора: cannot bind non-const lvalue reference … to an rvalue. Что возвращает lower(line)?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "lower возвращает временную строку, а неконстантная ссылка std::string & с временными значениями не связывается. count_char строку не меняет — объявите параметр как const std::string &.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "Banana\n",
+          "expected": "3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "AAA aaa\nxyz\n",
+          "expected": "6\n0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "a\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "A\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "Abracadabra\n",
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "no letter here\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "aAaA\naa\n",
+          "expected": "4\n2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "The quick brown fox\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "CAPITAL A AND a\n",
+          "expected": "5\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <string>\n\nstd::string lower(const std::string &text) {\n    std::string result = text;\n    for (char &c : result) {\n        if (c >= 'A' && c <= 'Z') {\n            c = static_cast<char>(c - 'A' + 'a');\n        }\n    }\n    return result;\n}\n\nint count_char(const std::string &text, char wanted) {\n    int count = 0;\n    for (char c : text) {\n        if (c == wanted) {\n            count++;\n        }\n    }\n    return count;\n}\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        std::cout << count_char(lower(line), 'a') << '\\n';\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`lower(line)` возвращает новую строку — временное значение, которое исчезнет в конце выражения. Параметр `std::string &` означает «функция может изменить аргумент», а изменять временное значение бессмысленно, поэтому компилятор запрещает такую связь: `cannot bind non-const lvalue reference of type 'std::string&' to an rvalue`.\n\n`count_char` строку только читает, значит, правильный тип параметра — `const std::string &`. Константная ссылка связывается с временным значением, а функция становится честнее: её сигнатура больше не обещает изменений, которых нет.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-const-references-task-4",
+      "title": "Сводка по группам",
+      "description": "Первая строка — `n`, дальше `n` строк `имя группа балл`. Затем до конца ввода идут номера групп. Для каждого номера напечатайте `группа G: K чел., средний балл A, лучший NAME`, где `A` — среднее с одним знаком после точки, а `NAME` — студент с наибольшим баллом (первый при равенстве). Если в группе никого нет — `группа G: пусто`.\n\nХраните студентов в `std::vector<Student>`, где `struct Student { std::string name; int group; int score; };`, и передавайте вектор в функции константной ссылкой.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "4\nAnn 1 90\nBob 2 75\nCid 1 80\nDan 2 75\n1\n2\n3\n",
+          "output": "группа 1: 2 чел., средний балл 85.0, лучший Ann\nгруппа 2: 2 чел., средний балл 75.0, лучший Bob\nгруппа 3: пусто\n"
+        },
+        {
+          "input": "1\nEve 5 100\n5\n",
+          "output": "группа 5: 1 чел., средний балл 100.0, лучший Eve\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 1000; имена — латинские буквы; 0 ≤ балл ≤ 100; запросов не больше 100."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Функция void report(const std::vector<Student> &all, int group) обходит вектор циклом for (const Student &s : all) — без копирования структур со строками.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Для лучшего студента храните указатель или индекс: const Student *best = nullptr;. Среднее печатайте через std::fixed и std::setprecision(1).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\nAnn 1 90\nBob 2 75\nCid 1 80\nDan 2 75\n1\n2\n3\n",
+          "expected": "группа 1: 2 чел., средний балл 85.0, лучший Ann\nгруппа 2: 2 чел., средний балл 75.0, лучший Bob\nгруппа 3: пусто\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nEve 5 100\n5\n",
+          "expected": "группа 5: 1 чел., средний балл 100.0, лучший Eve\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ничья за лучшего",
+          "stdin": "3\nA 1 1\nB 1 2\nC 1 2\n1\n",
+          "expected": "группа 1: 3 чел., средний балл 1.7, лучший B\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Нули",
+          "stdin": "2\nA 1 0\nB 1 0\n1\n",
+          "expected": "группа 1: 2 чел., средний балл 0.0, лучший A\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Дробное среднее",
+          "stdin": "3\nA 1 1\nB 1 1\nC 1 2\n1\n",
+          "expected": "группа 1: 3 чел., средний балл 1.3, лучший C\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Пустая группа",
+          "stdin": "2\nX 7 50\nY 8 60\n9\n7\n8\n",
+          "expected": "группа 9: пусто\nгруппа 7: 1 чел., средний балл 50.0, лучший X\nгруппа 8: 1 чел., средний балл 60.0, лучший Y\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Повторный запрос",
+          "stdin": "3\nP 1 33\nQ 1 33\nR 1 34\n1\n1\n",
+          "expected": "группа 1: 3 чел., средний балл 33.3, лучший R\nгруппа 1: 3 чел., средний балл 33.3, лучший R\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Убывание",
+          "stdin": "4\nA 2 100\nB 2 99\nC 2 98\nD 2 97\n2\n",
+          "expected": "группа 2: 4 чел., средний балл 98.5, лучший A\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Без запросов",
+          "stdin": "1\nSolo 1 77\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-8",
+          "name": "Несколько групп",
+          "stdin": "5\nA 1 10\nB 2 20\nC 3 30\nD 1 40\nE 2 50\n3\n2\n1\n",
+          "expected": "группа 3: 1 чел., средний балл 30.0, лучший C\nгруппа 2: 2 чел., средний балл 35.0, лучший E\nгруппа 1: 2 чел., средний балл 25.0, лучший D\n"
+        }
+      ],
+      "referenceSolution": "#include <iomanip>\n#include <iostream>\n#include <string>\n#include <vector>\n\nstruct Student {\n    std::string name;\n    int group;\n    int score;\n};\n\nvoid report(const std::vector<Student> &all, int group) {\n    int count = 0;\n    long long sum = 0;\n    const Student *best = nullptr;\n    for (const Student &s : all) {\n        if (s.group != group) {\n            continue;\n        }\n        count++;\n        sum += s.score;\n        if (best == nullptr || s.score > best->score) {\n            best = &s;\n        }\n    }\n    std::cout << \"группа \" << group << \": \";\n    if (count == 0) {\n        std::cout << \"пусто\\n\";\n        return;\n    }\n    std::cout << count << \" чел., средний балл \" << std::fixed << std::setprecision(1)\n              << static_cast<double>(sum) / count << \", лучший \" << best->name << '\\n';\n}\n\nint main() {\n    int n;\n    if (!(std::cin >> n)) {\n        return 0;\n    }\n    std::vector<Student> students;\n    for (int i = 0; i < n; i++) {\n        Student s;\n        std::cin >> s.name >> s.group >> s.score;\n        students.push_back(s);\n    }\n    int group;\n    while (std::cin >> group) {\n        report(students, group);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Вектор структур передаётся в `report` константной ссылкой: при сотне запросов функция ни разу не копирует тысячу структур со строками. Цикл `for (const Student &s : all)` тоже ничего не копирует.\n\nЛучший студент запоминается указателем `const Student *` на элемент вектора — он может быть «пустым» до первого подходящего студента, а ссылку так завести нельзя: ссылка обязана быть инициализирована. Указатель на элемент безопасен: вектор внутри `report` не меняется. Среднее считается делением суммы, приведённой к `double`, — иначе целочисленное деление отбросило бы дробную часть.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-const-references-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «const references»?",
+        "id": "q1",
+        "question": "Как лучше передать в функцию std::vector<std::string>, если функция только читает его?",
+        "explanation": "Константная ссылка не копирует вектор и запрещает его менять. По значению — копия всех строк, неконстантная ссылка — лишнее право на изменение.",
         "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
+          "const std::vector<std::string> &",
+          "std::vector<std::string> — по значению",
+          "std::vector<std::string> &",
+          "std::vector<std::string> *"
         ],
-        "correct": 0,
-        "explanation": "const-ссылка передаёт большой объект без копии и запрещает изменение через параметр. Временные значения можно безопасно привязать на время вызова."
+        "correct": 0
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
+        "id": "q2",
+        "question": "Какие вызовы скомпилируются для функции int len(std::string &s)?",
+        "explanation": "Неконстантная ссылка связывается только с именованным изменяемым объектом. Литерал, результат + и явно созданная временная строка — временные значения.",
+        "type": "multiple",
         "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
+          "std::string a = \"x\"; len(a);",
+          "len(\"hello\");",
+          "std::string a = \"x\"; len(a + \"y\");",
+          "len(std::string(\"z\"));"
         ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "correct": [0]
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Какой способ передачи лучше для параметра типа double, который функция только читает?",
+        "explanation": "Копирование маленького значения дешевле, чем передача адреса и обращение через него.",
+        "options": ["По значению: double", "const double &", "double &", "double *"],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <string>\n#include <vector>\n\nint main() {\n    std::vector<std::string> v = {\"a\", \"bb\", \"ccc\"};\n    for (std::string s : v) {\n        s += \"!\";\n    }\n    std::size_t total = 0;\n    for (const std::string &s : v) {\n        total += s.size();\n    }\n    std::cout << total << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Первый цикл меняет копии строк, и вектор не меняется. Суммарная длина 1 + 2 + 3 = 6.",
+        "type": "text",
+        "answers": ["6"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Что произойдёт при компиляции?",
+        "code": "void show(const std::string &s) {\n    s += \"!\";\n}",
+        "codeLanguage": "cpp",
+        "explanation": "const в типе параметра — обещание функции, и компилятор следит за его выполнением.",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "Ошибка компиляции: s — константная ссылка, изменять строку нельзя",
+          "Компилируется; строка вызывающего изменится",
+          "Компилируется; изменится копия",
+          "Ошибка при запуске программы"
         ],
-        "correct": 0,
-        "explanation": "Используйте const references как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что разрешено делать с const std::vector<int> v = {1, 2, 3};?",
+        "explanation": "У константного объекта можно вызывать только методы, которые его не меняют.",
+        "type": "multiple",
+        "options": [
+          "Читать v[0]",
+          "Вызывать v.size()",
+          "Вызывать v.push_back(4)",
+          "Присваивать v[0] = 5"
+        ],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q7",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <string>\n\nvoid append(std::string &s) {\n    s += \"+\";\n}\n\nvoid show(const std::string &s) {\n    std::cout << s << '\\n';\n}\n\nint main() {\n    std::string lang = \"C\";\n    append(lang);\n    append(lang);\n    show(lang + \"!\");\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "append дважды меняет lang через неконстантную ссылку. show принимает временную строку lang + \"!\" — константная ссылка с ней связывается.",
+        "type": "text",
+        "answers": ["C++!"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q8",
+        "question": "Когда допустимо вернуть из функции const std::string &?",
+        "explanation": "Ссылка на локальную переменную после возврата висит. На элемент внешнего контейнера — действительна, пока контейнер жив и не меняется.",
+        "options": [
+          "Когда ссылка указывает на объект, который переживёт вызов, — например, на элемент вектора, переданного по ссылке",
+          "Всегда",
+          "Когда строка — локальная переменная функции",
+          "Никогда"
+        ],
+        "correct": 0
       }
     ]
   }

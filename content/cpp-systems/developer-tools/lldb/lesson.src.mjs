@@ -15,7 +15,7 @@ export default {
     'Находить ошибку условной точкой останова',
   ],
   tags: ['LLDB', 'Отладка', 'macOS', 'Clang', 'Точки останова'],
-  standard: 'c17',
+  standard: 'c23',
   diagnostics: 'sanitizers',
   quiz: [
     {

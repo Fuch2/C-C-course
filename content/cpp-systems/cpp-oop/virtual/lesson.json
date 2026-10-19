@@ -1,128 +1,542 @@
 {
   "id": "oop-virtual",
-  "title": "virtual: выбор поведения по объекту",
-  "description": "Виртуальная функция позволяет вызвать реализацию фактического объекта через базовую ссылку или указатель. Статический тип определяет доступный интерфейс; динамический тип участвует в выборе реализации. Это нужно, когда клиент обрабатывает разные источники одинаковым алгоритмом. Типичная реализация использует таблицу виртуальных функций, но стандарт не требует конкретного расположения таблиц в памяти.",
+  "title": "virtual: поведение настоящего объекта",
+  "description": "Статический и динамический тип; virtual и выбор метода по настоящему объекту; переопределение и полиморфизм; почему выбор работает только через ссылку или указатель; набор разных объектов в одном векторе указателей; таблица виртуальных функций и цена вызова; виртуальные вызовы в конструкторе и деструкторе базы.",
   "moduleId": "cpp-oop",
-  "order": 14,
-  "difficulty": "advanced",
-  "estimatedMinutes": 60,
-  "prerequisites": ["oop-public-inheritance"],
+  "order": 16,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["oop-protected"],
   "objectives": [
-    "Применить virtual: выбор поведения по объекту в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Объявлять виртуальные функции и переопределять их в наследниках",
+    "Отличать статический тип от динамического",
+    "Обрабатывать разные объекты одним кодом через ссылку или указатель на базу",
+    "Объяснять устройство и цену виртуального вызова"
   ],
-  "tags": ["C++20", "ООП", "virtual: выбор поведения по объекту"],
+  "tags": ["C++23", "ООП", "virtual", "Полиморфизм"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-virtual-exercise",
-    "title": "Практика: virtual: выбор поведения по объекту",
-    "description": "Base имеет virtual int read() const, возвращающий 0, и virtual ~Base()=default. Scaled : public Base хранит int value_, задаваемый explicit Scaled(int); read() const override возвращает value_*2. solve(a,b) создаёт Scaled{a}, связывает const Base& и возвращает ref.read()+b. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Фигуры",
+    "description": "Опишите базовый класс `Shape` с виртуальными методами `area()` и `name()` и наследников `Rect` (`rect w h`), `Circle` (`circle r`) и `Triangle` (`tri a b c`, площадь по формуле Герона). Напишите **одну** функцию `double report(const Shape &s)`, которая печатает `имя: площадь` с двумя знаками и возвращает площадь. Для каждой строки ввода вызовите `report`, а в конце напечатайте `всего: S` с двумя знаками.\n\nИмена: `прямоугольник`, `круг`, `треугольник`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 1)",
-        "output": "7\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "rect 3 4\ncircle 1\ntri 3 4 5\n",
+        "output": "прямоугольник: 12.00\nкруг: 3.14\nтреугольник: 6.00\nвсего: 21.14\n"
       },
       {
-        "input": "solve(0, 5)",
-        "output": "5\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "",
+        "output": "всего: 0.00\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Строк не больше 30; размеры от 0.1 до 1000; треугольники существуют."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "Формула Герона: p = (a + b + c) / 2, S = √(p(p − a)(p − b)(p − c)). π — std::numbers::pi из <numbers>.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Внутри report оба вызова — s.name() и s.area() — виртуальные: функция знает только интерфейс Shape.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 1],
-        "expected": "7\n"
+        "stdin": "rect 3 4\ncircle 1\ntri 3 4 5\n",
+        "expected": "прямоугольник: 12.00\nкруг: 3.14\nтреугольник: 6.00\nвсего: 21.14\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 5],
-        "expected": "5\n"
+        "stdin": "",
+        "expected": "всего: 0.00\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [-4, 2],
-        "expected": "-6\n"
+        "id": "hidden-1",
+        "name": "Большой круг",
+        "stdin": "circle 1000\n",
+        "expected": "круг: 3141592.65\nвсего: 3141592.65\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [1000, -1000],
-        "expected": "1000\n"
+        "id": "hidden-2",
+        "name": "Маленький прямоугольник",
+        "stdin": "rect 0.1 0.1\n",
+        "expected": "прямоугольник: 0.01\nвсего: 0.01\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Равносторонний",
+        "stdin": "tri 1 1 1\n",
+        "expected": "треугольник: 0.43\nвсего: 0.43\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Равнобедренный",
+        "stdin": "tri 5 5 8\n",
+        "expected": "треугольник: 12.00\nвсего: 12.00\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Два круга",
+        "stdin": "circle 2\ncircle 3\n",
+        "expected": "круг: 12.57\nкруг: 28.27\nвсего: 40.84\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Смесь",
+        "stdin": "rect 10 20\ntri 6 8 10\ncircle 0.5\n",
+        "expected": "прямоугольник: 200.00\nтреугольник: 24.00\nкруг: 0.79\nвсего: 224.79\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Большой квадрат",
+        "stdin": "rect 1000 1000\n",
+        "expected": "прямоугольник: 1000000.00\nвсего: 1000000.00\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Произвольный треугольник",
+        "stdin": "tri 7 8 9\n",
+        "expected": "треугольник: 26.83\nвсего: 26.83\n"
       }
     ],
-    "referenceSolution": "struct Base { virtual int read() const { return 0; } virtual ~Base() = default; };\nclass Scaled : public Base { int value_; public: explicit Scaled(int x) : value_(x) {} int read() const override { return value_*2; } };\nint solve(int a,int b) { Scaled x{a}; const Base& ref=x; return ref.read()+b; }",
-    "solutionExplanation": "Base имеет virtual int read() const, возвращающий 0, и virtual ~Base()=default. Scaled : public Base хранит int value_, задаваемый explicit Scaled(int); read() const override возвращает value_*2. solve(a,b) создаёт Scaled{a}, связывает const Base& и возвращает ref.read()+b. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Одноимённая невиртуальная функция в наследнике скрывает имя, но не обеспечивает динамическую диспетчеризацию через базу. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <cmath>\n#include <iostream>\n#include <numbers>\n#include <print>\n#include <string>\n\nclass Shape {\npublic:\n    virtual double area() const {\n        return 0;\n    }\n\n    virtual const char *name() const {\n        return \"фигура\";\n    }\n};\n\nclass Rect : public Shape {\npublic:\n    Rect(double w, double h) : w_(w), h_(h) {}\n\n    double area() const override {\n        return w_ * h_;\n    }\n\n    const char *name() const override {\n        return \"прямоугольник\";\n    }\n\nprivate:\n    double w_;\n    double h_;\n};\n\nclass Circle : public Shape {\npublic:\n    explicit Circle(double r) : r_(r) {}\n\n    double area() const override {\n        return std::numbers::pi * r_ * r_;\n    }\n\n    const char *name() const override {\n        return \"круг\";\n    }\n\nprivate:\n    double r_;\n};\n\nclass Triangle : public Shape {\npublic:\n    Triangle(double a, double b, double c) : a_(a), b_(b), c_(c) {}\n\n    double area() const override {\n        double p = (a_ + b_ + c_) / 2;\n        return std::sqrt(p * (p - a_) * (p - b_) * (p - c_));\n    }\n\n    const char *name() const override {\n        return \"треугольник\";\n    }\n\nprivate:\n    double a_;\n    double b_;\n    double c_;\n};\n\ndouble report(const Shape &s) {\n    std::println(\"{}: {:.2f}\", s.name(), s.area());\n    return s.area();\n}\n\nint main() {\n    std::string kind;\n    double total = 0;\n    while (std::cin >> kind) {\n        if (kind == \"rect\") {\n            double w, h;\n            std::cin >> w >> h;\n            total += report(Rect(w, h));\n        } else if (kind == \"circle\") {\n            double r;\n            std::cin >> r;\n            total += report(Circle(r));\n        } else {\n            double a, b, c;\n            std::cin >> a >> b >> c;\n            total += report(Triangle(a, b, c));\n        }\n    }\n    std::println(\"всего: {:.2f}\", total);\n    return 0;\n}\n",
+    "solutionExplanation": "`report` знает только интерфейс `Shape`, но печатает правильные имена и площади: виртуальные вызовы выбирают версии настоящих объектов. Добавить шестиугольник — значит написать один новый класс; `report` не изменится.\n\nВременный объект `Rect(w, h)` живёт до конца строки, поэтому передавать его по константной ссылке безопасно.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-virtual-task-2",
+      "title": "Оплата труда",
+      "description": "Опишите базовый класс `Employee` (имя) с виртуальным методом `long long pay() const` и наследников:\n\n- `Hourly` — ставка за час и часы; часы сверх 160 оплачиваются в полуторном размере (`ставка · 3 / 2` за час, целочисленно);\n- `Salaried` — фиксированный оклад;\n- `Commission` — оклад плюс процент от продаж (`продажи · процент / 100`, целочисленно).\n\nСтроки ввода: `hourly имя ставка часы`, `salary имя оклад`, `comm имя оклад продажи процент`. Соберите **всех** сотрудников в один `std::vector<const Employee *>` и одним циклом напечатайте `имя: выплата` в порядке ввода, затем `фонд S`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "hourly Ада 500 170\nsalary Алан 90000\ncomm Грейс 30000 200000 10\n",
+          "output": "Ада: 87500\nАлан: 90000\nГрейс: 50000\nфонд 227500\n"
+        },
+        {
+          "input": "",
+          "output": "фонд 0\n"
+        }
+      ],
+      "constraints": ["Сотрудников не больше 30; числа до 10⁷, часы до 300, процент до 50."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Объекты разных типов храните в трёх векторах с заранее зарезервированной ёмкостью (reserve) — тогда указатели на элементы не испортятся при добавлении.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Порядок ввода сохраняет вектор указателей: после создания объекта кладите в него &vector.back().",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "hourly Ада 500 170\nsalary Алан 90000\ncomm Грейс 30000 200000 10\n",
+          "expected": "Ада: 87500\nАлан: 90000\nГрейс: 50000\nфонд 227500\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "фонд 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ровно 160 часов",
+          "stdin": "hourly a 100 160\n",
+          "expected": "a: 16000\nфонд 16000\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Нечётная ставка сверхурочно",
+          "stdin": "hourly a 101 161\n",
+          "expected": "a: 16311\nфонд 16311\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Ноль часов",
+          "stdin": "hourly a 1000 0\n",
+          "expected": "a: 0\nфонд 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Только процент",
+          "stdin": "comm b 0 10000000 50\n",
+          "expected": "b: 5000000\nфонд 5000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Оклады",
+          "stdin": "salary c 10000000\nsalary d 1\n",
+          "expected": "c: 10000000\nd: 1\nфонд 10000001\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Округление процента",
+          "stdin": "hourly a 10 300\ncomm b 1 99 1\n",
+          "expected": "a: 3700\nb: 1\nфонд 3701\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Все виды",
+          "stdin": "comm x 5 5 0\nhourly y 3 200\nsalary z 7\n",
+          "expected": "x: 5\ny: 640\nz: 7\nфонд 652\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Кириллица",
+          "stdin": "salary Иван 75000\nhourly Пётр 450 168\n",
+          "expected": "Иван: 75000\nПётр: 77400\nфонд 152400\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Employee {\npublic:\n    explicit Employee(std::string name) : name_(std::move(name)) {}\n\n    virtual ~Employee() = default;\n\n    const std::string &name() const {\n        return name_;\n    }\n\n    virtual long long pay() const {\n        return 0;\n    }\n\nprivate:\n    std::string name_;\n};\n\nclass Hourly : public Employee {\npublic:\n    Hourly(std::string name, long long rate, int hours) : Employee(std::move(name)), rate_(rate), hours_(hours) {}\n\n    long long pay() const override {\n        int regular = hours_ < 160 ? hours_ : 160;\n        int extra = hours_ - regular;\n        return rate_ * regular + rate_ * 3 / 2 * extra;\n    }\n\nprivate:\n    long long rate_;\n    int hours_;\n};\n\nclass Salaried : public Employee {\npublic:\n    Salaried(std::string name, long long salary) : Employee(std::move(name)), salary_(salary) {}\n\n    long long pay() const override {\n        return salary_;\n    }\n\nprivate:\n    long long salary_;\n};\n\nclass Commission : public Employee {\npublic:\n    Commission(std::string name, long long base, long long sales, int percent)\n        : Employee(std::move(name)), base_(base), sales_(sales), percent_(percent) {}\n\n    long long pay() const override {\n        return base_ + sales_ * percent_ / 100;\n    }\n\nprivate:\n    long long base_;\n    long long sales_;\n    int percent_;\n};\n\nint main() {\n    std::vector<Hourly> hourly;\n    std::vector<Salaried> salaried;\n    std::vector<Commission> commission;\n    hourly.reserve(30);\n    salaried.reserve(30);\n    commission.reserve(30);\n    std::vector<const Employee *> staff;\n    std::string kind, name;\n    while (std::cin >> kind >> name) {\n        if (kind == \"hourly\") {\n            long long rate;\n            int hours;\n            std::cin >> rate >> hours;\n            hourly.emplace_back(name, rate, hours);\n            staff.push_back(&hourly.back());\n        } else if (kind == \"salary\") {\n            long long salary;\n            std::cin >> salary;\n            salaried.emplace_back(name, salary);\n            staff.push_back(&salaried.back());\n        } else {\n            long long base, sales;\n            int percent;\n            std::cin >> base >> sales >> percent;\n            commission.emplace_back(name, base, sales, percent);\n            staff.push_back(&commission.back());\n        }\n    }\n    long long fund = 0;\n    for (const Employee *e : staff) {\n        std::println(\"{}: {}\", e->name(), e->pay());\n        fund += e->pay();\n    }\n    std::println(\"фонд {}\", fund);\n    return 0;\n}\n",
+      "solutionExplanation": "Цикл по `staff` не знает, кто перед ним: каждый сотрудник сам считает свою выплату. Правила оплаты живут в своих классах, и новая схема оплаты — это новый класс, а не новая ветка в цикле.\n\nОбъекты лежат в трёх векторах, которыми владеет `main`, а `staff` лишь указывает на них. `reserve(30)` гарантирует, что векторы не будут перевыделять память при добавлении — иначе указатели в `staff` повисли бы. В уроке о виртуальном деструкторе вы научитесь хранить полиморфные объекты в одном владеющем контейнере, без этой хитрости.\n\nСтрока `virtual ~Employee() = default;` делает деструктор виртуальным. Здесь объекты удаляются по своему настоящему типу, но у класса с виртуальными методами деструктор принято делать виртуальным всегда — Clang иначе предупреждает (`-Wdelete-non-abstract-non-virtual-dtor`). Зачем это нужно, разобрано в уроке о виртуальном деструкторе.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-virtual-task-3",
+      "title": "Найди ошибку: всегда базовая версия",
+      "description": "Программа отправляет уведомления через разные каналы. Базовый класс `Channel` оставляет текст как есть, `Sms` обрезает его до 20 символов и добавляет `SMS: `, `Email` добавляет тему. Функция `send(const Channel &, text)` печатает отформатированное сообщение. Строки ввода: канал (`sms`, `email` или `plain`) и текст (одно слово).\n\nВсе сообщения печатаются без оформления. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Channel {\npublic:\n    std::string format(const std::string &text) const {\n        return text;\n    }\n};\n\nclass Sms : public Channel {\npublic:\n    std::string format(const std::string &text) const {\n        return \"SMS: \" + text.substr(0, 20);\n    }\n};\n\nclass Email : public Channel {\npublic:\n    std::string format(const std::string &text) const {\n        return \"Тема: уведомление | \" + text;\n    }\n};\n\nvoid send(const Channel &channel, const std::string &text) {\n    std::println(\"{}\", channel.format(text));\n}\n\nint main() {\n    Sms sms;\n    Email email;\n    Channel plain;\n    std::string kind, text;\n    while (std::cin >> kind >> text) {\n        if (kind == \"sms\") {\n            send(sms, text);\n        } else if (kind == \"email\") {\n            send(email, text);\n        } else {\n            send(plain, text);\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "sms Привет\nemail Отчёт\nplain текст\n",
+          "output": "SMS: Привет\nТема: уведомление | Отчёт\nтекст\n"
+        },
+        {
+          "input": "sms abcdefghijklmnopqrstuvwxyz\n",
+          "output": "SMS: abcdefghijklmnopqrst\n"
+        }
+      ],
+      "constraints": ["Строк не больше 20; слова латиницей до 50 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какой метод format выбирает вызов channel.format(text) внутри send, если channel — ссылка на Channel?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "В базе не хватает virtual. Добавьте его и пометьте методы наследников override — тогда компилятор проверит, что они действительно переопределяют базовый.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "sms Привет\nemail Отчёт\nplain текст\n",
+          "expected": "SMS: Привет\nТема: уведомление | Отчёт\nтекст\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "sms abcdefghijklmnopqrstuvwxyz\n",
+          "expected": "SMS: abcdefghijklmnopqrst\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "sms a\n",
+          "expected": "SMS: a\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "email b\n",
+          "expected": "Тема: уведомление | b\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "plain c\n",
+          "expected": "c\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "sms 12345678901234567890X\n",
+          "expected": "SMS: 12345678901234567890\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "email x\nsms y\n",
+          "expected": "Тема: уведомление | x\nSMS: y\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "sms hello\nplain hello\nemail hello\n",
+          "expected": "SMS: hello\nhello\nТема: уведомление | hello\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "email Release\n",
+          "expected": "Тема: уведомление | Release\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "sms short\n",
+          "expected": "SMS: short\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Channel {\npublic:\n    virtual std::string format(const std::string &text) const {\n        return text;\n    }\n};\n\nclass Sms : public Channel {\npublic:\n    std::string format(const std::string &text) const override {\n        return \"SMS: \" + text.substr(0, 20);\n    }\n};\n\nclass Email : public Channel {\npublic:\n    std::string format(const std::string &text) const override {\n        return \"Тема: уведомление | \" + text;\n    }\n};\n\nvoid send(const Channel &channel, const std::string &text) {\n    std::println(\"{}\", channel.format(text));\n}\n\nint main() {\n    Sms sms;\n    Email email;\n    Channel plain;\n    std::string kind, text;\n    while (std::cin >> kind >> text) {\n        if (kind == \"sms\") {\n            send(sms, text);\n        } else if (kind == \"email\") {\n            send(email, text);\n        } else {\n            send(plain, text);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Без `virtual` метод выбирается по статическому типу: внутри `send` это `const Channel &`, поэтому всегда вызывается `Channel::format` — какой бы канал ни передали. Наследники объявили свои версии, но они лишь **скрывают** базовую при вызове через объект наследника и не участвуют в вызове через базу.\n\n`virtual` в базе включает выбор по настоящему объекту. `override` в наследниках — страховка: если бы сигнатура не совпала (например, без `const`), компилятор сообщил бы об ошибке, а не тихо оставил бы базовую версию.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-virtual-task-4",
+      "title": "Скидки",
+      "description": "Базовый класс `Discount` с виртуальным методом `long long apply(long long price) const` и три правила:\n\n- `percent p` — скидка `p` процентов: `price − price · p / 100` (целочисленно);\n- `fixed a` — минус `a`, но цена не ниже нуля;\n- `threshold t a` — минус `a`, если цена не меньше `t` (иначе без изменений).\n\nПервая строка — число правил `k`, затем `k` строк с правилами. Затем цены (в копейках). Каждая цена проходит через **все** правила по порядку — одним циклом по `std::vector<const Discount *>`. Напечатайте `цена -> итог`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\npercent 10\nfixed 500\n10000\n300\n",
+          "output": "10000 -> 8500\n300 -> 0\n"
+        },
+        {
+          "input": "1\nthreshold 5000 1000\n4999\n5000\n",
+          "output": "4999 -> 4999\n5000 -> 4000\n"
+        }
+      ],
+      "constraints": ["k до 10; цен до 30; числа до 10⁹, проценты до 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Правила разных видов — в трёх векторах с reserve(k), указатели — в одном векторе в порядке ввода.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Цикл: long long result = price; for (const Discount *d : rules) result = d->apply(result);",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\npercent 10\nfixed 500\n10000\n300\n",
+          "expected": "10000 -> 8500\n300 -> 0\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nthreshold 5000 1000\n4999\n5000\n",
+          "expected": "4999 -> 4999\n5000 -> 4000\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Без правил",
+          "stdin": "0\n100\n",
+          "expected": "100 -> 100\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Сто процентов",
+          "stdin": "1\npercent 100\n12345\n",
+          "expected": "12345 -> 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Другой порядок",
+          "stdin": "2\nfixed 500\npercent 10\n10000\n",
+          "expected": "10000 -> 8550\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Два процента",
+          "stdin": "3\npercent 50\npercent 50\nfixed 1\n1000\n",
+          "expected": "1000 -> 249\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Обнуление",
+          "stdin": "1\nfixed 1000000000\n999999999\n",
+          "expected": "999999999 -> 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Два порога",
+          "stdin": "2\nthreshold 100 50\nthreshold 100 50\n149\n150\n",
+          "expected": "149 -> 99\n150 -> 50\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Округление",
+          "stdin": "1\npercent 33\n100\n1\n",
+          "expected": "100 -> 67\n1 -> 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Все правила",
+          "stdin": "3\nthreshold 1000 100\npercent 20\nfixed 30\n1000000000\n999\n",
+          "expected": "1000000000 -> 799999890\n999 -> 770\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Discount {\npublic:\n    virtual ~Discount() = default;\n\n    virtual long long apply(long long price) const {\n        return price;\n    }\n};\n\nclass Percent : public Discount {\npublic:\n    explicit Percent(long long p) : p_(p) {}\n\n    long long apply(long long price) const override {\n        return price - price * p_ / 100;\n    }\n\nprivate:\n    long long p_;\n};\n\nclass Fixed : public Discount {\npublic:\n    explicit Fixed(long long amount) : amount_(amount) {}\n\n    long long apply(long long price) const override {\n        return price > amount_ ? price - amount_ : 0;\n    }\n\nprivate:\n    long long amount_;\n};\n\nclass Threshold : public Discount {\npublic:\n    Threshold(long long limit, long long amount) : limit_(limit), amount_(amount) {}\n\n    long long apply(long long price) const override {\n        return price >= limit_ ? price - amount_ : price;\n    }\n\nprivate:\n    long long limit_;\n    long long amount_;\n};\n\nint main() {\n    int k;\n    std::cin >> k;\n    std::vector<Percent> percents;\n    std::vector<Fixed> fixeds;\n    std::vector<Threshold> thresholds;\n    percents.reserve(static_cast<std::size_t>(k));\n    fixeds.reserve(static_cast<std::size_t>(k));\n    thresholds.reserve(static_cast<std::size_t>(k));\n    std::vector<const Discount *> rules;\n    for (int i = 0; i < k; i++) {\n        std::string kind;\n        std::cin >> kind;\n        if (kind == \"percent\") {\n            long long p;\n            std::cin >> p;\n            percents.emplace_back(p);\n            rules.push_back(&percents.back());\n        } else if (kind == \"fixed\") {\n            long long a;\n            std::cin >> a;\n            fixeds.emplace_back(a);\n            rules.push_back(&fixeds.back());\n        } else {\n            long long t, a;\n            std::cin >> t >> a;\n            thresholds.emplace_back(t, a);\n            rules.push_back(&thresholds.back());\n        }\n    }\n    long long price;\n    while (std::cin >> price) {\n        long long result = price;\n        for (const Discount *d : rules) {\n            result = d->apply(result);\n        }\n        std::println(\"{} -> {}\", price, result);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Правила — объекты разных классов, а цикл применения один: `d->apply(result)` выбирает версию каждого правила по настоящему объекту. Новое правило («каждая третья покупка бесплатно», «скидка по карте») добавляется новым классом без правок цикла.\n\nПорядок правил важен: скидка в процентах до фиксированной и после неё даёт разные цены, поэтому вектор указателей хранит порядок ввода. Объекты живут в векторах с зарезервированной ёмкостью — указатели на их элементы остаются действительными. Деструктор `Discount` виртуальный по тому же правилу, что и в задаче об оплате труда.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-virtual-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Что выбирает реализацию виртуального read через Base&?",
-        "options": ["Динамический тип существующего объекта", "Только имя переменной ссылки"],
-        "correct": 0,
-        "explanation": "Сначала выполните прямой вызов, затем тот же вызов через const Base&. В примере база возвращает единицу, реальный Fast — девятку. Квалифицированный вызов b.Base::read() явно выбирает базовую реализацию. Во время конструктора или деструктора виртуальные вызовы не направляются в ещё не созданную или уже разрушенную производную часть. Не используйте такой вызов для обязательной настройки наследника. Виртуальность не заменяет проверку состояния и обработку ошибок."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct A {\n    virtual int f() const { return 1; }\n    int g() const { return 10; }\n};\n\nstruct B : A {\n    int f() const override { return 2; }\n    int g() const { return 20; }\n};\n\nint main() {\n    B b;\n    const A &a = b;\n    std::println(\"{} {}\", a.f(), a.g());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "f виртуальная — выбирается по объекту (B). g не виртуальная — по типу ссылки (A).",
+        "type": "text",
+        "answers": ["2 10"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "9 1", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 9 1. Виртуальная функция позволяет вызвать реализацию фактического объекта через базовую ссылку или указатель. Статический тип определяет доступный интерфейс; динамический тип участвует в выборе реализации. Это нужно, когда клиент обрабатывает разные источники одинаковым алгоритмом. Типичная реализация использует таблицу виртуальных функций, но стандарт не требует конкретного расположения таблиц в памяти."
-      },
-      {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q2",
+        "question": "Что такое динамический тип?",
+        "explanation": "Статический тип — в коде, динамический — у объекта. virtual выбирает по динамическому.",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Одноимённая невиртуальная функция в наследнике скрывает имя, но не обеспечивает динамическую диспетчеризацию через базу."
+          "Тип настоящего объекта, на который указывает ссылка или указатель во время работы",
+          "Тип, записанный в объявлении переменной",
+          "Тип, выведенный через auto",
+          "Тип объекта в куче"
         ],
-        "correct": 1,
-        "explanation": "Уберите virtual у базового read, сохранив только одноимённый метод без override у наследника, и предскажите результат базовой ссылки. Затем верните virtual. Виртуальный вызов обычно требует косвенного перехода; точную цену следует измерять на реальном горячем пути."
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct Animal {\n    virtual const char *sound() const { return \"?\"; }\n};\n\nstruct Dog : Animal {\n    const char *sound() const override { return \"гав\"; }\n};\n\nvoid by_value(Animal a) { std::print(\"{} \", a.sound()); }\nvoid by_ref(const Animal &a) { std::print(\"{} \", a.sound()); }\n\nint main() {\n    Dog d;\n    by_value(d);\n    by_ref(d);\n    std::println();\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "По значению передаётся копия базовой части (срезка), по ссылке — сам объект.",
+        "type": "text",
+        "answers": ["? гав"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Почему функция с параметром const Shape & работает с фигурами, которых не существовало, когда её писали?",
+        "explanation": "В этом смысл полиморфизма: код, написанный для интерфейса, принимает любые реализации.",
+        "options": [
+          "Новые наследники переопределяют виртуальные методы, и вызов через ссылку выберет их версии",
+          "Компилятор перекомпилирует функцию для каждого нового класса",
+          "Функция проверяет тип через if",
+          "Не работает: нужно дописывать функцию"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct Base {\n    Base() { std::print(\"{} \", name()); }\n    virtual const char *name() const { return \"Base\"; }\n};\n\nstruct Derived : Base {\n    const char *name() const override { return \"Derived\"; }\n};\n\nint main() {\n    Derived d;\n    std::println(\"{}\", d.name());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "В конструкторе базы наследник ещё не создан, поэтому вызывается версия базы.",
+        "type": "text",
+        "answers": ["Base Derived"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Как обычно реализуют виртуальные функции компиляторы?",
+        "explanation": "Поэтому объект с виртуальными методами больше на размер указателя, а вызов — косвенный.",
+        "options": [
+          "Таблица адресов функций у класса и скрытый указатель на неё в каждом объекте",
+          "Цепочка if по имени класса",
+          "Поиск функции по имени во время выполнения",
+          "Копирование функции в каждый объект"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Наследник объявил double area() (без const), а в базе virtual double area() const. Что произойдёт?",
+        "explanation": "Сигнатура, включая const, должна совпадать. С override такая ошибка становится ошибкой компиляции.",
+        "options": [
+          "Это другая функция: она не переопределяет базовую, и через ссылку на базу вызовется базовая версия",
+          "Функция переопределит базовую",
+          "Ошибка компиляции без override",
+          "Обе функции объединятся"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Сколько байт добавляет к объекту появление в классе первой виртуальной функции на 64-битной системе?",
+        "explanation": "Скрытый указатель на таблицу виртуальных функций.",
+        "type": "text",
+        "answers": ["8"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q9",
+        "question": "Через какие выражения работает выбор виртуального метода по объекту? Выберите все.",
+        "explanation": "У объекта базового типа динамический тип совпадает со статическим — это всегда база. У объекта наследника — наследник.",
+        "type": "multiple",
+        "options": [
+          "ссылка на базу: ref.f()",
+          "указатель на базу: ptr->f()",
+          "объект базового типа: copy.f()",
+          "объект наследника: derived.f()"
+        ],
+        "correct": [0, 1, 3]
       }
     ]
   }

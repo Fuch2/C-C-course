@@ -21,8 +21,8 @@ export default {
     'Проверять функции по отдельности на крайних случаях',
     'Отделять вычисление от печати',
   ],
-  tags: ['C17', 'Практикум', 'Функции', 'Декомпозиция'],
-  standard: 'c17',
+  tags: ['C23', 'Практикум', 'Функции', 'Декомпозиция'],
+  standard: 'c23',
   quiz: [
     {
       q: 'Что означает проектирование «сверху вниз»?',
@@ -361,7 +361,6 @@ int digital_root(long long n) {
       ],
       solution: String.raw`
 #include <stdio.h>
-#include <stdbool.h>
 
 bool is_prime(int n) {
     if (n < 2) {

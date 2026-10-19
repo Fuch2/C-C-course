@@ -1,115 +1,535 @@
 {
   "id": "cpp20-enum-class",
-  "title": "enum class",
-  "description": "enum class создаёт отдельный тип состояния и предотвращает неявное смешивание с int. Явный switch делает протокол устройства проверяемым компилятором.",
+  "title": "Перечисления enum class",
+  "description": "Недостатки перечислений C; enum class: область видимости, нет неявного преобразования в int, разные перечисления несравнимы; базовый тип; switch по перечислению и предупреждения компилятора; перечисления вместо логических флагов; конечные автоматы.",
   "moduleId": "cpp-fundamentals",
-  "order": 21,
-  "difficulty": "advanced",
-  "estimatedMinutes": 50,
-  "prerequisites": ["cpp20-exceptions"],
+  "order": 14,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 40,
+  "prerequisites": ["cpp20-default-arguments"],
   "objectives": [
-    "Объяснить, зачем появился enum class и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Объявлять и использовать enum class",
+    "Явно переводить перечисление в число и обратно",
+    "Обрабатывать перечисления в switch без проваливания",
+    "Описывать состояния программы перечислением"
   ],
-  "tags": ["C++20", "основы C++", "enum class"],
+  "tags": ["C++", "enum class", "switch", "Конечный автомат"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-enum-class-exercise",
-    "title": "Машина состояний",
-    "description": "Ввод q команд START STOP FAIL. enum class State начинает Idle; допустимые переходы печатают состояние, запрещённые — НЕТ.",
-    "difficulty": "advanced",
+    "id": "cpp20-enum-class-task-1",
+    "title": "Светофор",
+    "description": "Светофор переключается по кругу: красный → зелёный → жёлтый → красный. Каждая строка ввода — начальный цвет (`red`, `green` или `yellow`) и число переключений `n`. Напечатайте через пробел `n + 1` цветов по-русски: начальный и все следующие.\n\nОпишите цвет перечислением `enum class Light` и напишите функции `Light next(Light)` и `std::string name(Light)`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "4 START STOP FAIL START",
-        "output": "РАБОТА\nОЖИДАНИЕ\nОШИБКА\nНЕТ\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "red 3\n",
+        "output": "красный зелёный жёлтый красный\n"
       },
       {
-        "input": "0",
-        "output": "",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "yellow 0\ngreen 1\n",
+        "output": "жёлтый\nзелёный жёлтый\n"
       }
     ],
-    "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
-    ],
+    "constraints": ["0 ≤ n ≤ 20; строк не больше 20."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "enum class Light { Red, Green, Yellow }; — порядок совпадает с порядком переключения, поэтому next можно написать через static_cast и % 3 или через switch.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "name возвращает \"красный\", \"зелёный\" или \"жёлтый\" — switch с return в каждой ветке.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "4 START STOP FAIL START",
-        "expected": "РАБОТА\nОЖИДАНИЕ\nОШИБКА\nНЕТ\n"
+        "stdin": "red 3\n",
+        "expected": "красный зелёный жёлтый красный\n"
       },
-      { "id": "case-2", "name": "Пример 2", "stdin": "0", "expected": "" }
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "yellow 0\ngreen 1\n",
+        "expected": "жёлтый\nзелёный жёлтый\n"
+      }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "3 STOP START STOP",
-        "expected": "НЕТ\nРАБОТА\nОЖИДАНИЕ\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "red 0\n",
+        "expected": "красный\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "green 0\n",
+        "expected": "зелёный\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "yellow 1\n",
+        "expected": "жёлтый красный\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "red 6\n",
+        "expected": "красный зелёный жёлтый красный зелёный жёлтый красный\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "green 4\n",
+        "expected": "зелёный жёлтый красный зелёный жёлтый\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "yellow 5\n",
+        "expected": "жёлтый красный зелёный жёлтый красный зелёный\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "red 1\nred 2\n",
+        "expected": "красный зелёный\nкрасный зелёный жёлтый\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "green 20\n",
+        "expected": "зелёный жёлтый красный зелёный жёлтый красный зелёный жёлтый красный зелёный жёлтый красный зелёный жёлтый красный зелёный жёлтый красный зелёный жёлтый красный\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <string>\n\n\nint main() {\n    enum class State{Idle,Running,Error};State s=State::Idle;int q{};if(!(std::cin>>q)||q<0||q>100)return 1;for(int i=0;i<q;++i){std::string c;std::cin>>c;bool ok=false;if(c==\"FAIL\"){s=State::Error;ok=true;}else if(s==State::Idle&&c==\"START\"){s=State::Running;ok=true;}else if(s==State::Running&&c==\"STOP\"){s=State::Idle;ok=true;}if(!ok){std::cout<<\"НЕТ\\n\";continue;}switch(s){case State::Idle:std::cout<<\"ОЖИДАНИЕ\\n\";break;case State::Running:std::cout<<\"РАБОТА\\n\";break;case State::Error:std::cout<<\"ОШИБКА\\n\";break;}}\n}\n",
-    "solutionExplanation": "enum class не смешивается неявно с int, поэтому состояния нельзя случайно сложить. Переходы остаются явными, стоимость фиксированная O(1), а неверные команды обрабатываются как данные.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <iostream>\n#include <string>\n\nenum class Light { Red, Green, Yellow };\n\nLight next(Light light) {\n    switch (light) {\n    case Light::Red:\n        return Light::Green;\n    case Light::Green:\n        return Light::Yellow;\n    case Light::Yellow:\n        return Light::Red;\n    }\n    return Light::Red;\n}\n\nstd::string name(Light light) {\n    switch (light) {\n    case Light::Red:\n        return \"красный\";\n    case Light::Green:\n        return \"зелёный\";\n    case Light::Yellow:\n        return \"жёлтый\";\n    }\n    return \"?\";\n}\n\nint main() {\n    std::string start;\n    int n;\n    while (std::cin >> start >> n) {\n        Light light = start == \"red\" ? Light::Red : start == \"green\" ? Light::Green : Light::Yellow;\n        for (int i = 0; i <= n; i++) {\n            std::cout << name(light) << (i < n ? ' ' : '\\n');\n            light = next(light);\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Состояние светофора — значение перечисления, а правила переключения собраны в одной функции `next`. `switch` с `return` в каждой ветке не может провалиться в следующую, а если в перечисление добавят новый цвет, компилятор с `-Wall` укажет на функции, где его забыли обработать.\n\nМожно было бы написать `next` через арифметику — `static_cast<Light>((static_cast<int>(light) + 1) % 3)`, — но такая версия молча зависит от порядка значений в перечислении. `switch` описывает правило явно.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-enum-class-task-2",
+      "title": "Робот",
+      "description": "Робот стоит в точке `(0, 0)` и смотрит на север. До конца ввода идут команды: `L` — повернуть налево, `R` — направо, `F k` — пройти `k` шагов вперёд. Север — увеличение `y`, восток — увеличение `x`.\n\nНапечатайте итоговые координаты и направление по-русски: `x y направление`. Направление храните в `enum class Direction`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "F 5\nR\nF 3\n",
+          "output": "3 5 восток\n"
+        },
+        {
+          "input": "L\nL\nF 2\n",
+          "output": "0 -2 юг\n"
+        }
+      ],
+      "constraints": ["Команд не больше 1000; 0 ≤ k ≤ 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "enum class Direction { North, East, South, West }; поворот направо — следующее значение по кругу, налево — предыдущее: (d + 3) % 4.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Шаги по направлению: switch по Direction меняет x или y. Координаты до 10⁹ — long long.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "F 5\nR\nF 3\n",
+          "expected": "3 5 восток\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "L\nL\nF 2\n",
+          "expected": "0 -2 юг\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Без команд",
+          "stdin": "",
+          "expected": "0 0 север\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Полный оборот",
+          "stdin": "R\nR\nR\nR\n",
+          "expected": "0 0 север\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Налево с севера",
+          "stdin": "L\n",
+          "expected": "0 0 запад\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Большие шаги",
+          "stdin": "F 1000000\nR\nF 1000000\nR\nF 1000000\n",
+          "expected": "1000000 0 юг\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Запад и юг",
+          "stdin": "L\nF 7\nL\nF 3\n",
+          "expected": "-7 -3 юг\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Нулевые шаги",
+          "stdin": "F 0\nR\nF 0\n",
+          "expected": "0 0 восток\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Лесенка",
+          "stdin": "R\nF 1\nL\nF 1\nR\nF 1\nL\nF 1\n",
+          "expected": "2 2 север\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Три поворота налево",
+          "stdin": "L\nL\nL\nF 4\n",
+          "expected": "4 0 восток\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <string>\n\nenum class Direction { North, East, South, West };\n\nDirection turn(Direction d, int quarter) {\n    return static_cast<Direction>((static_cast<int>(d) + quarter) % 4);\n}\n\nstd::string name(Direction d) {\n    switch (d) {\n    case Direction::North:\n        return \"север\";\n    case Direction::East:\n        return \"восток\";\n    case Direction::South:\n        return \"юг\";\n    case Direction::West:\n        return \"запад\";\n    }\n    return \"?\";\n}\n\nint main() {\n    long long x = 0, y = 0;\n    Direction d = Direction::North;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"L\") {\n            d = turn(d, 3);\n        } else if (command == \"R\") {\n            d = turn(d, 1);\n        } else if (command == \"F\") {\n            long long k;\n            std::cin >> k;\n            switch (d) {\n            case Direction::North:\n                y += k;\n                break;\n            case Direction::East:\n                x += k;\n                break;\n            case Direction::South:\n                y -= k;\n                break;\n            case Direction::West:\n                x -= k;\n                break;\n            }\n        }\n    }\n    std::cout << x << ' ' << y << ' ' << name(d) << '\\n';\n    return 0;\n}\n",
+      "solutionExplanation": "Направление — перечисление из четырёх значений по часовой стрелке, поэтому поворот направо — следующее значение, налево — предыдущее. «Предыдущее по кругу» записано как `+ 3`, а не `− 1`: остаток от деления отрицательного числа в C++ отрицателен, и `(0 − 1) % 4` дал бы −1 — значение вне перечисления.\n\nПреобразования между перечислением и числом собраны в одной функции `turn` и записаны явно через `static_cast` — такие места сразу видны при чтении. Движение — `switch` с `break` в каждой ветке.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-enum-class-task-3",
+      "title": "Найди ошибку: уровни журнала",
+      "description": "Каждая строка ввода — уровень (`info`, `warning` или `error`) и сообщение. Программа печатает метку уровня и сообщение: `[INFO] текст`, `[WARN] текст`, `[ERROR] текст`.\n\nСообщения уровня `info` получают неверную метку. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <string>\n\nenum class Level { Info, Warning, Error };\n\nstd::string label(Level level) {\n    std::string text;\n    switch (level) {\n    case Level::Info:\n        text = \"[INFO]\";\n    case Level::Warning:\n        text = \"[WARN]\";\n        break;\n    case Level::Error:\n        text = \"[ERROR]\";\n        break;\n    }\n    return text;\n}\n\nint main() {\n    std::string word, message;\n    while (std::cin >> word && std::getline(std::cin >> std::ws, message)) {\n        Level level = word == \"info\" ? Level::Info : word == \"warning\" ? Level::Warning : Level::Error;\n        std::cout << label(level) << ' ' << message << '\\n';\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "info started\nerror disk full\n",
+          "output": "[INFO] started\n[ERROR] disk full\n"
+        },
+        {
+          "input": "warning low memory\n",
+          "output": "[WARN] low memory\n"
+        }
+      ],
+      "constraints": ["Строк не больше 30; сообщения до 100 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что происходит в switch после выполнения ветки case Level::Info, если в ней нет break?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Без break выполнение «проваливается» в следующую ветку, и text перезаписывается на \"[WARN]\". Добавьте break или возвращайте строку через return прямо из ветки.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "info started\nerror disk full\n",
+          "expected": "[INFO] started\n[ERROR] disk full\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "warning low memory\n",
+          "expected": "[WARN] low memory\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "info a\n",
+          "expected": "[INFO] a\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "info one two three\n",
+          "expected": "[INFO] one two three\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "warning x\ninfo y\n",
+          "expected": "[WARN] x\n[INFO] y\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "error z\ninfo w\n",
+          "expected": "[ERROR] z\n[INFO] w\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "info info\n",
+          "expected": "[INFO] info\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "error e\nwarning w\ninfo i\n",
+          "expected": "[ERROR] e\n[WARN] w\n[INFO] i\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "info Сообщение по-русски\n",
+          "expected": "[INFO] Сообщение по-русски\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "warning  spaced\n",
+          "expected": "[WARN] spaced\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <string>\n\nenum class Level { Info, Warning, Error };\n\nstd::string label(Level level) {\n    std::string text;\n    switch (level) {\n    case Level::Info:\n        text = \"[INFO]\";\n        break;\n    case Level::Warning:\n        text = \"[WARN]\";\n        break;\n    case Level::Error:\n        text = \"[ERROR]\";\n        break;\n    }\n    return text;\n}\n\nint main() {\n    std::string word, message;\n    while (std::cin >> word && std::getline(std::cin >> std::ws, message)) {\n        Level level = word == \"info\" ? Level::Info : word == \"warning\" ? Level::Warning : Level::Error;\n        std::cout << label(level) << ' ' << message << '\\n';\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Ветки `switch` — это метки, а не отдельные блоки: после выполнения ветки управление переходит к следующей строке, то есть к коду следующей ветки, пока не встретится `break` или `return`. В ветке `Info` нет `break`, поэтому `text` сначала получает `\"[INFO]\"`, а затем — `\"[WARN]\"`.\n\nКомпилятор с `-Wextra` предупреждает о таком проваливании (`-Wimplicit-fallthrough`). Если проваливание нужно намеренно, его отмечают атрибутом `[[fallthrough]];`. Надёжнее всего функции-переключатели писать с `return` в каждой ветке — тогда проваливание невозможно.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-enum-class-task-4",
+      "title": "Автомат для чисел",
+      "description": "До конца ввода идут слова. Для каждого напечатайте `да`, если это корректная запись числа, иначе `нет`. Корректная запись:\n\n- необязательный знак `+` или `-`;\n- одна или больше цифр;\n- необязательная дробная часть: точка и одна или больше цифр;\n- необязательный порядок: `e` или `E`, необязательный знак и одна или больше цифр.\n\nНапример, `-12`, `3.14`, `6.02e23`, `1E-9` — корректны; `.5`, `5.`, `1e`, `+-1`, `1.2.3` — нет.\n\nНапишите **конечный автомат**: состояние — `enum class State`, функция переходов получает состояние и символ и возвращает новое состояние.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "-12 3.14 6.02e23 1E-9\n",
+          "output": "да\nда\nда\nда\n"
+        },
+        {
+          "input": ".5 5. 1e +-1 1.2.3\n",
+          "output": "нет\nнет\nнет\nнет\nнет\n"
+        }
+      ],
+      "constraints": ["Слов не больше 100, длиной до 50 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Состояния: Start, Sign, Integer, Dot, Fraction, Exp, ExpSign, ExpDigits, Error. Например, из Start цифра ведёт в Integer, знак — в Sign, всё остальное — в Error.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Функция State step(State s, char c) — switch по s. Из Error никуда не уйти. После последнего символа слово корректно, если состояние — Integer, Fraction или ExpDigits.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "-12 3.14 6.02e23 1E-9\n",
+          "expected": "да\nда\nда\nда\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": ".5 5. 1e +-1 1.2.3\n",
+          "expected": "нет\nнет\nнет\nнет\nнет\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ноль",
+          "stdin": "0\n",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Знаки",
+          "stdin": "+7 -0\n",
+          "expected": "да\nда\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Порядки",
+          "stdin": "1e+5 1e-5 1e5\n",
+          "expected": "да\nда\nда\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Только порядок",
+          "stdin": "e5 E\n",
+          "expected": "нет\nнет\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Незаконченный порядок",
+          "stdin": "1.5e 1.5e+\n",
+          "expected": "нет\nнет\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Посторонние символы",
+          "stdin": "12a a12 1_000\n",
+          "expected": "нет\nнет\nнет\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Длинные",
+          "stdin": "3.0e10 0.000001\n",
+          "expected": "да\nда\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Только знак",
+          "stdin": "- + 1.e5\n",
+          "expected": "нет\nнет\nнет\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <string>\n\nenum class State { Start, Sign, Integer, Dot, Fraction, Exp, ExpSign, ExpDigits, Error };\n\nbool is_digit(char c) {\n    return c >= '0' && c <= '9';\n}\n\nState step(State s, char c) {\n    switch (s) {\n    case State::Start:\n        return is_digit(c) ? State::Integer : (c == '+' || c == '-') ? State::Sign : State::Error;\n    case State::Sign:\n        return is_digit(c) ? State::Integer : State::Error;\n    case State::Integer:\n        return is_digit(c)               ? State::Integer\n               : c == '.'                ? State::Dot\n               : (c == 'e' || c == 'E') ? State::Exp\n                                         : State::Error;\n    case State::Dot:\n        return is_digit(c) ? State::Fraction : State::Error;\n    case State::Fraction:\n        return is_digit(c) ? State::Fraction : (c == 'e' || c == 'E') ? State::Exp : State::Error;\n    case State::Exp:\n        return is_digit(c) ? State::ExpDigits : (c == '+' || c == '-') ? State::ExpSign : State::Error;\n    case State::ExpSign:\n    case State::ExpDigits:\n        return is_digit(c) ? State::ExpDigits : State::Error;\n    case State::Error:\n        return State::Error;\n    }\n    return State::Error;\n}\n\nbool is_number(const std::string &word) {\n    State s = State::Start;\n    for (char c : word) {\n        s = step(s, c);\n    }\n    return s == State::Integer || s == State::Fraction || s == State::ExpDigits;\n}\n\nint main() {\n    std::string word;\n    while (std::cin >> word) {\n        std::cout << (is_number(word) ? \"да\" : \"нет\") << '\\n';\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Автомат читает слово по одному символу и помнит только своё состояние — что уже прочитано: знак, целая часть, точка, дробная часть, порядок. Каждое правило формата — одна строка функции `step`: «после точки обязательна цифра», «после e — знак или цифра». Слово корректно, если после последнего символа автомат в **принимающем** состоянии: в целой части, дробной части или цифрах порядка. Остановка в `Dot` (`5.`) или `Exp` (`1e`) означает незаконченную запись.\n\nДве ветки `case State::ExpSign:` и `case State::ExpDigits:` стоят подряд намеренно: у этих состояний одинаковые переходы, а пустая ветка без кода — законный и понятный способ сказать об этом. Так устроены лексические анализаторы компиляторов и разбор чисел в `strtod`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-enum-class-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «enum class»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "enum class создаёт отдельный тип состояния и предотвращает неявное смешивание с int. Явный switch делает протокол устройства проверяемым компилятором."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n\nenum class Size { Small = 1, Medium, Large = 10, Huge };\n\nint main() {\n    std::cout << static_cast<int>(Size::Medium) << ' ' << static_cast<int>(Size::Huge) << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Значение без инициализатора на единицу больше предыдущего: Medium = 2, Huge = 11.",
+        "type": "text",
+        "answers": ["2 11"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
+        "id": "q2",
+        "question": "Какие строки не скомпилируются, если объявлено enum class Color { Red, Green };?",
+        "explanation": "Неявного преобразования в int нет, а имена значений живут внутри перечисления — без Color:: их не видно.",
+        "type": "multiple",
         "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
+          "int x = Color::Red;",
+          "Color c = Red;",
+          "Color c = Color::Green;",
+          "int y = static_cast<int>(Color::Green);"
         ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "correct": [0, 1]
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Чем enum class лучше перечисления в стиле C?",
+        "explanation": "Размер по умолчанию такой же — int. Его можно уменьшить, явно задав базовый тип.",
+        "type": "multiple",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "Имена значений не конфликтуют с другими именами",
+          "Значения не превращаются в int неявно",
+          "Значения разных перечислений нельзя сравнить по ошибке",
+          "enum class занимает меньше памяти в любом случае"
         ],
-        "correct": 0,
-        "explanation": "Используйте enum class как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n\nenum class Op { Add, Sub, Mul };\n\nint apply(Op op, int a, int b) {\n    switch (op) {\n    case Op::Add:\n        return a + b;\n    case Op::Sub:\n        return a - b;\n    case Op::Mul:\n        return a * b;\n    }\n    return 0;\n}\n\nint main() {\n    std::cout << apply(Op::Mul, apply(Op::Add, 2, 3), apply(Op::Sub, 10, 6)) << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "(2 + 3) · (10 − 6) = 20. return в каждой ветке исключает проваливание.",
+        "type": "text",
+        "answers": ["20"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n\nenum class Mode { A, B, C };\n\nint main() {\n    int score = 0;\n    Mode m = Mode::A;\n    switch (m) {\n    case Mode::A:\n        score += 1;\n    case Mode::B:\n        score += 10;\n        break;\n    case Mode::C:\n        score += 100;\n        break;\n    }\n    std::cout << score << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "В ветке A нет break: выполнение проваливается в ветку B и останавливается на её break. 1 + 10 = 11.",
+        "type": "text",
+        "answers": ["11"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Как задать, что перечисление занимает один байт?",
+        "explanation": "После имени через двоеточие указывают базовый целочисленный тип.",
+        "options": [
+          "enum class Flag : std::uint8_t { … };",
+          "enum class Flag(1) { … };",
+          "short enum class Flag { … };",
+          "Нельзя"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Почему функция-переключатель по enum class часто заканчивается return после switch?",
+        "explanation": "Компилятор не может доказать, что значение всегда одно из перечисленных, и без return предупреждает о возможном выходе из функции без значения.",
+        "options": [
+          "Перечислению можно силой присвоить число вне списка значений, и функция обязана что-то вернуть и тогда",
+          "Иначе switch не скомпилируется",
+          "Чтобы switch выполнился дважды",
+          "Это не нужно"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какой вызов понятнее при чтении кода?",
+        "explanation": "Перечисления называют смысл аргументов, а логические и числовые флаги требуют смотреть объявление.",
+        "options": [
+          "connect(host, Security::Tls, Retry::Never)",
+          "connect(host, true, false)",
+          "connect(host, 1, 0)",
+          "Все одинаково понятны"
+        ],
+        "correct": 0
       }
     ]
   }

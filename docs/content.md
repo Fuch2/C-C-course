@@ -143,7 +143,7 @@ npm run test:solutions
 
 `scripts/author-course.py` — прежний генератор стартовых материалов, адаптированный к новой схеме. Он перезаписывает JSON и Markdown, но сохраняет уже существующий MDX. Для обычного авторинга редактируйте файлы напрямую; генератор не требуется для добавления нового урока.
 
-## Полный модуль C17
+## Модуль «Основы языка C»
 
 `c-fundamentals/` содержит 45 уроков, включая шесть практикумов. Каждый урок — каталог с авторским исходником `lesson.src.mjs` (metadata, вопросы, задачи и эталоны) и текстом `lesson.mdx`; `lesson.json` генерируется командой `node --import tsx scripts/lessons/build.ts [фильтр]`. Скрипт компилирует эталоны в Docker sandbox на GCC и Clang (ASan/UBSan), вычисляет ожидаемые выводы скрытых тестов, сверяет блоки «Вывод:» примеров MDX и ответы вопросов «что выведет программа» с реальным запуском и записывает отчёт `docs/verification/lessons.json`. Не редактируйте `lesson.json` этих уроков вручную.
 
@@ -151,8 +151,16 @@ npm run test:solutions
 
 `npm run test:solutions` проверяет все задачи на GCC и Clang через Docker runner; результаты сохраняются в `docs/verification/`.
 
-Материал написан для C17. Для сверки базовых правил использовался публичный [проект WG14 N1570](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf) (это проект C11, а не текст C17) и [документация GCC о поддержке стандартов](https://gcc.gnu.org/onlinedocs/gcc/Standards.html). Примеры не используют расширения GNU; размеры типов не объявляются универсальными свойствами языка.
+Материал написан для C23. Для сверки правил использовались проект стандарта [WG14 N3220](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf) и [документация GCC о поддержке стандартов](https://gcc.gnu.org/onlinedocs/gcc/Standards.html). Примеры не используют расширения GNU; размеры типов не объявляются универсальными свойствами языка.
 
-«Инструменты разработчика»: `content/cpp-systems/developer-tools`, 12 уроков из `lesson.src.mjs` (терминал → стадии сборки → препроцессор и объектные файлы → флаги компилятора → линковка → структура проекта → Make → CMake → GDB → LLDB → санитайзеры → Git), 107 вопросов, 40 задач на C, моделирующих работу инструментов; сборка — `node --import tsx scripts/lessons/build.ts developer-tools`.
+«Инструменты разработчика»: `content/cpp-systems/developer-tools`, 13 уроков из `lesson.src.mjs` (терминал → стадии сборки → препроцессор и объектные файлы → флаги компилятора → линковка → структура проекта → Make → CMake → GDB → LLDB → санитайзеры → Git → экосистема: clang-format, clang-tidy, clangd, vcpkg/Conan, CMake Presets, CI), 115 вопросов, 44 задачи на C, моделирующих работу инструментов; сборка — `node --import tsx scripts/lessons/build.ts developer-tools`.
 
-«Углублённый C»: `content/cpp-systems/advanced-c`, 28 уроков и три проекта. Проекты в `projects/advanced-*` ссылаются на уроки; их условия и тесты хранятся в дополнительных упражнениях. Генератор: `python3 scripts/author-advanced.py`, затем форматирование и `npm run content:check`.
+«Углублённый C»: `content/cpp-systems/advanced-c`, 28 уроков из `lesson.src.mjs` и три проекта; проекты в `projects/advanced-*` ссылаются на уроки, их условия и тесты хранятся в дополнительных упражнениях. Сборка — `node --import tsx scripts/lessons/build.ts advanced-c`, полная проверка — `npm run test:advanced`. Подробнее: [advanced-c.md](advanced-c.md).
+
+«Алгоритмы и структуры данных»: `content/cpp-systems/algorithms-structures`, 28 уроков из `lesson.src.mjs` (анализ → поиск → сортировки → линейные структуры → хеш-таблица → деревья → графы), 224 вопроса, 113 задач, включая три benchmark-задачи с подсчётом операций. Примеры C++ в уроках — блоки ` ```cpp `, они собираются со стандартом C++23. Сборка — `node --import tsx scripts/lessons/build.ts algorithms-structures`, полная проверка — `npm run test:algorithms`. Подробнее: [algorithms-module.md](algorithms-module.md).
+
+«Основы C++»: `content/cpp-systems/cpp-fundamentals`, 27 уроков C++23 из `lesson.src.mjs`, 224 вопроса, 108 задач; сравнительные примеры на C — блоки ` ```c `. Сборка — `node --import tsx scripts/lessons/build.ts cpp-fundamentals`, полная проверка — `npm run test:cpp-fundamentals`. Подробнее: [cpp-fundamentals-module.md](cpp-fundamentals-module.md).
+
+«ООП в C++» (`cpp-oop`, 28 уроков) и «Время жизни объектов» (`cpp-lifetime`, 24 урока) устроены так же: `lesson.src.mjs` + `lesson.mdx`, сборка `build.ts`, полная проверка — `npm run test:oop` и `npm run test:lifetime`. Подробнее: [oop-module.md](oop-module.md), [lifetime-module.md](lifetime-module.md).
+
+Имя файла в блоке кода: после языка можно указать имя — ` ```c geometry.h `. Блок подписывается этим именем и не получает кнопки «Запустить»: так показывают части многофайловых программ. Скрипт сборки такие блоки не запускает.

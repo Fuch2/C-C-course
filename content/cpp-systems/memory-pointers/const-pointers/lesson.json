@@ -13,9 +13,9 @@
     "Возвращать const-указатель на найденное место во входных данных",
     "Объяснять, почему снятие const и запись в литерал — неопределённое поведение"
   ],
-  "tags": ["C17", "Память", "const", "Интерфейсы", "Указатели"],
+  "tags": ["C23", "Память", "const", "Интерфейсы", "Указатели"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-const-pointers-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <ctype.h>\n#include <stdio.h>\n\nsize_t count_char(const char *s, char c) {\n    return 0;\n}\n\nsize_t count_words(const char *s) {\n    return 0;\n}\n\nint main(void) {\n    char line[256];\n    char symbol[8];\n    if (fgets(line, sizeof line, stdin) == NULL || fgets(symbol, sizeof symbol, stdin) == NULL) {\n        return 1;\n    }\n    printf(\"chars=%zu words=%zu\\n\", count_char(line, symbol[0]), count_words(line));\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -130,7 +130,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <string.h>\n\nconst char *last_occurrence(const char *text, const char *word) {\n    return NULL;\n}\n\nint main(void) {\n    char text[256], word[64];\n    if (scanf(\"%255s %63s\", text, word) != 2) {\n        return 1;\n    }\n    const char *found = last_occurrence(text, word);\n    if (found == NULL) {\n        printf(\"not found\\n\");\n    } else {\n        printf(\"%td %s\\n\", found - text, found);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -242,7 +242,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <string.h>\n\nstruct Entry {\n    char name[21];\n    int score;\n    int time;\n};\n\nint better(const struct Entry *a, const struct Entry *b) {\n    return 0;\n}\n\nconst struct Entry *best_entry(const struct Entry *list, int n) {\n    return list;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    struct Entry list[100];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%20s %d %d\", list[i].name, &list[i].score, &list[i].time);\n    }\n    const struct Entry *best = best_entry(list, n);\n    printf(\"%s %d %d #%td\\n\", best->name, best->score, best->time, best - list);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -350,7 +350,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <ctype.h>\n#include <stdio.h>\n\nvoid capitalize(char *word) {\n    word[0] = (char)toupper((unsigned char)word[0]);\n}\n\nint main(void) {\n    char *commands[] = {\"start\", \"stop\", \"pause\", \"resume\"};\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        int id;\n        scanf(\"%d\", &id);\n        capitalize(commands[id]);\n        printf(\"%s\\n\", commands[id]);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

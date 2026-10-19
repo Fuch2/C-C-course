@@ -15,8 +15,8 @@ export default {
     'Приводить тип операнда до вычисления: (long long)a * b',
     'Выбирать тип, оценивая промежуточные результаты',
   ],
-  tags: ['C17', 'int', 'long long', 'Переполнение'],
-  standard: 'c17',
+  tags: ['C23', 'int', 'long long', 'Переполнение', 'stdckdint.h'],
+  standard: 'c23',
   quiz: [
     {
       q: 'Какое наибольшее значение может хранить int на сервере проверки курса (32 бита)?',
@@ -95,11 +95,31 @@ int main(void) {
         'Его размер зависит от системы: 64 бита в Linux и 32 бита в Windows',
         'Он медленнее int',
         'Он не поддерживает отрицательные числа',
-        'Он устарел и удалён из C17',
+        'Он устарел и удалён из C23',
       ],
       correct: 0,
       explain:
         'Программа с long может работать в Linux и переполняться в Windows. long long гарантированно не меньше 64 бит везде.',
+    },
+    {
+      q: 'Что выведет программа?',
+      code: String.raw`
+#include <limits.h>
+#include <stdckdint.h>
+#include <stdio.h>
+
+int main(void) {
+    int r;
+    int overflow = ckd_add(&r, INT_MAX, 1);
+    long long big;
+    int big_overflow = ckd_add(&big, INT_MAX, 1);
+    printf("%d %d %lld\n", overflow, big_overflow, big);
+    return 0;
+}`,
+      answers: ['1 0 2147483648'],
+      placeholder: 'Вывод программы',
+      explain:
+        'INT_MAX + 1 не помещается в int — ckd_add возвращает true (1). Тип результата задаёт первый аргумент: в long long сумма 2147483648 помещается, поэтому вторая проверка возвращает false (0).',
     },
   ],
   exercises: [

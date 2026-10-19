@@ -1,120 +1,539 @@
 {
   "id": "cpp20-pair",
-  "title": "std::pair",
-  "description": "pair возвращает два связанных значения и поддерживает structured binding. Для сложного API именованная структура обычно понятнее.",
+  "title": "Пары std::pair и структурные привязки",
+  "description": "std::pair: поля first и second, создание и вывод типов; лексикографическое сравнение и сортировка пар; функция, возвращающая два значения; структурные привязки для пар, массивов и структур; копия или ссылка в привязке.",
   "moduleId": "cpp-fundamentals",
-  "order": 18,
-  "difficulty": "advanced",
-  "estimatedMinutes": 50,
-  "prerequisites": ["cpp20-set"],
+  "order": 20,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 40,
+  "prerequisites": ["cpp20-deque"],
   "objectives": [
-    "Объяснить, зачем появился std::pair и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Создавать пары и обращаться к их полям",
+    "Сортировать векторы пар с учётом лексикографического сравнения",
+    "Возвращать из функции пару и раскладывать её структурной привязкой",
+    "Выбирать между копией и ссылкой в структурной привязке"
   ],
-  "tags": ["C++20", "основы C++", "std::pair"],
+  "tags": ["C++", "pair", "Структурные привязки"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-pair-exercise",
+    "id": "cpp20-pair-task-1",
     "title": "Минимум и максимум",
-    "description": "Ввод непустого n и n чисел. Верните минимум и максимум как std::pair и распакуйте результат.",
-    "difficulty": "advanced",
+    "description": "До конца ввода идут целые числа. Напишите функцию `std::pair<long long, long long> min_max(const std::vector<long long> &v)` и напечатайте `минимум A, максимум B`, разложив результат структурной привязкой. Если чисел нет, напечатайте `пусто`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "3 7 -2 4",
-        "output": "-2 7\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "4 -2 9 0\n",
+        "output": "минимум -2, максимум 9\n"
       },
       {
-        "input": "1 -5",
-        "output": "-5 -5\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "",
+        "output": "пусто\n"
       }
     ],
-    "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
-    ],
+    "constraints": ["Чисел не больше 1000; |числа| ≤ 10¹⁸."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "Внутри функции: lo = hi = v[0], затем цикл; return {lo, hi};.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "В main: auto [lo, hi] = min_max(v); — проверьте пустоту до вызова, иначе v[0] не существует.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "3 7 -2 4",
-        "expected": "-2 7\n"
+        "stdin": "4 -2 9 0\n",
+        "expected": "минимум -2, максимум 9\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "1 -5",
-        "expected": "-5 -5\n"
+        "stdin": "",
+        "expected": "пусто\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "4 0 0 0 0",
-        "expected": "0 0\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "7\n",
+        "expected": "минимум 7, максимум 7\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "-1 -1 -1\n",
+        "expected": "минимум -1, максимум -1\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "1000000000000000000 -1000000000000000000\n",
+        "expected": "минимум -1000000000000000000, максимум 1000000000000000000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "1 2 3 4 5\n",
+        "expected": "минимум 1, максимум 5\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "5 4 3 2 1\n",
+        "expected": "минимум 1, максимум 5\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "0 0\n",
+        "expected": "минимум 0, максимум 0\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "3\n-3\n",
+        "expected": "минимум -3, максимум 3\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "-5 10 -20 15\n",
+        "expected": "минимум -20, максимум 15\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <vector>\n#include <utility>\n\n\nint main() {\n    int n{};if(!(std::cin>>n)||n<1||n>100)return 1;std::vector<int>v(n);for(int&x:v)std::cin>>x;std::pair<int,int> r{v[0],v[0]};for(int x:v){if(x<r.first)r.first=x;if(x>r.second)r.second=x;}auto [lo,hi]=r;std::cout<<lo<<' '<<hi<<'\\n';\n}\n",
-    "solutionExplanation": "pair объединяет два связанных значения без out-параметров. Инициализация первым элементом корректна и для полностью отрицательного набора. Один проход O(n), результат O(1).",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <iostream>\n#include <utility>\n#include <vector>\n\nstd::pair<long long, long long> min_max(const std::vector<long long> &v) {\n    long long lo = v[0], hi = v[0];\n    for (long long x : v) {\n        if (x < lo) {\n            lo = x;\n        }\n        if (x > hi) {\n            hi = x;\n        }\n    }\n    return {lo, hi};\n}\n\nint main() {\n    std::vector<long long> v;\n    long long x;\n    while (std::cin >> x) {\n        v.push_back(x);\n    }\n    if (v.empty()) {\n        std::cout << \"пусто\\n\";\n        return 0;\n    }\n    auto [lo, hi] = min_max(v);\n    std::cout << \"минимум \" << lo << \", максимум \" << hi << '\\n';\n    return 0;\n}\n",
+    "solutionExplanation": "Функция возвращает два результата одним значением — парой, а вызывающий раскладывает её по переменным с понятными именами. Это нагляднее параметров-ссылок: по сигнатуре видно, что функция ничего не меняет и что именно возвращает.\n\n`return {lo, hi};` создаёт пару нужного типа из фигурных скобок — тип известен из объявления функции. Пустой вектор проверяется до вызова: `v[0]` у него нет.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-pair-task-2",
+      "title": "Точки на плоскости",
+      "description": "Первая строка — `n`, дальше `n` строк с координатами `x y`. Отсортируйте точки по `x`, при равных `x` — по `y`, удалите повторяющиеся и напечатайте каждую оставшуюся точку в формате `(x, y)` по одной в строке. Последней строкой напечатайте `повторов: K`.\n\nХраните точки в `std::vector<std::pair<int, int>>`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "4\n3 1\n1 9\n3 1\n1 2\n",
+          "output": "(1, 2)\n(1, 9)\n(3, 1)\nповторов: 1\n"
+        },
+        {
+          "input": "1\n0 0\n",
+          "output": "(0, 0)\nповторов: 0\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; |x|, |y| ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "std::sort для вектора пар уже сортирует по first, затем по second — функция сравнения не нужна.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Повторы после сортировки стоят рядом: v.erase(std::unique(v.begin(), v.end()), v.end()). Повторов — разность размеров до и после.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\n3 1\n1 9\n3 1\n1 2\n",
+          "expected": "(1, 2)\n(1, 9)\n(3, 1)\nповторов: 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n0 0\n",
+          "expected": "(0, 0)\nповторов: 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "3\n5 5\n5 5\n5 5\n",
+          "expected": "(5, 5)\nповторов: 2\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "3\n2 1\n1 2\n0 3\n",
+          "expected": "(0, 3)\n(1, 2)\n(2, 1)\nповторов: 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "4\n1 3\n1 1\n1 2\n1 0\n",
+          "expected": "(1, 0)\n(1, 1)\n(1, 2)\n(1, 3)\nповторов: 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "2\n-1000000000 1000000000\n1000000000 -1000000000\n",
+          "expected": "(-1000000000, 1000000000)\n(1000000000, -1000000000)\nповторов: 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "5\n0 0\n0 0\n1 1\n1 1\n0 1\n",
+          "expected": "(0, 0)\n(0, 1)\n(1, 1)\nповторов: 2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "3\n-1 -1\n-1 -2\n-2 -1\n",
+          "expected": "(-2, -1)\n(-1, -2)\n(-1, -1)\nповторов: 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "4\n7 7\n7 6\n6 7\n6 6\n",
+          "expected": "(6, 6)\n(6, 7)\n(7, 6)\n(7, 7)\nповторов: 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "2\n3 4\n4 3\n",
+          "expected": "(3, 4)\n(4, 3)\nповторов: 0\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <utility>\n#include <vector>\n\nint main() {\n    int n;\n    if (!(std::cin >> n) || n < 1) {\n        return 0;\n    }\n    std::vector<std::pair<int, int>> points(static_cast<std::size_t>(n));\n    for (auto &[x, y] : points) {\n        std::cin >> x >> y;\n    }\n    std::sort(points.begin(), points.end());\n    std::size_t before = points.size();\n    points.erase(std::unique(points.begin(), points.end()), points.end());\n    for (const auto &[x, y] : points) {\n        std::cout << '(' << x << \", \" << y << \")\\n\";\n    }\n    std::cout << \"повторов: \" << before - points.size() << '\\n';\n    return 0;\n}\n",
+      "solutionExplanation": "Лексикографическое сравнение пар — ровно тот порядок, который нужен: сначала `x`, при равенстве `y`. Поэтому `std::sort` работает без лямбды, а `std::unique` сравнивает пары целиком оператором `==`.\n\nЧтение идёт через структурную привязку по ссылке `auto &[x, y]` — значения попадают прямо в поля пары. Печать — через `const auto &[x, y]`: без копирования и с понятными именами вместо `first` и `second`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-pair-task-3",
+      "title": "Найди ошибку: прибавка к баллам",
+      "description": "Первая строка — `n`, дальше `n` строк `имя балл`. Затем команды: `bonus k` — прибавить `k` к баллу каждого, `show` — напечатать всех: `имя балл`.\n\nПрибавки не применяются. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <string>\n#include <utility>\n#include <vector>\n\nint main() {\n    int n;\n    if (!(std::cin >> n)) {\n        return 0;\n    }\n    std::vector<std::pair<std::string, int>> people;\n    for (int i = 0; i < n; i++) {\n        std::string name;\n        int score;\n        std::cin >> name >> score;\n        people.push_back({name, score});\n    }\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"bonus\") {\n            int k;\n            std::cin >> k;\n            for (auto [name, score] : people) {\n                score += k;\n            }\n        } else if (command == \"show\") {\n            for (const auto &[name, score] : people) {\n                std::cout << name << ' ' << score << '\\n';\n            }\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\nAda 90\nAlan 85\nbonus 5\nshow\n",
+          "output": "Ada 95\nAlan 90\n"
+        },
+        {
+          "input": "1\nX 0\nshow\n",
+          "output": "X 0\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 100; |баллы|, |k| ≤ 1000; команд не больше 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Чем являются name и score в привязке auto [name, score] — полями элементов вектора или полями копии?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "auto без & копирует каждую пару. Чтобы изменить элементы вектора, нужна привязка по ссылке: auto &[name, score].",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\nAda 90\nAlan 85\nbonus 5\nshow\n",
+          "expected": "Ada 95\nAlan 90\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nX 0\nshow\n",
+          "expected": "X 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1\nA 1\nbonus 1\nbonus 1\nshow\n",
+          "expected": "A 3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "2\nA 10\nB 20\nbonus -5\nshow\n",
+          "expected": "A 5\nB 15\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "3\nA 0\nB 0\nC 0\nshow\nbonus 100\nshow\n",
+          "expected": "A 0\nB 0\nC 0\nA 100\nB 100\nC 100\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1\nZ -1000\nbonus 1000\nshow\n",
+          "expected": "Z 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "2\nP 5\nQ 6\nbonus 0\nshow\n",
+          "expected": "P 5\nQ 6\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "2\nM 1\nN 2\nbonus 3\nbonus -1\nshow\n",
+          "expected": "M 3\nN 4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "1\nSolo 42\nbonus 8\nshow\nbonus 50\nshow\n",
+          "expected": "Solo 50\nSolo 100\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "3\nX 1\nY 2\nZ 3\nbonus 10\nshow\n",
+          "expected": "X 11\nY 12\nZ 13\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <string>\n#include <utility>\n#include <vector>\n\nint main() {\n    int n;\n    if (!(std::cin >> n)) {\n        return 0;\n    }\n    std::vector<std::pair<std::string, int>> people;\n    for (int i = 0; i < n; i++) {\n        std::string name;\n        int score;\n        std::cin >> name >> score;\n        people.push_back({name, score});\n    }\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"bonus\") {\n            int k;\n            std::cin >> k;\n            for (auto &[name, score] : people) {\n                score += k;\n            }\n        } else if (command == \"show\") {\n            for (const auto &[name, score] : people) {\n                std::cout << name << ' ' << score << '\\n';\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Структурная привязка `auto [name, score] = элемент` сначала создаёт **копию** элемента, а `name` и `score` — имена полей этой копии. Прибавка меняет копию, которая исчезает в конце итерации, и вектор остаётся прежним. Это то же правило, что для обычного `auto` в цикле по диапазону.\n\nС `auto &[name, score]` копии нет: имена связаны с полями самого элемента вектора. Для печати используется `const auto &[name, score]` — без копирования и без права изменять.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-pair-task-4",
+      "title": "Объединение интервалов",
+      "description": "Первая строка — `n`, дальше `n` интервалов `l r` (`l ≤ r`). Объедините пересекающиеся и соприкасающиеся интервалы (`[1, 3]` и `[3, 5]` → `[1, 5]`; `[1, 2]` и `[3, 4]` остаются раздельными). Напечатайте получившиеся интервалы по возрастанию в формате `[l, r]`, а последней строкой — `длина: L`, суммарную длину интервалов (сумма `r − l`).",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "4\n1 3\n2 6\n8 10\n15 18\n",
+          "output": "[1, 6]\n[8, 10]\n[15, 18]\nдлина: 10\n"
+        },
+        {
+          "input": "2\n1 3\n3 5\n",
+          "output": "[1, 5]\nдлина: 4\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 10⁴; |l|, |r| ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Отсортируйте вектор пар (l, r) — по началу, затем по концу.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Идите по отсортированным интервалам, храня текущий объединённый [start, end]. Если следующий начинается не позже end — продлите end = max(end, r); иначе сохраните текущий и начните новый.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Объединённые интервалы не пересекаются, поэтому их суммарная длина не больше 2·10⁹ — считайте её в long long.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\n1 3\n2 6\n8 10\n15 18\n",
+          "expected": "[1, 6]\n[8, 10]\n[15, 18]\nдлина: 10\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\n1 3\n3 5\n",
+          "expected": "[1, 5]\nдлина: 4\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Точка",
+          "stdin": "1\n5 5\n",
+          "expected": "[5, 5]\nдлина: 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Не соприкасаются",
+          "stdin": "2\n1 2\n3 4\n",
+          "expected": "[1, 2]\n[3, 4]\nдлина: 2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Вложенные",
+          "stdin": "3\n1 10\n2 3\n4 5\n",
+          "expected": "[1, 10]\nдлина: 9\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Не по порядку",
+          "stdin": "3\n5 6\n1 2\n3 4\n",
+          "expected": "[1, 2]\n[3, 4]\n[5, 6]\nдлина: 3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Цепочка касаний",
+          "stdin": "4\n1 4\n4 5\n5 8\n8 9\n",
+          "expected": "[1, 9]\nдлина: 8\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Огромный интервал",
+          "stdin": "2\n-1000000000 1000000000\n0 1\n",
+          "expected": "[-1000000000, 1000000000]\nдлина: 2000000000\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Одинаковые точки",
+          "stdin": "3\n1 1\n1 1\n1 1\n",
+          "expected": "[1, 1]\nдлина: 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Смешанные",
+          "stdin": "5\n10 12\n1 3\n2 4\n11 15\n20 20\n",
+          "expected": "[1, 4]\n[10, 15]\n[20, 20]\nдлина: 8\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <utility>\n#include <vector>\n\nint main() {\n    int n;\n    if (!(std::cin >> n) || n < 1) {\n        return 0;\n    }\n    std::vector<std::pair<long long, long long>> intervals(static_cast<std::size_t>(n));\n    for (auto &[l, r] : intervals) {\n        std::cin >> l >> r;\n    }\n    std::sort(intervals.begin(), intervals.end());\n    std::vector<std::pair<long long, long long>> merged;\n    for (const auto &[l, r] : intervals) {\n        if (!merged.empty() && l <= merged.back().second) {\n            merged.back().second = std::max(merged.back().second, r);\n        } else {\n            merged.push_back({l, r});\n        }\n    }\n    long long length = 0;\n    for (const auto &[l, r] : merged) {\n        std::cout << '[' << l << \", \" << r << \"]\\n\";\n        length += r - l;\n    }\n    std::cout << \"длина: \" << length << '\\n';\n    return 0;\n}\n",
+      "solutionExplanation": "После сортировки по началу интервалы, которые нужно объединить, идут подряд. Инвариант прохода: `merged` — объединение всех просмотренных интервалов, а последний элемент `merged` — единственный, с которым может пересечься следующий интервал: его начало не меньше начал всех предыдущих. Если следующий начинается не позже конца последнего, они сливаются; конец берётся как максимум — вложенный интервал `[2, 3]` не должен укоротить `[1, 10]`.\n\nСортировка — `O(n log n)`, проход — `O(n)`. Лексикографический порядок пар здесь как раз нужный, а последний элемент вектора удобно менять через `merged.back().second`. Такая задача встречается в календарях (занятые промежутки), в обработке диапазонов адресов и в геометрии.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-pair-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «std::pair»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "pair возвращает два связанных значения и поддерживает structured binding. Для сложного API именованная структура обычно понятнее."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <utility>\n\nint main() {\n    std::pair<int, int> a{2, 9}, b{3, 1};\n    std::cout << (a < b) << ' ' << (std::make_pair(2, 9) < std::make_pair(2, 10)) << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Сначала сравниваются first: 2 < 3. Во втором сравнении first равны, и решает second: 9 < 10.",
+        "type": "text",
+        "answers": ["1 1"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
+        "id": "q2",
+        "question": "В каком порядке std::sort расположит пары {2, 1}, {1, 5}, {2, 0}?",
+        "explanation": "По first: 1, затем двойки; среди двоек — по second: 0, затем 1.",
         "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
+          "{1, 5}, {2, 0}, {2, 1}",
+          "{2, 0}, {2, 1}, {1, 5}",
+          "{2, 1}, {2, 0}, {1, 5}",
+          "{1, 5}, {2, 1}, {2, 0}"
         ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "correct": 0
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <utility>\n\nstd::pair<int, int> sum_diff(int a, int b) {\n    return {a + b, a - b};\n}\n\nint main() {\n    auto [s, d] = sum_diff(7, 3);\n    std::cout << s * d << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Сумма 10, разность 4, произведение 40.",
+        "type": "text",
+        "answers": ["40"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <utility>\n\nint main() {\n    std::pair<int, int> p{1, 2};\n    auto [a, b] = p;\n    auto &[c, d] = p;\n    a = 10;\n    d = 20;\n    std::cout << p.first << ' ' << p.second << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "a — часть копии пары, изменение не затрагивает p. d ссылается на p.second.",
+        "type": "text",
+        "answers": ["1 20"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "С чем работают структурные привязки?",
+        "explanation": "Число переменных в привязке должно быть известно при компиляции, а размер вектора — нет.",
+        "type": "multiple",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "std::pair",
+          "Массив фиксированного размера",
+          "Структура с открытыми полями",
+          "std::vector произвольного размера"
         ],
-        "correct": 0,
-        "explanation": "Используйте std::pair как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q6",
+        "question": "Какой тип у p в объявлении auto p = std::make_pair(1, 2.5);?",
+        "explanation": "make_pair выводит типы полей из аргументов: 1 — int, 2.5 — double.",
+        "options": [
+          "std::pair<int, double>",
+          "std::pair<double, double>",
+          "std::pair<int, int>",
+          "std::pair<auto, auto>"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Как отсортировать слова по убыванию частоты, а при равной частоте — по алфавиту, не написав функцию сравнения?",
+        "explanation": "Пары сортируются по first по возрастанию, и знак минус превращает возрастание в убывание частоты. При равенстве — по second, то есть по алфавиту.",
+        "options": [
+          "Сортировать пары (−частота, слово)",
+          "Сортировать пары (частота, слово)",
+          "Сортировать пары (слово, частота)",
+          "Без функции сравнения нельзя"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Что не так в цикле for (auto [name, score] : scores) score++;?",
+        "explanation": "auto без & — копия. Для изменения элементов нужно auto &[name, score].",
+        "options": [
+          "Каждая пара копируется, и изменение score не попадает в вектор",
+          "Структурные привязки нельзя использовать в цикле",
+          "score — константа",
+          "Ничего"
+        ],
+        "correct": 0
       }
     ]
   }

@@ -13,9 +13,9 @@
     "Сортировать массивы чисел, структур и строк функцией qsort",
     "Писать функции сравнения без переполнения и искать элементы через bsearch"
   ],
-  "tags": ["C17", "Память", "void *", "qsort", "bsearch", "Обобщённое программирование"],
+  "tags": ["C23", "Память", "void *", "qsort", "bsearch", "Обобщённое программирование"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-void-pointer-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -134,7 +134,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -243,7 +243,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <string.h>\n\nvoid reverse_any(void *base, size_t n, size_t size) {\n    // Разверните массив из n элементов по size байтов.\n}\n\nint main(void) {\n    int n, m;\n    int ints[50];\n    double reals[50];\n    char word[51];\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &ints[i]);\n    }\n    scanf(\"%d\", &m);\n    for (int i = 0; i < m; i++) {\n        scanf(\"%lf\", &reals[i]);\n    }\n    scanf(\"%50s\", word);\n    reverse_any(ints, (size_t)n, sizeof ints[0]);\n    reverse_any(reals, (size_t)m, sizeof reals[0]);\n    reverse_any(word, strlen(word), sizeof word[0]);\n    for (int i = 0; i < n; i++) {\n        printf(i + 1 < n ? \"%d \" : \"%d\\n\", ints[i]);\n    }\n    for (int i = 0; i < m; i++) {\n        printf(i + 1 < m ? \"%.2f \" : \"%.2f\\n\", reals[i]);\n    }\n    printf(\"%s\\n\", word);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -347,7 +347,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

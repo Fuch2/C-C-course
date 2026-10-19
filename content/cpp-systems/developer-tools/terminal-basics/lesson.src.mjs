@@ -15,7 +15,7 @@ export default {
     'Перенаправлять stdin, stdout и stderr и строить конвейеры',
   ],
   tags: ['Терминал', 'Shell', 'Пути', 'Перенаправления', 'Код завершения'],
-  standard: 'c17',
+  standard: 'c23',
   quiz: [
     {
       q: 'Какой каталог напечатает последняя команда?',
@@ -192,7 +192,7 @@ int main(void) {
         { in: 'a\n\nb\n', name: 'Пустая строка в середине' },
         { in: '   \n', name: 'Только пробелы' },
         {
-          in: 'gcc -std=c17 -Wall -Wextra main.c -o app\n./app < in.txt > out.txt\n',
+          in: 'gcc -std=c23 -Wall -Wextra main.c -o app\n./app < in.txt > out.txt\n',
           name: 'Команды',
         },
       ],

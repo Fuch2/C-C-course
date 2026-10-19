@@ -1,149 +1,536 @@
 {
   "id": "lifetime-rule-of-zero",
-  "title": "Правило нуля — Rule of Zero",
-  "description": "Предметный класс обычно не должен вручную управлять освобождением: поля string, vector и unique_ptr уже реализуют все необходимые операции.",
+  "title": "Правило нуля",
+  "description": "Предметные классы не объявляют ни одной специальной функции: поля-владельцы — строки, контейнеры, умные указатели — сами копируются, перемещаются и освобождаются; управление ресурсом выносится в отдельный маленький класс по правилу пяти; поле unique_ptr делает класс только перемещаемым; поля-ссылки ломают правило нуля; исключение для полиморфной базы; std::indirect и std::polymorphic из C++26.",
   "moduleId": "cpp-lifetime",
   "order": 17,
-  "difficulty": "advanced",
-  "estimatedMinutes": 55,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
   "prerequisites": ["lifetime-rule-of-five"],
   "objectives": [
-    "Объяснить, как компилятор составляет операции класса из операций его членов.",
-    "Проследить на MemoryDiagram независимость копий, обеспеченную одним vector.",
-    "Реализовать Report без специальных операций и найти границу применимости правила."
+    "Строить классы из полей-владельцев без специальных функций",
+    "Отделять управление ресурсом от предметной логики",
+    "Понимать, как ограничения полей переходят на класс",
+    "Узнавать поля, которые не владеют и ломают правило нуля"
   ],
-  "tags": ["C++20", "время жизни", "управление ресурсами", "Правило нуля — Rule of Zero"],
+  "tags": ["C++23", "Время жизни", "Правило нуля", "RAII", "unique_ptr"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "lifetime-rule-of-zero-exercise",
-    "title": "Практика: Правило нуля — Rule of Zero",
-    "description": "Реализуйте Report с vector<int> samples без единой специальной операции. solve создаёт original{{a, b}}, копию copy, меняет copy.samples[0] на b и возвращает original.samples[0] + copy.samples[0].",
-    "difficulty": "advanced",
+    "title": "Журнал",
+    "description": "Структура `Log` хранит название (`std::string`), записи (`std::vector<std::string>`) и теги (`std::set<std::string>`). Никаких специальных функций — только поля.\n\nЖурналы хранятся в `std::map<std::string, Log>`. Команды:\n\n- `new L название` — создать (пересоздать) журнал;\n- `write L текст` — добавить запись;\n- `tag L тег` — добавить тег;\n- `copy M L` — журнал M становится копией L;\n- `move M L` — M забирает содержимое L, а L удаляется из словаря;\n- `show L` — `L «название»: N записей, теги: a, b` (теги по алфавиту, нет тегов — `—`) или `L: нет`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 7)",
-        "output": "10\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "new a Работа\nwrite a задача\ntag a срочно\ncopy b a\nwrite b ещё\nmove c a\nshow a\nshow b\nshow c\n",
+        "output": "a: нет\nb «Работа»: 2 записей, теги: срочно\nc «Работа»: 1 записей, теги: срочно\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "new x Пусто\nshow x\n",
+        "output": "x «Пусто»: 0 записей, теги: —\n"
       }
     ],
     "constraints": [
-      "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
+      "Команд не больше 300; write, tag, copy и move ссылаются на существующие журналы."
     ],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Проверьте класс на связанность полей: vector и индекс копируются осмысленно; vector и сырой указатель в его буфер — уже нет."
+        "id": "hint-1",
+        "text": "Копия: logs.insert_or_assign(M, logs.at(L)); перемещение: Log tmp = std::move(logs.at(L)); logs.erase(L); logs.insert_or_assign(M, std::move(tmp));",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "У Report с vector<int> копирование даёт независимые элементы, а перемещение может передать буфер. У Report с unique_ptr копирование недоступно, а перемещение обычно генерируется — это не недостаток: тип сообщает, что ресурс исключительный. Правило нуля не доказывает инварианты автоматически: если объект хранит сырой указатель внутрь своего vector, неявная копия скопирует старый адрес, а реаллокация при перемещении его обесценит. Храните индекс или вычисляйте представление по запросу.\n\nДаже пустой объявленный деструктор подавляет генерацию перемещений. Не добавляйте ~T() = default без причины и понимания специальных операций.\n\nДобавьте поле std::string title и проверьте независимость копии. Затем добавьте сырой указатель на элемент vector и объясните, почему правило нуля перестало обеспечивать нужный смысл копии."
+        "id": "hint-2",
+        "text": "Если хочется написать деструктор или конструктор копирования — остановитесь: поля уже умеют всё сами.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 7],
-        "expected": "10\n"
+        "stdin": "new a Работа\nwrite a задача\ntag a срочно\ncopy b a\nwrite b ещё\nmove c a\nshow a\nshow b\nshow c\n",
+        "expected": "a: нет\nb «Работа»: 2 записей, теги: срочно\nc «Работа»: 1 записей, теги: срочно\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "new x Пусто\nshow x\n",
+        "expected": "x «Пусто»: 0 записей, теги: —\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный случай 1",
-        "arguments": [-8, 3],
-        "expected": "-5\n"
+        "id": "hidden-1",
+        "name": "Несуществующий",
+        "stdin": "show z\n",
+        "expected": "z: нет\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный случай 2",
-        "arguments": [5, -9],
-        "expected": "-4\n"
+        "id": "hidden-2",
+        "name": "Теги по алфавиту",
+        "stdin": "new a A\ntag a b\ntag a a\ntag a b\nshow a\n",
+        "expected": "a «A»: 0 записей, теги: a, b\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный случай 3",
-        "arguments": [-1000, 1000],
-        "expected": "0\n"
+        "id": "hidden-3",
+        "name": "Копия в себя",
+        "stdin": "new a A\nwrite a 1\ncopy a a\nshow a\n",
+        "expected": "a «A»: 1 записей, теги: —\n"
       },
       {
-        "id": "case-6",
-        "name": "Граничный случай 4",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-4",
+        "name": "Перемещение в себя",
+        "stdin": "new a A\nwrite a 1\nmove a a\nshow a\n",
+        "expected": "a «A»: 1 записей, теги: —\n"
       },
       {
-        "id": "case-7",
-        "name": "Граничный случай 5",
-        "arguments": [4, 4],
-        "expected": "8\n"
+        "id": "hidden-5",
+        "name": "Копия поверх",
+        "stdin": "new a A\nnew b B\nwrite b x\ncopy b a\nshow b\n",
+        "expected": "b «A»: 0 записей, теги: —\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Пересоздание",
+        "stdin": "new a A\nwrite a 1\nnew a B\nshow a\n",
+        "expected": "a «B»: 0 записей, теги: —\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Цепочка перемещений",
+        "stdin": "new a A\nmove b a\nmove c b\nshow b\nshow c\n",
+        "expected": "b: нет\nc «A»: 0 записей, теги: —\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Независимость копий",
+        "stdin": "new a A\ncopy b a\ntag b t\nwrite a w\nshow a\nshow b\n",
+        "expected": "a «A»: 1 записей, теги: —\nb «A»: 0 записей, теги: t\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct Report { std::vector<int> samples; };\nint solve(int a, int b) { Report original{{a, b}}; Report copy = original; copy.samples[0] = b; return original.samples[0] + copy.samples[0]; }",
-    "solutionExplanation": "У Report с vector<int> копирование даёт независимые элементы, а перемещение может передать буфер. У Report с unique_ptr копирование недоступно, а перемещение обычно генерируется — это не недостаток: тип сообщает, что ресурс исключительный. Правило нуля не доказывает инварианты автоматически: если объект хранит сырой указатель внутрь своего vector, неявная копия скопирует старый адрес, а реаллокация при перемещении его обесценит. Храните индекс или вычисляйте представление по запросу.\n\nДаже пустой объявленный деструктор подавляет генерацию перемещений. Не добавляйте ~T() = default без причины и понимания специальных операций.\n\nДобавьте поле std::string title и проверьте независимость копии. Затем добавьте сырой указатель на элемент vector и объясните, почему правило нуля перестало обеспечивать нужный смысл копии.",
+    "referenceSolution": "#include <iostream>\n#include <map>\n#include <print>\n#include <set>\n#include <string>\n#include <utility>\n#include <vector>\n\nstruct Log {\n    std::string title;\n    std::vector<std::string> entries;\n    std::set<std::string> tags;\n};\n\nint main() {\n    std::map<std::string, Log> logs;\n    std::string command, l;\n    while (std::cin >> command >> l) {\n        if (command == \"new\") {\n            std::string title;\n            std::cin >> title;\n            logs.insert_or_assign(l, Log{title, {}, {}});\n        } else if (command == \"write\") {\n            std::string text;\n            std::cin >> text;\n            logs.at(l).entries.push_back(text);\n        } else if (command == \"tag\") {\n            std::string tag;\n            std::cin >> tag;\n            logs.at(l).tags.insert(tag);\n        } else if (command == \"copy\") {\n            std::string from;\n            std::cin >> from;\n            logs.insert_or_assign(l, logs.at(from));\n        } else if (command == \"move\") {\n            std::string from;\n            std::cin >> from;\n            Log tmp = std::move(logs.at(from));\n            logs.erase(from);\n            logs.insert_or_assign(l, std::move(tmp));\n        } else if (auto it = logs.find(l); it == logs.end()) {\n            std::println(\"{}: нет\", l);\n        } else {\n            std::string tags;\n            for (const std::string &t : it->second.tags) {\n                tags += (tags.empty() ? \"\" : \", \") + t;\n            }\n            std::println(\"{} «{}»: {} записей, теги: {}\", l, it->second.title, it->second.entries.size(),\n                         tags.empty() ? \"—\" : tags);\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "`Log` — агрегат из трёх владельцев, и всё, что с ним делает программа, — копирование, перемещение, присваивание, уничтожение — выполняют неявные функции, вызывающие функции полей. Копия журнала независима от оригинала, перемещение передаёт буферы без копирования, а LeakSanitizer молчит без единой строки кода очистки.\n\n`move M M` тоже безопасен: временный объект забирает содержимое, элемент удаляется и вставляется заново.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "lifetime-rule-of-zero-task-2",
+      "title": "Сцена",
+      "description": "Иерархия фигур: интерфейс `Shape` с `double area() const`, `std::unique_ptr<Shape> clone() const` и виртуальным деструктором; `Circle(r)` и `Rect(w, h)`. Класс `Scene` хранит `std::vector<std::unique_ptr<Shape>>` и **не объявляет** специальных функций — поэтому он только перемещаемый. Для копирования напишите метод `Scene clone() const`.\n\nСцены хранятся в `std::map<std::string, Scene>` (`operator[]` создаёт пустую). Команды:\n\n- `circle S r`, `rect S w h` — добавить фигуру;\n- `move T S` — `scenes[T] = std::move(scenes[S])`;\n- `clone T S` — `scenes[T] = scenes[S].clone()`;\n- `area S` — `S: N фигур, площадь A` (два знака после точки, π — `std::numbers::pi`).",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "circle A 1\nrect A 2 3\nclone B A\nrect B 1 1\nmove C A\narea A\narea B\narea C\n",
+          "output": "A: 0 фигур, площадь 0.00\nB: 3 фигур, площадь 10.14\nC: 2 фигур, площадь 9.14\n"
+        },
+        {
+          "input": "area X\n",
+          "output": "X: 0 фигур, площадь 0.00\n"
+        }
+      ],
+      "constraints": ["Команд не больше 300; размеры от 0 до 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Scene clone() const { Scene copy; for (const auto &s : shapes_) copy.shapes_.push_back(s->clone()); return copy; }",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Попробуйте написать scenes[T] = scenes[S]; — компилятор откажется: копирующее присваивание Scene удалено из-за поля unique_ptr.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "circle A 1\nrect A 2 3\nclone B A\nrect B 1 1\nmove C A\narea A\narea B\narea C\n",
+          "expected": "A: 0 фигур, площадь 0.00\nB: 3 фигур, площадь 10.14\nC: 2 фигур, площадь 9.14\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "area X\n",
+          "expected": "X: 0 фигур, площадь 0.00\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Клон в себя",
+          "stdin": "rect A 10 10\nclone A A\narea A\n",
+          "expected": "A: 1 фигур, площадь 100.00\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Клон поверх",
+          "stdin": "rect A 3 4\ncircle B 2\nclone A B\narea A\n",
+          "expected": "A: 1 фигур, площадь 12.57\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Независимость клона",
+          "stdin": "circle A 10\nclone B A\ncircle A 1\narea A\narea B\n",
+          "expected": "A: 2 фигур, площадь 317.30\nB: 1 фигур, площадь 314.16\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Цепочка перемещений",
+          "stdin": "rect A 1000 1000\nmove B A\nmove C B\narea C\n",
+          "expected": "C: 1 фигур, площадь 1000000.00\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Нулевые размеры",
+          "stdin": "rect A 0 5\ncircle A 0\narea A\n",
+          "expected": "A: 2 фигур, площадь 0.00\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Перемещение поверх",
+          "stdin": "circle A 2\nrect B 1 1\nmove B A\narea B\n",
+          "expected": "B: 1 фигур, площадь 12.57\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Клон клона",
+          "stdin": "circle A 1\nclone B A\nclone C B\nclone D C\narea D\n",
+          "expected": "D: 1 фигур, площадь 3.14\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Три прямоугольника",
+          "stdin": "rect A 2 2\nrect A 3 3\nrect A 4 4\narea A\n",
+          "expected": "A: 3 фигур, площадь 29.00\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <memory>\n#include <numbers>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Shape {\npublic:\n    virtual ~Shape() = default;\n    virtual double area() const = 0;\n    virtual std::unique_ptr<Shape> clone() const = 0;\n};\n\nclass Circle final : public Shape {\npublic:\n    explicit Circle(double r) : r_(r) {}\n    double area() const override {\n        return std::numbers::pi * r_ * r_;\n    }\n    std::unique_ptr<Shape> clone() const override {\n        return std::make_unique<Circle>(r_);\n    }\n\nprivate:\n    double r_;\n};\n\nclass Rect final : public Shape {\npublic:\n    Rect(double w, double h) : w_(w), h_(h) {}\n    double area() const override {\n        return w_ * h_;\n    }\n    std::unique_ptr<Shape> clone() const override {\n        return std::make_unique<Rect>(w_, h_);\n    }\n\nprivate:\n    double w_, h_;\n};\n\nclass Scene {\npublic:\n    void add(std::unique_ptr<Shape> shape) {\n        shapes_.push_back(std::move(shape));\n    }\n\n    Scene clone() const {\n        Scene copy;\n        for (const auto &s : shapes_) {\n            copy.shapes_.push_back(s->clone());\n        }\n        return copy;\n    }\n\n    std::size_t size() const {\n        return shapes_.size();\n    }\n\n    double area() const {\n        double sum = 0;\n        for (const auto &s : shapes_) {\n            sum += s->area();\n        }\n        return sum;\n    }\n\nprivate:\n    std::vector<std::unique_ptr<Shape>> shapes_;\n};\n\nint main() {\n    std::map<std::string, Scene> scenes;\n    std::string command, s;\n    while (std::cin >> command >> s) {\n        if (command == \"circle\") {\n            double r;\n            std::cin >> r;\n            scenes[s].add(std::make_unique<Circle>(r));\n        } else if (command == \"rect\") {\n            double w, h;\n            std::cin >> w >> h;\n            scenes[s].add(std::make_unique<Rect>(w, h));\n        } else if (command == \"move\" || command == \"clone\") {\n            std::string from;\n            std::cin >> from;\n            if (command == \"move\") {\n                scenes[s] = std::move(scenes[from]);\n            } else {\n                scenes[s] = scenes[from].clone();\n            }\n        } else {\n            const Scene &scene = scenes[s];\n            std::println(\"{}: {} фигур, площадь {:.2f}\", s, scene.size(), scene.area());\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Поле `std::vector<std::unique_ptr<Shape>>` определяет поведение всего класса: перемещение сцены передаёт вектор указателей, копирование запрещено, уничтожение удаляет все фигуры через виртуальный деструктор. Ни одной специальной функции `Scene` не объявляет.\n\nКопию, которая нужна предметной логике, даёт отдельный метод `clone`: он явно говорит читателю, что копирование дорогое и глубокое. В C++26 вектор `std::polymorphic<Shape>` позволил бы копировать сцену обычным присваиванием.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-rule-of-zero-task-3",
+      "title": "Найди ошибку: ярлыки без владельца",
+      "description": "Каждая пара ввода — текст ярлыка и координата x. Программа создаёт ярлыки в векторе и печатает их в формате `текст @ x`. Класс `Label` следует правилу нуля — у него нет специальных функций, — но AddressSanitizer сообщает об ошибке при печати. Найдите и исправьте её.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Label {\npublic:\n    Label(const std::string &text, int x) : text_(text), x_(x) {}\n\n    void print() const {\n        std::println(\"{} @ {}\", text_, x_);\n    }\n\nprivate:\n    const std::string &text_;\n    int x_;\n};\n\nint main() {\n    std::vector<Label> labels;\n    while (true) {\n        std::string text;\n        int x;\n        if (!(std::cin >> text >> x)) {\n            break;\n        }\n        labels.emplace_back(text, x);\n    }\n    for (const Label &label : labels) {\n        label.print();\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "Вход 10\nВыход 200\n",
+          "output": "Вход @ 10\nВыход @ 200\n"
+        },
+        {
+          "input": "один 1\n",
+          "output": "один @ 1\n"
+        }
+      ],
+      "constraints": ["Пар не больше 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Чем владеет Label? Куда указывает поле text_ после окончания итерации цикла?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Правило нуля работает только с полями-владельцами: храните std::string, а не ссылку.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "Вход 10\nВыход 200\n",
+          "expected": "Вход @ 10\nВыход @ 200\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "один 1\n",
+          "expected": "один @ 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "a 0\n",
+          "expected": "a @ 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "длинный-текст-ярлыка-который-точно-в-куче 5\n",
+          "expected": "длинный-текст-ярлыка-который-точно-в-куче @ 5\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "x 1\ny 2\nz 3\n",
+          "expected": "x @ 1\ny @ 2\nz @ 3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "Кнопка -10\n",
+          "expected": "Кнопка @ -10\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "p 1\np 2\n",
+          "expected": "p @ 1\np @ 2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "Меню 0\nФайл 10\nПравка 20\nВид 30\n",
+          "expected": "Меню @ 0\nФайл @ 10\nПравка @ 20\nВид @ 30\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "q 100\n",
+          "expected": "q @ 100\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "abc 7\ndef 8\n",
+          "expected": "abc @ 7\ndef @ 8\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Label {\npublic:\n    Label(const std::string &text, int x) : text_(text), x_(x) {}\n\n    void print() const {\n        std::println(\"{} @ {}\", text_, x_);\n    }\n\nprivate:\n    std::string text_;\n    int x_;\n};\n\nint main() {\n    std::vector<Label> labels;\n    while (true) {\n        std::string text;\n        int x;\n        if (!(std::cin >> text >> x)) {\n            break;\n        }\n        labels.emplace_back(text, x);\n    }\n    for (const Label &label : labels) {\n        label.print();\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Поле `const std::string &text_` — ссылка на строку `text`, которая живёт одну итерацию цикла. Ярлык переживает её и при печати обращается к уничтоженному объекту: `stack-use-after-scope`. Неявное копирование при росте вектора честно копирует ссылку — и копия повисает так же.\n\nПравило нуля предполагает, что поля **владеют** своими данными. Ссылки, `string_view` и сырые указатели в полях не владеют, и неявные функции класса не могут сделать их безопасными. Поле `std::string text_` исправляет класс без единой специальной функции.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-rule-of-zero-task-4",
+      "title": "Сессия",
+      "description": "Имитация C-API: `int open_resource(вид)` выдаёт номера 1, 2, 3, … и печатает `открыт вид #N`; `void close_resource(int id)` печатает `закрыт #N`.\n\n1. Напишите маленький владелец `Handle` по правилу пяти: хранит номер (0 — пусто), закрывает его в деструкторе и при замене перемещающим присваиванием, копирование запрещено.\n2. Напишите `Session` по правилу **нуля**: поля `std::string user_`, `Handle connection_` («соединение»), `Handle log_` («журнал»), открываемые в конструкторе `Session(user)` в этом порядке. Никаких специальных функций.\n\nСессии хранятся в `std::map<std::string, Session>`. Команды:\n\n- `start S пользователь` — `insert_or_assign(S, Session(пользователь))`;\n- `move S T` — перенести сессию S под имя T: `Session tmp = std::move(sessions.at(S)); sessions.erase(S); sessions.insert_or_assign(T, std::move(tmp));`;\n- `end S` — `erase(S)`;\n- `who S` — `S: пользователь` или `S: нет сессии`.\n\nВ конце удаляйте оставшиеся сессии от последнего имени к первому.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "start a Ада\nstart b Алан\nwho a\nend a\nwho a\n",
+          "output": "открыт соединение #1\nоткрыт журнал #2\nоткрыт соединение #3\nоткрыт журнал #4\na: Ада\nзакрыт #2\nзакрыт #1\na: нет сессии\nзакрыт #4\nзакрыт #3\n"
+        },
+        {
+          "input": "start a X\nmove a b\nwho a\nwho b\n",
+          "output": "открыт соединение #1\nоткрыт журнал #2\na: нет сессии\nb: X\nзакрыт #2\nзакрыт #1\n"
+        }
+      ],
+      "constraints": ["Команд не больше 200; move и end ссылаются на существующие сессии; T ≠ S."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Порядок закрытия при уничтожении Session — обратный порядку объявления полей: сначала журнал, потом соединение.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Замена существующей сессии перемещающим присваиванием Session (неявным!) по очереди присваивает поля: connection_ закрывает старое соединение, затем log_ — старый журнал.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "start a Ада\nstart b Алан\nwho a\nend a\nwho a\n",
+          "expected": "открыт соединение #1\nоткрыт журнал #2\nоткрыт соединение #3\nоткрыт журнал #4\na: Ада\nзакрыт #2\nзакрыт #1\na: нет сессии\nзакрыт #4\nзакрыт #3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "start a X\nmove a b\nwho a\nwho b\n",
+          "expected": "открыт соединение #1\nоткрыт журнал #2\na: нет сессии\nb: X\nзакрыт #2\nзакрыт #1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-2",
+          "name": "Замена сессии",
+          "stdin": "start a X\nstart a Y\nwho a\n",
+          "expected": "открыт соединение #1\nоткрыт журнал #2\nоткрыт соединение #3\nоткрыт журнал #4\nзакрыт #1\nзакрыт #2\na: Y\nзакрыт #4\nзакрыт #3\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Перенос поверх существующей",
+          "stdin": "start a X\nstart b Y\nmove a b\nwho b\n",
+          "expected": "открыт соединение #1\nоткрыт журнал #2\nоткрыт соединение #3\nоткрыт журнал #4\nзакрыт #3\nзакрыт #4\nb: X\nзакрыт #2\nзакрыт #1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Повторный старт",
+          "stdin": "start a X\nend a\nstart a Y\n",
+          "expected": "открыт соединение #1\nоткрыт журнал #2\nзакрыт #2\nзакрыт #1\nоткрыт соединение #3\nоткрыт журнал #4\nзакрыт #4\nзакрыт #3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Закрытие в конце по именам",
+          "stdin": "start z 1\nstart a 2\nstart m 3\n",
+          "expected": "открыт соединение #1\nоткрыт журнал #2\nоткрыт соединение #3\nоткрыт журнал #4\nоткрыт соединение #5\nоткрыт журнал #6\nзакрыт #2\nзакрыт #1\nзакрыт #6\nзакрыт #5\nзакрыт #4\nзакрыт #3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Цепочка переносов",
+          "stdin": "start a X\nmove a b\nmove b c\nmove c d\nwho d\n",
+          "expected": "открыт соединение #1\nоткрыт журнал #2\nd: X\nзакрыт #2\nзакрыт #1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Нет сессий",
+          "stdin": "who x\n",
+          "expected": "x: нет сессии\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Ручное завершение",
+          "stdin": "start a P\nstart b Q\nend b\nend a\n",
+          "expected": "открыт соединение #1\nоткрыт журнал #2\nоткрыт соединение #3\nоткрыт журнал #4\nзакрыт #4\nзакрыт #3\nзакрыт #2\nзакрыт #1\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <iterator>\n#include <map>\n#include <print>\n#include <string>\n#include <utility>\n\nint open_resource(const std::string &kind) {\n    static int next = 1;\n    std::println(\"открыт {} #{}\", kind, next);\n    return next++;\n}\n\nvoid close_resource(int id) {\n    std::println(\"закрыт #{}\", id);\n}\n\nclass Handle {\npublic:\n    Handle() = default;\n    explicit Handle(int id) : id_(id) {}\n    ~Handle() {\n        reset();\n    }\n    Handle(const Handle &) = delete;\n    Handle &operator=(const Handle &) = delete;\n    Handle(Handle &&other) noexcept : id_(std::exchange(other.id_, 0)) {}\n    Handle &operator=(Handle &&other) noexcept {\n        if (this != &other) {\n            reset();\n            id_ = std::exchange(other.id_, 0);\n        }\n        return *this;\n    }\n\nprivate:\n    void reset() {\n        if (id_ != 0) {\n            close_resource(std::exchange(id_, 0));\n        }\n    }\n\n    int id_ = 0;\n};\n\nclass Session {\npublic:\n    explicit Session(std::string user)\n        : user_(std::move(user)), connection_(open_resource(\"соединение\")), log_(open_resource(\"журнал\")) {}\n\n    const std::string &user() const {\n        return user_;\n    }\n\nprivate:\n    std::string user_;\n    Handle connection_;\n    Handle log_;\n};\n\nint main() {\n    std::map<std::string, Session> sessions;\n    std::string command, s;\n    while (std::cin >> command >> s) {\n        if (command == \"start\") {\n            std::string user;\n            std::cin >> user;\n            sessions.insert_or_assign(s, Session(user));\n        } else if (command == \"move\") {\n            std::string to;\n            std::cin >> to;\n            Session tmp = std::move(sessions.at(s));\n            sessions.erase(s);\n            sessions.insert_or_assign(to, std::move(tmp));\n        } else if (command == \"end\") {\n            sessions.erase(s);\n        } else if (auto it = sessions.find(s); it != sessions.end()) {\n            std::println(\"{}: {}\", s, it->second.user());\n        } else {\n            std::println(\"{}: нет сессии\", s);\n        }\n    }\n    while (!sessions.empty()) {\n        sessions.erase(std::prev(sessions.end()));\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Вся работа с ресурсом сосредоточена в `Handle` — пятнадцать строк по правилу пяти. `Session` о ресурсах не знает ничего: её неявные перемещающие операции перемещают поля, неявное копирование удалено (поле `Handle` некопируемо), а неявный деструктор закрывает журнал и соединение в обратном порядке. Добавьте в сессию третий ресурс — и ни одна строка, кроме конструктора, не изменится.\n\nПереносимая сессия не закрывает ресурсов — они переходят к новому владельцу; закрываются только ресурсы сессии, которую заменили.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "lifetime-rule-of-zero-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Что означает правило нуля?",
+        "id": "q1",
+        "question": "Что говорит правило нуля?",
+        "explanation": "Неявные функции класса вызывают функции полей.",
         "options": [
-          "Никогда не использовать конструкторы вообще",
-          "Поручить управление ресурсами владеющим членам и не писать специальные операции"
+          "Предметные классы не объявляют специальных функций — поля сами управляют ресурсами",
+          "Классы не должны иметь полей",
+          "Все специальные функции нужно объявлять = delete",
+          "Указатели должны быть нулевыми"
         ],
-        "correct": 1,
-        "explanation": "У Report с vector<int> копирование даёт независимые элементы, а перемещение может передать буфер. У Report с unique_ptr копирование недоступно, а перемещение обычно генерируется — это не недостаток: тип сообщает, что ресурс исключительный. Правило нуля не доказывает инварианты автоматически: если объект хранит сырой указатель внутрь своего vector, неявная копия скопирует старый адрес, а реаллокация при перемещении его обесценит. Храните индекс или вычисляйте представление по запросу."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["8 4", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "Report a → vector A: 8 2\nReport b = a → vector B: 8 2; специальные операции Report не написаны\nb.samples[0] = 4 → B: 4 2\nA остаётся 8 2; очистку и независимость обеспечивают члены"
+        "id": "q2",
+        "question": "Класс содержит поля std::string и std::vector<int>. Что делает его неявное копирование?",
+        "explanation": "Каждое поле копируется своим конструктором копирования.",
+        "options": [
+          "Глубокие копии строки и вектора",
+          "Копирует адреса буферов",
+          "Ничего",
+          "Ошибку компиляции"
+        ],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q3",
+        "question": "Класс содержит поле std::unique_ptr<int>. Что можно с ним делать без собственных специальных функций?",
+        "explanation": "Ограничение поля переходит на класс автоматически.",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Даже пустой объявленный деструктор подавляет генерацию перемещений. Не добавляйте ~T() = default без причины и понимания специальных операций."
+          "Перемещать, но не копировать",
+          "Копировать и перемещать",
+          "Только копировать",
+          "Ни то ни другое"
         ],
-        "correct": 1,
-        "explanation": "Добавьте поле std::string title и проверьте независимость копии. Затем добавьте сырой указатель на элемент vector и объясните, почему правило нуля перестало обеспечивать нужный смысл копии."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Какие поля ломают правило нуля? Выберите все.",
+        "explanation": "Вектор строк — владелец, с ним всё работает.",
+        "type": "multiple",
+        "options": [
+          "Сырой указатель-владелец",
+          "Ссылка на строку",
+          "std::string_view на чужие данные",
+          "std::vector<std::string>"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nstruct Bag {\n    std::vector<std::string> items;\n};\n\nint main() {\n    Bag a{{\"x\", \"y\"}};\n    Bag b = a;\n    b.items.push_back(\"z\");\n    Bag c = std::move(b);\n    std::println(\"{} {}\", a.items.size(), c.items.size());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Копия независима, перемещение забирает вектор b целиком.",
+        "type": "text",
+        "answers": ["2 3"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Предметному классу понадобился деструктор. О чём это сигнализирует?",
+        "explanation": "Владелец по правилу пяти, предметный класс по правилу нуля.",
+        "options": [
+          "Внутри прячется ресурс, который стоит вынести в отдельный класс-владелец",
+          "Всё в порядке",
+          "Нужно сделать деструктор виртуальным",
+          "Нужно удалить все поля"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Какое исключение из правила нуля оправдано?",
+        "explanation": "Ей нужен виртуальный деструктор; копирование базы при этом обычно запрещают.",
+        "options": [
+          "Полиморфная база с виртуальным деструктором",
+          "Класс с полем std::string",
+          "Класс с полем int",
+          "Структура данных без методов"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Как называется шаблон C++26 — владелец объекта в куче с семантикой значения (глубоко копируется)? std::…",
+        "explanation": "std::indirect<T> для конкретного типа, std::polymorphic<T> — для иерархий.",
+        "type": "text",
+        "answers": ["indirect", "std::indirect", "polymorphic", "std::polymorphic"],
+        "placeholder": "Имя"
       }
     ]
   }

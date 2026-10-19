@@ -1,131 +1,536 @@
 {
   "id": "oop-runtime-polymorphism",
   "title": "Полиморфизм во время выполнения",
-  "description": "Гетерогенная коллекция содержит разные конкретные типы за общим интерфейсом. vector<unique_ptr<Sensor>> владеет датчиками, сохраняя их динамические типы. unique_ptr — единственный владелец; std::make_unique создаёт объект, а std::move передаёт владение. Копировать unique_ptr нельзя. Перемещение не копирует сам датчик и оставляет исходный указатель пустым.",
+  "description": "Ветвление по коду вида и почему оно размазывает знания о видах по программе; полиморфизм собирает их в классах; принцип открытости/закрытости; фабрика, создающая объекты из данных и возвращающая unique_ptr на базу; dynamic_cast для безопасной проверки типа и опасность static_cast вниз по иерархии.",
   "moduleId": "cpp-oop",
-  "order": 19,
-  "difficulty": "advanced",
-  "estimatedMinutes": 60,
-  "prerequisites": ["oop-abstract-classes"],
+  "order": 22,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["oop-virtual-destructor"],
   "objectives": [
-    "Применить Полиморфизм во время выполнения в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Заменять ветвление по коду вида виртуальными функциями",
+    "Собирать создание объектов из данных в одну фабрику",
+    "Безопасно проверять тип через dynamic_cast и понимать, когда это признак проблемы"
   ],
-  "tags": ["C++20", "ООП", "Полиморфизм во время выполнения"],
+  "tags": ["C++23", "ООП", "Полиморфизм", "Фабрика", "dynamic_cast", "SOLID"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-runtime-polymorphism-exercise",
-    "title": "Практика: Полиморфизм во время выполнения",
-    "description": "Source имеет pure virtual read() const и виртуальный деструктор. Direct(int) возвращает сохранённое число, Doubled(int) — удвоенное. solve(a,b) создаёт vector<unique_ptr<Source>>, добавляет Direct{a} и Doubled{b} через make_unique, затем возвращает сумму read в одном цикле. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Фабрика фигур",
+    "description": "Напишите фабрику `std::unique_ptr<Shape> read_shape(std::istream &in)`, которая читает из потока вид фигуры и её размеры и возвращает созданную фигуру или `nullptr`, если ввод закончился. Виды: `circle r` (`круг`), `rect w h` (`прямоугольник`), `square s` (`квадрат`), `tri a b c` (`треугольник`, формула Герона).\n\n`main` вызывает фабрику в цикле, печатает `имя: площадь` с двумя знаками для каждой фигуры и в конце `фигур N`. Кроме фабрики, виды фигур нигде не упоминаются.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 4)",
-        "output": "11\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "circle 1\nsquare 2\ntri 3 4 5\n",
+        "output": "круг: 3.14\nквадрат: 4.00\nтреугольник: 6.00\nфигур 3\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "",
+        "output": "фигур 0\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Фигур не больше 50; ввод корректен."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "Сигнатура фабрики принимает поток: read_shape(std::cin). Внутри — if по слову вида и std::make_unique<…>.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Цикл: while (auto shape = read_shape(std::cin)) { … } — пустой указатель останавливает его.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 4],
-        "expected": "11\n"
+        "stdin": "circle 1\nsquare 2\ntri 3 4 5\n",
+        "expected": "круг: 3.14\nквадрат: 4.00\nтреугольник: 6.00\nфигур 3\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "",
+        "expected": "фигур 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [-3, 2],
-        "expected": "1\n"
+        "id": "hidden-1",
+        "name": "Прямоугольник",
+        "stdin": "rect 2 3\n",
+        "expected": "прямоугольник: 6.00\nфигур 1\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [1000, -1000],
-        "expected": "-1000\n"
+        "id": "hidden-2",
+        "name": "Большой круг",
+        "stdin": "circle 10\n",
+        "expected": "круг: 314.16\nфигур 1\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Равносторонний",
+        "stdin": "tri 1 1 1\n",
+        "expected": "треугольник: 0.43\nфигур 1\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "В одну строку",
+        "stdin": "square 1 square 2 square 3\n",
+        "expected": "квадрат: 1.00\nквадрат: 4.00\nквадрат: 9.00\nфигур 3\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Маленькие",
+        "stdin": "rect 0.5 0.5\ncircle 0.5\n",
+        "expected": "прямоугольник: 0.25\nкруг: 0.79\nфигур 2\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Смесь",
+        "stdin": "tri 5 5 6\nrect 1 100\n",
+        "expected": "треугольник: 12.00\nпрямоугольник: 100.00\nфигур 2\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Большой квадрат",
+        "stdin": "square 1000\n",
+        "expected": "квадрат: 1000000.00\nфигур 1\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Одинаковые",
+        "stdin": "circle 2\ncircle 2\n",
+        "expected": "круг: 12.57\nкруг: 12.57\nфигур 2\n"
       }
     ],
-    "referenceSolution": "#include <memory>\n#include <vector>\nstruct Source { virtual int read() const = 0; virtual ~Source() = default; };\nclass Direct : public Source { int value_; public: explicit Direct(int x) : value_(x) {} int read() const override { return value_; } };\nclass Doubled : public Source { int value_; public: explicit Doubled(int x) : value_(x) {} int read() const override { return value_*2; } };\nint solve(int a,int b) { std::vector<std::unique_ptr<Source>> v; v.push_back(std::make_unique<Direct>(a)); v.push_back(std::make_unique<Doubled>(b)); int total=0; for(const auto& s:v) total+=s->read(); return total; }",
-    "solutionExplanation": "Source имеет pure virtual read() const и виртуальный деструктор. Direct(int) возвращает сохранённое число, Doubled(int) — удвоенное. solve(a,b) создаёт vector<unique_ptr<Source>>, добавляет Direct{a} и Doubled{b} через make_unique, затем возвращает сумму read в одном цикле. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не храните производные значения в vector<Base>: это либо невозможно для абстрактной базы, либо приводит к срезке. Не используйте голый new как способ избежать размышления о владельце. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <cmath>\n#include <iostream>\n#include <memory>\n#include <numbers>\n#include <print>\n#include <string>\n\nclass Shape {\npublic:\n    virtual ~Shape() = default;\n    virtual double area() const = 0;\n    virtual std::string name() const = 0;\n};\n\nclass Circle final : public Shape {\npublic:\n    explicit Circle(double r) : r_(r) {}\n    double area() const override {\n        return std::numbers::pi * r_ * r_;\n    }\n    std::string name() const override {\n        return \"круг\";\n    }\n\nprivate:\n    double r_;\n};\n\nclass Rect final : public Shape {\npublic:\n    Rect(double w, double h) : w_(w), h_(h) {}\n    double area() const override {\n        return w_ * h_;\n    }\n    std::string name() const override {\n        return \"прямоугольник\";\n    }\n\nprivate:\n    double w_;\n    double h_;\n};\n\nclass Square final : public Shape {\npublic:\n    explicit Square(double s) : s_(s) {}\n    double area() const override {\n        return s_ * s_;\n    }\n    std::string name() const override {\n        return \"квадрат\";\n    }\n\nprivate:\n    double s_;\n};\n\nclass Triangle final : public Shape {\npublic:\n    Triangle(double a, double b, double c) : a_(a), b_(b), c_(c) {}\n    double area() const override {\n        double p = (a_ + b_ + c_) / 2;\n        return std::sqrt(p * (p - a_) * (p - b_) * (p - c_));\n    }\n    std::string name() const override {\n        return \"треугольник\";\n    }\n\nprivate:\n    double a_;\n    double b_;\n    double c_;\n};\n\nstd::unique_ptr<Shape> read_shape(std::istream &in) {\n    std::string kind;\n    if (!(in >> kind)) {\n        return nullptr;\n    }\n    if (kind == \"circle\") {\n        double r;\n        in >> r;\n        return std::make_unique<Circle>(r);\n    }\n    if (kind == \"rect\") {\n        double w, h;\n        in >> w >> h;\n        return std::make_unique<Rect>(w, h);\n    }\n    if (kind == \"square\") {\n        double s;\n        in >> s;\n        return std::make_unique<Square>(s);\n    }\n    double a, b, c;\n    in >> a >> b >> c;\n    return std::make_unique<Triangle>(a, b, c);\n}\n\nint main() {\n    int count = 0;\n    while (auto shape = read_shape(std::cin)) {\n        std::println(\"{}: {:.2f}\", shape->name(), shape->area());\n        count++;\n    }\n    std::println(\"фигур {}\", count);\n    return 0;\n}\n",
+    "solutionExplanation": "Фабрика — единственное место, где перечислены виды фигур. Она отвечает только за создание объекта из данных; всё остальное — имя, площадь — фигура знает сама. `main` работает с `Shape` и не изменится, когда появится шестиугольник: добавится класс и ветка в фабрике.\n\nФабрика принимает поток, а не читает `std::cin` напрямую: так её можно вызвать для файла или строки — например, в тестах.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-runtime-polymorphism-task-2",
+      "title": "Стековая машина",
+      "description": "Программа для стековой машины — слова через пробел: `push N`, `add`, `sub`, `mul`, `dup`, `swap`, `print`. Опишите абстрактный класс `Command` с методом `bool execute(std::vector<long long> &stack) const` (`false` — на стеке не хватает значений) и по классу на каждую команду. Сначала **разберите** всю программу в `std::vector<std::unique_ptr<Command>>`, затем **выполните** команды по порядку.\n\n- `add`, `sub`, `mul` снимают два значения `a` (ниже) и `b` (вершина) и кладут `a + b`, `a − b`, `a · b`;\n- `dup` дублирует вершину, `swap` меняет два верхних значения;\n- `print` печатает вершину, не снимая её.\n\nЕсли команде не хватает значений, напечатайте `ошибка: команда N` (номер с 1) и остановитесь.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "push 2 push 3 add dup mul print\n",
+          "output": "25\n"
+        },
+        {
+          "input": "push 1 add print\n",
+          "output": "ошибка: команда 2\n"
+        }
+      ],
+      "constraints": [
+        "Команд не больше 100; числа по модулю до 10⁶; результаты помещаются в long long."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Фабрика команд: std::unique_ptr<Command> make_command(const std::string &word, std::istream &in) — для push она дочитывает число.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Двухместная команда: if (stack.size() < 2) return false; long long b = stack.back(); stack.pop_back(); long long a = stack.back(); stack.back() = a op b;",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "push 2 push 3 add dup mul print\n",
+          "expected": "25\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "push 1 add print\n",
+          "expected": "ошибка: команда 2\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Порядок вычитания",
+          "stdin": "push 5 push 2 sub print\n",
+          "expected": "3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Обмен",
+          "stdin": "push 5 push 2 swap sub print\n",
+          "expected": "-3\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Печать пустого",
+          "stdin": "print\n",
+          "expected": "ошибка: команда 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Большое произведение",
+          "stdin": "push 1000000 dup mul print\n",
+          "expected": "1000000000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Несколько печатей",
+          "stdin": "push 1 print push 2 print add print\n",
+          "expected": "1\n2\n3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Дублирование пустого",
+          "stdin": "dup\n",
+          "expected": "ошибка: команда 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Обмен с одним",
+          "stdin": "push 7 swap\n",
+          "expected": "ошибка: команда 2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пустая программа",
+          "stdin": "",
+          "expected": ""
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nusing Stack = std::vector<long long>;\n\nclass Command {\npublic:\n    virtual ~Command() = default;\n    virtual bool execute(Stack &stack) const = 0;\n};\n\nclass Push final : public Command {\npublic:\n    explicit Push(long long value) : value_(value) {}\n    bool execute(Stack &stack) const override {\n        stack.push_back(value_);\n        return true;\n    }\n\nprivate:\n    long long value_;\n};\n\nclass Binary : public Command {\npublic:\n    bool execute(Stack &stack) const final {\n        if (stack.size() < 2) {\n            return false;\n        }\n        long long b = stack.back();\n        stack.pop_back();\n        stack.back() = combine(stack.back(), b);\n        return true;\n    }\n\nprivate:\n    virtual long long combine(long long a, long long b) const = 0;\n};\n\nclass Add final : public Binary {\n    long long combine(long long a, long long b) const override {\n        return a + b;\n    }\n};\n\nclass Sub final : public Binary {\n    long long combine(long long a, long long b) const override {\n        return a - b;\n    }\n};\n\nclass Mul final : public Binary {\n    long long combine(long long a, long long b) const override {\n        return a * b;\n    }\n};\n\nclass Dup final : public Command {\npublic:\n    bool execute(Stack &stack) const override {\n        if (stack.empty()) {\n            return false;\n        }\n        stack.push_back(stack.back());\n        return true;\n    }\n};\n\nclass Swap final : public Command {\npublic:\n    bool execute(Stack &stack) const override {\n        if (stack.size() < 2) {\n            return false;\n        }\n        std::swap(stack[stack.size() - 1], stack[stack.size() - 2]);\n        return true;\n    }\n};\n\nclass Print final : public Command {\npublic:\n    bool execute(Stack &stack) const override {\n        if (stack.empty()) {\n            return false;\n        }\n        std::println(\"{}\", stack.back());\n        return true;\n    }\n};\n\nstd::unique_ptr<Command> make_command(const std::string &word, std::istream &in) {\n    if (word == \"push\") {\n        long long value;\n        in >> value;\n        return std::make_unique<Push>(value);\n    }\n    if (word == \"add\") {\n        return std::make_unique<Add>();\n    }\n    if (word == \"sub\") {\n        return std::make_unique<Sub>();\n    }\n    if (word == \"mul\") {\n        return std::make_unique<Mul>();\n    }\n    if (word == \"dup\") {\n        return std::make_unique<Dup>();\n    }\n    if (word == \"swap\") {\n        return std::make_unique<Swap>();\n    }\n    return std::make_unique<Print>();\n}\n\nint main() {\n    std::vector<std::unique_ptr<Command>> program;\n    std::string word;\n    while (std::cin >> word) {\n        program.push_back(make_command(word, std::cin));\n    }\n    Stack stack;\n    for (std::size_t i = 0; i < program.size(); i++) {\n        if (!program[i]->execute(stack)) {\n            std::println(\"ошибка: команда {}\", i + 1);\n            break;\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Команды — объекты, а программа — вектор таких объектов. Исполнитель не знает ни одной команды: он вызывает `execute` и проверяет результат. Новая команда — новый класс и ветка в фабрике. Разбор и исполнение разделены: сначала вся программа превращается в объекты, потом выполняется.\n\nТри арифметические команды отличаются только операцией, поэтому у них общий абстрактный класс `Binary` с финальным `execute` (проверка стека, снятие и запись) и закрытым шагом `combine` — схема NVI. Это шаблон «Команда»: действие, превращённое в объект, которое можно хранить, передавать и выполнять позже.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-runtime-polymorphism-task-3",
+      "title": "Найди ошибку: каждая вещь — книга",
+      "description": "Корзина хранит книги (`book цена страницы`) и кружки (`mug цена`) в `std::vector<std::unique_ptr<Item>>`. Программа печатает `сумма S, страниц P`, где P — суммарное число страниц **только книг**.\n\nС кружками в корзине программа печатает странное число страниц, а под санитайзерами аварийно завершается. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Item {\npublic:\n    virtual ~Item() = default;\n    virtual int price() const = 0;\n};\n\nclass Book final : public Item {\npublic:\n    Book(int price, int pages) : price_(price), pages_(pages) {}\n\n    int price() const override {\n        return price_;\n    }\n\n    int pages() const {\n        return pages_;\n    }\n\nprivate:\n    int price_;\n    int pages_;\n};\n\nclass Mug final : public Item {\npublic:\n    explicit Mug(int price) : price_(price) {}\n\n    int price() const override {\n        return price_;\n    }\n\nprivate:\n    int price_;\n};\n\nint main() {\n    std::vector<std::unique_ptr<Item>> cart;\n    std::string kind;\n    while (std::cin >> kind) {\n        if (kind == \"book\") {\n            int price, pages;\n            std::cin >> price >> pages;\n            cart.push_back(std::make_unique<Book>(price, pages));\n        } else {\n            int price;\n            std::cin >> price;\n            cart.push_back(std::make_unique<Mug>(price));\n        }\n    }\n    int total = 0, pages = 0;\n    for (const auto &item : cart) {\n        total += item->price();\n        pages += static_cast<const Book *>(item.get())->pages();\n    }\n    std::println(\"сумма {}, страниц {}\", total, pages);\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "book 500 320\nmug 300\nbook 400 180\n",
+          "output": "сумма 1200, страниц 500\n"
+        },
+        {
+          "input": "book 100 10\n",
+          "output": "сумма 100, страниц 10\n"
+        }
+      ],
+      "constraints": ["Товаров не больше 30; цены до 10⁴, страницы до 10⁴."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Прочитайте сообщение UBSan: downcast of address … which does not point to an object of type Book.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "static_cast не проверяет тип. Используйте dynamic_cast<const Book *> и прибавляйте страницы, только если результат не nullptr.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "book 500 320\nmug 300\nbook 400 180\n",
+          "expected": "сумма 1200, страниц 500\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "book 100 10\n",
+          "expected": "сумма 100, страниц 10\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "mug 300\n",
+          "expected": "сумма 300, страниц 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "mug 1\nmug 2\n",
+          "expected": "сумма 3, страниц 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "book 1 1\nmug 1\n",
+          "expected": "сумма 2, страниц 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "mug 5\nbook 5 5\n",
+          "expected": "сумма 10, страниц 5\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "book 10000 10000\nbook 10000 10000\nmug 10000\n",
+          "expected": "сумма 30000, страниц 20000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "mug 0\nbook 0 0\n",
+          "expected": "сумма 0, страниц 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "book 50 200\nmug 70\nmug 80\nbook 60 100\n",
+          "expected": "сумма 260, страниц 300\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "mug 100\nmug 100\nmug 100\n",
+          "expected": "сумма 300, страниц 0\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Item {\npublic:\n    virtual ~Item() = default;\n    virtual int price() const = 0;\n};\n\nclass Book final : public Item {\npublic:\n    Book(int price, int pages) : price_(price), pages_(pages) {}\n\n    int price() const override {\n        return price_;\n    }\n\n    int pages() const {\n        return pages_;\n    }\n\nprivate:\n    int price_;\n    int pages_;\n};\n\nclass Mug final : public Item {\npublic:\n    explicit Mug(int price) : price_(price) {}\n\n    int price() const override {\n        return price_;\n    }\n\nprivate:\n    int price_;\n};\n\nint main() {\n    std::vector<std::unique_ptr<Item>> cart;\n    std::string kind;\n    while (std::cin >> kind) {\n        if (kind == \"book\") {\n            int price, pages;\n            std::cin >> price >> pages;\n            cart.push_back(std::make_unique<Book>(price, pages));\n        } else {\n            int price;\n            std::cin >> price;\n            cart.push_back(std::make_unique<Mug>(price));\n        }\n    }\n    int total = 0, pages = 0;\n    for (const auto &item : cart) {\n        total += item->price();\n        if (const auto *book = dynamic_cast<const Book *>(item.get())) {\n            pages += book->pages();\n        }\n    }\n    std::println(\"сумма {}, страниц {}\", total, pages);\n    return 0;\n}\n",
+      "solutionExplanation": "`static_cast<const Book *>` приводит указатель к книге, ничего не проверяя: для кружки результат указывает на объект не того типа, и чтение `pages_` — неопределённое поведение. Обычно читается то, что лежит в памяти кружки после её полей, — отсюда странные числа. UBSan замечает неверное приведение во время работы.\n\n`dynamic_cast` проверяет настоящий тип объекта и для кружки возвращает `nullptr`. А ещё лучше — спросить себя, не стоит ли добавить в `Item` виртуальную функцию `pages()` с нулём по умолчанию: тогда проверка типа не понадобится вовсе.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-runtime-polymorphism-task-4",
+      "title": "Дерево выражения",
+      "description": "Каждая строка ввода — выражение в **префиксной** записи: сначала операция, затем её аргументы. Операции: `+`, `-`, `*` (два аргумента) и `neg` (один аргумент, смена знака); аргументы — целые числа или вложенные выражения. Например, `* + 2 3 neg 4` — это `(2 + 3) · (−4)`.\n\nПостройте дерево: абстрактный узел `Node` с методами `long long eval() const` и `std::string str() const`; наследники `Number`, `Binary` (операция и два `std::unique_ptr<Node>`) и `Negate`. Разбор — рекурсивная фабрика. Для каждой строки напечатайте `запись = значение`, где запись — полностью расставленные скобки: `((2 + 3) * -(4))`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "* + 2 3 neg 4\n",
+          "output": "((2 + 3) * -(4)) = -20\n"
+        },
+        {
+          "input": "7\n- 10 + 1 2\n",
+          "output": "7 = 7\n(10 - (1 + 2)) = 7\n"
+        }
+      ],
+      "constraints": [
+        "Строк не больше 20; глубина до 30; числа по модулю до 1000; ввод корректен."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Фабрика: std::unique_ptr<Node> parse(std::istringstream &in) читает слово; если это операция — рекурсивно вызывает parse для аргументов, иначе создаёт Number.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "str(): у Binary — \"(\" + left->str() + \" \" + op + \" \" + right->str() + \")\", у Negate — \"-(\" + arg->str() + \")\", у Number — std::to_string.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "* + 2 3 neg 4\n",
+          "expected": "((2 + 3) * -(4)) = -20\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "7\n- 10 + 1 2\n",
+          "expected": "7 = 7\n(10 - (1 + 2)) = 7\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Двойное отрицание",
+          "stdin": "neg neg 5\n",
+          "expected": "-(-(5)) = 5\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Цепочка справа",
+          "stdin": "+ 1 + 2 + 3 4\n",
+          "expected": "(1 + (2 + (3 + 4))) = 10\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Цепочка слева",
+          "stdin": "+ + + 1 2 3 4\n",
+          "expected": "(((1 + 2) + 3) + 4) = 10\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Большое произведение",
+          "stdin": "* 1000 * 1000 1000\n",
+          "expected": "(1000 * (1000 * 1000)) = 1000000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Отрицательный результат",
+          "stdin": "- 0 1000\n",
+          "expected": "(0 - 1000) = -1000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Отрицательное число",
+          "stdin": "neg -5\n",
+          "expected": "-(-5) = 5\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смесь",
+          "stdin": "* - 9 4 neg + 1 1\n",
+          "expected": "((9 - 4) * -((1 + 1))) = -10\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пустая строка",
+          "stdin": "0\n\n1\n",
+          "expected": "0 = 0\n1 = 1\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <print>\n#include <sstream>\n#include <string>\n#include <utility>\n\nclass Node {\npublic:\n    virtual ~Node() = default;\n    virtual long long eval() const = 0;\n    virtual std::string str() const = 0;\n};\n\nclass Number final : public Node {\npublic:\n    explicit Number(long long value) : value_(value) {}\n\n    long long eval() const override {\n        return value_;\n    }\n\n    std::string str() const override {\n        return std::to_string(value_);\n    }\n\nprivate:\n    long long value_;\n};\n\nclass Binary final : public Node {\npublic:\n    Binary(char op, std::unique_ptr<Node> left, std::unique_ptr<Node> right)\n        : op_(op), left_(std::move(left)), right_(std::move(right)) {}\n\n    long long eval() const override {\n        long long a = left_->eval(), b = right_->eval();\n        return op_ == '+' ? a + b : op_ == '-' ? a - b : a * b;\n    }\n\n    std::string str() const override {\n        return \"(\" + left_->str() + \" \" + op_ + \" \" + right_->str() + \")\";\n    }\n\nprivate:\n    char op_;\n    std::unique_ptr<Node> left_;\n    std::unique_ptr<Node> right_;\n};\n\nclass Negate final : public Node {\npublic:\n    explicit Negate(std::unique_ptr<Node> arg) : arg_(std::move(arg)) {}\n\n    long long eval() const override {\n        return -arg_->eval();\n    }\n\n    std::string str() const override {\n        return \"-(\" + arg_->str() + \")\";\n    }\n\nprivate:\n    std::unique_ptr<Node> arg_;\n};\n\nstd::unique_ptr<Node> parse(std::istringstream &in) {\n    std::string token;\n    in >> token;\n    if (token == \"+\" || token == \"-\" || token == \"*\") {\n        auto left = parse(in);\n        auto right = parse(in);\n        return std::make_unique<Binary>(token[0], std::move(left), std::move(right));\n    }\n    if (token == \"neg\") {\n        return std::make_unique<Negate>(parse(in));\n    }\n    return std::make_unique<Number>(std::stoll(token));\n}\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        if (line.empty()) {\n            continue;\n        }\n        std::istringstream in(line);\n        auto tree = parse(in);\n        std::println(\"{} = {}\", tree->str(), tree->eval());\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Выражение — дерево объектов, каждый узел которого сам знает, как себя вычислить и записать. Вычисление всего дерева — один виртуальный вызов у корня, который рекурсивно расходится по узлам; никакого `switch` по типу узла нет. Это шаблон «Компоновщик» (Composite): составной узел и лист имеют общий интерфейс.\n\nУзлы владеют детьми через `std::unique_ptr`, поэтому уничтожение корня освобождает всё дерево. Аргументы разбираются в отдельные переменные `left` и `right` до создания узла: порядок вычисления аргументов функции не определён, а читать из потока нужно строго слева направо.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-runtime-polymorphism-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Что происходит при перемещении unique_ptr в коллекцию?",
-        "options": [
-          "Передаётся владение существующим объектом",
-          "Копируется весь производный объект в базовый"
-        ],
-        "correct": 0,
-        "explanation": "Алгоритм проходит по коллекции и вызывает read без switch по типам. Новый класс датчика не требует изменения цикла. Цена — косвенный вызов, отдельные размещения объектов и возможное ухудшение локальности. Если набор типов закрыт и значения малы, другие представления могут быть выгоднее; здесь нужен открытый интерфейс. Для заимствованной коллекции подойдут ссылки или указатели с внешним владельцем, но это другой контракт времени жизни."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <memory>\n#include <print>\n#include <vector>\n\nstruct Op {\n    virtual ~Op() = default;\n    virtual int apply(int x) const = 0;\n};\nstruct Add : Op {\n    int n;\n    explicit Add(int n) : n(n) {}\n    int apply(int x) const override { return x + n; }\n};\nstruct Twice : Op {\n    int apply(int x) const override { return 2 * x; }\n};\n\nint main() {\n    std::vector<std::unique_ptr<Op>> ops;\n    ops.push_back(std::make_unique<Add>(3));\n    ops.push_back(std::make_unique<Twice>());\n    ops.push_back(std::make_unique<Add>(-1));\n    int x = 1;\n    for (const auto &op : ops) x = op->apply(x);\n    std::println(\"{}\", x);\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "(1 + 3) · 2 − 1 = 7: каждый объект применяет свою операцию.",
+        "type": "text",
+        "answers": ["7"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "11", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 11. Гетерогенная коллекция содержит разные конкретные типы за общим интерфейсом. vector<unique_ptr<Sensor>> владеет датчиками, сохраняя их динамические типы. unique_ptr — единственный владелец; std::make_unique создаёт объект, а std::move передаёт владение. Копировать unique_ptr нельзя. Перемещение не копирует сам датчик и оставляет исходный указатель пустым."
+        "id": "q2",
+        "question": "Чем плох switch по коду вида объекта в нескольких функциях программы?",
+        "explanation": "Знание о каждом виде размазано по программе вместо того, чтобы жить в одном классе.",
+        "options": [
+          "Новый вид требует правки всех таких функций, а пропущенная ветка обнаружится только при работе",
+          "switch медленнее виртуальных функций в десятки раз",
+          "switch нельзя использовать с enum class",
+          "Ничем"
+        ],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q3",
+        "question": "Что утверждает принцип открытости/закрытости?",
+        "explanation": "Буква O в SOLID.",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Не храните производные значения в vector<Base>: это либо невозможно для абстрактной базы, либо приводит к срезке. Не используйте голый new как способ избежать размышления о владельце."
+          "Код открыт для расширения, но закрыт для изменения: новое поведение добавляют новыми классами",
+          "Все поля класса должны быть открытыми",
+          "Классы нельзя наследовать",
+          "Каждый класс должен иметь закрытый конструктор"
         ],
-        "correct": 1,
-        "explanation": "Добавьте третий источник и оставьте цикл неизменным. После std::move(ptr) нельзя разыменовывать исходный unique_ptr без проверки: он пуст. reserve для вектора переносит владельцев, но сами отдельно выделенные Sensor сохраняют адреса до удаления."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Где в полиморфной программе по-прежнему перечисляются все виды объектов?",
+        "explanation": "Создание из данных собирают в одну функцию, возвращающую unique_ptr на базу.",
+        "options": [
+          "В фабрике, создающей объекты из данных",
+          "В каждой функции обработки",
+          "В деструкторе базы",
+          "Нигде"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что вернёт dynamic_cast<const Book *>(item), если item указывает на кружку?",
+        "explanation": "dynamic_cast для указателей сообщает о несовпадении типа пустым указателем.",
+        "type": "text",
+        "answers": ["nullptr", "нулевой указатель"],
+        "placeholder": "Значение"
+      },
+      {
+        "id": "q6",
+        "question": "Чем опасен static_cast<Book *>(item) для произвольного товара?",
+        "explanation": "static_cast вниз по иерархии допустим, только если тип известен наверняка.",
+        "options": [
+          "Он ничего не проверяет: если это не книга, поведение не определено (UBSan сообщит о неверном приведении)",
+          "Он вернёт nullptr",
+          "Он бросит исключение",
+          "Он не скомпилируется"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "О чём говорят частые проверки dynamic_cast в коде?",
+        "explanation": "Это switch по типу в другом обличье.",
+        "options": [
+          "Скорее всего, в базе не хватает виртуальной функции с нужным поведением",
+          "Код очень безопасен",
+          "Классы следует сделать final",
+          "Нужен виртуальный деструктор"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Для каких классов работает dynamic_cast?",
+        "explanation": "Проверка типа использует информацию, связанную с таблицей виртуальных функций.",
+        "options": [
+          "Для полиморфных — с хотя бы одной виртуальной функцией",
+          "Для любых классов",
+          "Только для финальных",
+          "Только для абстрактных"
+        ],
+        "correct": 0
       }
     ]
   }

@@ -1,131 +1,534 @@
 {
   "id": "algo-queue",
-  "title": "Очередь — Queue",
-  "description": "Очередь задаёт FIFO: первым добавлен — первым обслужен.",
+  "title": "Очередь",
+  "description": "Принцип FIFO и операции очереди; почему не подходит массив со сдвигом; очередь на списке с головой и хвостом; очередь на двух стеках и амортизация; применение: буферы, планировщики; моделирование round-robin.",
   "moduleId": "algorithms-structures",
   "order": 20,
   "difficulty": "intermediate",
-  "estimatedMinutes": 60,
+  "estimatedMinutes": 45,
   "prerequisites": ["algo-stack"],
   "objectives": [
-    "Объяснить инвариант: Люди приходят в хвост очереди, обслуживание идёт с головы.",
-    "Обосновать время: O(1) изменений ссылок на enqueue/dequeue, не считая внутренней стоимости allocator.",
-    "Оценить память и компромиссы: Рост по потребности против аллокации на каждое добавление."
+    "Реализовывать очередь на связном списке за O(1)",
+    "Собирать очередь из двух стеков и объяснять её амортизированную стоимость",
+    "Не допускать висячего хвоста при опустошении очереди",
+    "Моделировать процессы с очередью"
   ],
-  "tags": ["алгоритмы", "C17", "Очередь — Queue", "структуры данных", "cache locality"],
+  "tags": ["Структуры данных", "Очередь", "FIFO", "Моделирование"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "algo-queue-exercise",
-    "title": "Обработка задач FIFO",
-    "description": "Ввод q (0…128), затем команды P x — добавить int −1000…1000 и O — извлечь первый элемент. O выводит значение или ПУСТО. Реализуйте связную очередь с head и tail, освободите все узлы.",
-    "difficulty": "intermediate",
+    "id": "algo-queue-task-1",
+    "title": "Операции с очередью",
+    "description": "Реализуйте очередь целых чисел на односвязном списке с указателями на голову и хвост и выполните команды из ввода:\n\n- `enqueue x` — добавить в конец;\n- `dequeue` — удалить из начала и напечатать;\n- `front` — напечатать первый элемент, не удаляя;\n- `size` — напечатать число элементов.\n\nЕсли для `dequeue` или `front` очередь пуста, напечатайте `пусто`. В конце освободите все узлы.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "6 P 4 P 9 O P 2 O O",
-        "output": "4\n9\n2\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "enqueue 1\nenqueue 2\nfront\ndequeue\ndequeue\ndequeue\nsize\n",
+        "output": "1\n1\n2\nпусто\n0\n"
       },
       {
-        "input": "2 O O",
-        "output": "ПУСТО\nПУСТО\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "front\nenqueue 5\nsize\n",
+        "output": "пусто\n1\n"
       }
     ],
-    "constraints": [
-      "Используйте C17 и диапазоны входа из условия.",
-      "Выводите только требуемый результат.",
-      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
-    ],
+    "constraints": ["Команд не больше 2000; числа int."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Люди приходят в хвост очереди, обслуживание идёт с головы."
+        "text": "enqueue: новый узел с next = NULL; если tail == NULL — он же голова, иначе tail->next = node; затем tail = node.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Нельзя путать очередь с priority_queue: та выбирает по приоритету, а не по времени поступления."
-      },
-      {
-        "id": "hint-3",
-        "order": 3,
-        "text": "P 4, P 9, O, P 2, O, O → 4,9,2. После полного опустошения очередью можно пользоваться снова."
+        "text": "dequeue: запомните голову, сдвиньте head = head->next; если head стал NULL, обнулите и tail; освободите старую голову.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "6 P 4 P 9 O P 2 O O",
-        "expected": "4\n9\n2\n"
+        "stdin": "enqueue 1\nenqueue 2\nfront\ndequeue\ndequeue\ndequeue\nsize\n",
+        "expected": "1\n1\n2\nпусто\n0\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "2 O O",
-        "expected": "ПУСТО\nПУСТО\n"
+        "stdin": "front\nenqueue 5\nsize\n",
+        "expected": "пусто\n1\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "5 P 1 O P -2 O O",
-        "expected": "1\n-2\nПУСТО\n"
+        "id": "hidden-1",
+        "name": "Пустая",
+        "stdin": "size\n",
+        "expected": "0\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "0",
+        "id": "hidden-2",
+        "name": "Опустошение и пополнение",
+        "stdin": "enqueue 1\ndequeue\nenqueue 2\ndequeue\nenqueue 3\nfront\n",
+        "expected": "1\n2\n3\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Крайние значения",
+        "stdin": "enqueue -2147483648\nenqueue 2147483647\ndequeue\ndequeue\n",
+        "expected": "-2147483648\n2147483647\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Порядок FIFO",
+        "stdin": "enqueue 1\nenqueue 2\nenqueue 3\ndequeue\nenqueue 4\ndequeue\ndequeue\ndequeue\ndequeue\n",
+        "expected": "1\n2\n3\n4\nпусто\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "front не удаляет",
+        "stdin": "dequeue\ndequeue\nenqueue 7\nfront\nfront\nsize\n",
+        "expected": "пусто\nпусто\n7\n7\n1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Повторы",
+        "stdin": "enqueue 5\nenqueue 5\nsize\ndequeue\nsize\n",
+        "expected": "2\n5\n1\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Остались элементы",
+        "stdin": "enqueue 10\nenqueue 20\nenqueue 30\n",
         "expected": ""
+      },
+      {
+        "id": "hidden-8",
+        "name": "Ноль",
+        "stdin": "enqueue 0\nfront\ndequeue\nfront\n",
+        "expected": "0\n0\nпусто\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\ntypedef struct Node { int value; struct Node *next; } Node;\ntypedef struct { Node *head,*tail; } Queue;\nstatic int push(Queue *q,int value){\n    Node *node=malloc(sizeof *node);if(!node)return 0;\n    *node=(Node){value,NULL};\n    if(q->tail)q->tail->next=node;else q->head=node;\n    q->tail=node;return 1;\n}\nstatic int pop(Queue *q,int *out){\n    if(!q->head)return 0;\n    Node *old=q->head;*out=old->value;q->head=old->next;\n    if(!q->head)q->tail=NULL;\n    free(old);return 1;\n}\nstatic void destroy(Queue *q){int value;while(pop(q,&value)){} }\nint main(void) {\nQueue queue={0};int q,failed=0;if(scanf(\"%d\",&q)!=1||q<0||q>128)return 1;for(int i=0;i<q;++i){char c;int x;if(scanf(\" %c\",&c)!=1){failed=1;break;}if(c=='P'){if(scanf(\"%d\",&x)!=1||!push(&queue,x)){failed=1;break;}}else if(c=='O'){if(pop(&queue,&x))printf(\"%d\\n\",x);else puts(\"ПУСТО\");}else{failed=1;break;}}destroy(&queue);if(failed)return 1;\nreturn 0;\n}\n",
-    "solutionExplanation": "Инвариант: Люди приходят в хвост очереди, обслуживание идёт с головы.\n\nP 4, P 9, O, P 2, O, O → 4,9,2. После полного опустошения очередью можно пользоваться снова.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. Нельзя путать очередь с priority_queue: та выбирает по приоритету, а не по времени поступления.\n\nВремя: O(1) изменений ссылок на enqueue/dequeue, не считая внутренней стоимости allocator.\nПамять: O(n) живых узлов; освобождение очереди O(n) времени.\nКомпромисс: Рост по потребности против аллокации на каждое добавление.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *next;\n} Node;\n\nint main(void) {\n    Node *head = NULL, *tail = NULL;\n    int size = 0;\n    char command[8];\n    while (scanf(\"%7s\", command) == 1) {\n        if (strcmp(command, \"enqueue\") == 0) {\n            int x;\n            if (scanf(\"%d\", &x) != 1) {\n                break;\n            }\n            Node *node = malloc(sizeof *node);\n            if (node == NULL) {\n                return 1;\n            }\n            node->value = x;\n            node->next = NULL;\n            if (tail == NULL) {\n                head = node;\n            } else {\n                tail->next = node;\n            }\n            tail = node;\n            size++;\n        } else if (strcmp(command, \"dequeue\") == 0 || strcmp(command, \"front\") == 0) {\n            if (head == NULL) {\n                printf(\"пусто\\n\");\n                continue;\n            }\n            printf(\"%d\\n\", head->value);\n            if (command[0] == 'd') {\n                Node *node = head;\n                head = node->next;\n                if (head == NULL) {\n                    tail = NULL;\n                }\n                free(node);\n                size--;\n            }\n        } else if (strcmp(command, \"size\") == 0) {\n            printf(\"%d\\n\", size);\n        }\n    }\n    while (head != NULL) {\n        Node *next = head->next;\n        free(head);\n        head = next;\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Голова списка — начало очереди, хвост — конец. Добавление цепляет узел за хвостом, удаление снимает голову: обе операции `O(1)`, без обхода.\n\nПустая очередь — это `head == NULL` **и** `tail == NULL`. При добавлении в пустую очередь узел становится и головой, и хвостом; при удалении последнего элемента обнуляются оба указателя. Если хвост не обнулить, он останется висячим — следующее добавление запишет в освобождённый узел. Счётчик `size` хранится отдельно, чтобы не считать узлы обходом.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "algo-queue-task-2",
+      "title": "Очередь на двух стеках",
+      "description": "Реализуйте очередь на двух стеках-массивах `in` и `out` и выполните команды `push x` (добавить в очередь) и `pop` (удалить из начала очереди и напечатать или напечатать `пусто`).\n\nПравило: `push` кладёт в `in`; `pop` берёт с вершины `out`, а если `out` пуст — сначала перекладывает **все** элементы из `in` в `out` по одному (с вершины `in` на вершину `out`).\n\nВ конце напечатайте `перекладываний: K` — сколько раз элемент перекладывался из `in` в `out`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "push 1\npush 2\npush 3\npop\npush 4\npop\npop\npop\n",
+          "output": "1\n2\n3\n4\nперекладываний: 4\n"
+        },
+        {
+          "input": "pop\n",
+          "output": "пусто\nперекладываний: 0\n"
+        }
+      ],
+      "constraints": ["Команд не больше 2000; числа int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Два массива по 2000 элементов и два счётчика размеров. Перекладывание: while (in_size > 0) out[out_size++] = in[--in_size];.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Если оба стека пусты, pop печатает «пусто» и ничего не перекладывает.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "push 1\npush 2\npush 3\npop\npush 4\npop\npop\npop\n",
+          "expected": "1\n2\n3\n4\nперекладываний: 4\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "pop\n",
+          "expected": "пусто\nперекладываний: 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Без удалений",
+          "stdin": "push 5\n",
+          "expected": "перекладываний: 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "По одному",
+          "stdin": "push 1\npop\npush 2\npop\npush 3\npop\n",
+          "expected": "1\n2\n3\nперекладываний: 3\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Все сразу",
+          "stdin": "push 1\npush 2\npush 3\npush 4\npop\npop\npop\npop\npop\n",
+          "expected": "1\n2\n3\n4\nпусто\nперекладываний: 4\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Два перекладывания",
+          "stdin": "push 1\npush 2\npop\npush 3\npush 4\npop\npop\npop\n",
+          "expected": "1\n2\n3\n4\nперекладываний: 4\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Отрицательные",
+          "stdin": "push -1\npush -2\npop\npop\npop\n",
+          "expected": "-1\n-2\nпусто\nперекладываний: 2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Пустая очередь",
+          "stdin": "pop\npop\npush 9\npop\n",
+          "expected": "пусто\nпусто\n9\nперекладываний: 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смешанные",
+          "stdin": "push 1\npush 2\npush 3\npop\npush 4\npush 5\npop\npop\npush 6\npop\npop\npop\n",
+          "expected": "1\n2\n3\n4\n5\n6\nперекладываний: 6\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Крайние значения",
+          "stdin": "push 2147483647\npush -2147483648\npop\npop\n",
+          "expected": "2147483647\n-2147483648\nперекладываний: 2\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstatic int in[2000], out[2000];\n\nint main(void) {\n    int in_size = 0, out_size = 0;\n    long long moves = 0;\n    char command[8];\n    while (scanf(\"%7s\", command) == 1) {\n        if (strcmp(command, \"push\") == 0) {\n            int x;\n            if (scanf(\"%d\", &x) != 1) {\n                break;\n            }\n            in[in_size++] = x;\n        } else if (strcmp(command, \"pop\") == 0) {\n            if (out_size == 0) {\n                while (in_size > 0) {\n                    out[out_size++] = in[--in_size];\n                    moves++;\n                }\n            }\n            if (out_size == 0) {\n                printf(\"пусто\\n\");\n            } else {\n                printf(\"%d\\n\", out[--out_size]);\n            }\n        }\n    }\n    printf(\"перекладываний: %lld\\n\", moves);\n    return 0;\n}\n",
+      "solutionExplanation": "Стек `in` хранит новые элементы, вершина — самый свежий. При перекладывании порядок разворачивается: в `out` на вершине оказывается самый старый элемент — тот, что должен уйти первым. Пока в `out` есть элементы, они старше всего, что лежит в `in`, поэтому новые элементы туда не подмешиваются.\n\nКаждый элемент перекладывается не больше одного раза, поэтому число перекладываний не превышает числа `push`: `n` операций стоят `O(n)`. Это и есть амортизированное `O(1)` на операцию, хотя отдельный `pop` может переложить весь стек.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-queue-task-3",
+      "title": "Найди ошибку: хвост очереди",
+      "description": "Программа выполняет команды `enqueue x` и `dequeue` над очередью на односвязном списке. `dequeue` печатает удалённый элемент или `пусто`.\n\nЕсли очередь опустела, а потом в неё снова добавляют, AddressSanitizer сообщает об ошибке. Найдите и исправьте её.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *next;\n} Node;\n\nint main(void) {\n    Node *head = NULL, *tail = NULL;\n    char command[8];\n    while (scanf(\"%7s\", command) == 1) {\n        if (strcmp(command, \"enqueue\") == 0) {\n            int x;\n            if (scanf(\"%d\", &x) != 1) {\n                break;\n            }\n            Node *node = malloc(sizeof *node);\n            if (node == NULL) {\n                return 1;\n            }\n            node->value = x;\n            node->next = NULL;\n            if (tail == NULL) {\n                head = node;\n            } else {\n                tail->next = node;\n            }\n            tail = node;\n        } else if (strcmp(command, \"dequeue\") == 0) {\n            if (head == NULL) {\n                printf(\"пусто\\n\");\n                continue;\n            }\n            Node *node = head;\n            printf(\"%d\\n\", node->value);\n            head = node->next;\n            free(node);\n        }\n    }\n    while (head != NULL) {\n        Node *next = head->next;\n        free(head);\n        head = next;\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "enqueue 1\nenqueue 2\ndequeue\ndequeue\n",
+          "output": "1\n2\n"
+        },
+        {
+          "input": "dequeue\nenqueue 3\ndequeue\n",
+          "output": "пусто\n3\n"
+        }
+      ],
+      "constraints": ["Команд не больше 2000; числа int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Чему равны head и tail после удаления единственного элемента?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Когда head становится NULL, tail всё ещё указывает на только что освобождённый узел. Следующий enqueue выполнит tail->next = node — запись в освобождённую память. Обнуляйте tail, когда очередь опустела.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "enqueue 1\nenqueue 2\ndequeue\ndequeue\n",
+          "expected": "1\n2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "dequeue\nenqueue 3\ndequeue\n",
+          "expected": "пусто\n3\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "enqueue 1\ndequeue\nenqueue 2\nenqueue 3\ndequeue\ndequeue\n",
+          "expected": "1\n2\n3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "enqueue 5\ndequeue\nenqueue 6\nenqueue 7\n",
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "enqueue 1\nenqueue 2\ndequeue\ndequeue\nenqueue 3\nenqueue 4\ndequeue\n",
+          "expected": "1\n2\n3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "dequeue\n",
+          "expected": "пусто\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "enqueue 1\nenqueue 2\nenqueue 3\ndequeue\ndequeue\ndequeue\ndequeue\n",
+          "expected": "1\n2\n3\nпусто\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "enqueue -1\ndequeue\nenqueue -2\nenqueue -3\ndequeue\ndequeue\nenqueue -4\nenqueue -5\ndequeue\n",
+          "expected": "-1\n-2\n-3\n-4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "enqueue 9\nenqueue 8\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "enqueue 0\ndequeue\nenqueue 0\nenqueue 0\ndequeue\ndequeue\n",
+          "expected": "0\n0\n0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *next;\n} Node;\n\nint main(void) {\n    Node *head = NULL, *tail = NULL;\n    char command[8];\n    while (scanf(\"%7s\", command) == 1) {\n        if (strcmp(command, \"enqueue\") == 0) {\n            int x;\n            if (scanf(\"%d\", &x) != 1) {\n                break;\n            }\n            Node *node = malloc(sizeof *node);\n            if (node == NULL) {\n                return 1;\n            }\n            node->value = x;\n            node->next = NULL;\n            if (tail == NULL) {\n                head = node;\n            } else {\n                tail->next = node;\n            }\n            tail = node;\n        } else if (strcmp(command, \"dequeue\") == 0) {\n            if (head == NULL) {\n                printf(\"пусто\\n\");\n                continue;\n            }\n            Node *node = head;\n            printf(\"%d\\n\", node->value);\n            head = node->next;\n            if (head == NULL) {\n                tail = NULL;\n            }\n            free(node);\n        }\n    }\n    while (head != NULL) {\n        Node *next = head->next;\n        free(head);\n        head = next;\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "После удаления последнего элемента `head` становится `NULL`, а `tail` по-прежнему указывает на только что освобождённый узел. Следующий `enqueue` проверяет `tail == NULL`, видит «непустую» очередь и выполняет `tail->next = node` — запись в освобождённую память. AddressSanitizer сообщает `heap-use-after-free`. Без санитайзера ошибка проявилась бы иначе: `head` остаётся `NULL`, и добавленные элементы теряются — следующий `dequeue` печатает `пусто`.\n\nИнвариант очереди на списке: `head == NULL` тогда и только тогда, когда `tail == NULL`. Каждая операция, которая меняет один из указателей, должна поддерживать его. Нарушенный инвариант не ломает программу сразу — он оставляет «мину», которая срабатывает через одну или несколько операций, поэтому тесты должны опустошать структуру и снова её заполнять.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-queue-task-4",
+      "title": "Планировщик",
+      "description": "Смоделируйте планировщик процессов с квантом времени (round-robin). Первая строка — число процессов `n` и квант `q`, вторая — сколько времени нужно каждому процессу (процессы нумеруются с 1, в начале все стоят в очереди по номерам, время — 0).\n\nПроцессор берёт первый процесс из очереди и выполняет его `min(q, осталось)` единиц времени. Если процесс закончил, напечатайте строку `процесс i: момент t`, где `t` — текущее время. Иначе процесс встаёт в конец очереди. Моделирование идёт, пока очередь не опустеет.\n\nПосле всех строк напечатайте `переключений: K` — сколько раз процессор брал процесс из очереди.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3 2\n5 2 4\n",
+          "output": "процесс 2: момент 4\nпроцесс 3: момент 10\nпроцесс 1: момент 11\nпереключений: 6\n"
+        },
+        {
+          "input": "2 10\n3 4\n",
+          "output": "процесс 1: момент 3\nпроцесс 2: момент 7\nпереключений: 2\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; 1 ≤ q ≤ 1000; время процесса от 1 до 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Одновременно в очереди не больше n процессов, поэтому подойдёт массив из n элементов с индексами head и tail, которые увеличиваются по модулю n, и счётчик размера. Так устроен кольцевой буфер — тема следующего урока. Подойдёт и очередь на списке.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Храните в очереди номера процессов, а оставшееся время — в отдельном массиве left[i].",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Время и число переключений бывают до 10⁶ — это помещается в int, но удобнее long long.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 2\n5 2 4\n",
+          "expected": "процесс 2: момент 4\nпроцесс 3: момент 10\nпроцесс 1: момент 11\nпереключений: 6\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2 10\n3 4\n",
+          "expected": "процесс 1: момент 3\nпроцесс 2: момент 7\nпереключений: 2\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Один процесс",
+          "stdin": "1 1\n5\n",
+          "expected": "процесс 1: момент 5\nпереключений: 5\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Квант равен времени",
+          "stdin": "3 1\n1 1 1\n",
+          "expected": "процесс 1: момент 1\nпроцесс 2: момент 2\nпроцесс 3: момент 3\nпереключений: 3\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Квант 1",
+          "stdin": "3 1\n3 2 1\n",
+          "expected": "процесс 3: момент 3\nпроцесс 2: момент 5\nпроцесс 1: момент 6\nпереключений: 6\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Кратные кванту",
+          "stdin": "4 3\n3 6 9 12\n",
+          "expected": "процесс 1: момент 3\nпроцесс 2: момент 15\nпроцесс 3: момент 24\nпроцесс 4: момент 30\nпереключений: 10\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Большой квант",
+          "stdin": "5 1000\n5 4 3 2 1\n",
+          "expected": "процесс 1: момент 5\nпроцесс 2: момент 9\nпроцесс 3: момент 12\nпроцесс 4: момент 14\nпроцесс 5: момент 15\nпереключений: 5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Длинные процессы",
+          "stdin": "2 1\n1000 1000\n",
+          "expected": "процесс 1: момент 1999\nпроцесс 2: момент 2000\nпереключений: 2000\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смешанные",
+          "stdin": "6 4\n10 1 7 4 3 12\n",
+          "expected": "процесс 2: момент 5\nпроцесс 4: момент 13\nпроцесс 5: момент 16\nпроцесс 3: момент 27\nпроцесс 1: момент 33\nпроцесс 6: момент 37\nпереключений: 11\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Нечётные времена",
+          "stdin": "4 2\n1 3 5 7\n",
+          "expected": "процесс 1: момент 1\nпроцесс 2: момент 8\nпроцесс 3: момент 13\nпроцесс 4: момент 16\nпереключений: 10\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic int left[1000], queue[1000];\n\nint main(void) {\n    int n, q;\n    if (scanf(\"%d %d\", &n, &q) != 2 || n < 1 || n > 1000 || q < 1) {\n        return 0;\n    }\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &left[i]);\n        queue[i] = i;\n    }\n    int head = 0, size = n;\n    long long time = 0, switches = 0;\n    while (size > 0) {\n        int p = queue[head];\n        head = (head + 1) % n;\n        size--;\n        switches++;\n        int run = left[p] < q ? left[p] : q;\n        time += run;\n        left[p] -= run;\n        if (left[p] == 0) {\n            printf(\"процесс %d: момент %lld\\n\", p + 1, time);\n        } else {\n            queue[(head + size) % n] = p;\n            size++;\n        }\n    }\n    printf(\"переключений: %lld\\n\", switches);\n    return 0;\n}\n",
+      "solutionExplanation": "Очередь хранит порядок ожидания: процесс, не закончивший работу за квант, встаёт в конец и снова получит процессор только после всех, кто ждал раньше. Поэтому ни один процесс не ждёт дольше, чем `(n − 1) · q` единиц времени между своими квантами, — в этом смысл round-robin.\n\nИндексы `head` и `(head + size) % n` «заворачиваются» по модулю `n`: освободившееся место в начале массива используется снова, и очередь не уползает за его границу. Так как одновременно ждут не больше `n` процессов, массива из `n` ячеек достаточно. Маленький квант делает систему отзывчивее, но увеличивает число переключений; большой квант превращает планировщик в простую очередь «до завершения».",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "algo-queue-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "invariant",
-        "question": "Зачем очереди tail?",
-        "options": [
-          "Для добавления в конец без полного обхода",
-          "Чтобы автоматически сортировать значения"
-        ],
-        "correct": 0,
-        "explanation": "Люди приходят в хвост очереди, обслуживание идёт с головы. P 4, P 9, O, P 2, O, O → 4,9,2. После полного опустошения очередью можно пользоваться снова."
+        "id": "q1",
+        "question": "В пустую очередь добавили 1, 2, 3, затем выполнили dequeue, добавили 4 и снова dequeue. Какой элемент теперь в начале очереди?",
+        "explanation": "Очередь 1 2 3 → после dequeue 2 3 → после добавления 2 3 4 → после dequeue 3 4.",
+        "type": "text",
+        "answers": ["3"],
+        "placeholder": "Число"
       },
       {
-        "id": "complexity",
-        "question": "Какая оценка соответствует рассмотренной реализации?",
+        "id": "q2",
+        "question": "Чем очередь отличается от стека?",
+        "explanation": "FIFO против LIFO: очередь сохраняет порядок поступления, стек его разворачивает.",
         "options": [
-          "Всегда O(1), потому что все тесты ограничены по размеру.",
-          "O(1) изменений ссылок на enqueue/dequeue, не считая внутренней стоимости allocator."
+          "Очередь выдаёт элементы в порядке добавления, стек — в обратном",
+          "Очередь хранит только числа",
+          "Очередь работает за O(log n)",
+          "Ничем"
         ],
-        "correct": 1,
-        "explanation": "Рост по потребности против аллокации на каждое добавление."
+        "correct": 0
       },
       {
-        "id": "engineering",
-        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "id": "q3",
+        "question": "Почему очередь на массиве с удалением из начала через memmove — плохая идея?",
+        "explanation": "Очередь должна удалять за O(1). На массиве для этого нужен кольцевой буфер.",
         "options": [
-          "Нельзя путать очередь с priority_queue: та выбирает по приоритету, а не по времени поступления.",
-          "Совпадение Big O гарантирует одинаковое время на любой машине."
+          "Каждое удаление сдвигает все элементы — O(n) на операцию",
+          "memmove нельзя применять к массивам int",
+          "Элементы перепутаются",
+          "Это хорошая идея"
         ],
-        "correct": 0,
-        "explanation": "Разрозненные узлы проигрывают плотному буферу в локальности и добавляют обращения к allocator. O(n) живых узлов; освобождение очереди O(n) времени."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int queue[16], head = 0, tail = 0;\n    for (int i = 1; i <= 5; i++) {\n        queue[tail++] = i * i;\n    }\n    head += 2;\n    queue[tail++] = 100;\n    while (head < tail) {\n        printf(\"%d \", queue[head++]);\n    }\n    printf(\"\\n\");\n    return 0;\n}",
+        "explanation": "В очереди 1 4 9 16 25; два удаления убирают 1 и 4; 100 встаёт в конец.",
+        "type": "text",
+        "answers": ["9 16 25 100"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Что произойдёт, если при удалении последнего элемента очереди на списке не обнулить tail?",
+        "explanation": "enqueue, проверяющий tail == NULL, увидит висячий непустой tail и выполнит tail->next = node — запись в освобождённый узел, а head останется NULL. AddressSanitizer сообщит heap-use-after-free.",
+        "options": [
+          "Следующий enqueue запишет tail->next в освобождённый узел, а новый элемент потеряется",
+          "Очередь станет стеком",
+          "Ничего: head == NULL достаточно",
+          "Утечёт один узел"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "В очереди на двух стеках выполнили enqueue 1, 2, 3, затем три dequeue. Сколько раз элемент перекладывался из стека in в стек out?",
+        "explanation": "Первый dequeue находит out пустым и перекладывает все три элемента; следующие два берут их из out без перекладывания.",
+        "type": "text",
+        "answers": ["3"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q7",
+        "question": "Почему удаление из очереди на двух стеках работает за амортизированное O(1)?",
+        "explanation": "Отдельное удаление может переложить много элементов, но суммарно перекладываний не больше числа добавлений.",
+        "options": [
+          "Каждый элемент перекладывается из in в out ровно один раз за всё время",
+          "Перекладывание всегда стоит O(1)",
+          "Стек out никогда не бывает пустым",
+          "Это O(n) на каждую операцию"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Где естественно применяется очередь?",
+        "explanation": "Отмена последнего действия — LIFO, это стек. Остальное обрабатывается в порядке прихода.",
+        "type": "multiple",
+        "options": [
+          "Буфер нажатий клавиш",
+          "Обработка запросов к серверу в порядке поступления",
+          "Отмена последнего действия",
+          "Обход графа в ширину"
+        ],
+        "correct": [0, 1, 3]
       }
     ]
   }

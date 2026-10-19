@@ -129,8 +129,8 @@ export default {
     'Находить use-after-free в порядке операций, функциях-закрывателях, циклах и при нескольких ссылках',
     'Исправлять ошибку изменением времени жизни или копированием данных, а не удалением free',
   ],
-  tags: ['C17', 'Память', 'Use-after-free', 'AddressSanitizer', 'Найди ошибку'],
-  standard: 'c17',
+  tags: ['C23', 'Память', 'Use-after-free', 'AddressSanitizer', 'Найди ошибку'],
+  standard: 'c23',
   diagnostics: 'sanitizers',
   quiz: [
     {

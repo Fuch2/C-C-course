@@ -1,117 +1,451 @@
 {
   "id": "advanced-linkage",
-  "title": "Linkage",
-  "description": "Связывание определяет, обозначают ли одинаковые имена один объект или функцию.",
+  "title": "Связывание: область видимости, связывание и время хранения",
+  "description": "Три независимых свойства имени: область видимости, связывание (внешнее, внутреннее, нет) и время хранения (автоматическое, статическое, выделенное, потоковое); сводная таблица объявлений; почему у static два смысла; зарезервированные имена; inline и static inline; проектирование связывания модуля.",
   "moduleId": "advanced-c",
-  "order": 11,
-  "difficulty": "advanced",
-  "estimatedMinutes": 40,
+  "order": 6,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
   "prerequisites": ["advanced-extern"],
   "objectives": [
-    "Объяснить: Linkage",
-    "Различать корректный контракт и ошибку: Область видимости и linkage не взаимозаменяемы; файловый const в C не скрывает символ автоматически.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Определять область видимости, связывание и время хранения любого объявления",
+    "Объяснять, какое свойство меняет static вне функций и внутри блока",
+    "Избегать конфликтов с зарезервированными именами и ловушки inline без static",
+    "Выбирать связывание для функций, состояния и констант модуля"
   ],
-  "tags": ["C17", "углублённый C", "Linkage"],
+  "tags": [
+    "Связывание",
+    "Область видимости",
+    "Время хранения",
+    "inline",
+    "Зарезервированные имена"
+  ],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-linkage-exercise",
-    "title": "Практика: Linkage",
-    "description": "Скройте функцию clamp через static. Прочитайте x −1000…1000; верните 0 для отрицательных, 100 для больших 100 и x иначе.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-linkage-task-1",
+    "title": "Свойства объявления",
+    "description": "Каждая строка ввода — объявление в упрощённой форме: место (`file` — вне функций, `block` — внутри функции, `param` — параметр функции), возможно, `static` или `extern`, слово `int` и имя; у функции после имени стоят скобки `()`.\n\nДля каждой строки напечатайте\n```\nимя: область — О; связывание — С; хранение — Х\n```\n- **область**: `файл` для `file`, `блок` для `block` и `param`;\n- **связывание**: `внутреннее` для `file static`; `нет` для переменных в блоке без `extern` и для параметров; для `extern` и для функций без `static` — `внутреннее`, если **выше** во вводе была строка `file static` с тем же именем, иначе `внешнее`; для остальных строк `file` — `внешнее`;\n- **хранение**: у функций `нет`; у параметров и переменных в блоке без `static` и `extern` — `автоматическое`; у остальных переменных — `статическое`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "-1",
-        "output": "0\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "file int count\nfile static int cache\nblock static int calls\n",
+        "output": "count: область — файл; связывание — внешнее; хранение — статическое\ncache: область — файл; связывание — внутреннее; хранение — статическое\ncalls: область — блок; связывание — нет; хранение — статическое\n"
       },
       {
-        "input": "70",
-        "output": "70\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "block int i\nparam int n\nfile int area()\n",
+        "output": "i: область — блок; связывание — нет; хранение — автоматическое\nn: область — блок; связывание — нет; хранение — автоматическое\narea: область — файл; связывание — внешнее; хранение — нет\n"
       }
     ],
     "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+      "Строк не больше 30, имена не длиннее 31 символа.",
+      "Объявление функции в блоке не бывает static; параметры не бывают static или extern."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Связывание — правило идентичности имён; одинаковая надпись ещё не означает одну сущность."
+        "text": "Разбейте строку на слова через sscanf: место, затем либо static/extern, либо сразу int. Функция узнаётся по скобкам в конце имени — strstr(name, \"()\").",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Область видимости и linkage не взаимозаменяемы; файловый const в C не скрывает символ автоматически."
+        "text": "Запоминайте имена всех строк file static в массив: он нужен, чтобы решить, какое связывание унаследуют extern и функции.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Порядок проверок для связывания: file static → внутреннее; функция или extern → по таблице static-имён; param или block → нет; иначе внешнее.",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "-1",
-        "expected": "0\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "file int count\nfile static int cache\nblock static int calls\n",
+        "expected": "count: область — файл; связывание — внешнее; хранение — статическое\ncache: область — файл; связывание — внутреннее; хранение — статическое\ncalls: область — блок; связывание — нет; хранение — статическое\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "70",
-        "expected": "70\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "block int i\nparam int n\nfile int area()\n",
+        "expected": "i: область — блок; связывание — нет; хранение — автоматическое\nn: область — блок; связывание — нет; хранение — автоматическое\narea: область — файл; связывание — внешнее; хранение — нет\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "101",
-        "expected": "100\n"
+        "id": "hidden-1",
+        "name": "extern вне функций",
+        "stdin": "file extern int level\n",
+        "expected": "level: область — файл; связывание — внешнее; хранение — статическое\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "extern в блоке",
+        "stdin": "block extern int level\n",
+        "expected": "level: область — блок; связывание — внешнее; хранение — статическое\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "extern после static",
+        "stdin": "file static int depth\nfile extern int depth\n",
+        "expected": "depth: область — файл; связывание — внутреннее; хранение — статическое\ndepth: область — файл; связывание — внутреннее; хранение — статическое\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Функция после static",
+        "stdin": "file static int helper()\nfile int helper()\n",
+        "expected": "helper: область — файл; связывание — внутреннее; хранение — нет\nhelper: область — файл; связывание — внутреннее; хранение — нет\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Функция в блоке",
+        "stdin": "block int report()\n",
+        "expected": "report: область — блок; связывание — внешнее; хранение — нет\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Наследуется только своё имя",
+        "stdin": "file static int a\nblock extern int b\nblock extern int a\n",
+        "expected": "a: область — файл; связывание — внутреннее; хранение — статическое\nb: область — блок; связывание — внешнее; хранение — статическое\na: область — блок; связывание — внутреннее; хранение — статическое\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "static ниже не влияет",
+        "stdin": "block extern int x\nfile static int x\n",
+        "expected": "x: область — блок; связывание — внешнее; хранение — статическое\nx: область — файл; связывание — внутреннее; хранение — статическое\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Все виды",
+        "stdin": "file int main()\nparam int argc\nblock int result\nblock static int runs\nfile static int log_level\n",
+        "expected": "main: область — файл; связывание — внешнее; хранение — нет\nargc: область — блок; связывание — нет; хранение — автоматическое\nresult: область — блок; связывание — нет; хранение — автоматическое\nruns: область — блок; связывание — нет; хранение — статическое\nlog_level: область — файл; связывание — внутреннее; хранение — статическое\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\nstatic int clamp(int x) { return x < 0 ? 0 : x > 100 ? 100 : x; }\nint main(void) {\n    int x;\n    if (scanf(\"%d\", &x)!=1) return 1;\n    printf(\"%d\\n\", clamp(x));\n    return 0;\n}\n",
-    "solutionExplanation": "Связывание — правило идентичности имён; одинаковая надпись ещё не означает одну сущность.\n\nОбласть видимости и linkage не взаимозаменяемы; файловый const в C не скрывает символ автоматически.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '-1' → '0\\n'; '70' → '70\\n'; '101' → '100\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstatic char static_names[30][32];\nstatic int static_count;\n\nstatic int declared_static(const char *name) {\n    for (int i = 0; i < static_count; i++) {\n        if (strcmp(static_names[i], name) == 0) {\n            return 1;\n        }\n    }\n    return 0;\n}\n\nint main(void) {\n    char line[128];\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        char place[8], words[3][40];\n        int count = sscanf(line, \"%7s %39s %39s %39s\", place, words[0], words[1], words[2]);\n        if (count < 3) {\n            continue;\n        }\n        const char *spec = count == 4 ? words[0] : \"\";\n        char name[40];\n        strcpy(name, count == 4 ? words[2] : words[1]);\n        char *parens = strstr(name, \"()\");\n        int is_function = parens != NULL;\n        if (is_function) {\n            *parens = '\\0';\n        }\n        int is_file = strcmp(place, \"file\") == 0;\n        int is_static = strcmp(spec, \"static\") == 0;\n        int is_extern = strcmp(spec, \"extern\") == 0;\n\n        const char *linkage;\n        if (is_file && is_static) {\n            linkage = \"внутреннее\";\n            if (static_count < 30) {\n                strcpy(static_names[static_count++], name);\n            }\n        } else if (is_function || is_extern) {\n            linkage = declared_static(name) ? \"внутреннее\" : \"внешнее\";\n        } else if (!is_file) {\n            linkage = \"нет\";\n        } else {\n            linkage = \"внешнее\";\n        }\n\n        const char *storage;\n        if (is_function) {\n            storage = \"нет\";\n        } else if (!is_file && !is_static && !is_extern) {\n            storage = \"автоматическое\";\n        } else {\n            storage = \"статическое\";\n        }\n        printf(\"%s: область — %s; связывание — %s; хранение — %s\\n\", name,\n               is_file ? \"файл\" : \"блок\", linkage, storage);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Три свойства вычисляются независимо — ровно так, как в сводной таблице урока. Область зависит только от места объявления. Время хранения — от места и спецификатора: `static` и `extern` дают статическое, локальная переменная без них — автоматическое, у функций времени хранения нет вовсе.\n\nСвязывание — самое хитрое. `static` вне функций даёт внутреннее. `extern` и объявление функции без спецификатора **наследуют** связывание ранее видимого объявления: если выше было `static int x;`, то `extern int x;` и `int x();` тоже внутренние. Поэтому программа запоминает имена всех файловых `static`. Локальные переменные и параметры связывания не имеют — каждое такое объявление создаёт отдельный объект.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-linkage-task-2",
+      "title": "Найди ошибку: затенение",
+      "description": "Приложение для бега записывает, был ли каждый километр пройден в хорошем темпе (положительное число) или нет (ноль или отрицательное). Программа читает число дней, затем для каждого дня `n` и `n` чисел. Для каждого дня она печатает `день D: лучшая серия S` — длину самой длинной серии подряд идущих положительных чисел за день, а в конце — `рекорд: R`, самую длинную серию за все дни.\n\nДневные серии печатаются верно, а рекорд всегда равен нулю. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nstatic int max_streak = 0;      // самая длинная серия за все дни\n\nvoid process_day(int day, const int *values, int n) {\n    int streak = 0, max_streak = 0;\n    for (int i = 0; i < n; i++) {\n        if (values[i] > 0) {\n            streak++;\n            if (streak > max_streak) {\n                max_streak = streak;\n            }\n        } else {\n            streak = 0;\n        }\n    }\n    printf(\"день %d: лучшая серия %d\\n\", day, max_streak);\n}\n\nint main(void) {\n    int days;\n    if (scanf(\"%d\", &days) != 1) {\n        return 0;\n    }\n    for (int day = 1; day <= days; day++) {\n        int n, values[100];\n        if (scanf(\"%d\", &n) != 1 || n < 0 || n > 100) {\n            return 0;\n        }\n        for (int i = 0; i < n; i++) {\n            if (scanf(\"%d\", &values[i]) != 1) {\n                return 0;\n            }\n        }\n        process_day(day, values, n);\n    }\n    printf(\"рекорд: %d\\n\", max_streak);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\n5 1 1 0 1 1\n4 1 1 1 0\n",
+          "output": "день 1: лучшая серия 2\nдень 2: лучшая серия 3\nрекорд: 3\n"
+        },
+        {
+          "input": "1\n3 0 -1 0\n",
+          "output": "день 1: лучшая серия 0\nрекорд: 0\n"
+        }
+      ],
+      "constraints": [
+        "До 20 дней, в каждом от 0 до 100 чисел; серии не переходят из одного дня в другой."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Рекорд хранится в глобальной переменной max_streak. Где и когда она должна меняться?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Внутри process_day объявлена локальная переменная с тем же именем — она скрывает глобальную. Переименуйте локальную (например, day_best) и после цикла обновите глобальный рекорд.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\n5 1 1 0 1 1\n4 1 1 1 0\n",
+          "expected": "день 1: лучшая серия 2\nдень 2: лучшая серия 3\nрекорд: 3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n3 0 -1 0\n",
+          "expected": "день 1: лучшая серия 0\nрекорд: 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1\n1 5\n",
+          "expected": "день 1: лучшая серия 1\nрекорд: 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "3\n2 1 1\n0\n3 1 0 1\n",
+          "expected": "день 1: лучшая серия 2\nдень 2: лучшая серия 0\nдень 3: лучшая серия 1\nрекорд: 2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "2\n6 1 1 1 1 1 1\n2 1 1\n",
+          "expected": "день 1: лучшая серия 6\nдень 2: лучшая серия 2\nрекорд: 6\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "2\n4 1 0 0 1\n5 1 1 1 1 1\n",
+          "expected": "день 1: лучшая серия 1\nдень 2: лучшая серия 5\nрекорд: 5\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1\n10 1 2 3 0 4 5 6 7 0 1\n",
+          "expected": "день 1: лучшая серия 4\nрекорд: 4\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "4\n1 0\n1 1\n2 1 1\n3 1 1 1\n",
+          "expected": "день 1: лучшая серия 0\nдень 2: лучшая серия 1\nдень 3: лучшая серия 2\nдень 4: лучшая серия 3\nрекорд: 3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "3\n3 -1 -2 -3\n2 0 0\n1 -5\n",
+          "expected": "день 1: лучшая серия 0\nдень 2: лучшая серия 0\nдень 3: лучшая серия 0\nрекорд: 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "2\n5 9 9 9 9 9\n5 9 9 9 9 9\n",
+          "expected": "день 1: лучшая серия 5\nдень 2: лучшая серия 5\nрекорд: 5\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic int max_streak = 0;      // самая длинная серия за все дни\n\nvoid process_day(int day, const int *values, int n) {\n    int streak = 0, day_best = 0;\n    for (int i = 0; i < n; i++) {\n        if (values[i] > 0) {\n            streak++;\n            if (streak > day_best) {\n                day_best = streak;\n            }\n        } else {\n            streak = 0;\n        }\n    }\n    printf(\"день %d: лучшая серия %d\\n\", day, day_best);\n    if (day_best > max_streak) {\n        max_streak = day_best;\n    }\n}\n\nint main(void) {\n    int days;\n    if (scanf(\"%d\", &days) != 1) {\n        return 0;\n    }\n    for (int day = 1; day <= days; day++) {\n        int n, values[100];\n        if (scanf(\"%d\", &n) != 1 || n < 0 || n > 100) {\n            return 0;\n        }\n        for (int i = 0; i < n; i++) {\n            if (scanf(\"%d\", &values[i]) != 1) {\n                return 0;\n            }\n        }\n        process_day(day, values, n);\n    }\n    printf(\"рекорд: %d\\n\", max_streak);\n    return 0;\n}\n",
+      "solutionExplanation": "Объявление `int streak = 0, max_streak = 0;` создаёт **локальную** переменную, которая до конца функции скрывает глобальную `max_streak`. Все присваивания внутри `process_day` меняют локальную копию, поэтому дневной результат верный, а глобальный рекорд так и остаётся нулём.\n\nКомпилятор не предупреждает: затенение законно. Найти такие места помогает флаг `-Wshadow` — в проектах его часто включают вместе с `-Wall -Wextra`. Лучшее исправление — не давать локальным переменным имена глобальных: дневной максимум называется `day_best`, а после подсчёта он сравнивается с рекордом.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-linkage-task-3",
+      "title": "Что покажет nm",
+      "description": "Команда `nm` печатает **таблицу символов** объектного файла — имена, которые увидит линковщик. Буква перед именем говорит, что это за символ; **заглавная** буква означает внешнее связывание, **строчная** — внутреннее (символ виден только в своём файле):\n\n| Буква | Символ |\n| --- | --- |\n| `T` / `t` | определённая функция |\n| `D` / `d` | переменная со статическим временем хранения и ненулевым инициализатором |\n| `B` / `b` | переменная без инициализатора или с нулевым инициализатором |\n| `U` | используется, но не определена в этом файле |\n\nКаждая строка ввода описывает одно объявление или действие в файле:\n- `func ИМЯ` / `static func ИМЯ` — определение функции; `proto ИМЯ` — прототип;\n- `var ИМЯ = V` / `var ИМЯ` — переменная вне функций с инициализатором (целое V) или без; то же со `static` в начале;\n- `extern var ИМЯ` — объявление переменной;\n- `local ИМЯ` — обычная локальная переменная; `local static ИМЯ = V` / `local static ИМЯ` — локальная `static`;\n- `call ИМЯ` — вызов функции; `use ИМЯ` — обращение к переменной вне функций.\n\nПостройте таблицу: строки `БУКВА ИМЯ`, отсортированные по имени (`strcmp`). Правила:\n- обычные локальные переменные, прототипы и `extern`-объявления символов не создают;\n- локальная `static` — символ с внутренним связыванием по имени `ИМЯ.N`, где N — номер этой переменной среди всех локальных `static` файла по порядку, начиная с 0;\n- `U ИМЯ` — для функции, которая вызывается, но не определена в файле, и для переменной, к которой обращаются, но которая в файле не определена; каждое имя — один раз.\n\nЕсли символов нет, напечатайте `нет символов`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "var verbose = 1\nstatic var calls\nstatic func helper\nfunc main\ncall printf\ncall helper\nlocal static counter\nlocal i\nuse verbose\nextern var errors\nproto unused\n",
+          "output": "b calls\nb counter.0\nt helper\nT main\nU printf\nD verbose\n"
+        },
+        {
+          "input": "proto f\nextern var g\nlocal x\n",
+          "output": "нет символов\n"
+        }
+      ],
+      "constraints": [
+        "Строк не больше 50, имена не длиннее 31 символа, |V| ≤ 10⁹.",
+        "Одно имя не определяется дважды; вызываются только функции, а в use — только переменные."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сначала прочитайте все строки в массивы (вид, имя, наличие static, значение), потом стройте символы: для U нужно знать, определено ли имя где-то в файле, в том числе ниже.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Буква определения: базовая T, D или B (B — если инициализатора нет или он равен нулю), затем строчная, если static: tolower из ctype.h.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Соберите символы в массив структур { char letter; char name[40]; }, отсортируйте qsort со strcmp по имени и напечатайте.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "var verbose = 1\nstatic var calls\nstatic func helper\nfunc main\ncall printf\ncall helper\nlocal static counter\nlocal i\nuse verbose\nextern var errors\nproto unused\n",
+          "expected": "b calls\nb counter.0\nt helper\nT main\nU printf\nD verbose\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "proto f\nextern var g\nlocal x\n",
+          "expected": "нет символов\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ноль и отрицательное",
+          "stdin": "var zero = 0\nstatic var neg = -5\n",
+          "expected": "d neg\nB zero\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "U один раз",
+          "stdin": "extern var errors\nuse errors\nuse errors\n",
+          "expected": "U errors\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Определение ниже",
+          "stdin": "extern var late\nuse late\nvar late = 3\n",
+          "expected": "D late\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Вызов до определения",
+          "stdin": "call compute\nfunc compute\n",
+          "expected": "T compute\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Нумерация локальных static",
+          "stdin": "func a\nlocal static count\nfunc b\nlocal static count = 7\nlocal static total\n",
+          "expected": "T a\nT b\nb count.0\nd count.1\nb total.2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Прототип без определения",
+          "stdin": "static func f\ncall f\ncall g\nproto g\n",
+          "expected": "t f\nU g\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Сортировка по strcmp",
+          "stdin": "var Zeta = 1\nvar alpha = 2\nfunc Beta\nvar _hidden\n",
+          "expected": "T Beta\nD Zeta\nB _hidden\nD alpha\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Библиотечные символы",
+          "stdin": "func main\ncall malloc\ncall free\ncall malloc\nuse stdout\nlocal static buffer = 1\nstatic var state = 42\n",
+          "expected": "d buffer.0\nU free\nT main\nU malloc\nd state\nU stdout\n"
+        }
+      ],
+      "referenceSolution": "#include <ctype.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct {\n    char letter;\n    char name[40];\n} Symbol;\n\ntypedef struct {\n    char kind[32];\n    char name[32];\n    int is_static;\n    int has_value;\n    long long value;\n} Line;\n\nstatic Line lines[50];\nstatic int line_count;\nstatic Symbol symbols[60];\nstatic int symbol_count;\n\nstatic void add_symbol(char letter, const char *name) {\n    for (int i = 0; i < symbol_count; i++) {\n        if (strcmp(symbols[i].name, name) == 0) {\n            return;\n        }\n    }\n    symbols[symbol_count].letter = letter;\n    snprintf(symbols[symbol_count].name, sizeof symbols[symbol_count].name, \"%s\", name);\n    symbol_count++;\n}\n\nstatic int defined(const char *kind, const char *name) {\n    for (int i = 0; i < line_count; i++) {\n        if (strcmp(lines[i].kind, kind) == 0 && strcmp(lines[i].name, name) == 0) {\n            return 1;\n        }\n    }\n    return 0;\n}\n\nstatic int by_name(const void *a, const void *b) {\n    return strcmp(((const Symbol *)a)->name, ((const Symbol *)b)->name);\n}\n\nint main(void) {\n    char text[128];\n    while (line_count < 50 && fgets(text, sizeof text, stdin) != NULL) {\n        char words[5][32];\n        int count = sscanf(text, \"%31s %31s %31s %31s %31s\", words[0], words[1], words[2],\n                           words[3], words[4]);\n        if (count < 2) {\n            continue;\n        }\n        Line *line = &lines[line_count];\n        int pos = 0;\n        line->is_static = strcmp(words[0], \"static\") == 0;\n        if (line->is_static || strcmp(words[0], \"extern\") == 0) {\n            pos = 1;\n        }\n        if (strcmp(words[0], \"local\") == 0 && strcmp(words[1], \"static\") == 0) {\n            strcpy(line->kind, \"lstatic\");\n            pos = 2;\n        } else {\n            snprintf(line->kind, sizeof line->kind, \"%s\", words[pos]);\n            if (strcmp(words[0], \"extern\") == 0) {\n                strcpy(line->kind, \"extern\");\n            }\n            pos++;\n        }\n        strcpy(line->name, words[pos]);\n        line->has_value = count > pos + 2 && strcmp(words[pos + 1], \"=\") == 0;\n        line->value = line->has_value ? atoll(words[pos + 2]) : 0;\n        line_count++;\n    }\n\n    int local_number = 0;\n    for (int i = 0; i < line_count; i++) {\n        Line *line = &lines[i];\n        char letter = 0;\n        char name[40];\n        snprintf(name, sizeof name, \"%s\", line->name);\n        if (strcmp(line->kind, \"func\") == 0) {\n            letter = 'T';\n        } else if (strcmp(line->kind, \"var\") == 0 || strcmp(line->kind, \"lstatic\") == 0) {\n            letter = line->has_value && line->value != 0 ? 'D' : 'B';\n            if (strcmp(line->kind, \"lstatic\") == 0) {\n                snprintf(name, sizeof name, \"%s.%d\", line->name, local_number++);\n            }\n        } else if (strcmp(line->kind, \"call\") == 0 && !defined(\"func\", line->name)) {\n            letter = 'U';\n        } else if (strcmp(line->kind, \"use\") == 0 && !defined(\"var\", line->name)) {\n            letter = 'U';\n        }\n        if (letter == 0) {\n            continue;\n        }\n        if (line->is_static || strcmp(line->kind, \"lstatic\") == 0) {\n            letter = (char)tolower((unsigned char)letter);\n        }\n        add_symbol(letter, name);\n    }\n\n    if (symbol_count == 0) {\n        printf(\"нет символов\\n\");\n        return 0;\n    }\n    qsort(symbols, (size_t)symbol_count, sizeof symbols[0], by_name);\n    for (int i = 0; i < symbol_count; i++) {\n        printf(\"%c %s\\n\", symbols[i].letter, symbols[i].name);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Таблица символов — то, что компилятор сообщает линковщику о единице трансляции. В неё попадают только объекты со **статическим временем хранения** и функции: у обычных локальных переменных нет постоянного адреса, они живут в стеке и линковщику не нужны. Прототипы и `extern`-объявления сами ничего не создают — они превращаются в символ `U`, только если по ним действительно обращаются.\n\nРегистр буквы кодирует **связывание**: `static` функции и переменные получают строчные буквы — линковщик не будет сопоставлять их с одноимёнными символами других файлов. Локальные `static` переменные тоже попадают в таблицу (им нужен постоянный адрес), но всегда со строчной буквой и с суффиксом, чтобы одноимённые переменные разных функций не путались.\n\nРазделение `D`/`B` отражает секции файла: переменные с ненулевыми значениями хранятся в файле вместе со значениями (секция `.data`), а нулевые занимают место только при запуске (`.bss`).",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-linkage-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Как скрыть файловую функцию от внешнего связывания?",
-        "options": ["Объявить static", "Переименовать параметр"],
-        "correct": 0,
-        "explanation": "Связывание определяет, обозначают ли одинаковые имена один объект или функцию. Внешнее связывание объединяет подходящие объявления между единицами трансляции. Внутреннее ограничивает имя одной единицей. Локальные автоматические переменные не имеют связывания: одинаковое имя в двух функциях не объединяет их."
-      },
-      {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q1",
+        "question": "Что описывает связывание имени?",
+        "explanation": "Видимость в тексте — это область видимости, срок жизни — время хранения. Связывание отвечает, сольются ли объявления в один объект: во всей программе (внешнее), в одном файле (внутреннее) или ни с чем (нет связывания).",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "Область видимости и linkage не взаимозаменяемы; файловый const в C не скрывает символ автоматически."
+          "Обозначают ли одинаковые имена в разных объявлениях один и тот же объект",
+          "В какой части текста программы имя видно",
+          "Когда объект создаётся и уничтожается",
+          "В каком порядке линковщик соединяет файлы"
         ],
-        "correct": 1,
-        "explanation": "Связывание — правило идентичности имён; одинаковая надпись ещё не означает одну сущность."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["6", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: printf(\"%d\\n\",local_value()); Ожидаемый результат: 6"
+        "id": "q2",
+        "question": "Какие свойства у переменной static int calls; объявленной внутри функции?",
+        "explanation": "В блоке static меняет только время хранения. Имя по-прежнему видно лишь в блоке, и никакое другое объявление на эту переменную сослаться не может.",
+        "options": [
+          "Область — блок, связывания нет, время хранения статическое",
+          "Область — файл, связывание внутреннее, время хранения статическое",
+          "Область — блок, связывание внутреннее, время хранения автоматическое",
+          "Область — файл, связывания нет, время хранения статическое"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nstatic int n = 1;\n\nint bump(void) {\n    static int n = 10;\n    n += 5;\n    return n;\n}\n\nint main(void) {\n    bump();\n    n += bump();\n    printf(\"%d\\n\", n);\n    return 0;\n}",
+        "explanation": "В программе две переменные n. Локальная static n в bump становится 15, затем 20. В main видна файловая n: 1 + 20 = 21.",
+        "type": "text",
+        "answers": ["21"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "У каких объявлений внешнее связывание? Выберите все.",
+        "explanation": "Функции и переменные вне функций без static имеют внешнее связывание; объявление функции в блоке — тоже. extern без предшествующего static даёт внешнее связывание. static вне функций — внутреннее, локальная переменная связывания не имеет.",
+        "type": "multiple",
+        "options": [
+          "int total = 0; вне функций",
+          "void report(void); внутри функции",
+          "static int cache[16]; вне функций",
+          "int i; внутри цикла",
+          "extern int level; внутри функции, если выше нет static int level;"
+        ],
+        "correct": [0, 1, 4]
+      },
+      {
+        "id": "q5",
+        "question": "В файле сначала написано static int depth = 0;, а ниже — extern int depth;. Какое связывание у depth во втором объявлении?",
+        "explanation": "extern не задаёт связывание заново, если раньше видно объявление того же имени со связыванием: оно наследуется. Обратный порядок — сначала int depth; потом static int depth; — ошибка.",
+        "options": [
+          "Внутреннее: extern повторяет связывание ранее видимого объявления",
+          "Внешнее: extern всегда даёт внешнее связывание",
+          "Ошибка компиляции: конфликт static и extern",
+          "Связывания нет"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Файл с функцией inline int twice(int x) { return 2 * x; } и её вызовом в main собирают командой gcc -std=c17 -O0 main.c. Что произойдёт?",
+        "explanation": "Определение inline без static и без отдельного extern-объявления не создаёт внешнего определения. Без оптимизации компилятор не встраивает вызов и ищет функцию, которой нет. static inline решает проблему.",
+        "options": [
+          "Ошибка линковки undefined reference to twice",
+          "Программа соберётся, функция будет встроена",
+          "Ошибка компиляции: inline запрещён в C",
+          "Предупреждение, программа соберётся"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Какие идентификаторы зарезервированы и не должны использоваться как ваши внешние имена? Выберите все.",
+        "explanation": "Подчёркивание с заглавной буквой и двойное подчёркивание зарезервированы для реализации, имена функций стандартной библиотеки — для неё. app_log и buffer_size свободны.",
+        "type": "multiple",
+        "options": ["_Buffer", "__count", "log (как имя своей функции)", "app_log", "buffer_size"],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q8",
+        "question": "Сколько разных переменных с именем x в этой программе?",
+        "code": "static int x;\n\nvoid f(void) {\n    int x = 1;\n    {\n        static int x = 2;\n    }\n}\n\nvoid g(void) {\n    extern int x;\n    x = 3;\n}",
+        "explanation": "Файловая static int x; локальная int x в f; локальная static int x во внутреннем блоке. extern int x в g ссылается на файловую переменную (и наследует её внутреннее связывание), новой переменной не создаёт.",
+        "type": "text",
+        "answers": ["3", "три"],
+        "placeholder": "Число"
       }
     ]
   }

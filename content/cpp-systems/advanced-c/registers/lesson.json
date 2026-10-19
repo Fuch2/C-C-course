@@ -1,117 +1,531 @@
 {
   "id": "advanced-registers",
-  "title": "Работа с регистрами",
-  "description": "Регистр устройства — интерфейс с аппаратной семантикой, а не просто unsigned по адресу.",
+  "title": "Регистры устройств",
+  "description": "Отображение устройств на память; описание регистров структурами и макросами, как в CMSIS; поля регистра — позиция и маска; последовательность чтение — изменение — запись и её неатомарность; регистры установки и сброса; флаги W1C; типы доступа и двойное чтение регистра данных; моделирование регистров на компьютере.",
   "moduleId": "advanced-c",
   "order": 22,
   "difficulty": "advanced",
-  "estimatedMinutes": 40,
-  "prerequisites": ["advanced-bit-masks"],
+  "estimatedMinutes": 60,
+  "prerequisites": ["advanced-volatile"],
   "objectives": [
-    "Объяснить: Работа с регистрами",
-    "Различать корректный контракт и ошибку: Чтение всех флагов и обратная запись в W1C-регистр очищает все прочитанные единицы.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Описывать регистры устройства структурами, макросами полей и volatile",
+    "Изменять поля регистров последовательностью чтение — изменение — запись",
+    "Работать с регистрами установки и сброса и флагами W1C",
+    "Учитывать побочные эффекты чтения и записи регистров"
   ],
-  "tags": ["C17", "углублённый C", "Работа с регистрами"],
+  "tags": ["Регистры", "Embedded", "volatile", "W1C", "Маски"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-registers-exercise",
-    "title": "Практика: Работа с регистрами",
-    "description": "Модель W1C: ввод status и clear 0…255. Выведите status после очистки единиц маски clear: остальные флаги сохраняются.",
+    "id": "advanced-registers-task-1",
+    "title": "Настройка последовательного порта",
+    "description": "Вычислите значения регистров последовательного порта по параметрам связи. Каждая строка ввода — `ЧАСТОТА СКОРОСТЬ ЧЁТНОСТЬ СТОП РЕЖИМ`, например `16000000 115200 even 1 rxtx`.\n\nРегистры (упрощённая схема):\n- **CR1**: бит 0 `UE` — всегда 1; бит 2 `RE` — приёмник (режимы `rx` и `rxtx`); бит 3 `TE` — передатчик (`tx` и `rxtx`); бит 9 `PS` — 1 при нечётной чётности; бит 10 `PCE` — 1, если чётность есть (`even` или `odd`); бит 12 `M` — 1, если чётность есть (кадр становится 9-битным);\n- **CR2**: биты 12–13 `STOP`: `1` → 0, `0.5` → 1, `2` → 2, `1.5` → 3;\n- **BRR** = частота / скорость, округлённая до ближайшего целого (`(f + b / 2) / b`).\n\nНапечатайте `CR1=0xHHHH CR2=0xHHHH BRR=N скорость=S ошибка=E%`, где `S` = частота / BRR (целая часть), а `E` — отклонение `|S − скорость| · 100 / скорость` с двумя знаками. Если BRR меньше 16 или больше 65535, напечатайте `ошибка: недостижимая скорость`.",
     "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "15 2",
-        "output": "13\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "16000000 115200 even 1 rxtx\n",
+        "output": "CR1=0x140D CR2=0x0000 BRR=139 скорость=115107 ошибка=0.08%\n"
       },
       {
-        "input": "255 255",
-        "output": "0\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "8000000 9600 none 2 tx\n1000000 921600 none 1 rx\n",
+        "output": "CR1=0x0009 CR2=0x2000 BRR=833 скорость=9603 ошибка=0.03%\nошибка: недостижимая скорость\n"
       }
     ],
     "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+      "1 000 000 ≤ частота ≤ 200 000 000; 300 ≤ скорость ≤ 10 000 000; строк не больше 20."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Запись в регистр — команда устройству; значение команды не обязательно становится содержимым регистра."
+        "text": "Заведите макросы полей: #define CR1_UE (1u << 0), …, #define CR2_STOP_POS 12. Тогда CR1 собирается через | из нужных флагов.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Чтение всех флагов и обратная запись в W1C-регистр очищает все прочитанные единицы."
+        "text": "Строку стоп-битов сравнивайте как текст (strcmp с \"1\", \"0.5\", \"2\", \"1.5\") и переводите в код 0–3, затем code << CR2_STOP_POS.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Вычисления делителя ведите в unsigned long: (f + b / 2) / b. Ошибку считайте в double: fabs нужен из math.h, или сравните S со скоростью вручную.",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "15 2",
-        "expected": "13\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "16000000 115200 even 1 rxtx\n",
+        "expected": "CR1=0x140D CR2=0x0000 BRR=139 скорость=115107 ошибка=0.08%\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "255 255",
-        "expected": "0\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "8000000 9600 none 2 tx\n1000000 921600 none 1 rx\n",
+        "expected": "CR1=0x0009 CR2=0x2000 BRR=833 скорость=9603 ошибка=0.03%\nошибка: недостижимая скорость\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "12 0",
-        "expected": "12\n"
+        "id": "hidden-1",
+        "name": "Нечётная чётность",
+        "stdin": "72000000 115200 odd 1 rxtx\n",
+        "expected": "CR1=0x160D CR2=0x0000 BRR=625 скорость=115200 ошибка=0.00%\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Полтора стоп-бита",
+        "stdin": "16000000 9600 none 1.5 rx\n",
+        "expected": "CR1=0x0005 CR2=0x3000 BRR=1667 скорость=9598 ошибка=0.02%\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Высокая скорость",
+        "stdin": "48000000 1000000 even 0.5 tx\n",
+        "expected": "CR1=0x1409 CR2=0x1000 BRR=48 скорость=1000000 ошибка=0.00%\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Делитель вне диапазона сверху",
+        "stdin": "200000000 300 none 1 rxtx\n",
+        "expected": "ошибка: недостижимая скорость\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Ровно 16",
+        "stdin": "1000000 62500 none 1 rxtx\n",
+        "expected": "CR1=0x000D CR2=0x0000 BRR=16 скорость=62500 ошибка=0.00%\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Точная скорость",
+        "stdin": "16000000 250000 none 1 rxtx\n",
+        "expected": "CR1=0x000D CR2=0x0000 BRR=64 скорость=250000 ошибка=0.00%\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Две настройки",
+        "stdin": "12000000 57600 odd 2 rx\n8000000 38400 even 1 tx\n",
+        "expected": "CR1=0x1605 CR2=0x2000 BRR=208 скорость=57692 ошибка=0.16%\nCR1=0x1409 CR2=0x0000 BRR=208 скорость=38461 ошибка=0.16%\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Ровно 65535",
+        "stdin": "65535000 1000 none 1 rx\n",
+        "expected": "CR1=0x0005 CR2=0x0000 BRR=65535 скорость=1000 ошибка=0.00%\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    unsigned status,clear;if(scanf(\"%u%u\",&status,&clear)!=2)return 1;\n    printf(\"%u\\n\",status & ~clear);\n    return 0;\n}\n",
-    "solutionExplanation": "Запись в регистр — команда устройству; значение команды не обязательно становится содержимым регистра.\n\nЧтение всех флагов и обратная запись в W1C-регистр очищает все прочитанные единицы.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '15 2' → '13\\n'; '255 255' → '0\\n'; '12 0' → '12\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define CR1_UE (1u << 0)\n#define CR1_RE (1u << 2)\n#define CR1_TE (1u << 3)\n#define CR1_PS (1u << 9)\n#define CR1_PCE (1u << 10)\n#define CR1_M (1u << 12)\n#define CR2_STOP_POS 12\n\nint main(void) {\n    unsigned long clock, baud;\n    char parity[8], stop[8], mode[8];\n    while (scanf(\"%lu %lu %7s %7s %7s\", &clock, &baud, parity, stop, mode) == 5) {\n        unsigned long brr = (clock + baud / 2) / baud;\n        if (brr < 16 || brr > 65535) {\n            printf(\"ошибка: недостижимая скорость\\n\");\n            continue;\n        }\n        unsigned cr1 = CR1_UE;\n        if (strcmp(mode, \"rx\") == 0 || strcmp(mode, \"rxtx\") == 0) {\n            cr1 |= CR1_RE;\n        }\n        if (strcmp(mode, \"tx\") == 0 || strcmp(mode, \"rxtx\") == 0) {\n            cr1 |= CR1_TE;\n        }\n        if (strcmp(parity, \"none\") != 0) {\n            cr1 |= CR1_PCE | CR1_M;\n            if (strcmp(parity, \"odd\") == 0) {\n                cr1 |= CR1_PS;\n            }\n        }\n        unsigned stop_code = strcmp(stop, \"0.5\") == 0   ? 1u\n                             : strcmp(stop, \"2\") == 0   ? 2u\n                             : strcmp(stop, \"1.5\") == 0 ? 3u\n                                                        : 0u;\n        unsigned cr2 = stop_code << CR2_STOP_POS;\n        unsigned long actual = clock / brr;\n        unsigned long diff = actual > baud ? actual - baud : baud - actual;\n        double error = (double)diff * 100.0 / (double)baud;\n        printf(\"CR1=0x%04X CR2=0x%04X BRR=%lu скорость=%lu ошибка=%.2f%%\\n\", cr1, cr2, brr, actual,\n               error);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Значение регистра — это сумма (объединение через `|`) его полей, каждое на своей позиции. Макросы с именами полей делают код похожим на таблицу из документации: `CR1_PCE | CR1_M` читается лучше, чем `0x1400`. Так оформлены заголовки производителей микроконтроллеров.\n\nДелитель скорости — целое число, поэтому реальная скорость отличается от заданной; округление до ближайшего целого уменьшает ошибку вдвое по сравнению с отбрасыванием дробной части. Ограничения на делитель тоже из документации: при слишком маленьком делителе приёмник не успевает выбирать середину бита, при слишком большом поле переполняется. Проверка ошибки скорости — обязательный шаг при настройке: при расхождении больше 2–3 % связь не работает.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-registers-task-2",
+      "title": "Порт ввода-вывода",
+      "description": "Смоделируйте 16-битный регистр выхода порта `ODR` и регистр установки и сброса `BSRR`. Вначале `ODR = 0`. Команды до конца ввода:\n- `odr 0xHHHH` — записать значение в `ODR` напрямую;\n- `bsrr 0xHHHHHHHH` — запись в `BSRR`: единица в бите `n` (0–15) устанавливает ножку `n`, единица в бите `n + 16` сбрасывает её; если для ножки установлены оба бита, побеждает установка;\n- `make 0xHHHH` — вычислить и напечатать значение `BSRR=0xHHHHHHHH`, которое одной записью превращает текущий `ODR` в заданное значение, меняя только нужные ножки (единицы только для ножек, которые меняются), и применить его;\n- `show` — напечатать `ODR=0xHHHH` и номера ножек с высоким уровнем: `высокие: 1 4` или `высоких нет`.\n\nШестнадцатеричные цифры печатайте заглавными.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "odr 0x00F0\nbsrr 0x00100001\nshow\nmake 0x0003\nshow\n",
+          "output": "ODR=0x00E1 высокие: 0 5 6 7\nBSRR=0x00E00002\nODR=0x0003 высокие: 0 1\n"
+        },
+        {
+          "input": "show\nbsrr 0x00040004\nshow\n",
+          "output": "ODR=0x0000 высоких нет\nODR=0x0004 высокие: 2\n"
+        }
+      ],
+      "constraints": ["Команд не больше 50."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Модель записи в BSRR: set = value & 0xFFFF; reset = value >> 16; odr = (odr & ~reset) | set; — установка применяется после сброса, поэтому побеждает.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Для make: ножки, которые нужно включить, — target & ~odr; выключить — odr & ~target. Значение BSRR — reset << 16 | set.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Храните ODR в uint32_t и после каждой операции оставляйте 16 бит: odr &= 0xFFFF.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "odr 0x00F0\nbsrr 0x00100001\nshow\nmake 0x0003\nshow\n",
+          "expected": "ODR=0x00E1 высокие: 0 5 6 7\nBSRR=0x00E00002\nODR=0x0003 высокие: 0 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "show\nbsrr 0x00040004\nshow\n",
+          "expected": "ODR=0x0000 высоких нет\nODR=0x0004 высокие: 2\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Выключить всё",
+          "stdin": "odr 0xFFFF\nmake 0x0000\nshow\n",
+          "expected": "BSRR=0xFFFF0000\nODR=0x0000 высоких нет\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Включить всё",
+          "stdin": "make 0xFFFF\nshow\n",
+          "expected": "BSRR=0x0000FFFF\nODR=0xFFFF высокие: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Ничего не меняется",
+          "stdin": "odr 0x1234\nmake 0x1234\nshow\n",
+          "expected": "BSRR=0x00000000\nODR=0x1234 высокие: 2 4 5 9 12\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Только сброс и одна ножка",
+          "stdin": "bsrr 0xFFFF0000\nshow\nbsrr 0x8000\nshow\n",
+          "expected": "ODR=0x0000 высоких нет\nODR=0x8000 высокие: 15\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Сброс и установка одновременно",
+          "stdin": "odr 0x0F0F\nbsrr 0x0F0FF0F0\nshow\n",
+          "expected": "ODR=0xF0F0 высокие: 4 5 6 7 12 13 14 15\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Инверсия",
+          "stdin": "odr 0xAAAA\nmake 0x5555\nshow\n",
+          "expected": "BSRR=0xAAAA5555\nODR=0x5555 высокие: 0 2 4 6 8 10 12 14\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Конфликт на одной ножке",
+          "stdin": "odr 0x0001\nbsrr 0x00010001\nshow\n",
+          "expected": "ODR=0x0001 высокие: 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Две записи подряд",
+          "stdin": "odr 0x00FF\nmake 0xFF00\nmake 0x0F0F\nshow\n",
+          "expected": "BSRR=0x00FFFF00\nBSRR=0xF000000F\nODR=0x0F0F высокие: 0 1 2 3 8 9 10 11\n"
+        }
+      ],
+      "referenceSolution": "#include <stdint.h>\n#include <stdio.h>\n#include <string.h>\n\nstatic uint32_t odr;\n\nstatic void bsrr_write(uint32_t value) {\n    uint32_t set = value & 0xFFFFu;\n    uint32_t reset = value >> 16;\n    odr = ((odr & ~reset) | set) & 0xFFFFu;\n}\n\nint main(void) {\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        unsigned value;\n        if (strcmp(command, \"odr\") == 0 && scanf(\"%x\", &value) == 1) {\n            odr = value & 0xFFFFu;\n        } else if (strcmp(command, \"bsrr\") == 0 && scanf(\"%x\", &value) == 1) {\n            bsrr_write(value);\n        } else if (strcmp(command, \"make\") == 0 && scanf(\"%x\", &value) == 1) {\n            uint32_t target = value & 0xFFFFu;\n            uint32_t set = target & ~odr;\n            uint32_t reset = odr & ~target;\n            uint32_t bsrr = reset << 16 | set;\n            printf(\"BSRR=0x%08X\\n\", (unsigned)bsrr);\n            bsrr_write(bsrr);\n        } else if (strcmp(command, \"show\") == 0) {\n            printf(\"ODR=0x%04X \", (unsigned)odr);\n            if (odr == 0) {\n                printf(\"высоких нет\\n\");\n                continue;\n            }\n            printf(\"высокие:\");\n            for (int pin = 0; pin < 16; pin++) {\n                if ((odr >> pin) & 1u) {\n                    printf(\" %d\", pin);\n                }\n            }\n            printf(\"\\n\");\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Регистр установки и сброса превращает изменение отдельных ножек в одну запись без чтения. Младшая половина значения перечисляет ножки, которые нужно включить, старшая — которые выключить, а нули означают «не трогать». Поэтому прерывание, меняющее другие ножки того же порта, не может потерять изменения: ни основная программа, ни прерывание не записывают чужие биты.\n\nВычисление нужной записи — обратная задача: ножки, которые должны стать единицами, но пока нули, — это `target & ~odr`; которые должны стать нулями — `odr & ~target`. Ножки, уже имеющие нужный уровень, в запись не попадают. Порядок «сначала сброс, потом установка» в модели воспроизводит правило железа: при конфликте побеждает установка.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-registers-task-3",
+      "title": "Найди ошибку: потерянные события",
+      "description": "Устройство сообщает о событиях флагами в регистре состояния: `TX` (бит 0), `RX` (бит 1), `ERR` (бит 2). Флаги сбрасываются **записью единицы** в их бит (W1C), запись нуля ничего не меняет — так устроена модель регистра в заготовке.\n\nКоманды: `raise ИМЯ` — устройство устанавливает флаг; `service` — драйвер обрабатывает **одно** событие с наибольшим приоритетом (`ERR`, затем `RX`, затем `TX`), печатает `обработано: ИМЯ` и сбрасывает его флаг, или печатает `событий нет`; `pending` — печать регистра.\n\nЕсли событий несколько, после первого `service` остальные пропадают. Исправьте драйвер, не меняя модель устройства.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdint.h>\n#include <stdio.h>\n#include <string.h>\n\n#define FLAG_TX (1u << 0)        // передача завершена\n#define FLAG_RX (1u << 1)        // пришёл байт\n#define FLAG_ERR (1u << 2)       // ошибка кадра\n\n// ---- модель устройства (не меняйте) ----\nstatic uint32_t sr_reg;                                  // регистр состояния\nstatic uint32_t sr_read(void) { return sr_reg; }\nstatic void sr_write(uint32_t value) { sr_reg &= ~value; } // W1C: единица сбрасывает флаг\nstatic void hw_raise(uint32_t flags) { sr_reg |= flags; }  // устройство сообщает о событиях\n// ---- конец модели ----\n\nstatic void clear_flag(uint32_t flag) {\n    sr_write(sr_read() | flag);           // как SR |= flag\n}\n\nstatic const struct {\n    uint32_t flag;\n    const char *name;\n} EVENT_NAMES[] = {{FLAG_ERR, \"ERR\"}, {FLAG_RX, \"RX\"}, {FLAG_TX, \"TX\"}};   // по приоритету\n\n// Обрабатывает одно событие с наибольшим приоритетом.\nstatic void service(void) {\n    uint32_t status = sr_read();\n    for (int i = 0; i < 3; i++) {\n        if (status & EVENT_NAMES[i].flag) {\n            printf(\"обработано: %s\\n\", EVENT_NAMES[i].name);\n            clear_flag(EVENT_NAMES[i].flag);\n            return;\n        }\n    }\n    printf(\"событий нет\\n\");\n}\n\nint main(void) {\n    char command[16], name[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"raise\") == 0 && scanf(\"%15s\", name) == 1) {\n            for (int i = 0; i < 3; i++) {\n                if (strcmp(EVENT_NAMES[i].name, name) == 0) {\n                    hw_raise(EVENT_NAMES[i].flag);\n                }\n            }\n        } else if (strcmp(command, \"service\") == 0) {\n            service();\n        } else if (strcmp(command, \"pending\") == 0) {\n            printf(\"SR=0x%X\\n\", (unsigned)sr_read());\n        }\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "raise RX\nraise TX\nservice\nservice\nservice\n",
+          "output": "обработано: RX\nобработано: TX\nсобытий нет\n"
+        },
+        {
+          "input": "raise ERR\npending\nservice\npending\n",
+          "output": "SR=0x4\nобработано: ERR\nSR=0x0\n"
+        }
+      ],
+      "constraints": ["Команд не больше 50."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что записывает в регистр функция clear_flag и что модель W1C сделает с каждым единичным битом этой записи?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "sr_read() | flag содержит все установленные флаги. Записывать нужно единицу только в бит сбрасываемого флага: sr_write(flag).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "raise RX\nraise TX\nservice\nservice\nservice\n",
+          "expected": "обработано: RX\nобработано: TX\nсобытий нет\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "raise ERR\npending\nservice\npending\n",
+          "expected": "SR=0x4\nобработано: ERR\nSR=0x0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "service\n",
+          "expected": "событий нет\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "raise TX\nraise RX\nraise ERR\nservice\nservice\nservice\nservice\n",
+          "expected": "обработано: ERR\nобработано: RX\nобработано: TX\nсобытий нет\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "raise RX\nservice\nraise RX\nservice\n",
+          "expected": "обработано: RX\nобработано: RX\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "raise TX\nraise ERR\nservice\npending\n",
+          "expected": "обработано: ERR\nSR=0x1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "raise RX\nraise RX\nservice\nservice\n",
+          "expected": "обработано: RX\nсобытий нет\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "raise ERR\nraise TX\nservice\nraise RX\nservice\nservice\n",
+          "expected": "обработано: ERR\nобработано: RX\nобработано: TX\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "raise TX\nraise RX\npending\nservice\npending\n",
+          "expected": "SR=0x3\nобработано: RX\nSR=0x1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "raise TX\nraise RX\nraise ERR\nservice\npending\n",
+          "expected": "обработано: ERR\nSR=0x3\n"
+        }
+      ],
+      "referenceSolution": "#include <stdint.h>\n#include <stdio.h>\n#include <string.h>\n\n#define FLAG_TX (1u << 0)        // передача завершена\n#define FLAG_RX (1u << 1)        // пришёл байт\n#define FLAG_ERR (1u << 2)       // ошибка кадра\n\n// ---- модель устройства (не меняйте) ----\nstatic uint32_t sr_reg;                                  // регистр состояния\nstatic uint32_t sr_read(void) { return sr_reg; }\nstatic void sr_write(uint32_t value) { sr_reg &= ~value; } // W1C: единица сбрасывает флаг\nstatic void hw_raise(uint32_t flags) { sr_reg |= flags; }  // устройство сообщает о событиях\n// ---- конец модели ----\n\nstatic void clear_flag(uint32_t flag) {\n    sr_write(flag);                       // единица только в нужном бите\n}\n\nstatic const struct {\n    uint32_t flag;\n    const char *name;\n} EVENT_NAMES[] = {{FLAG_ERR, \"ERR\"}, {FLAG_RX, \"RX\"}, {FLAG_TX, \"TX\"}};   // по приоритету\n\n// Обрабатывает одно событие с наибольшим приоритетом.\nstatic void service(void) {\n    uint32_t status = sr_read();\n    for (int i = 0; i < 3; i++) {\n        if (status & EVENT_NAMES[i].flag) {\n            printf(\"обработано: %s\\n\", EVENT_NAMES[i].name);\n            clear_flag(EVENT_NAMES[i].flag);\n            return;\n        }\n    }\n    printf(\"событий нет\\n\");\n}\n\nint main(void) {\n    char command[16], name[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"raise\") == 0 && scanf(\"%15s\", name) == 1) {\n            for (int i = 0; i < 3; i++) {\n                if (strcmp(EVENT_NAMES[i].name, name) == 0) {\n                    hw_raise(EVENT_NAMES[i].flag);\n                }\n            }\n        } else if (strcmp(command, \"service\") == 0) {\n            service();\n        } else if (strcmp(command, \"pending\") == 0) {\n            printf(\"SR=0x%X\\n\", (unsigned)sr_read());\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`clear_flag` повторяет привычную запись `SR |= flag`: читает регистр, добавляет бит и записывает результат. Для обычного регистра это безвредно, но регистр W1C воспринимает каждую единицу записи как команду «сбросить этот флаг». В записанном значении единицы стоят у **всех** флагов, которые были установлены, — и устройство сбрасывает их все. События, которые драйвер ещё не обработал, исчезают.\n\nПравильная запись — единица только в нужном бите: `sr_write(flag)`. Нули в остальных битах для W1C означают «не трогать», поэтому чтение регистра перед записью вообще не нужно. Это свойство и делает W1C удобным: сброс одного флага не может затронуть другие, даже если устройство установит новый флаг в тот же момент.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-registers-task-4",
+      "title": "Найди ошибку: пропавшие байты",
+      "description": "Драйвер последовательного порта забирает принятые байты из очереди приёмника: пока в регистре состояния `UART_SR` установлен бит `UART_RXNE`, каждое чтение регистра данных `UART_DR` возвращает следующий байт и **удаляет его из очереди** — так устроена модель в заготовке. Очередь заполняется всеми байтами ввода.\n\nДрайвер собирает строки: символ `\\r` пропускается, `\\n` завершает строку. Каждая строка печатается как `строка K: текст` (последняя — даже без `\\n` в конце, если она не пуста), а в конце — `строк: N`.\n\nСтроки печатаются искажёнными: часть символов пропадает. Исправьте драйвер, не меняя модель приёмника.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdint.h>\n#include <stdio.h>\n\n// ---- модель приёмника (не меняйте) ----\n#define UART_RXNE (1u << 5)                 // в очереди есть байт\nstatic char fifo[4096];\nstatic size_t fifo_len, fifo_pos;\n\nstatic uint32_t uart_sr(void) {\n    return fifo_pos < fifo_len ? UART_RXNE : 0;\n}\n\nstatic uint32_t uart_dr(void) {             // чтение регистра данных забирает байт из очереди\n    return fifo_pos < fifo_len ? (unsigned char)fifo[fifo_pos++] : 0;\n}\n\n#define UART_SR (uart_sr())\n#define UART_DR (uart_dr())\n// ---- конец модели ----\n\nint main(void) {\n    fifo_len = fread(fifo, 1, sizeof fifo, stdin);\n    char line[256];\n    size_t n = 0;\n    int lines = 0;\n    while (UART_SR & UART_RXNE) {\n        if (UART_DR == '\\r') {\n            continue;\n        }\n        if (UART_DR == '\\n') {\n            line[n] = '\\0';\n            printf(\"строка %d: %s\\n\", ++lines, line);\n            n = 0;\n            continue;\n        }\n        if (n < sizeof line - 1) {\n            line[n++] = (char)UART_DR;\n        }\n    }\n    if (n > 0) {\n        line[n] = '\\0';\n        printf(\"строка %d: %s\\n\", ++lines, line);\n    }\n    printf(\"строк: %d\\n\", lines);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "hello\nworld\n",
+          "output": "строка 1: hello\nстрока 2: world\nстрок: 2\n"
+        },
+        {
+          "input": "abc\r\ndef",
+          "output": "строка 1: abc\nстрока 2: def\nстрок: 2\n"
+        }
+      ],
+      "constraints": ["Ввод не длиннее 4000 байтов; строки не длиннее 255 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сколько раз за одну итерацию цикла выполняется чтение UART_DR? Что происходит с очередью при каждом чтении?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Регистр данных нужно прочитать один раз за итерацию: char c = (char)UART_DR; — а дальше работать с переменной c.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "hello\nworld\n",
+          "expected": "строка 1: hello\nстрока 2: world\nстрок: 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "abc\r\ndef",
+          "expected": "строка 1: abc\nстрока 2: def\nстрок: 2\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "",
+          "expected": "строк: 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "\n",
+          "expected": "строка 1: \nстрок: 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "x\n",
+          "expected": "строка 1: x\nстрок: 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "one line without newline",
+          "expected": "строка 1: one line without newline\nстрок: 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "a\r\nb\r\nc\r\n",
+          "expected": "строка 1: a\nстрока 2: b\nстрока 3: c\nстрок: 3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "\n\nempty lines\n\n",
+          "expected": "строка 1: \nстрока 2: \nстрока 3: empty lines\nстрока 4: \nстрок: 4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "The quick brown fox jumps over the lazy dog\n",
+          "expected": "строка 1: The quick brown fox jumps over the lazy dog\nстрок: 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "12345\n67890\nabcde\n",
+          "expected": "строка 1: 12345\nстрока 2: 67890\nстрока 3: abcde\nстрок: 3\n"
+        }
+      ],
+      "referenceSolution": "#include <stdint.h>\n#include <stdio.h>\n\n// ---- модель приёмника (не меняйте) ----\n#define UART_RXNE (1u << 5)                 // в очереди есть байт\nstatic char fifo[4096];\nstatic size_t fifo_len, fifo_pos;\n\nstatic uint32_t uart_sr(void) {\n    return fifo_pos < fifo_len ? UART_RXNE : 0;\n}\n\nstatic uint32_t uart_dr(void) {             // чтение регистра данных забирает байт из очереди\n    return fifo_pos < fifo_len ? (unsigned char)fifo[fifo_pos++] : 0;\n}\n\n#define UART_SR (uart_sr())\n#define UART_DR (uart_dr())\n// ---- конец модели ----\n\nint main(void) {\n    fifo_len = fread(fifo, 1, sizeof fifo, stdin);\n    char line[256];\n    size_t n = 0;\n    int lines = 0;\n    while (UART_SR & UART_RXNE) {\n        char c = (char)UART_DR;               // одно чтение — один байт\n        if (c == '\\r') {\n            continue;\n        }\n        if (c == '\\n') {\n            line[n] = '\\0';\n            printf(\"строка %d: %s\\n\", ++lines, line);\n            n = 0;\n            continue;\n        }\n        if (n < sizeof line - 1) {\n            line[n++] = c;\n        }\n    }\n    if (n > 0) {\n        line[n] = '\\0';\n        printf(\"строка %d: %s\\n\", ++lines, line);\n    }\n    printf(\"строк: %d\\n\", lines);\n    return 0;\n}\n",
+      "solutionExplanation": "`UART_DR` выглядит как переменная, но каждое его чтение — команда устройству «отдай следующий байт». В исходном цикле регистр читается до трёх раз за итерацию: в проверке на `\\r`, в проверке на `\\n` и при записи в строку. Каждая проверка забирает из очереди новый байт, поэтому сравнивается одно, а записывается другое, и часть символов просто теряется.\n\nИсправление — прочитать регистр один раз в локальную переменную и дальше работать с ней. Это общее правило для регистров с побочными эффектами чтения (очереди приёмников, флаги «сброс чтением»): каждое обращение в коде — реальное обращение к устройству, ведь регистры `volatile`, и компилятор не объединит два чтения в одно.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-registers-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Что означает единица при записи в W1C?",
-        "options": ["Очистить соответствующий флаг", "Обязательно сохранить единицу"],
-        "correct": 0,
-        "explanation": "Регистр устройства — интерфейс с аппаратной семантикой, а не просто unsigned по адресу. Документация определяет ширину доступа, зарезервированные биты, эффекты чтения и записи. У read-write регистра read-modify-write может быть допустим, но у write-one-to-clear запись единицы очищает флаг. Универсальное reg |= mask для такого регистра способно случайно сбросить другие события."
-      },
-      {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q1",
+        "question": "Что означает отображение устройств на память?",
+        "explanation": "В микроконтроллерах регистр периферии — слово по фиксированному адресу. Запись туда — команда устройству, чтение — его текущее состояние.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "Чтение всех флагов и обратная запись в W1C-регистр очищает все прочитанные единицы."
+          "Регистры устройств доступны по адресам памяти, и программа управляет устройством чтением и записью по этим адресам",
+          "Устройство копирует свою память в оперативную",
+          "Операционная система создаёт файл для каждого устройства",
+          "Программа загружается в память устройства"
         ],
-        "correct": 1,
-        "explanation": "Запись в регистр — команда устройству; значение команды не обязательно становится содержимым регистра."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["6", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: unsigned pending=7;unsigned acknowledge=1;printf(\"%u\\n\",pending & ~acknowledge); Ожидаемый результат: 6"
+        "id": "q2",
+        "question": "Почему поля структуры, описывающей регистры, объявляют volatile?",
+        "explanation": "Без volatile компилятор вправе прочитать регистр один раз или выбросить «лишнюю» запись — для устройства это потерянные данные и команды.",
+        "options": [
+          "Каждое чтение и запись должны действительно дойти до устройства: значения меняет железо, а записи — команды",
+          "Чтобы структура занимала меньше памяти",
+          "Чтобы компилятор проверял тип доступа к регистру",
+          "Без volatile нельзя взять адрес структуры"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdint.h>\n#include <stdio.h>\n\n#define MODE_POS 4\n#define MODE_MSK (3u << MODE_POS)\n\nint main(void) {\n    uint32_t reg = 0xFFu;\n    reg = (reg & ~MODE_MSK) | (2u << MODE_POS);\n    printf(\"%02X\\n\", (unsigned)reg);\n    return 0;\n}",
+        "explanation": "Маска поля 0x30 очищает биты 4–5: 0xFF → 0xCF. Затем значение 2 на позиции 4 — это 0x20: 0xCF | 0x20 = 0xEF.",
+        "type": "text",
+        "answers": ["EF"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Почему последовательность чтение — изменение — запись опасна, если тот же регистр меняет обработчик прерывания?",
+        "explanation": "Основная программа запишет значение, вычисленное до прерывания. Поэтому такие изменения защищают запретом прерываний или выполняют через регистры установки и сброса.",
+        "options": [
+          "Прерывание может изменить регистр между чтением и записью, и его изменение затрётся",
+          "Чтение регистра запрещает прерывания",
+          "Запись в регистр невозможна, пока работает прерывание",
+          "Компилятор переставит чтение и запись"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "ODR = 0x00F0. В регистр BSRR записали 0x00100001 (бит 0 и бит 20). Каким станет ODR? Запишите четырьмя шестнадцатеричными цифрами.",
+        "explanation": "Младшая половина 0x0001 устанавливает ножку 0, старшая 0x0010 сбрасывает ножку 4: 0x00F0 → 0x00E0 → 0x00E1.",
+        "type": "text",
+        "answers": ["0x00E1", "00E1", "0x00e1", "00e1"],
+        "placeholder": "0x…"
+      },
+      {
+        "id": "q6",
+        "question": "Регистр состояния сбрасывает флаги записью единицы (W1C). В нём установлены флаги 0x1, 0x2 и 0x4. Как правильно сбросить только флаг 0x2?",
+        "explanation": "Записывается единица только в бит сбрасываемого флага. SR |= 0x2 запишет 0x7 и сбросит все три флага; SR &= ~0x2 запишет 0x5 и сбросит флаги 0x1 и 0x4.",
+        "options": ["SR = 0x2;", "SR |= 0x2;", "SR &= ~0x2;", "SR ^= 0x2;"],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Чтение регистра данных DR забирает байт из очереди приёмника. Сколько байтов заберёт выражение if (DR != 0) buf[n++] = DR; если первый байт не ноль?",
+        "explanation": "DR прочитан дважды: в условии и в присваивании. Значение регистра читают один раз в переменную.",
+        "type": "text",
+        "answers": ["2", "два"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q8",
+        "question": "Делитель скорости порта BRR = clock / baud — целое число. Чему равен BRR при clock = 8 000 000 и baud = 9600 с округлением до ближайшего?",
+        "explanation": "8 000 000 / 9600 = 833,33…, ближайшее целое — 833. Реальная скорость 8 000 000 / 833 ≈ 9603,8 бод, ошибка 0,04 %.",
+        "type": "text",
+        "answers": ["833"],
+        "placeholder": "Число"
       }
     ]
   }

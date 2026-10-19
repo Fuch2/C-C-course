@@ -1,137 +1,534 @@
 {
   "id": "algo-bst",
-  "title": "Дерево двоичного поиска — Binary search tree",
-  "description": "BST добавляет инвариант: все ключи левого поддерева меньше ключа узла, правого — больше.",
+  "title": "Дерево двоичного поиска",
+  "description": "Свойство упорядоченности и центральный обход; поиск и вставка за O(h); минимум, максимум, пол и потолок; удаление в трёх случаях и преемник; зависимость высоты от порядка вставки; балансирующие деревья и std::map.",
   "moduleId": "algorithms-structures",
   "order": 24,
-  "difficulty": "intermediate",
+  "difficulty": "advanced",
   "estimatedMinutes": 60,
   "prerequisites": ["algo-tree"],
   "objectives": [
-    "Объяснить инвариант: Каждое сравнение выбирает ветвь по диапазону допустимых значений.",
-    "Обосновать время: Поиск/вставка O(h), худший O(n); inorder O(n).",
-    "Оценить память и компромиссы: Поддержание порядка и диапазонных запросов против стоимости ссылок и необходимости балансировки."
+    "Объяснять свойство дерева поиска и его связь с центральным обходом",
+    "Реализовывать поиск, вставку и удаление",
+    "Находить пол, потолок, минимум и максимум одним спуском",
+    "Оценивать операции через высоту и объяснять роль балансировки"
   ],
-  "tags": [
-    "алгоритмы",
-    "C17",
-    "Дерево двоичного поиска — Binary search tree",
-    "структуры данных",
-    "cache locality"
-  ],
+  "tags": ["Структуры данных", "Дерево поиска", "BST", "Балансировка"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "algo-bst-exercise",
-    "title": "Упорядоченный справочник",
-    "description": "Ввод n (0…128), n int −1000…1000 и target. Вставьте ключи в несбалансированное BST, игнорируя дубликаты. Выведите уникальные ключи по возрастанию на первой строке и ДА/НЕТ для наличия target на второй. Освободите дерево.",
-    "difficulty": "intermediate",
+    "id": "algo-bst-task-1",
+    "title": "Вставка и поиск",
+    "description": "Реализуйте множество целых чисел на дереве двоичного поиска и выполните команды: `insert x` (повторная вставка ничего не меняет) и `find x` (напечатать `да` или `нет`). В конце напечатайте все ключи по возрастанию через пробел или `пусто` и освободите дерево.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "5 4 2 6 2 5 5",
-        "output": "2 4 5 6\nДА\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "insert 8\ninsert 3\ninsert 10\nfind 3\nfind 5\ninsert 3\n",
+        "output": "да\nнет\n3 8 10\n"
       },
       {
-        "input": "0 7",
-        "output": "\nНЕТ\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "find 1\n",
+        "output": "нет\nпусто\n"
       }
     ],
-    "constraints": [
-      "Используйте C17 и диапазоны входа из условия.",
-      "Выводите только требуемый результат.",
-      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
-    ],
+    "constraints": ["Команд не больше 2000; числа int; ключи вставляются в случайном порядке."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Каждое сравнение выбирает ветвь по диапазону допустимых значений."
+        "text": "insert возвращает корень поддерева: если t == NULL — новый узел, иначе спуск влево или вправо с присваиванием t->left = insert(t->left, key).",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Случайная форма хорошего дерева в примере не является гарантией балансировки."
-      },
-      {
-        "id": "hint-3",
-        "order": 3,
-        "text": "Вставка 4,2,6 даёт высоту 2; вставка 2,4,6 даёт цепочку высоты 3. Одинаковый набор не гарантирует одинаковую форму."
+        "text": "find — цикл: пока t не NULL, сравнивайте ключ и переходите в нужное поддерево. Ключи по возрастанию — центральный обход.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "5 4 2 6 2 5 5",
-        "expected": "2 4 5 6\nДА\n"
+        "stdin": "insert 8\ninsert 3\ninsert 10\nfind 3\nfind 5\ninsert 3\n",
+        "expected": "да\nнет\n3 8 10\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "0 7",
-        "expected": "\nНЕТ\n"
+        "stdin": "find 1\n",
+        "expected": "нет\nпусто\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "4 1 2 3 4 9",
-        "expected": "1 2 3 4\nНЕТ\n"
+        "id": "hidden-1",
+        "name": "Нет команд",
+        "stdin": "",
+        "expected": "пусто\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "3 -1 -1 -1 -1",
-        "expected": "-1\nДА\n"
+        "id": "hidden-2",
+        "name": "Один ключ",
+        "stdin": "insert 5\nfind 5\nfind 4\nfind 6\n",
+        "expected": "да\nнет\nнет\n5\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Зигзаг",
+        "stdin": "insert 3\ninsert 1\ninsert 2\ninsert 5\ninsert 4\nfind 2\nfind 4\nfind 6\n",
+        "expected": "да\nда\nнет\n1 2 3 4 5\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Крайние значения",
+        "stdin": "insert -1\ninsert -2147483648\ninsert 2147483647\nfind -2147483648\nfind 2147483647\nfind 0\n",
+        "expected": "да\nда\nнет\n-2147483648 -1 2147483647\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Повторы",
+        "stdin": "insert 7\ninsert 7\ninsert 7\nfind 7\n",
+        "expected": "да\n7\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "По возрастанию",
+        "stdin": "insert 1\ninsert 2\ninsert 3\ninsert 4\ninsert 5\nfind 5\nfind 0\n",
+        "expected": "да\nнет\n1 2 3 4 5\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Сбалансированное",
+        "stdin": "insert 50\ninsert 30\ninsert 70\ninsert 20\ninsert 40\ninsert 60\ninsert 80\nfind 60\nfind 65\n",
+        "expected": "да\nнет\n20 30 40 50 60 70 80\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "По убыванию",
+        "stdin": "insert 9\ninsert 8\ninsert 7\ninsert 6\nfind 6\nfind 10\n",
+        "expected": "да\nнет\n6 7 8 9\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\ntypedef struct Node { int key; struct Node *left,*right; } Node;\nstatic int insert(Node **root,int key){\n    while(*root){\n        if(key==(*root)->key)return 1;\n        root=key<(*root)->key?&(*root)->left:&(*root)->right;\n    }\n    *root=malloc(sizeof **root);if(!*root)return 0;\n    **root=(Node){key,NULL,NULL};return 1;\n}\nstatic int contains(const Node *root,int key){\n    while(root){if(root->key==key)return 1;root=key<root->key?root->left:root->right;}return 0;\n}\nstatic void inorder(const Node *root,int *first){\n    if(!root)return;inorder(root->left,first);\n    printf(\"%s%d\",*first?\"\":\" \",root->key);*first=0;inorder(root->right,first);\n}\nstatic void destroy(Node *root){if(root){destroy(root->left);destroy(root->right);free(root);}}\nint main(void) {\nint a[256]; int n;\nif (scanf(\"%d\", &n)!=1 || n<0 || n>256) return 1;\nfor(int i=0;i<n;++i) if(scanf(\"%d\", &a[i])!=1) return 1;\nif(n>128)return 1;int target;if(scanf(\"%d\",&target)!=1)return 1;Node *root=NULL;for(int i=0;i<n;++i)if(!insert(&root,a[i])){destroy(root);return 1;}int first=1;inorder(root,&first);puts(\"\");puts(contains(root,target)?\"ДА\":\"НЕТ\");destroy(root);\nreturn 0;\n}\n",
-    "solutionExplanation": "Инвариант: Каждое сравнение выбирает ветвь по диапазону допустимых значений.\n\nВставка 4,2,6 даёт высоту 2; вставка 2,4,6 даёт цепочку высоты 3. Одинаковый набор не гарантирует одинаковую форму.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. Случайная форма хорошего дерева в примере не является гарантией балансировки.\n\nВремя: Поиск/вставка O(h), худший O(n); inorder O(n).\nПамять: O(n) узлов; рекурсивный обход O(h).\nКомпромисс: Поддержание порядка и диапазонных запросов против стоимости ссылок и необходимости балансировки.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct Node {\n    int key;\n    struct Node *left;\n    struct Node *right;\n} Node;\n\nstatic Node *insert(Node *t, int key) {\n    if (t == NULL) {\n        Node *node = malloc(sizeof *node);\n        if (node == NULL) {\n            exit(1);\n        }\n        node->key = key;\n        node->left = node->right = NULL;\n        return node;\n    }\n    if (key < t->key) {\n        t->left = insert(t->left, key);\n    } else if (key > t->key) {\n        t->right = insert(t->right, key);\n    }\n    return t;\n}\n\nstatic void destroy(Node *t) {\n    if (t == NULL) {\n        return;\n    }\n    destroy(t->left);\n    destroy(t->right);\n    free(t);\n}\n\nstatic bool contains(const Node *t, int key) {\n    while (t != NULL) {\n        if (key == t->key) {\n            return true;\n        }\n        t = key < t->key ? t->left : t->right;\n    }\n    return false;\n}\n\nstatic int printed;\n\nstatic void inorder(const Node *t) {\n    if (t == NULL) {\n        return;\n    }\n    inorder(t->left);\n    printf(printed++ ? \" %d\" : \"%d\", t->key);\n    inorder(t->right);\n}\n\nint main(void) {\n    Node *root = NULL;\n    char command[8];\n    int x;\n    while (scanf(\"%7s %d\", command, &x) == 2) {\n        if (strcmp(command, \"insert\") == 0) {\n            root = insert(root, x);\n        } else if (strcmp(command, \"find\") == 0) {\n            printf(\"%s\\n\", contains(root, x) ? \"да\" : \"нет\");\n        }\n    }\n    inorder(root);\n    printf(printed ? \"\\n\" : \"пусто\\n\");\n    destroy(root);\n    return 0;\n}\n",
+    "solutionExplanation": "Поиск идёт от корня вниз: на каждом узле сравнение отбрасывает одно из поддеревьев. Вставка проходит тот же путь и подвешивает новый лист туда, где поиск упёрся в `NULL`. Обе операции — `O(h)`; при случайном порядке ключей `h` около `2,5 · log₂ n`.\n\nВозврат корня из `insert` убирает особый случай пустого дерева: `root = insert(NULL, x)` создаёт корень, а на каждом уровне рекурсии присваивание `t->left = …` либо ничего не меняет, либо подвешивает новый лист. Центральный обход печатает ключи по возрастанию — это следствие свойства дерева поиска.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "algo-bst-task-2",
+      "title": "Пол и потолок",
+      "description": "Первая строка — `n`, вторая — `n` различных целых чисел; вставьте их в дерево поиска в этом порядке. Дальше до конца ввода идут запросы `x`. Для каждого напечатайте через пробел **пол** — наибольший ключ, не больший `x`, — и **потолок** — наименьший ключ, не меньший `x`. Если такого ключа нет, вместо него печатается `-`.\n\nКаждый запрос — один спуск от корня, `O(h)`. Освободите дерево.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "9\n8 3 10 1 6 14 4 7 13\n5\n8\n12\n0\n20\n",
+          "output": "4 6\n8 8\n10 13\n- 1\n14 -\n"
+        },
+        {
+          "input": "1\n5\n5\n4\n6\n",
+          "output": "5 5\n- 5\n5 -\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; числа int; запросов не больше 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Пол: если t->key <= x, это кандидат — запомните его и идите вправо (может найтись больший подходящий); иначе идите влево.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Потолок — зеркально: если t->key >= x, запомните и идите влево, иначе вправо. Если x есть в дереве, пол и потолок равны x.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "9\n8 3 10 1 6 14 4 7 13\n5\n8\n12\n0\n20\n",
+          "expected": "4 6\n8 8\n10 13\n- 1\n14 -\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n5\n5\n4\n6\n",
+          "expected": "5 5\n- 5\n5 -\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Цепочка",
+          "stdin": "3\n1 2 3\n0\n4\n2\n",
+          "expected": "- 1\n3 -\n2 2\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Левая цепочка",
+          "stdin": "3\n3 2 1\n2\n-5\n100\n",
+          "expected": "2 2\n- 1\n3 -\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Отрицательные",
+          "stdin": "5\n-10 -20 0 -15 5\n-12\n-16\n1\n",
+          "expected": "-15 -10\n-20 -15\n0 5\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Крайние значения",
+          "stdin": "2\n-2147483648 2147483647\n0\n-2147483648\n2147483647\n",
+          "expected": "-2147483648 2147483647\n-2147483648 -2147483648\n2147483647 2147483647\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Между ключами",
+          "stdin": "7\n50 30 70 20 40 60 80\n45\n55\n65\n75\n",
+          "expected": "40 50\n50 60\n60 70\n70 80\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Края",
+          "stdin": "7\n50 30 70 20 40 60 80\n20\n80\n19\n81\n",
+          "expected": "20 20\n80 80\n- 20\n80 -\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Глубокий кандидат",
+          "stdin": "4\n10 5 15 12\n11\n13\n",
+          "expected": "10 12\n12 15\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Все ключи",
+          "stdin": "6\n4 2 6 1 3 5\n1\n2\n3\n4\n5\n6\n7\n0\n",
+          "expected": "1 1\n2 2\n3 3\n4 4\n5 5\n6 6\n6 -\n- 1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int key;\n    struct Node *left;\n    struct Node *right;\n} Node;\n\nstatic Node *insert(Node *t, int key) {\n    if (t == NULL) {\n        Node *node = malloc(sizeof *node);\n        if (node == NULL) {\n            exit(1);\n        }\n        node->key = key;\n        node->left = node->right = NULL;\n        return node;\n    }\n    if (key < t->key) {\n        t->left = insert(t->left, key);\n    } else if (key > t->key) {\n        t->right = insert(t->right, key);\n    }\n    return t;\n}\n\nstatic void destroy(Node *t) {\n    if (t == NULL) {\n        return;\n    }\n    destroy(t->left);\n    destroy(t->right);\n    free(t);\n}\n\nstatic bool floor_key(const Node *t, int x, int *out) {\n    bool found = false;\n    while (t != NULL) {\n        if (t->key <= x) {\n            *out = t->key;\n            found = true;\n            t = t->right;\n        } else {\n            t = t->left;\n        }\n    }\n    return found;\n}\n\nstatic bool ceil_key(const Node *t, int x, int *out) {\n    bool found = false;\n    while (t != NULL) {\n        if (t->key >= x) {\n            *out = t->key;\n            found = true;\n            t = t->left;\n        } else {\n            t = t->right;\n        }\n    }\n    return found;\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1) {\n        return 0;\n    }\n    Node *root = NULL;\n    for (int i = 0; i < n; i++) {\n        int key;\n        if (scanf(\"%d\", &key) != 1) {\n            break;\n        }\n        root = insert(root, key);\n    }\n    int x;\n    while (scanf(\"%d\", &x) == 1) {\n        int f, c;\n        if (floor_key(root, x, &f)) {\n            printf(\"%d \", f);\n        } else {\n            printf(\"- \");\n        }\n        if (ceil_key(root, x, &c)) {\n            printf(\"%d\\n\", c);\n        } else {\n            printf(\"-\\n\");\n        }\n    }\n    destroy(root);\n    return 0;\n}\n",
+      "solutionExplanation": "Спуск за полом поддерживает инвариант: лучший найденный кандидат — наибольший ключ `≤ x` среди уже отброшенных частей дерева, а все ключи, которые могут оказаться лучше, лежат в текущем поддереве. Если ключ узла подходит, левее него лучше не найти — все ключи там меньше, — поэтому идём вправо. Если не подходит, не подходит и всё правое поддерево.\n\nПотолок — зеркальная задача. Обе функции — один путь от корня до листа, `O(h)`. Отсортированный массив отвечает на те же вопросы нижней и верхней границей, а хеш-таблица — никак: она не хранит порядок.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-bst-task-3",
+      "title": "Найди ошибку: удаление",
+      "description": "Программа выполняет команды над деревом поиска: `insert x`, `erase x` (удалить, если есть) и `print` (ключи по возрастанию или `пусто`).\n\nПосле удаления некоторых ключей в выводе появляются повторы. Найдите и исправьте ошибку.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct Node {\n    int key;\n    struct Node *left;\n    struct Node *right;\n} Node;\n\nstatic Node *insert(Node *t, int key) {\n    if (t == NULL) {\n        Node *node = malloc(sizeof *node);\n        if (node == NULL) {\n            exit(1);\n        }\n        node->key = key;\n        node->left = node->right = NULL;\n        return node;\n    }\n    if (key < t->key) {\n        t->left = insert(t->left, key);\n    } else if (key > t->key) {\n        t->right = insert(t->right, key);\n    }\n    return t;\n}\n\nstatic void destroy(Node *t) {\n    if (t == NULL) {\n        return;\n    }\n    destroy(t->left);\n    destroy(t->right);\n    free(t);\n}\n\nstatic Node *erase(Node *t, int key) {\n    if (t == NULL) {\n        return NULL;\n    }\n    if (key < t->key) {\n        t->left = erase(t->left, key);\n    } else if (key > t->key) {\n        t->right = erase(t->right, key);\n    } else if (t->left == NULL || t->right == NULL) {\n        Node *child = t->left != NULL ? t->left : t->right;\n        free(t);\n        return child;\n    } else {\n        Node *succ = t->right;\n        while (succ->left != NULL) {\n            succ = succ->left;\n        }\n        t->key = succ->key;\n        t->left = erase(t->left, succ->key);\n    }\n    return t;\n}\n\nstatic int printed;\n\nstatic void inorder(const Node *t) {\n    if (t == NULL) {\n        return;\n    }\n    inorder(t->left);\n    printf(printed++ ? \" %d\" : \"%d\", t->key);\n    inorder(t->right);\n}\n\nint main(void) {\n    Node *root = NULL;\n    char command[8];\n    while (scanf(\"%7s\", command) == 1) {\n        if (strcmp(command, \"print\") == 0) {\n            printed = 0;\n            inorder(root);\n            printf(printed ? \"\\n\" : \"пусто\\n\");\n            continue;\n        }\n        int x;\n        if (scanf(\"%d\", &x) != 1) {\n            break;\n        }\n        if (strcmp(command, \"insert\") == 0) {\n            root = insert(root, x);\n        } else if (strcmp(command, \"erase\") == 0) {\n            root = erase(root, x);\n        }\n    }\n    destroy(root);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "insert 5\ninsert 3\ninsert 8\nerase 3\nprint\n",
+          "output": "5 8\n"
+        },
+        {
+          "input": "insert 5\ninsert 3\ninsert 8\nerase 5\nprint\n",
+          "output": "3 8\n"
+        }
+      ],
+      "constraints": ["Команд не больше 2000; числа int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какой случай удаления ломается: лист, один ребёнок или два? Попробуйте удалить корень дерева 5 3 8.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Преемник — наименьший ключ правого поддерева, и удалять его нужно оттуда же: t->right = erase(t->right, succ->key). Удаление из левого поддерева ничего не находит, и ключ преемника остаётся в дереве дважды.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "insert 5\ninsert 3\ninsert 8\nerase 3\nprint\n",
+          "expected": "5 8\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "insert 5\ninsert 3\ninsert 8\nerase 5\nprint\n",
+          "expected": "3 8\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "insert 1\nerase 1\nprint\n",
+          "expected": "пусто\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "insert 5\ninsert 3\ninsert 8\ninsert 7\ninsert 9\nerase 8\nprint\n",
+          "expected": "3 5 7 9\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "insert 50\ninsert 30\ninsert 70\ninsert 60\ninsert 80\ninsert 65\nerase 50\nprint\nerase 60\nprint\n",
+          "expected": "30 60 65 70 80\n30 65 70 80\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "insert 2\ninsert 1\ninsert 3\nerase 2\nerase 1\nerase 3\nprint\n",
+          "expected": "пусто\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "insert 5\nerase 7\nprint\n",
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "insert 10\ninsert 5\ninsert 15\ninsert 12\ninsert 20\ninsert 11\nerase 10\nprint\n",
+          "expected": "5 11 12 15 20\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "insert 4\ninsert 2\ninsert 6\ninsert 1\ninsert 3\ninsert 5\ninsert 7\nerase 4\nerase 2\nerase 6\nprint\n",
+          "expected": "1 3 5 7\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "insert 8\ninsert 4\ninsert 12\nerase 8\ninsert 8\nprint\n",
+          "expected": "4 8 12\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct Node {\n    int key;\n    struct Node *left;\n    struct Node *right;\n} Node;\n\nstatic Node *insert(Node *t, int key) {\n    if (t == NULL) {\n        Node *node = malloc(sizeof *node);\n        if (node == NULL) {\n            exit(1);\n        }\n        node->key = key;\n        node->left = node->right = NULL;\n        return node;\n    }\n    if (key < t->key) {\n        t->left = insert(t->left, key);\n    } else if (key > t->key) {\n        t->right = insert(t->right, key);\n    }\n    return t;\n}\n\nstatic void destroy(Node *t) {\n    if (t == NULL) {\n        return;\n    }\n    destroy(t->left);\n    destroy(t->right);\n    free(t);\n}\n\nstatic Node *erase(Node *t, int key) {\n    if (t == NULL) {\n        return NULL;\n    }\n    if (key < t->key) {\n        t->left = erase(t->left, key);\n    } else if (key > t->key) {\n        t->right = erase(t->right, key);\n    } else if (t->left == NULL || t->right == NULL) {\n        Node *child = t->left != NULL ? t->left : t->right;\n        free(t);\n        return child;\n    } else {\n        Node *succ = t->right;\n        while (succ->left != NULL) {\n            succ = succ->left;\n        }\n        t->key = succ->key;\n        t->right = erase(t->right, succ->key);\n    }\n    return t;\n}\n\nstatic int printed;\n\nstatic void inorder(const Node *t) {\n    if (t == NULL) {\n        return;\n    }\n    inorder(t->left);\n    printf(printed++ ? \" %d\" : \"%d\", t->key);\n    inorder(t->right);\n}\n\nint main(void) {\n    Node *root = NULL;\n    char command[8];\n    while (scanf(\"%7s\", command) == 1) {\n        if (strcmp(command, \"print\") == 0) {\n            printed = 0;\n            inorder(root);\n            printf(printed ? \"\\n\" : \"пусто\\n\");\n            continue;\n        }\n        int x;\n        if (scanf(\"%d\", &x) != 1) {\n            break;\n        }\n        if (strcmp(command, \"insert\") == 0) {\n            root = insert(root, x);\n        } else if (strcmp(command, \"erase\") == 0) {\n            root = erase(root, x);\n        }\n    }\n    destroy(root);\n    return 0;\n}\n",
+      "solutionExplanation": "Когда у удаляемого узла два ребёнка, его ключ заменяется ключом преемника, а сам преемник удаляется из **правого** поддерева, где он лежит. Заготовка вызывает удаление в левом поддереве: там все ключи меньше преемника, поиск ничего не находит, и узел-преемник остаётся на месте. Ключ оказывается в дереве дважды — в узле, который мы «удалили», и в самом преемнике.\n\nОшибка проявляется только в случае двух детей, поэтому удаление листьев и узлов с одним ребёнком работает. Тесты для удаления должны покрывать все три случая — и удаление корня.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-bst-task-4",
+      "title": "Проверка дерева поиска",
+      "description": "Дерево задаётся, как в уроке о бинарных деревьях: первая строка — `n`, дальше `n` строк `ключ левый правый` (номера детей с нуля или `-1`), корень — узел 0. Постройте дерево из настоящих узлов и напечатайте `да`, если оно — дерево двоичного поиска (ключи в левом поддереве каждого узла **строго** меньше его ключа, в правом — строго больше), и `нет` иначе. Освободите все узлы.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\n8 1 2\n3 -1 -1\n10 -1 -1\n",
+          "output": "да\n"
+        },
+        {
+          "input": "3\n8 1 -1\n3 -1 2\n9 -1 -1\n",
+          "output": "нет\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; ключи int; ввод описывает корректное бинарное дерево."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Проверять только детей недостаточно: ключ может нарушать свойство относительно далёкого предка.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Передавайте в рекурсию допустимый интервал (low, high): в левое поддерево узла с ключом k — (low, k), в правое — (k, high). Узел допустим, если low < key < high.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Крайние ключи — INT_MIN и INT_MAX, поэтому границы храните в long long: начальный интервал (LLONG_MIN, LLONG_MAX) или (INT_MIN − 1, INT_MAX + 1).",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\n8 1 2\n3 -1 -1\n10 -1 -1\n",
+          "expected": "да\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3\n8 1 -1\n3 -1 2\n9 -1 -1\n",
+          "expected": "нет\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Один узел INT_MAX",
+          "stdin": "1\n2147483647 -1 -1\n",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Один узел INT_MIN",
+          "stdin": "1\n-2147483648 -1 -1\n",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Равный ключ слева",
+          "stdin": "2\n5 1 -1\n5 -1 -1\n",
+          "expected": "нет\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Равный ключ справа",
+          "stdin": "2\n5 -1 1\n5 -1 -1\n",
+          "expected": "нет\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Правильное полное",
+          "stdin": "7\n50 1 2\n30 3 4\n70 5 6\n20 -1 -1\n40 -1 -1\n60 -1 -1\n80 -1 -1\n",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Нарушение глубоко слева",
+          "stdin": "7\n50 1 2\n30 3 4\n70 5 6\n20 -1 -1\n55 -1 -1\n60 -1 -1\n80 -1 -1\n",
+          "expected": "нет\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Правая цепочка",
+          "stdin": "4\n1 -1 1\n2 -1 2\n3 -1 3\n4 -1 -1\n",
+          "expected": "да\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Нарушение глубоко справа",
+          "stdin": "5\n10 1 2\n5 -1 -1\n15 3 4\n6 -1 -1\n20 -1 -1\n",
+          "expected": "нет\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int key;\n    struct Node *left;\n    struct Node *right;\n} Node;\n\nstatic bool valid(const Node *t, long long low, long long high) {\n    if (t == NULL) {\n        return true;\n    }\n    if (t->key <= low || t->key >= high) {\n        return false;\n    }\n    return valid(t->left, low, t->key) && valid(t->right, t->key, high);\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return 0;\n    }\n    static Node *nodes[1000];\n    static int left[1000], right[1000];\n    for (int i = 0; i < n; i++) {\n        nodes[i] = malloc(sizeof *nodes[i]);\n        if (nodes[i] == NULL) {\n            return 1;\n        }\n        scanf(\"%d %d %d\", &nodes[i]->key, &left[i], &right[i]);\n    }\n    for (int i = 0; i < n; i++) {\n        nodes[i]->left = left[i] >= 0 ? nodes[left[i]] : NULL;\n        nodes[i]->right = right[i] >= 0 ? nodes[right[i]] : NULL;\n    }\n    printf(\"%s\\n\", valid(nodes[0], -2147483649LL, 2147483648LL) ? \"да\" : \"нет\");\n    for (int i = 0; i < n; i++) {\n        free(nodes[i]);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Свойство дерева поиска — утверждение о **всех** предках узла: каждый предок, у которого узел лежит в левом поддереве, задаёт верхнюю границу, а каждый, у которого в правом, — нижнюю. Рекурсия передаёт вниз самые сильные из этих границ — интервал `(low, high)`, в котором обязан лежать ключ. Это `O(n)`: каждый узел проверяется один раз.\n\nЧастая ошибка — сравнивать узел только с детьми: дерево `8 → левый 3 → правый 9` проходит такую проверку, хотя 9 больше корня. Другая — начальные границы `INT_MIN` и `INT_MAX` с нестрогой проверкой: тогда дерево из одного узла с ключом `INT_MAX` было бы признано неверным. Границы в `long long`, на единицу шире диапазона `int`, решают обе проблемы.\n\nДругой способ — центральный обход: дерево поиска тогда и только тогда, когда обход выдаёт строго возрастающую последовательность.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "algo-bst-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "invariant",
-        "question": "Что произойдёт при последовательной вставке возрастающих ключей?",
-        "options": [
-          "Несбалансированное BST может выродиться в цепочку",
-          "Оно автоматически перестроится в сбалансированное"
-        ],
-        "correct": 0,
-        "explanation": "Каждое сравнение выбирает ветвь по диапазону допустимых значений. Вставка 4,2,6 даёт высоту 2; вставка 2,4,6 даёт цепочку высоты 3. Одинаковый набор не гарантирует одинаковую форму."
+        "id": "q1",
+        "question": "Ключи 5, 3, 8, 1, 4 вставлены в пустое дерево поиска в этом порядке. Какой ключ будет правым ребёнком узла 3?",
+        "explanation": "5 — корень; 3 и 8 — его дети; 1 < 3 — левый ребёнок 3; 4 < 5, но > 3 — правый ребёнок 3.",
+        "type": "text",
+        "answers": ["4"],
+        "placeholder": "Ключ"
       },
       {
-        "id": "complexity",
-        "question": "Какая оценка соответствует рассмотренной реализации?",
+        "id": "q2",
+        "question": "Что выдаёт центральный обход дерева поиска?",
+        "explanation": "Сначала все меньшие ключи (левое поддерево), затем ключ узла, затем все большие — это и есть сортировка.",
         "options": [
-          "Всегда O(1), потому что все тесты ограничены по размеру.",
-          "Поиск/вставка O(h), худший O(n); inorder O(n)."
+          "Ключи по возрастанию",
+          "Ключи в порядке вставки",
+          "Ключи по уровням",
+          "Ключи по убыванию"
         ],
-        "correct": 1,
-        "explanation": "Поддержание порядка и диапазонных запросов против стоимости ссылок и необходимости балансировки."
+        "correct": 0
       },
       {
-        "id": "engineering",
-        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "id": "q3",
+        "question": "Является ли деревом поиска дерево: корень 8, его левый ребёнок 3, у узла 3 правый ребёнок 9?",
+        "explanation": "Свойство дерева поиска относится ко всему поддереву, а не только к непосредственным детям.",
         "options": [
-          "Случайная форма хорошего дерева в примере не является гарантией балансировки.",
-          "Совпадение Big O гарантирует одинаковое время на любой машине."
+          "Нет: 9 лежит в левом поддереве 8, но больше 8",
+          "Да: каждый узел правильно расположен относительно своего родителя",
+          "Да, если нет повторов",
+          "Нельзя определить"
         ],
-        "correct": 0,
-        "explanation": "Последовательные логические ключи могут находиться в разных участках памяти. O(n) узлов; рекурсивный обход O(h)."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Ключи 1, 2, 3, …, 100 вставлены в пустое дерево поиска по возрастанию. Какой будет высота дерева (у одного узла — 0)?",
+        "explanation": "Каждый ключ больше всех предыдущих и уходит вправо: дерево вырождается в цепочку из 100 узлов.",
+        "type": "text",
+        "answers": ["99"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q5",
+        "question": "Чем заменяют ключ удаляемого узла с двумя детьми?",
+        "explanation": "Преемник больше всех ключей слева и меньше остальных ключей справа, поэтому свойство дерева сохраняется. Подойдёт и наибольший ключ левого поддерева — предшественник.",
+        "options": [
+          "Наименьшим ключом правого поддерева (преемником)",
+          "Ключом корня",
+          "Ключом левого ребёнка",
+          "Нулём"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\ntypedef struct Node {\n    int key;\n    struct Node *left, *right;\n} Node;\n\nint main(void) {\n    Node a = {2, NULL, NULL}, b = {9, NULL, NULL}, c = {6, &a, &b};\n    Node d = {15, NULL, NULL}, root = {12, &c, &d};\n    int x = 10, best = -1;\n    for (const Node *t = &root; t != NULL;) {\n        if (t->key >= x) {\n            best = t->key;\n            t = t->left;\n        } else {\n            t = t->right;\n        }\n    }\n    printf(\"%d\\n\", best);\n    return 0;\n}",
+        "explanation": "Это потолок: наименьший ключ не меньше 10. 12 ≥ 10 — кандидат, идём влево; 6 < 10 — вправо; 9 < 10 — вправо, NULL. Ответ 12.",
+        "type": "text",
+        "answers": ["12"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Какие операции дерево поиска поддерживает, а хеш-таблица — нет?",
+        "explanation": "Хеш-таблица не хранит порядок ключей. Проверять наличие ключа умеют обе структуры.",
+        "type": "multiple",
+        "options": [
+          "Найти наибольший ключ, не превышающий x",
+          "Обойти ключи по возрастанию",
+          "Найти минимум за O(h)",
+          "Проверить, есть ли ключ"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q8",
+        "question": "Почему std::map гарантирует O(log n) на операцию при любом порядке вставки?",
+        "explanation": "Обычно std::map — красно-чёрное дерево. Стандарт требует логарифмическую сложность, поэтому простое несбалансированное дерево не подошло бы.",
+        "options": [
+          "Это самобалансирующееся дерево: после изменений оно перестраивается поворотами и держит высоту O(log n)",
+          "std::map — это хеш-таблица",
+          "std::map сортирует ключи перед вставкой",
+          "Не гарантирует"
+        ],
+        "correct": 0
       }
     ]
   }

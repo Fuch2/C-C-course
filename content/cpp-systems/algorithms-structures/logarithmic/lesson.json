@@ -1,118 +1,523 @@
 {
   "id": "algo-logarithmic",
-  "title": "O(log n)",
-  "description": "Логарифмическая работа возникает, когда на каждом шаге размер оставшейся задачи уменьшается в постоянное число раз.",
+  "title": "Логарифмическое время O(log n)",
+  "description": "Двоичный логарифм как число делений пополам; логарифмические циклы с делением и умножением; цифры числа; быстрое возведение в степень по модулю и его трассировка по битам; где логарифм встретится дальше; ловушки: умножение нуля, логарифм через double, переполнение.",
   "moduleId": "algorithms-structures",
   "order": 6,
   "difficulty": "intermediate",
-  "estimatedMinutes": 40,
+  "estimatedMinutes": 45,
   "prerequisites": ["algo-linear-time"],
   "objectives": [
-    "Объяснить инвариант: На каждом шаге выбрасывается половина ещё возможных вариантов.",
-    "Обосновать время: Для n>0 число состояний floor(log₂n)+1; для n=0 — 0.",
-    "Оценить память и компромиссы: Чтобы отбрасывать половину, нужен порядок или другой структурный инвариант."
+    "Объяснять логарифм как число делений пополам",
+    "Узнавать логарифмические циклы и считать их шаги",
+    "Возводить в степень по модулю за O(log b)",
+    "Избегать ошибок округления и переполнения в логарифмических алгоритмах"
   ],
-  "tags": ["алгоритмы", "C17", "O(log n)"],
+  "tags": ["Сложность", "O(log n)", "Быстрое возведение в степень"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "algo-logarithmic-exercise",
-    "title": "Сколько шагов деления",
-    "description": "Ввод unsigned n (0…1000000). Считайте ненулевые состояния, пока n делится на 2 с целочисленным округлением вниз. Выведите счётчик. Для 0 ответ 0.",
-    "difficulty": "intermediate",
+    "id": "algo-logarithmic-task-1",
+    "title": "Число цифр",
+    "description": "Каждая строка ввода — неотрицательное целое число `n`. Напечатайте через пробел, сколько цифр в его десятичной и в двоичной записи. У нуля одна цифра в обеих.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "13",
-        "output": "4\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "1000\n",
+        "output": "4 10\n"
       },
       {
-        "input": "0",
-        "output": "0\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "0\n1\n",
+        "output": "1 1\n1 1\n"
       }
     ],
     "constraints": [
-      "Используйте C17 и диапазоны входа из условия.",
-      "Выводите только требуемый результат.",
-      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
+      "0 ≤ n ≤ 18 446 744 073 709 551 615 (наибольшее unsigned long long); строк не больше 30."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "На каждом шаге выбрасывается половина ещё возможных вариантов."
+        "text": "Читайте число в unsigned long long: scanf(\"%llu\", &n).",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "log₂n шагов поиска не включает предварительную сортировку."
-      },
-      {
-        "id": "hint-3",
-        "order": 3,
-        "text": "При повторении n/=2 число 13 проходит 13 → 6 → 3 → 1 → 0: четыре ненулевых состояния."
+        "text": "Считайте цифры циклом: x /= 10 для десятичных, x /= 2 для двоичных, пока x > 0. Ноль обработайте отдельно — у него одна цифра, а цикл не выполнится ни разу.",
+        "order": 2
       }
     ],
     "publicTests": [
-      { "id": "case-1", "name": "Пример 1", "stdin": "13", "expected": "4\n" },
-      { "id": "case-2", "name": "Пример 2", "stdin": "0", "expected": "0\n" }
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "1000\n",
+        "expected": "4 10\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "0\n1\n",
+        "expected": "1 1\n1 1\n"
+      }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "1",
-        "expected": "1\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "9\n10\n",
+        "expected": "1 4\n2 4\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "1024",
-        "expected": "11\n"
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "99\n100\n",
+        "expected": "2 7\n3 7\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "255\n256\n",
+        "expected": "3 8\n3 9\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "999999999999\n",
+        "expected": "12 40\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "1000000000000000000\n",
+        "expected": "19 60\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "18446744073709551615\n",
+        "expected": "20 64\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "9223372036854775808\n",
+        "expected": "19 64\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "1023\n1024\n65535\n",
+        "expected": "4 10\n4 11\n5 16\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\n\nint main(void) {\nunsigned n,count=0;if(scanf(\"%u\",&n)!=1 || n>1000000)return 1;while(n){++count;n/=2;}printf(\"%u\\n\",count);\nreturn 0;\n}\n",
-    "solutionExplanation": "Инвариант: На каждом шаге выбрасывается половина ещё возможных вариантов.\n\nПри повторении n/=2 число 13 проходит 13 → 6 → 3 → 1 → 0: четыре ненулевых состояния.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. log₂n шагов поиска не включает предварительную сортировку.\n\nВремя: Для n>0 число состояний floor(log₂n)+1; для n=0 — 0.\nПамять: Итеративная версия O(1). Рекурсивная хранит O(log n) кадров.\nКомпромисс: Чтобы отбрасывать половину, нужен порядок или другой структурный инвариант.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <stdio.h>\n\nstatic int digits(unsigned long long n, unsigned base) {\n    if (n == 0) {\n        return 1;\n    }\n    int count = 0;\n    for (; n > 0; n /= base) {\n        count++;\n    }\n    return count;\n}\n\nint main(void) {\n    unsigned long long n;\n    while (scanf(\"%llu\", &n) == 1) {\n        printf(\"%d %d\\n\", digits(n, 10), digits(n, 2));\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Каждое деление на основание отбрасывает одну цифру записи, поэтому число итераций — это число цифр, то есть `⌊log n⌋ + 1`. Даже для самого большого `unsigned long long` — 20 десятичных и 64 двоичных цифры.\n\nНоль — граничный случай: цикл `n > 0` для него не выполняется ни разу, а цифра у нуля одна. Вещественный `log10` здесь не подходит не только из-за округления: для нуля он равен минус бесконечности.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "algo-logarithmic-task-2",
+      "title": "Степень по модулю",
+      "description": "Каждая строка ввода — числа `a`, `b` и `m`. Напечатайте остаток от деления `aᵇ` на `m`. Считайте, что `0⁰ = 1`.\n\nПоказатель бывает до 10¹⁸, поэтому умножать `b` раз нельзя — нужно быстрое возведение в степень.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2 10 1000\n",
+          "output": "24\n"
+        },
+        {
+          "input": "3 1000000000000000000 1000000007\n",
+          "output": "246336683\n"
+        }
+      ],
+      "constraints": ["0 ≤ a ≤ 10¹⁸; 0 ≤ b ≤ 10¹⁸; 1 ≤ m ≤ 10⁹; строк не больше 30."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Пока b > 0: если b нечётно, result = result * base % m; затем base = base * base % m и b /= 2.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Перед циклом приведите основание по модулю: base %= m — иначе base * base переполнится. Начальное значение — 1 % m: при m = 1 ответ всегда 0.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2 10 1000\n",
+          "expected": "24\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3 1000000000000000000 1000000007\n",
+          "expected": "246336683\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ноль в нулевой",
+          "stdin": "0 0 7\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Модуль 1",
+          "stdin": "5 0 1\n7 3 1\n",
+          "expected": "0\n0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Ноль в степени",
+          "stdin": "0 5 13\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Огромное основание",
+          "stdin": "1000000000000000000 2 1000000000\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Всё большое",
+          "stdin": "999999999999999999 1000000000000000000 999999937\n",
+          "expected": "209721133\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "2 в 62",
+          "stdin": "2 62 1000000000\n",
+          "expected": "427387904\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "7 в 222",
+          "stdin": "7 222 1000\n",
+          "expected": "49\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Произвольные",
+          "stdin": "123456789 987654321 998244353\n",
+          "expected": "730701112\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic long long power_mod(long long base, long long exp, long long mod) {\n    long long result = 1 % mod;\n    base %= mod;\n    while (exp > 0) {\n        if (exp % 2 == 1) {\n            result = result * base % mod;\n        }\n        base = base * base % mod;\n        exp /= 2;\n    }\n    return result;\n}\n\nint main(void) {\n    long long a, b, m;\n    while (scanf(\"%lld %lld %lld\", &a, &b, &m) == 3) {\n        printf(\"%lld\\n\", power_mod(a, b, m));\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Цикл идёт по битам показателя: `base` последовательно принимает значения `a, a², a⁴, a⁸, …` (по модулю), а в `result` домножаются те из них, которым соответствует единичный бит. Так `aᵇ` собирается из степеней двойки, сумма которых равна `b`. Итераций столько, сколько битов в `b`, — не больше 60.\n\nВсе промежуточные значения меньше `m ≤ 10⁹`, поэтому произведение двух из них меньше 10¹⁸ и помещается в `long long`. Для этого основание нужно привести по модулю до первого умножения. А `1 % m` вместо `1` нужно для `m = 1`: если `b = 0`, цикл не выполнится и функция вернёт начальное значение.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-logarithmic-task-3",
+      "title": "Найди ошибку: быстрая степень",
+      "description": "Программа читает строки с числами `a`, `b`, `m` и печатает `aᵇ mod m` быстрым возведением в степень.\n\nНа маленьких числах ответы верные, но с большим основанием программа ломается. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nstatic long long power_mod(long long base, long long exp, long long mod) {\n    long long result = 1 % mod;\n    while (exp > 0) {\n        if (exp % 2 == 1) {\n            result = result * base % mod;\n        }\n        base = base * base % mod;\n        exp /= 2;\n    }\n    return result;\n}\n\nint main(void) {\n    long long a, b, m;\n    while (scanf(\"%lld %lld %lld\", &a, &b, &m) == 3) {\n        printf(\"%lld\\n\", power_mod(a, b, m));\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2 10 1000\n",
+          "output": "24\n"
+        },
+        {
+          "input": "5 3 7\n",
+          "output": "6\n"
+        }
+      ],
+      "constraints": ["0 ≤ a ≤ 10¹⁸; 0 ≤ b ≤ 10¹⁸; 1 ≤ m ≤ 10⁹; строк не больше 30."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Каким может быть base при первом вычислении base * base, если a = 10¹⁸?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Произведение двух чисел до 10¹⁸ переполняет long long — это неопределённое поведение, о котором сообщает UBSan. Приведите основание по модулю до цикла: base %= mod.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2 10 1000\n",
+          "expected": "24\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5 3 7\n",
+          "expected": "6\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1000000000000000000 2 1000000000\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1000000000000000000 1 1000000007\n",
+          "expected": "49\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "999999999999999999 1000000000000000000 999999937\n",
+          "expected": "209721133\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "0 0 7\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "7 3 1\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "10000000000 3 1000000000\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "3 1000000000000000000 1000000007\n",
+          "expected": "246336683\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "4000000000 5 1000000000\n",
+          "expected": "0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic long long power_mod(long long base, long long exp, long long mod) {\n    long long result = 1 % mod;\n    base %= mod;\n    while (exp > 0) {\n        if (exp % 2 == 1) {\n            result = result * base % mod;\n        }\n        base = base * base % mod;\n        exp /= 2;\n    }\n    return result;\n}\n\nint main(void) {\n    long long a, b, m;\n    while (scanf(\"%lld %lld %lld\", &a, &b, &m) == 3) {\n        printf(\"%lld\\n\", power_mod(a, b, m));\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Все рассуждения о безопасности быстрой степени опираются на то, что множители меньше `m ≤ 10⁹`. Заготовка забыла привести по модулю **исходное** основание: при `a = 10¹⁸` первое же `base * base` — это 10³⁶, далеко за пределами `long long`. Знаковое переполнение в C — неопределённое поведение; UBSan останавливает программу с `signed integer overflow`.\n\nНа маленьких основаниях ошибка не видна: после первого квадрата `base` уже приведено по модулю. Поэтому тесты с граничными значениями входа обязательны.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-logarithmic-task-4",
+      "title": "Фибоначчи за логарифм",
+      "description": "Числа Фибоначчи: `F(0) = 0`, `F(1) = 1`, `F(n) = F(n − 1) + F(n − 2)`. Для каждого `n` из ввода напечатайте `F(n) mod 1 000 000 007`.\n\n`n` бывает до 10¹⁸ — цикл до `n` не успеет. Используйте то, что\n\n```text\n| 1 1 |ⁿ   | F(n+1) F(n)   |\n| 1 0 |  = | F(n)   F(n−1) |\n```\n\nи возведите матрицу в степень быстрым возведением.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "10\n",
+          "output": "55\n"
+        },
+        {
+          "input": "0\n1\n2\n",
+          "output": "0\n1\n1\n"
+        }
+      ],
+      "constraints": ["0 ≤ n ≤ 10¹⁸; строк не больше 30."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Напишите функцию умножения матриц 2×2 по модулю: c[i][j] = (a[i][0] · b[0][j] + a[i][1] · b[1][j]) % MOD. Каждое произведение меньше 10¹⁸, сумма двух — меньше 2,1·10¹⁸, это помещается в long long.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Быстрая степень матрицы устроена так же, как для чисел: начальный результат — единичная матрица, на каждом шаге основание возводится в квадрат, а при единичном бите домножается к результату.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Ответ — элемент [0][1] матрицы в степени n. При n = 0 это элемент единичной матрицы — 0.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "10\n",
+          "expected": "55\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0\n1\n2\n",
+          "expected": "0\n1\n1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "F(50) больше int",
+          "stdin": "50\n",
+          "expected": "586268941\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "F(90) почти предел long long",
+          "stdin": "90\n",
+          "expected": "210345902\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "F(100) уже по модулю",
+          "stdin": "100\n",
+          "expected": "687995182\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Миллион",
+          "stdin": "1000000\n",
+          "expected": "918091266\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "10^18",
+          "stdin": "1000000000000000000\n",
+          "expected": "209783453\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Около модуля",
+          "stdin": "1000000006\n1000000007\n",
+          "expected": "1\n1000000006\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Маленькие",
+          "stdin": "3\n4\n5\n6\n",
+          "expected": "2\n3\n5\n8\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Произвольное большое",
+          "stdin": "123456789012345678\n",
+          "expected": "731267660\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\n#define MOD 1000000007LL\n\ntypedef struct {\n    long long a[2][2];\n} Matrix;\n\nstatic Matrix multiply(Matrix x, Matrix y) {\n    Matrix z;\n    for (int i = 0; i < 2; i++) {\n        for (int j = 0; j < 2; j++) {\n            z.a[i][j] = (x.a[i][0] * y.a[0][j] + x.a[i][1] * y.a[1][j]) % MOD;\n        }\n    }\n    return z;\n}\n\nstatic long long fibonacci(long long n) {\n    Matrix result = {{{1, 0}, {0, 1}}};\n    Matrix base = {{{1, 1}, {1, 0}}};\n    while (n > 0) {\n        if (n % 2 == 1) {\n            result = multiply(result, base);\n        }\n        base = multiply(base, base);\n        n /= 2;\n    }\n    return result.a[0][1];\n}\n\nint main(void) {\n    long long n;\n    while (scanf(\"%lld\", &n) == 1) {\n        printf(\"%lld\\n\", fibonacci(n));\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Умножение матрицы `[[1, 1], [1, 0]]` на столбец `(F(n), F(n − 1))` даёт `(F(n + 1), F(n))` — один шаг рекуррентности. Значит, `n` шагов — это умножение на ту же матрицу в степени `n`, а степень считается быстрым возведением: около `2 log₂ n` матричных умножений, то есть `O(log n)`. Для `n = 10¹⁸` — около 120 умножений матриц 2×2 вместо 10¹⁸ сложений.\n\nБыстрое возведение в степень работает для любой ассоциативной операции: чисел, матриц, перестановок. Единичная матрица играет роль числа 1. Все элементы хранятся по модулю, поэтому произведения остаются меньше 10¹⁸, а сумма двух таких произведений — меньше `LLONG_MAX`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "algo-logarithmic-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "invariant",
-        "question": "Сколько ненулевых состояний у 8 при последовательном целочисленном делении на 2?",
-        "options": ["4: 8, 4, 2, 1", "8"],
-        "correct": 0,
-        "explanation": "На каждом шаге выбрасывается половина ещё возможных вариантов. При повторении n/=2 число 13 проходит 13 → 6 → 3 → 1 → 0: четыре ненулевых состояния."
+        "id": "q1",
+        "question": "Чему равен log₂ 4096?",
+        "explanation": "2¹² = 4096: двенадцать делений пополам до единицы.",
+        "type": "text",
+        "answers": ["12"],
+        "placeholder": "Число"
       },
       {
-        "id": "complexity",
-        "question": "Какая оценка соответствует рассмотренной реализации?",
-        "options": [
-          "Всегда O(1), потому что все тесты ограничены по размеру.",
-          "Для n>0 число состояний floor(log₂n)+1; для n=0 — 0."
-        ],
-        "correct": 1,
-        "explanation": "Чтобы отбрасывать половину, нужен порядок или другой структурный инвариант."
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int steps = 0;\n    for (int i = 1; i < 100; i *= 3) {\n        steps++;\n    }\n    printf(\"%d\\n\", steps);\n    return 0;\n}",
+        "explanation": "i = 1, 3, 9, 27, 81 — пять значений меньше 100; следующее, 243, уже нет.",
+        "type": "text",
+        "answers": ["5"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "engineering",
-        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "id": "q3",
+        "question": "Алгоритм обрабатывает 1 000 элементов за 10 шагов, а 1 000 000 — за 20. Какая у него сложность?",
+        "explanation": "Увеличение входа в тысячу раз прибавило константу шагов — так ведёт себя логарифм: log₂ 1000 ≈ 10, log₂ 10⁶ ≈ 20.",
+        "options": ["O(log n)", "O(n)", "O(√n)", "O(1)"],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Сколько итераций сделает цикл for (x = n; x > 0; x /= 10) при n = 1 000 000?",
+        "explanation": "По одной итерации на цифру: у миллиона 7 десятичных цифр.",
+        "type": "text",
+        "answers": ["7"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q5",
+        "question": "Какие циклы выполняются за O(log n)?",
+        "explanation": "Деление и умножение на константу — логарифм. Шаг += 2 — это n / 2 итераций, O(n). Условие i * i < n даёт √n итераций.",
+        "type": "multiple",
         "options": [
-          "log₂n шагов поиска не включает предварительную сортировку.",
-          "Совпадение Big O гарантирует одинаковое время на любой машине."
+          "for (i = n; i > 0; i /= 2)",
+          "for (i = 1; i < n; i *= 10)",
+          "for (i = 0; i < n; i += 2)",
+          "for (i = 0; i * i < n; i++)"
         ],
-        "correct": 0,
-        "explanation": "Мало обращений не гарантирует, что они соседние; двоичный поиск прыгает между участками массива. Итеративная версия O(1). Рекурсивная хранит O(log n) кадров."
+        "correct": [0, 1]
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    long long base = 3, exp = 5, result = 1;\n    while (exp > 0) {\n        if (exp % 2 == 1) {\n            result *= base;\n        }\n        base *= base;\n        exp /= 2;\n    }\n    printf(\"%lld\\n\", result);\n    return 0;\n}",
+        "explanation": "5 = 101₂: result собирает 3¹ · 3⁴ = 3 · 81 = 243. Основание проходит 3, 9, 81, 6561.",
+        "type": "text",
+        "answers": ["243"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Сколько умножений сделает быстрое возведение в степень для показателя около 10⁹?",
+        "explanation": "Показатель 10⁹ — 30 бит. На каждый бит одно возведение основания в квадрат и, если бит равен 1, ещё одно умножение: от 30 до 60.",
+        "options": ["Около 30–60", "Около 10⁹", "Около 10⁶", "Ровно 2"],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Почему не стоит считать число цифр как (int)(log10(n)) + 1?",
+        "explanation": "Вещественный логарифм может вернуть 2,9999999999999996 вместо 3, и отбрасывание дробной части даст ошибку на единицу. Целочисленный цикл точен.",
+        "options": [
+          "log10 считает в double приближённо, и для точной степени 10 результат может оказаться чуть меньше целого",
+          "log10 не существует в C",
+          "Так получится O(n) вместо O(log n)",
+          "Это верно всегда"
+        ],
+        "correct": 0
       }
     ]
   }

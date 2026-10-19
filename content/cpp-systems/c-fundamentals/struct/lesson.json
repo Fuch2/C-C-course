@@ -14,9 +14,9 @@
     "Изменять структуру в функции через указатель и оператор ->",
     "Хранить записи в массиве структур, искать и сортировать их"
   ],
-  "tags": ["C17", "Структуры", "Указатели"],
+  "tags": ["C23", "Структуры", "Указатели"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-struct-task-1",
@@ -25,7 +25,7 @@
     "difficulty": "intermediate",
     "starterCode": "#include <stdio.h>\n\nstruct point {\n    int x;\n    int y;\n};\n\nvoid translate(struct point *p, int dx, int dy) {\n    // Сдвиньте точку на месте.\n}\n\nint main(void) {\n    struct point pt;\n    int k;\n    scanf(\"%d %d %d\", &pt.x, &pt.y, &k);\n    for (int i = 0; i < k; i++) {\n        int dx, dy;\n        scanf(\"%d %d\", &dx, &dy);\n        translate(&pt, dx, dy);\n    }\n    printf(\"%d %d\\n\", pt.x, pt.y);\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -117,7 +117,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nstruct measurement {\n    int id;\n    int temperature;\n};\n\nint main(void) {\n    // Прочитайте показания в массив структур и найдите максимум.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -208,7 +208,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -318,7 +318,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <string.h>\n\nstruct participant {\n    char name[21];\n    int score;\n};\n\nint main(void) {\n    // Прочитайте участников, отсортируйте и выведите.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

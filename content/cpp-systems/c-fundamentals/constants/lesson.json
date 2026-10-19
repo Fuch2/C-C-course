@@ -1,7 +1,7 @@
 {
   "id": "c17-constants",
   "title": "Константы и системы счисления",
-  "description": "Литералы разных типов, шестнадцатеричная и восьмеричная запись, константы через const и #define, ловушки текстовой замены и магические числа.",
+  "description": "Литералы разных типов, шестнадцатеричная, восьмеричная и двоичная запись, разделители разрядов, константы через const, constexpr и #define, ловушки текстовой замены и магические числа.",
   "moduleId": "c-fundamentals",
   "order": 10,
   "difficulty": "beginner",
@@ -10,12 +10,13 @@
   "objectives": [
     "Записывать литералы разных типов и понимать их тип",
     "Читать и печатать числа в шестнадцатеричной и восьмеричной системе",
-    "Заменять магические числа константами через const и #define",
+    "Заменять магические числа константами через const, constexpr и #define",
+    "Записывать двоичные литералы и длинные числа с разделителями разрядов",
     "Избегать ловушек #define: точки с запятой и выражений без скобок"
   ],
-  "tags": ["C17", "const", "#define", "Шестнадцатеричная система"],
+  "tags": ["C23", "const", "constexpr", "#define", "Системы счисления"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-constants-task-1",
@@ -24,7 +25,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -116,7 +117,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -209,7 +210,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -301,7 +302,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\n#define FRAME_WIDTH 10 + 2\n\nint main(void) {\n    int rows;\n    scanf(\"%d\", &rows);\n    printf(\"%d\\n\", FRAME_WIDTH * rows);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -474,6 +475,27 @@
         "type": "text",
         "answers": ["4"],
         "placeholder": "Число"
+      },
+      {
+        "id": "q9",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int a = 0b1'0000;\n    int b = 1'000;\n    printf(\"%d %d\\n\", a, b);\n    return 0;\n}",
+        "explanation": "0b10000 — двоичная запись числа 16. Кавычка ' внутри числа — только разделитель разрядов, компилятор её пропускает: 1'000 — это 1000.",
+        "type": "text",
+        "answers": ["16 1000"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q10",
+        "question": "Почему int days[N] = {1, 2, 3}; компилируется с constexpr int N = 3;, но не с const int N = 3;?",
+        "explanation": "В C const означает «только для чтения», а не «известно при компиляции». constexpr (C23) гарантирует значение на этапе компиляции, поэтому массив получается обычным, фиксированного размера.",
+        "options": [
+          "const-переменная в C не считается константным выражением, и массив становится массивом переменной длины, который нельзя инициализировать списком",
+          "const запрещено использовать внутри квадратных скобок",
+          "constexpr делает массив глобальным",
+          "С const нужно писать размер на единицу больше"
+        ],
+        "correct": 0
       }
     ]
   }

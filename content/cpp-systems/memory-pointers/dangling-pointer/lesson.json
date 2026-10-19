@@ -13,9 +13,9 @@
     "Заменять долгоживущие указатели индексами и копиями",
     "Реализовывать дескрипторы с поколением для ссылок на удаляемые объекты"
   ],
-  "tags": ["C17", "Память", "Висячий указатель", "Время жизни", "Найди ошибку"],
+  "tags": ["C23", "Память", "Висячий указатель", "Время жизни", "Найди ошибку"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-dangling-pointer-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n#include <string.h>\n\nstruct Student {\n    const char *name;\n    int grade;\n};\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    struct Student group[50];\n    char buffer[32];\n    int total = 0;\n    for (int i = 0; i < n; i++) {\n        scanf(\"%31s %d\", buffer, &group[i].grade);\n        group[i].name = buffer;\n        total += group[i].grade;\n    }\n    for (int i = 0; i < n; i++) {\n        if (group[i].grade * n >= total) {\n            printf(\"%s %d\\n\", group[i].name, group[i].grade);\n        }\n    }\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -129,7 +129,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <string.h>\n\nstruct Product {\n    char name[24];\n    int price;\n};\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    struct Product items[50];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%23s %d\", items[i].name, &items[i].price);\n    }\n    struct Product *chosen = &items[0];\n    for (int i = 1; i < n; i++) {\n        if (items[i].price > chosen->price) {\n            chosen = &items[i];\n        }\n    }\n    int d;\n    scanf(\"%d\", &d);\n    for (int k = 0; k < d; k++) {\n        int index;\n        scanf(\"%d\", &index);\n        memmove(&items[index], &items[index + 1], (size_t)(n - index - 1) * sizeof items[0]);\n        n--;\n    }\n    printf(\"%s %d %d\\n\", chosen->name, chosen->price, n);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -237,7 +237,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nconst char *format_price(int cents) {\n    char text[32];\n    snprintf(text, sizeof text, \"%d.%02d руб.\", cents / 100, cents % 100);\n    return text;\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        int cents;\n        scanf(\"%d\", &cents);\n        const char *text = format_price(cents);\n        printf(\"%s\\n\", text);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -341,7 +341,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

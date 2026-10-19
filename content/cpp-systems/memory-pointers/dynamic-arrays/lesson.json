@@ -13,9 +13,9 @@
     "Оценивать сложность операций вектора",
     "Отличать поверхностную копию структуры от глубокого копирования данных"
   ],
-  "tags": ["C17", "Память", "Динамический массив", "Вектор", "Инварианты"],
+  "tags": ["C23", "Память", "Динамический массив", "Вектор", "Инварианты"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-dynamic-arrays-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -134,7 +134,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -243,7 +243,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -347,7 +347,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct IntVec {\n    int *data;\n    size_t length;\n    size_t capacity;\n};\n\nvoid vec_init(struct IntVec *v) {\n    v->data = NULL;\n    v->length = 0;\n    v->capacity = 0;\n}\n\nint vec_reserve(struct IntVec *v, size_t min_capacity) {\n    if (min_capacity <= v->capacity) {\n        return 0;\n    }\n    size_t capacity = v->capacity ? v->capacity : 4;\n    while (capacity < min_capacity) {\n        capacity *= 2;\n    }\n    int *bigger = realloc(v->data, capacity * sizeof *bigger);\n    if (bigger == NULL) {\n        return -1;\n    }\n    v->data = bigger;\n    v->capacity = capacity;\n    return 0;\n}\n\nint vec_push(struct IntVec *v, int value) {\n    if (vec_reserve(v, v->length + 1) != 0) {\n        return -1;\n    }\n    v->data[v->length++] = value;\n    return 0;\n}\n\nvoid vec_free(struct IntVec *v) {\n    free(v->data);\n    vec_init(v);\n}\n\nvoid print_vec(const struct IntVec *v) {\n    for (size_t i = 0; i < v->length; i++) {\n        printf(i + 1 < v->length ? \"%d \" : \"%d\\n\", v->data[i]);\n    }\n}\n\nint main(void) {\n    struct IntVec v, snapshot;\n    vec_init(&v);\n    vec_init(&snapshot);\n    int x;\n    while (scanf(\"%d\", &x) == 1) {\n        if (vec_push(&v, x) != 0) {\n            vec_free(&v);\n            return 1;\n        }\n        if (v.length == 3) {\n            snapshot = v;\n        }\n    }\n    print_vec(&snapshot);\n    print_vec(&v);\n    vec_free(&v);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

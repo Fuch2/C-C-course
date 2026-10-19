@@ -14,8 +14,8 @@ export default {
     'Применять memset и memcmp и объяснять их ограничения',
     'Реализовывать байтовое копирование через unsigned char *',
   ],
-  tags: ['C17', 'Память', 'memcpy', 'memmove', 'memset', 'memcmp'],
-  standard: 'c17',
+  tags: ['C23', 'Память', 'memcpy', 'memmove', 'memset', 'memcmp'],
+  standard: 'c23',
   diagnostics: 'sanitizers',
   quiz: [
     {

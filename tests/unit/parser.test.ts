@@ -72,6 +72,20 @@ describe('Парсер Markdown/MDX', () => {
     expect(elements(result.document, 'pre')).toHaveLength(1);
     expect(result.components).toEqual([]);
   });
+  it('передаёт имя файла блока кода и ввод примера', () => {
+    const result = parseLessonBody(
+      '```c src/geometry.h\nint area(int w, int h);\n```\n\n```c\nint main(void) { return 0; }\n```\n\nВвод:\n\n```text\n3 4\n```\n\n<Tip>\n\n```c main.c\nint main(void) { return 0; }\n```\n\n</Tip>',
+      'mdx',
+    );
+    const codes = elements(result.document, 'code');
+    expect(codes[0]?.properties).toMatchObject({ dataFile: 'src/geometry.h' });
+    expect(codes[1]?.properties).toMatchObject({ dataStdin: '3 4' });
+    expect(codes[1]?.properties).not.toHaveProperty('dataFile');
+    expect(codes[3]?.properties).toMatchObject({ dataFile: 'main.c' });
+    expect(() => parseLessonBody('```c {1,3} title\nint x;\n```', 'md', 'meta.md')).toThrow(
+      /meta.md: строка 1: после языка блока кода допускается только имя файла/,
+    );
+  });
   it('отклоняет пустой документ, сырой HTML и опасные URL', () => {
     expect(() => parseLessonBody('  ')).toThrow(/пустой/);
     expect(() => parseLessonBody('##', 'md', 'empty.md')).toThrow(/empty.md: строка 1: заголовок/);

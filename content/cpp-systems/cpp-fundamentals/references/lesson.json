@@ -1,126 +1,535 @@
 {
   "id": "cpp20-references",
   "title": "Ссылки",
-  "description": "Ссылка — обязательный псевдоним существующего объекта. Она выражает заимствование яснее указателя, но не может быть пустой и не продлевает время жизни.",
+  "description": "Ссылка как второе имя объекта; три правила: инициализация, нельзя перенаправить, нет пустых ссылок; параметры-ссылки и несколько результатов функции; ссылки на элементы контейнеров; висячие ссылки после роста вектора и на локальные переменные; ссылка или указатель.",
   "moduleId": "cpp-fundamentals",
-  "order": 6,
+  "order": 7,
   "difficulty": "intermediate",
-  "estimatedMinutes": 50,
+  "estimatedMinutes": 45,
   "prerequisites": ["cpp20-string"],
   "objectives": [
-    "Объяснить, зачем появился Ссылки и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Объявлять ссылки и объяснять их отличия от указателей",
+    "Передавать аргументы по ссылке, чтобы функция могла их изменить",
+    "Возвращать несколько результатов через параметры-ссылки",
+    "Избегать висячих ссылок"
   ],
-  "tags": ["C++20", "основы C++", "Ссылки"],
+  "tags": ["C++", "Ссылки", "Параметры функций"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-references-exercise",
-    "title": "Калибровка на месте",
-    "description": "Ввод: value и offset, целые −1000…1000. Создайте calibrate(int& value, int offset), прибавляющую offset к исходной переменной. Вызовите дважды и выведите значение после каждого вызова через пробел. Не возвращайте новое значение вместо изменения аргумента.",
-    "difficulty": "intermediate",
+    "id": "cpp20-references-task-1",
+    "title": "Три числа по порядку",
+    "description": "Каждая строка ввода — три целых числа. Напишите функцию `void sort3(int &a, int &b, int &c)`, которая переставляет значения так, что `a ≤ b ≤ c`, и напечатайте числа каждой строки после вызова.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "10 2",
-        "output": "12 14\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "3 1 2\n",
+        "output": "1 2 3\n"
       },
       {
-        "input": "0 0",
-        "output": "0 0\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "5 5 1\n-1 0 -2\n",
+        "output": "1 5 5\n-2 -1 0\n"
       }
     ],
-    "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
-    ],
+    "constraints": ["Числа int; строк не больше 30."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "Внутри sort3 используйте обмен: if (a > b) std::swap(a, b); — std::swap из <utility> тоже принимает аргументы по ссылке.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "Три сравнения подряд: (a, b), (b, c), затем снова (a, b) — как маленькая пузырьковая сортировка.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "10 2",
-        "expected": "12 14\n"
+        "stdin": "3 1 2\n",
+        "expected": "1 2 3\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "0 0",
-        "expected": "0 0\n"
+        "stdin": "5 5 1\n-1 0 -2\n",
+        "expected": "1 5 5\n-2 -1 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "-5 3",
-        "expected": "-2 1\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "1 2 3\n",
+        "expected": "1 2 3\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "1000 -1000",
-        "expected": "0 -1000\n"
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "3 2 1\n",
+        "expected": "1 2 3\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "2 3 1\n",
+        "expected": "1 2 3\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "7 7 7\n",
+        "expected": "7 7 7\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "2147483647 -2147483648 0\n",
+        "expected": "-2147483648 0 2147483647\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "0 -1 1\n",
+        "expected": "-1 0 1\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "1 3 2\n",
+        "expected": "1 2 3\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "9 8 9\n",
+        "expected": "8 9 9\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n\nvoid calibrate(int& value, int offset) { value += offset; }\nint main() {\n    int value{}, offset{};\n    if (!(std::cin >> value >> offset)) return 1;\n    calibrate(value, offset);\n    std::cout << value << ' ';\n    calibrate(value, offset);\n    std::cout << value << '\\n';\n}\n",
-    "solutionExplanation": "int& — псевдоним переменной вызывающего кода. offset передан по значению. Два вызова изменяют один объект последовательно. Время и память O(1). Ссылка не сохраняется дольше вызова, поэтому заимствование не переживает исходную переменную.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <iostream>\n#include <utility>\n\nvoid sort3(int &a, int &b, int &c) {\n    if (a > b) {\n        std::swap(a, b);\n    }\n    if (b > c) {\n        std::swap(b, c);\n    }\n    if (a > b) {\n        std::swap(a, b);\n    }\n}\n\nint main() {\n    int a, b, c;\n    while (std::cin >> a >> b >> c) {\n        sort3(a, b, c);\n        std::cout << a << ' ' << b << ' ' << c << '\\n';\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Параметры `int &` делают `a`, `b` и `c` внутри функции вторыми именами переменных из `main`, поэтому перестановки видны снаружи. Вызов выглядит как обычный — `sort3(a, b, c)`, без `&`, как было бы с указателями в C.\n\nТри сравнения — это пузырёк на трёх элементах: после первых двух наибольшее число оказывается в `c`, третье сравнение упорядочивает оставшиеся два. `std::swap` — стандартная функция обмена, тоже с параметрами-ссылками.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-references-task-2",
+      "title": "Время из строки",
+      "description": "Каждая строка ввода — время в формате `ЧЧ:ММ`. Напишите функцию `bool parse_time(const std::string &text, int &hours, int &minutes)`, которая проверяет формат (ровно 5 символов, двоеточие посередине, цифры на остальных местах, часы от 0 до 23, минуты от 0 до 59) и возвращает части через ссылки.\n\nДля корректного времени напечатайте число минут от полуночи, для некорректного — `ошибка`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "09:45\n",
+          "output": "585\n"
+        },
+        {
+          "input": "00:00\n23:59\n24:00\n",
+          "output": "0\n1439\nошибка\n"
+        }
+      ],
+      "constraints": ["Строки без пробелов, до 20 символов; строк не больше 30."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Проверка цифры: c >= '0' && c <= '9'. Значение двух цифр: (t[0] − '0') · 10 + (t[1] − '0').",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Функция присваивает hours и minutes только при успехе, а возвращаемое значение bool сообщает, можно ли ими пользоваться.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "09:45\n",
+          "expected": "585\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "00:00\n23:59\n24:00\n",
+          "expected": "0\n1439\nошибка\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Минуты 60",
+          "stdin": "12:60\n",
+          "expected": "ошибка\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Одна цифра часов",
+          "stdin": "9:45\n",
+          "expected": "ошибка\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Не двоеточие",
+          "stdin": "09-45\n",
+          "expected": "ошибка\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Буква",
+          "stdin": "0a:15\n",
+          "expected": "ошибка\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Длиннее",
+          "stdin": "12:345\n",
+          "expected": "ошибка\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Полдень и минута",
+          "stdin": "12:00\n00:01\n",
+          "expected": "720\n1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Ведущий ноль минут",
+          "stdin": "19:07\n",
+          "expected": "1147\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Мусор",
+          "stdin": "::::\n23:5x\n",
+          "expected": "ошибка\nошибка\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <string>\n\nbool is_digit(char c) {\n    return c >= '0' && c <= '9';\n}\n\nbool parse_time(const std::string &text, int &hours, int &minutes) {\n    if (text.size() != 5 || text[2] != ':' || !is_digit(text[0]) || !is_digit(text[1]) ||\n        !is_digit(text[3]) || !is_digit(text[4])) {\n        return false;\n    }\n    int h = (text[0] - '0') * 10 + (text[1] - '0');\n    int m = (text[3] - '0') * 10 + (text[4] - '0');\n    if (h > 23 || m > 59) {\n        return false;\n    }\n    hours = h;\n    minutes = m;\n    return true;\n}\n\nint main() {\n    std::string line;\n    while (std::cin >> line) {\n        int h, m;\n        if (parse_time(line, h, m)) {\n            std::cout << h * 60 + m << '\\n';\n        } else {\n            std::cout << \"ошибка\\n\";\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Функции нужно вернуть три вещи: удалось ли разобрать строку, часы и минуты. Возвращаемое значение — признак успеха, а части передаются через параметры-ссылки. В C для этого понадобились бы указатели `int *` и вызов `parse_time(line, &h, &m)`.\n\nФункция записывает результаты только после всех проверок: если строка некорректна, переменные вызывающего остаются нетронутыми. Строка передаётся как `const std::string &` — без копирования и без права изменять; подробно — в следующем уроке.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-references-task-3",
+      "title": "Найди ошибку: ссылка на первый элемент",
+      "description": "Программа читает целые числа до конца ввода в `std::vector<int>` и печатает первое число, количество и сумму. Первое число она запоминает ссылкой на элемент вектора.\n\nНа вводе из нескольких чисел AddressSanitizer сообщает об ошибке. Найдите и исправьте её.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> values;\n    int x;\n    if (!(std::cin >> x)) {\n        return 0;\n    }\n    values.push_back(x);\n    int &first = values[0];\n    long long sum = x;\n    while (std::cin >> x) {\n        values.push_back(x);\n        sum += x;\n    }\n    std::cout << \"первое \" << first << \", всего \" << values.size() << \", сумма \" << sum << '\\n';\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5\n",
+          "output": "первое 5, всего 1, сумма 5\n"
+        },
+        {
+          "input": "3 1 4 1 5\n",
+          "output": "первое 3, всего 5, сумма 14\n"
+        }
+      ],
+      "constraints": ["От 1 до 1000 чисел int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что происходит с элементами вектора, когда push_back не хватает места?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "При росте вектор переносит элементы в новый блок и освобождает старый — ссылка first указывает в освобождённую память. Запомните значение, а не ссылку: int first = values[0];.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5\n",
+          "expected": "первое 5, всего 1, сумма 5\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3 1 4 1 5\n",
+          "expected": "первое 3, всего 5, сумма 14\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 2\n",
+          "expected": "первое 1, всего 2, сумма 3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "-7 7 -7\n",
+          "expected": "первое -7, всего 3, сумма -7\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "2147483647 2147483647\n",
+          "expected": "первое 2147483647, всего 2, сумма 4294967294\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "0 0 0 0 0 0 0 0 0\n",
+          "expected": "первое 0, всего 9, сумма 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "9 8 7 6 5 4 3 2 1\n",
+          "expected": "первое 9, всего 9, сумма 45\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "100\n200\n300\n",
+          "expected": "первое 100, всего 3, сумма 600\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "-1 -2\n",
+          "expected": "первое -1, всего 2, сумма -3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "42 0 0 0 0\n",
+          "expected": "первое 42, всего 5, сумма 42\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> values;\n    int x;\n    if (!(std::cin >> x)) {\n        return 0;\n    }\n    values.push_back(x);\n    int first = values[0];\n    long long sum = x;\n    while (std::cin >> x) {\n        values.push_back(x);\n        sum += x;\n    }\n    std::cout << \"первое \" << first << \", всего \" << values.size() << \", сумма \" << sum << '\\n';\n    return 0;\n}\n",
+      "solutionExplanation": "`int &first = values[0]` — ссылка на элемент, то есть на конкретное место в памяти внутри вектора. Когда `push_back` не хватает ёмкости, вектор выделяет новый блок, переносит туда элементы и освобождает старый. Ссылка продолжает указывать в старый блок; чтение `first` — использование освобождённой памяти, AddressSanitizer сообщает `heap-use-after-free`.\n\nНа вводе из одного числа ошибки нет: вектор не растёт. Здесь достаточно хранить **значение** первого элемента. Если же нужно ссылаться на элемент, который может измениться, храните его индекс и обращайтесь `values[i]` после всех вставок.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-references-task-4",
+      "title": "Таблица по ссылке",
+      "description": "Первая строка — размеры таблицы `R` и `C`; все ячейки равны 0. Таблица хранится в одном `std::vector<long long>` построчно. Напишите функцию\n\n```cpp\nlong long &cell(std::vector<long long> &grid, int cols, int r, int c);\n```\n\nкоторая возвращает **ссылку** на ячейку `(r, c)` (нумерация с 0), и выполните команды через неё:\n\n- `set r c v` — записать `v`;\n- `add r c v` — прибавить `v`;\n- `get r c` — напечатать значение;\n- `row r` — напечатать строку таблицы через пробел.\n\nЕсли координаты вне таблицы, напечатайте `ошибка` и ничего не меняйте.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2 3\nset 0 1 5\nadd 0 1 2\nget 0 1\nrow 0\n",
+          "output": "7\n0 7 0\n"
+        },
+        {
+          "input": "1 1\nget 1 0\nrow 0\n",
+          "output": "ошибка\n0\n"
+        }
+      ],
+      "constraints": ["1 ≤ R, C ≤ 100; |v| ≤ 10⁹; команд не больше 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "cell возвращает grid[r * cols + c] — ссылку на элемент. Тогда cell(grid, cols, r, c) = v; и cell(grid, cols, r, c) += v; меняют таблицу.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Проверку координат делайте до вызова cell: 0 ≤ r < R и 0 ≤ c < C. Ссылка на элемент здесь безопасна — вектор не растёт.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2 3\nset 0 1 5\nadd 0 1 2\nget 0 1\nrow 0\n",
+          "expected": "7\n0 7 0\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 1\nget 1 0\nrow 0\n",
+          "expected": "ошибка\n0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Последняя ячейка",
+          "stdin": "3 3\nset 2 2 9\nrow 2\nrow 1\n",
+          "expected": "0 0 9\n0 0 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Большие суммы",
+          "stdin": "2 2\nadd 0 0 1000000000\nadd 0 0 1000000000\nadd 0 0 1000000000\nget 0 0\n",
+          "expected": "3000000000\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Вне таблицы",
+          "stdin": "2 2\nset -1 0 5\nset 0 2 5\nrow 2\nrow 0\n",
+          "expected": "ошибка\nошибка\nошибка\n0 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Одна строка",
+          "stdin": "1 5\nset 0 0 1\nset 0 4 5\nadd 0 2 -3\nrow 0\n",
+          "expected": "1 0 -3 0 5\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Один столбец",
+          "stdin": "4 1\nset 3 0 7\nget 3 0\nrow 3\n",
+          "expected": "7\n7\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Перезапись",
+          "stdin": "2 2\nset 1 1 4\nset 1 1 -4\nget 1 1\n",
+          "expected": "-4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Несколько строк",
+          "stdin": "3 2\nadd 1 0 5\nadd 1 1 6\nrow 1\nrow 0\nrow 2\n",
+          "expected": "5 6\n0 0\n0 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Отрицательные",
+          "stdin": "2 3\nget 0 0\nset 1 2 -1000000000\nrow 1\n",
+          "expected": "0\n0 0 -1000000000\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <string>\n#include <vector>\n\nlong long &cell(std::vector<long long> &grid, int cols, int r, int c) {\n    return grid[static_cast<std::size_t>(r * cols + c)];\n}\n\nint main() {\n    int rows, cols;\n    if (!(std::cin >> rows >> cols)) {\n        return 0;\n    }\n    std::vector<long long> grid(static_cast<std::size_t>(rows * cols), 0);\n    std::string command;\n    while (std::cin >> command) {\n        int r = 0, c = 0;\n        long long v = 0;\n        std::cin >> r;\n        if (command != \"row\") {\n            std::cin >> c;\n        }\n        if (command == \"set\" || command == \"add\") {\n            std::cin >> v;\n        }\n        if (r < 0 || r >= rows || c < 0 || c >= cols) {\n            std::cout << \"ошибка\\n\";\n            continue;\n        }\n        if (command == \"set\") {\n            cell(grid, cols, r, c) = v;\n        } else if (command == \"add\") {\n            cell(grid, cols, r, c) += v;\n        } else if (command == \"get\") {\n            std::cout << cell(grid, cols, r, c) << '\\n';\n        } else if (command == \"row\") {\n            for (int j = 0; j < cols; j++) {\n                std::cout << cell(grid, cols, r, j) << (j + 1 < cols ? ' ' : '\\n');\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Функция, возвращающая ссылку, позволяет поставить свой вызов **слева** от присваивания: `cell(grid, cols, r, c) = v` записывает прямо в элемент вектора. Вся арифметика индексов собрана в одном месте — в `cell`, и ошибиться в формуле `r * cols + c` в каждой команде заново уже нельзя. Так же устроен оператор `[]` у `std::vector` и `std::string`: он возвращает ссылку на элемент.\n\nВозвращать ссылку безопасно, потому что `grid` передан по ссылке и переживёт вызов, а размер вектора не меняется. Ссылку на локальную переменную или на элемент вектора, в который потом добавляют, так возвращать нельзя. Значения хранятся в `long long`: тысяча прибавлений по 10⁹ не помещается в `int`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-references-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «Ссылки»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "Ссылка — обязательный псевдоним существующего объекта. Она выражает заимствование яснее указателя, но не может быть пустой и не продлевает время жизни."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n\nint main() {\n    int a = 1;\n    int &r = a;\n    r *= 10;\n    a += 2;\n    std::cout << a << ' ' << r << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "r и a — одна и та же переменная: 1 · 10 = 10, затем 10 + 2 = 12.",
+        "type": "text",
+        "answers": ["12 12"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
-        "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
-        ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n\nint main() {\n    int x = 5, y = 9;\n    int &r = x;\n    r = y;\n    r = 0;\n    std::cout << x << ' ' << y << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "r = y не перенаправляет ссылку, а присваивает x значение 9. Затем r = 0 обнуляет x. Переменная y не меняется.",
+        "type": "text",
+        "answers": ["0 9"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Какие объявления не скомпилируются?",
+        "explanation": "Ссылка обязана быть инициализирована, а неконстантную ссылку нельзя связать с временным значением 5. Ссылка на ссылку s — просто ещё одно имя x.",
+        "type": "multiple",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "int &r;",
+          "int &r = 5;",
+          "int x = 1; int &r = x;",
+          "int x = 1; int &r = x; int &s = r;"
         ],
-        "correct": 0,
-        "explanation": "Используйте Ссылки как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": [0, 1]
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n\nvoid twice(int &v) {\n    v *= 2;\n}\n\nvoid twice_copy(int v) {\n    v *= 2;\n}\n\nint main() {\n    int n = 3;\n    twice(n);\n    twice_copy(n);\n    twice(n);\n    std::cout << n << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "twice меняет n через ссылку (3 → 6 → 12), а twice_copy получает копию и на n не влияет.",
+        "type": "text",
+        "answers": ["12"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Почему опасна ссылка на элемент std::vector, если затем в вектор добавляют элементы?",
+        "explanation": "Это та же ошибка, что с указателем после realloc: heap-use-after-free.",
+        "options": [
+          "При росте вектор переносит элементы в новый блок памяти, и ссылка указывает в освобождённый старый",
+          "Ссылки на элементы вектора запрещены",
+          "push_back обнуляет все элементы",
+          "Ссылка автоматически перейдёт на последний элемент"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что не так с функцией?",
+        "code": "int &largest(int a, int b) {\n    return a > b ? a : b;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "a и b — копии аргументов, живущие до конца вызова. Ссылка на них после возврата висит. Нужно принимать параметры по ссылке или возвращать значение.",
+        "options": [
+          "Она возвращает ссылку на параметр — локальную копию, которая исчезнет после возврата",
+          "Ссылку нельзя возвращать из функции",
+          "Тернарный оператор нельзя использовать с ссылками",
+          "Всё в порядке"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Чем ссылка отличается от указателя?",
+        "explanation": "Арифметики ссылок нет: r + 1 — это сложение значения, а не сдвиг адреса.",
+        "type": "multiple",
+        "options": [
+          "Ссылка не может быть пустой",
+          "Ссылку нельзя перенаправить на другой объект",
+          "Ссылка поддерживает арифметику, как указатель",
+          "К ссылке обращаются без разыменования"
+        ],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q8",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> v = {1, 2, 3};\n    for (int x : v) {\n        x *= 10;\n    }\n    for (int &x : v) {\n        x += 1;\n    }\n    std::cout << v[0] + v[1] + v[2] << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Первый цикл меняет копии и вектор не трогает. Второй прибавляет 1 к каждому элементу: 2 + 3 + 4 = 9.",
+        "type": "text",
+        "answers": ["9"],
+        "placeholder": "Вывод программы"
       }
     ]
   }

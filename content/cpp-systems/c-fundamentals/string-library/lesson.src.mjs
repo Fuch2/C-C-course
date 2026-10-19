@@ -14,8 +14,8 @@ export default {
     'Собирать строки безопасно с помощью snprintf',
     'Сравнивать строки через strcmp и искать в них через strchr и strstr',
   ],
-  tags: ['C17', 'Строки', 'string.h', 'strcmp'],
-  standard: 'c17',
+  tags: ['C23', 'Строки', 'string.h', 'strcmp'],
+  standard: 'c23',
   quiz: [
     {
       q: 'Что выведет программа?',

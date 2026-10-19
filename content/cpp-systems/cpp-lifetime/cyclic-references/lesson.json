@@ -1,204 +1,439 @@
 {
   "id": "lifetime-cyclic-references",
-  "title": "Циклические ссылки — Cyclic references",
-  "description": "Подсчёт ссылок не является сборщиком мусора по достижимости: он удаляет объект при обнулении счётчика, а не при потере доступности из корней.",
+  "title": "Циклические ссылки",
+  "description": "Цикл владения из shared_ptr никогда не освобождается: почему счётчики не доходят до нуля и как LeakSanitizer показывает утечку; разрыв цикла невладеющей связью — weak_ptr, сырой указатель, индекс; выбор направления владения в парах, деревьях, двусвязных списках и графах; цикл через хранимую лямбду и захват weak_from_this; почему подсчёт ссылок не видит циклы, а обход от корней видит.",
   "moduleId": "cpp-lifetime",
   "order": 23,
   "difficulty": "advanced",
-  "estimatedMinutes": 75,
+  "estimatedMinutes": 55,
   "prerequisites": ["lifetime-weak-ptr"],
   "objectives": [
-    "Отличать сборку по достижимости от подсчёта ссылок на примере цикла.",
-    "Проследить на MemoryDiagram, почему счётчики цикла никогда не обнуляются.",
-    "Диагностировать цикл сильного владения и разорвать его слабым обратным ребром."
+    "Распознавать циклы владения из shared_ptr",
+    "Разрывать циклы невладеющими связями по смыслу предметной области",
+    "Писать хранимые колбэки без циклов через weak_from_this",
+    "Объяснять, почему подсчёт ссылок не освобождает циклы"
   ],
-  "tags": [
-    "C++20",
-    "время жизни",
-    "управление ресурсами",
-    "Циклические ссылки — Cyclic references",
-    "диагностика",
-    "исправление ошибок",
-    "Цикл shared_ptr"
-  ],
+  "tags": ["C++23", "Время жизни", "shared_ptr", "weak_ptr", "Утечки"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "lifetime-cyclic-references-diagnose",
-    "title": "1. Диагностика: Цикл shared_ptr",
-    "description": "Сначала диагностируйте четыре независимых фрагмента по номерам 0–3; не исполняйте их. solve(a,b) принимает номер фрагмента a; b не используется. Верните код первичного дефекта: 0 — безопасно в показанных границах; 1 — double delete; 2 — use-after-free; 3 — dangling reference при возврате; 4 — нарушение заявленного договора заимствования; 5 — цикл сильного владения; 6 — move constructor оставил двух владельцев. Для 4 и 6 выбирайте причину, а не последующий double delete. В комментарии к решению укажите строку, событие окончания жизни и владельца. После проверки диагноза перейдите к заданию 2 и исправьте исходник.\n\nФрагмент 0:\nstruct N { std::shared_ptr<N> next; };\nvoid f() { auto a = std::make_shared<N>(); auto b = std::make_shared<N>(); a->next = b; b->next = a; }\n\nФрагмент 1:\nstruct N { std::shared_ptr<N> child; std::weak_ptr<N> parent; };\nvoid f() { auto r = std::make_shared<N>(); auto c = std::make_shared<N>(); r->child = c; c->parent = r; }\n\nФрагмент 2:\nauto a = std::make_shared<int>(1); std::weak_ptr<int> w = a; a.reset(); auto b = w.lock();\n\nФрагмент 3:\nstruct N { std::function<void()> cb; };\nvoid f() { auto a = std::make_shared<N>(); a->cb = [a] {}; }",
-    "difficulty": "advanced",
+    "id": "lifetime-cyclic-references-exercise",
+    "title": "Партнёры",
+    "description": "Реестр `std::map<std::string, std::shared_ptr<Person>>` владеет людьми. `Person` хранит партнёра как `std::weak_ptr<Person>` и имя партнёра (пусто, если пары не было); деструктор печатает `ушёл имя`.\n\nКоманды:\n\n- `new X` — добавить человека;\n- `pair A B` — A и B становятся партнёрами друг друга (прежние связи A и B заменяются);\n- `leave X` — убрать X из реестра;\n- `partner X` — `X: партнёр Y`, `X: партнёр Y ушёл` или `X: нет партнёра`.\n\nВ конце уберите людей из реестра от последнего имени к первому — все должны уйти.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(0, 0)",
-        "output": "5\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "new a\nnew b\npair a b\npartner a\nleave b\npartner a\n",
+        "output": "a: партнёр b\nушёл b\na: партнёр b ушёл\nушёл a\n"
       },
       {
-        "input": "solve(1, 0)",
-        "output": "0\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "new x\npartner x\n",
+        "output": "x: нет партнёра\nушёл x\n"
       }
     ],
-    "constraints": [
-      "Аргумент a — номер фрагмента 0…3; b=0. Возвращайте код 0…6 согласно условию.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Команд не больше 300; pair, leave и partner — для людей из реестра."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Не исполняйте фрагменты. Для каждого найдите объект, чьё время жизни заканчивается раньше использования, и сопоставьте событие с кодами 0–6. Если дефектов два, выбирайте первопричину: нарушение договора или неверный move, а не их следствие в виде double delete."
+        "id": "hint-1",
+        "text": "Если бы partner был shared_ptr, пара никогда бы не освободилась: каждый держал бы другого.",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "В варианте 0 после выхода из f каждый узел удерживается другим: сильные счётчики никогда не достигнут нуля, деструкторы не выполнятся — утечка из-за цикла сильного владения. В варианте 1 обратное ребро слабое, граф владения ацикличен. В варианте 2 weak_ptr не удерживает объект; lock после reset честно возвращает пустой shared_ptr. В варианте 3 цикл скрыт в замыкании: объект владеет std::function, который захватил shared_ptr на тот же объект — тот же код 5. Исправление выбирает направление владения root → child, а parent делает наблюдателем через weak_ptr."
+        "id": "hint-2",
+        "text": "partner: if (auto p = person.partner.lock()) … else if (!person.partner_name.empty()) … ушёл … else … нет партнёра.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
-        "id": "fragment-0",
-        "name": "Фрагмент 0",
-        "arguments": [0, 0],
-        "expected": "5\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "new a\nnew b\npair a b\npartner a\nleave b\npartner a\n",
+        "expected": "a: партнёр b\nушёл b\na: партнёр b ушёл\nушёл a\n"
       },
       {
-        "id": "fragment-1",
-        "name": "Фрагмент 1",
-        "arguments": [1, 0],
-        "expected": "0\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "new x\npartner x\n",
+        "expected": "x: нет партнёра\nушёл x\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "fragment-2",
-        "name": "Фрагмент 2",
-        "arguments": [2, 0],
-        "expected": "0\n"
+        "id": "hidden-1",
+        "name": "Пара уходит в конце",
+        "stdin": "new a\nnew b\npair a b\n",
+        "expected": "ушёл b\nушёл a\n"
       },
       {
-        "id": "fragment-3",
-        "name": "Фрагмент 3",
-        "arguments": [3, 0],
-        "expected": "5\n"
+        "id": "hidden-2",
+        "name": "Смена партнёра",
+        "stdin": "new a\nnew b\nnew c\npair a b\npair a c\npartner a\npartner b\npartner c\n",
+        "expected": "a: партнёр c\nb: партнёр a\nc: партнёр a\nушёл c\nушёл b\nушёл a\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Сам себе партнёр",
+        "stdin": "new a\npair a a\npartner a\n",
+        "expected": "a: партнёр a\nушёл a\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Оба уходят",
+        "stdin": "new a\nnew b\npair a b\nleave a\nleave b\n",
+        "expected": "ушёл a\nушёл b\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Новый с тем же именем",
+        "stdin": "new a\nnew b\npair a b\nleave b\nnew b\npartner a\n",
+        "expected": "ушёл b\na: партнёр b ушёл\nушёл b\nушёл a\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Порядок ухода",
+        "stdin": "new z\nnew y\nnew x\n",
+        "expected": "ушёл z\nушёл y\nушёл x\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Две пары",
+        "stdin": "new a\nnew b\nnew c\nnew d\npair a b\npair c d\nleave a\nleave d\npartner b\npartner c\n",
+        "expected": "ушёл a\nушёл d\nb: партнёр a ушёл\nc: партнёр d ушёл\nушёл c\nушёл b\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Пара в обратном порядке",
+        "stdin": "new a\nnew b\npair b a\npartner a\npartner b\n",
+        "expected": "a: партнёр b\nb: партнёр a\nушёл b\nушёл a\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint solve(int a,int b){(void)b; const int diagnosis[4]={5,0,0,5}; return diagnosis[a];}",
-    "solutionExplanation": "В варианте 0 после выхода из f каждый узел удерживается другим: сильные счётчики никогда не достигнут нуля, деструкторы не выполнятся — утечка из-за цикла сильного владения. В варианте 1 обратное ребро слабое, граф владения ацикличен. В варианте 2 weak_ptr не удерживает объект; lock после reset честно возвращает пустой shared_ptr. В варианте 3 цикл скрыт в замыкании: объект владеет std::function, который захватил shared_ptr на тот же объект — тот же код 5. Исправление выбирает направление владения root → child, а parent делает наблюдателем через weak_ptr.",
+    "referenceSolution": "#include <iostream>\n#include <iterator>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Person {\n    std::string name;\n    std::weak_ptr<Person> partner;\n    std::string partner_name;\n    explicit Person(std::string n) : name(std::move(n)) {}\n    ~Person() {\n        std::println(\"ушёл {}\", name);\n    }\n};\n\nint main() {\n    std::map<std::string, std::shared_ptr<Person>> people;\n    std::string command, x;\n    while (std::cin >> command >> x) {\n        if (command == \"new\") {\n            people[x] = std::make_shared<Person>(x);\n        } else if (command == \"pair\") {\n            std::string y;\n            std::cin >> y;\n            auto &a = people.at(x);\n            auto &b = people.at(y);\n            a->partner = b;\n            a->partner_name = y;\n            b->partner = a;\n            b->partner_name = x;\n        } else if (command == \"leave\") {\n            people.erase(x);\n        } else {\n            const Person &p = *people.at(x);\n            if (auto other = p.partner.lock()) {\n                std::println(\"{}: партнёр {}\", x, other->name);\n            } else if (!p.partner_name.empty()) {\n                std::println(\"{}: партнёр {} ушёл\", x, p.partner_name);\n            } else {\n                std::println(\"{}: нет партнёра\", x);\n            }\n        }\n    }\n    while (!people.empty()) {\n        people.erase(std::prev(people.end()));\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Владеет людьми только реестр; связь «партнёр» — наблюдение. Поэтому уход одного не мешает удалению другого, а оставшийся узнаёт об уходе через `lock()`. Имя партнёра хранится отдельно лишь для сообщения: `weak_ptr`, который никогда не указывал на объект, и истёкший выглядят одинаково.\n\nЕсли заменить `weak_ptr` на `shared_ptr`, каждая пара образовала бы цикл, и в конце программы «ушёл» напечатали бы только люди без партнёров.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
   "additionalExercises": [
     {
-      "id": "lifetime-cyclic-references-exercise",
-      "title": "2. Исправление: Цикл shared_ptr",
-      "description": "Исправьте цикл: Node владеет child через shared_ptr, parent хранит weak_ptr. Счётчик live увеличивается конструктором и уменьшается деструктором. solve во вложенном блоке создаёт root и child, связывает их, сохраняет a + b и после блока возвращает сохранённое только при live == 0; иначе -9999.",
+      "id": "lifetime-cyclic-references-task-2",
+      "title": "Двусвязный список",
+      "description": "Узел `Node` хранит число, `std::shared_ptr<Node> next` (владеет) и `std::weak_ptr<Node> prev` (наблюдает); деструктор увеличивает глобальный счётчик удалённых узлов. Список хранит `head_` (`shared_ptr`) и `tail_` (`weak_ptr`). Деструктор списка удаляет узлы циклом.\n\nКоманды: `push_back x`, `push_front x`, `pop_back` и `pop_front` (печатают значение или `пусто`), `forward` — `вперёд: …`, `backward` — `назад: …` (по `prev` от хвоста; пустой список — `—`), `stats` — `удалено узлов N`. После всех команд уничтожьте список и напечатайте `stats` ещё раз — должны быть удалены все узлы.",
       "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "cpp",
-      "standard": "c++20",
-      "compiler": "clang",
+      "standard": "c++23",
+      "compiler": "gcc",
       "diagnostics": "sanitizers",
-      "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct Node {int& live; std::shared_ptr<Node> peer; explicit Node(int& n):live(n){++live;} ~Node(){--live;} };\nint solve(int a,int b){int live=0,saved;{auto x=std::make_shared<Node>(live);auto y=std::make_shared<Node>(live);x->peer=y;y->peer=x;saved=a+b;} return live==0?saved:-9999;}",
       "examples": [
         {
-          "input": "solve(3, 7)",
-          "output": "10\n",
-          "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+          "input": "push_back 1\npush_back 2\npush_front 0\nforward\nbackward\npop_back\npop_front\nforward\nstats\n",
+          "output": "вперёд: 0 1 2\nназад: 2 1 0\n2\n0\nвперёд: 1\nудалено узлов 2\nудалено узлов 3\n"
         },
         {
-          "input": "solve(0, 0)",
-          "output": "0\n",
-          "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+          "input": "pop_back\nbackward\n",
+          "output": "пусто\nназад: —\nудалено узлов 0\n"
         }
       ],
-      "constraints": [
-        "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-        "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-        "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-      ],
+      "constraints": ["Команд не больше 1000."],
       "hints": [
         {
-          "id": "owners",
-          "order": 1,
-          "text": "Нарисуйте граф владения и найдите достижимость из корней программы. Узлы, которых нет в графе достижимости, но чьи счётчики положительны, — цикл."
+          "id": "hint-1",
+          "text": "pop_back: tail = tail_.lock(); auto prev = tail->prev.lock(); если prev есть — prev->next.reset() (удалит хвост) и tail_ = prev, иначе head_.reset().",
+          "order": 1
         },
         {
-          "id": "boundary",
-          "order": 2,
-          "text": "Нарисуйте ориентированный граф владения отдельно от графа доступа. В дереве родитель владеет детьми через shared_ptr, а ребёнок наблюдает родителя через weak_ptr. Для общего графа выберите внешний реестр владельцев с невладеющими рёбрами или явный протокол teardown. Циклы прячутся и в замыканиях: объект хранит std::function, а лямбда захватила shared_ptr на этот же объект — граф владения объект → callback → объект. Не заменяйте все рёбра на weak без модели владения: узлы начнут исчезать слишком рано.\n\nУспешный stdout не доказывает отсутствие удержания: цикл проявляется только исчезновением деструкторов. Тест на утечку обязан завершить все внешние области владения, а наблюдатели в нём должны быть слабыми.\n\nВ варианте 0 после выхода из f каждый узел удерживается другим: сильные счётчики никогда не достигнут нуля, деструкторы не выполнятся — утечка из-за цикла сильного владения. В варианте 1 обратное ребро слабое, граф владения ацикличен. В варианте 2 weak_ptr не удерживает объект; lock после reset честно возвращает пустой shared_ptr. В варианте 3 цикл скрыт в замыкании: объект владеет std::function, который захватил shared_ptr на тот же объект — тот же код 5. Исправление выбирает направление владения root → child, а parent делает наблюдателем через weak_ptr."
+          "id": "hint-2",
+          "text": "Если бы prev был shared_ptr, каждая пара соседних узлов образовала бы цикл, и ни один узел не удалился бы.",
+          "order": 2
         }
       ],
       "publicTests": [
         {
           "id": "case-1",
           "name": "Пример 1",
-          "arguments": [3, 7],
-          "expected": "10\n"
+          "stdin": "push_back 1\npush_back 2\npush_front 0\nforward\nbackward\npop_back\npop_front\nforward\nstats\n",
+          "expected": "вперёд: 0 1 2\nназад: 2 1 0\n2\n0\nвперёд: 1\nудалено узлов 2\nудалено узлов 3\n"
         },
         {
           "id": "case-2",
           "name": "Пример 2",
-          "arguments": [0, 0],
-          "expected": "0\n"
+          "stdin": "pop_back\nbackward\n",
+          "expected": "пусто\nназад: —\nудалено узлов 0\n"
         }
       ],
       "hiddenTests": [
         {
-          "id": "case-3",
-          "name": "Граничный случай 1",
-          "arguments": [-8, 3],
-          "expected": "-5\n"
+          "id": "hidden-1",
+          "name": "Один элемент",
+          "stdin": "push_back 1\npop_back\npush_front 2\nbackward\n",
+          "expected": "1\nназад: 2\nудалено узлов 2\n"
         },
         {
-          "id": "case-4",
-          "name": "Граничный случай 2",
-          "arguments": [5, -9],
-          "expected": "-4\n"
+          "id": "hidden-2",
+          "name": "Только push_front",
+          "stdin": "push_front 3\npush_front 2\npush_front 1\nbackward\nforward\n",
+          "expected": "назад: 3 2 1\nвперёд: 1 2 3\nудалено узлов 3\n"
         },
         {
-          "id": "case-5",
-          "name": "Граничный случай 3",
-          "arguments": [-1000, 1000],
-          "expected": "0\n"
+          "id": "hidden-3",
+          "name": "Опустошение с головы",
+          "stdin": "push_back 1\npush_back 2\npush_back 3\npop_front\npop_front\npop_front\npop_front\nbackward\nstats\n",
+          "expected": "1\n2\n3\nпусто\nназад: —\nудалено узлов 3\nудалено узлов 3\n"
         },
         {
-          "id": "case-6",
-          "name": "Граничный случай 4",
-          "arguments": [1000, -1000],
-          "expected": "0\n"
+          "id": "hidden-4",
+          "name": "Опустошение с хвоста",
+          "stdin": "push_back 1\npush_back 2\npush_back 3\npop_back\npop_back\npop_back\npop_back\nforward\nstats\n",
+          "expected": "3\n2\n1\nпусто\nвперёд: —\nудалено узлов 3\nудалено узлов 3\n"
         },
         {
-          "id": "case-7",
-          "name": "Граничный случай 5",
-          "arguments": [4, 4],
-          "expected": "8\n"
+          "id": "hidden-5",
+          "name": "Удаление в деструкторе",
+          "stdin": "push_back 5\npush_back 6\n",
+          "expected": "удалено узлов 2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Чередование",
+          "stdin": "push_front 1\npush_back 2\npush_front 0\npush_back 3\nbackward\n",
+          "expected": "назад: 3 2 1 0\nудалено узлов 4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Повторное заполнение",
+          "stdin": "push_back -1\npop_front\npush_back -2\nforward\nbackward\nstats\n",
+          "expected": "-1\nвперёд: -2\nназад: -2\nудалено узлов 1\nудалено узлов 2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пустой список",
+          "stdin": "stats\n",
+          "expected": "удалено узлов 0\nудалено узлов 0\n"
         }
       ],
-      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct Node { int& live; std::shared_ptr<Node> child; std::weak_ptr<Node> parent; explicit Node(int& n): live(n) { ++live; } ~Node() { --live; } };\nint solve(int a, int b) { int live = 0, saved; { auto root = std::make_shared<Node>(live); auto child = std::make_shared<Node>(live); root->child = child; child->parent = root; saved = a + b; } return live == 0 ? saved : -9999; }",
-      "solutionExplanation": "Нарисуйте ориентированный граф владения отдельно от графа доступа. В дереве родитель владеет детьми через shared_ptr, а ребёнок наблюдает родителя через weak_ptr. Для общего графа выберите внешний реестр владельцев с невладеющими рёбрами или явный протокол teardown. Циклы прячутся и в замыканиях: объект хранит std::function, а лямбда захватила shared_ptr на этот же объект — граф владения объект → callback → объект. Не заменяйте все рёбра на weak без модели владения: узлы начнут исчезать слишком рано.\n\nУспешный stdout не доказывает отсутствие удержания: цикл проявляется только исчезновением деструкторов. Тест на утечку обязан завершить все внешние области владения, а наблюдатели в нём должны быть слабыми.\n\nВ варианте 0 после выхода из f каждый узел удерживается другим: сильные счётчики никогда не достигнут нуля, деструкторы не выполнятся — утечка из-за цикла сильного владения. В варианте 1 обратное ребро слабое, граф владения ацикличен. В варианте 2 weak_ptr не удерживает объект; lock после reset честно возвращает пустой shared_ptr. В варианте 3 цикл скрыт в замыкании: объект владеет std::function, который захватил shared_ptr на тот же объект — тот же код 5. Исправление выбирает направление владения root → child, а parent делает наблюдателем через weak_ptr.",
+      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <optional>\n#include <print>\n#include <string>\n#include <utility>\n\nint destroyed = 0;\n\nstruct Node {\n    int value;\n    std::shared_ptr<Node> next;\n    std::weak_ptr<Node> prev;\n    explicit Node(int v) : value(v) {}\n    ~Node() {\n        ++destroyed;\n    }\n};\n\nclass List {\npublic:\n    List() = default;\n    List(const List &) = delete;\n    List &operator=(const List &) = delete;\n    ~List() {\n        while (head_) {\n            head_ = std::move(head_->next);\n        }\n    }\n\n    void push_back(int x) {\n        auto node = std::make_shared<Node>(x);\n        if (auto tail = tail_.lock()) {\n            node->prev = tail;\n            tail->next = node;\n        } else {\n            head_ = node;\n        }\n        tail_ = node;\n    }\n\n    void push_front(int x) {\n        auto node = std::make_shared<Node>(x);\n        if (head_) {\n            head_->prev = node;\n            node->next = std::move(head_);\n        } else {\n            tail_ = node;\n        }\n        head_ = std::move(node);\n    }\n\n    std::optional<int> pop_front() {\n        if (!head_) {\n            return std::nullopt;\n        }\n        const int v = head_->value;\n        head_ = std::move(head_->next);\n        if (head_) {\n            head_->prev.reset();\n        }\n        return v;\n    }\n\n    std::optional<int> pop_back() {\n        auto tail = tail_.lock();\n        if (!tail) {\n            return std::nullopt;\n        }\n        const int v = tail->value;\n        if (auto prev = tail->prev.lock()) {\n            tail_ = prev;\n            prev->next.reset();\n        } else {\n            head_.reset();\n        }\n        return v;\n    }\n\n    void forward() const {\n        std::string s;\n        for (const Node *n = head_.get(); n; n = n->next.get()) {\n            s += (s.empty() ? \"\" : \" \") + std::to_string(n->value);\n        }\n        std::println(\"вперёд: {}\", s.empty() ? \"—\" : s);\n    }\n\n    void backward() const {\n        std::string s;\n        for (auto n = tail_.lock(); n; n = n->prev.lock()) {\n            s += (s.empty() ? \"\" : \" \") + std::to_string(n->value);\n        }\n        std::println(\"назад: {}\", s.empty() ? \"—\" : s);\n    }\n\nprivate:\n    std::shared_ptr<Node> head_;\n    std::weak_ptr<Node> tail_;\n};\n\nvoid show_value(std::optional<int> v) {\n    if (v) {\n        std::println(\"{}\", *v);\n    } else {\n        std::println(\"пусто\");\n    }\n}\n\nint main() {\n    {\n        List list;\n        std::string command;\n        while (std::cin >> command) {\n            if (command == \"push_back\" || command == \"push_front\") {\n                int x;\n                std::cin >> x;\n                if (command == \"push_back\") {\n                    list.push_back(x);\n                } else {\n                    list.push_front(x);\n                }\n            } else if (command == \"pop_back\") {\n                show_value(list.pop_back());\n            } else if (command == \"pop_front\") {\n                show_value(list.pop_front());\n            } else if (command == \"forward\") {\n                list.forward();\n            } else if (command == \"backward\") {\n                list.backward();\n            } else {\n                std::println(\"удалено узлов {}\", destroyed);\n            }\n        }\n    }\n    std::println(\"удалено узлов {}\", destroyed);\n    return 0;\n}\n",
+      "solutionExplanation": "Каждый узел принадлежит ровно одному владельцу — предыдущему узлу через `next` или списку через `head_`; `prev` и `tail_` только наблюдают. Поэтому удаление узла из цепочки освобождает его сразу, а уничтожение списка освобождает всё — итоговый счётчик совпадает с числом созданных узлов.\n\n`backward` блокирует `prev` на каждом шаге: `lock()` подтверждает, что соседний узел жив, и на время перехода делает его совладельцем.",
       "checking": {
-        "type": "function",
-        "functionName": "solve",
-        "returnType": "int",
-        "parameters": [
-          { "name": "a", "type": "int" },
-          { "name": "b", "type": "int" }
-        ]
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-cyclic-references-task-3",
+      "title": "Найди ошибку: вечная сессия",
+      "description": "Сервер хранит сессии в словаре. Команды: `start пользователь` — создать сессию и запустить её таймер, `tick пользователь` — сработать таймеру (сессия печатает `пинг пользователь #N`), `stop пользователь` — убрать сессию из словаря. Сессия при закрытии печатает `сессия пользователь закрыта`.\n\nОстановленные сессии не закрываются, а при завершении LeakSanitizer сообщает об утечке. Найдите и исправьте ошибку.",
+      "difficulty": "advanced",
+      "starterCode": "#include <functional>\n#include <iostream>\n#include <iterator>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Timer {\npublic:\n    void set(std::function<void()> callback) {\n        callback_ = std::move(callback);\n    }\n    void fire() const {\n        if (callback_) {\n            callback_();\n        }\n    }\n\nprivate:\n    std::function<void()> callback_;\n};\n\nclass Session : public std::enable_shared_from_this<Session> {\npublic:\n    explicit Session(std::string user) : user_(std::move(user)) {}\n    ~Session() {\n        std::println(\"сессия {} закрыта\", user_);\n    }\n\n    void start() {\n        timer_.set([self = shared_from_this()] { self->ping(); });\n    }\n\n    void tick() const {\n        timer_.fire();\n    }\n\nprivate:\n    void ping() {\n        ++pings_;\n        std::println(\"пинг {} #{}\", user_, pings_);\n    }\n\n    std::string user_;\n    int pings_ = 0;\n    Timer timer_;\n};\n\nint main() {\n    std::map<std::string, std::shared_ptr<Session>> sessions;\n    std::string command, user;\n    while (std::cin >> command >> user) {\n        if (command == \"start\") {\n            auto s = std::make_shared<Session>(user);\n            s->start();\n            sessions[user] = std::move(s);\n        } else if (command == \"tick\") {\n            sessions.at(user)->tick();\n        } else {\n            sessions.erase(user);\n        }\n    }\n    while (!sessions.empty()) {\n        sessions.erase(std::prev(sessions.end()));\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "start ada\ntick ada\ntick ada\nstop ada\n",
+          "output": "пинг ada #1\nпинг ada #2\nсессия ada закрыта\n"
+        },
+        {
+          "input": "start a\nstart b\ntick b\n",
+          "output": "пинг b #1\nсессия b закрыта\nсессия a закрыта\n"
+        }
+      ],
+      "constraints": ["Команд не больше 200; tick и stop — только для запущенных сессий."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Кто владеет сессией после start? Перечислите всех владельцев, включая захваченные лямбдой.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Захватите слабую ссылку: [weak = weak_from_this()] и внутри if (auto self = weak.lock()) self->ping();",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "start ada\ntick ada\ntick ada\nstop ada\n",
+          "expected": "пинг ada #1\nпинг ada #2\nсессия ada закрыта\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "start a\nstart b\ntick b\n",
+          "expected": "пинг b #1\nсессия b закрыта\nсессия a закрыта\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "start x\nstop x\n",
+          "expected": "сессия x закрыта\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "start x\n",
+          "expected": "сессия x закрыта\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "start a\ntick a\nstart b\nstop a\ntick b\n",
+          "expected": "пинг a #1\nсессия a закрыта\nпинг b #1\nсессия b закрыта\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "start a\nstart b\nstart c\nstop b\n",
+          "expected": "сессия b закрыта\nсессия c закрыта\nсессия a закрыта\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "start длинное-имя\ntick длинное-имя\nstop длинное-имя\n",
+          "expected": "пинг длинное-имя #1\nсессия длинное-имя закрыта\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "start a\ntick a\ntick a\ntick a\n",
+          "expected": "пинг a #1\nпинг a #2\nпинг a #3\nсессия a закрыта\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "start z\nstart a\n",
+          "expected": "сессия z закрыта\nсессия a закрыта\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "start a\nstop a\nstart a\ntick a\n",
+          "expected": "сессия a закрыта\nпинг a #1\nсессия a закрыта\n"
+        }
+      ],
+      "referenceSolution": "#include <functional>\n#include <iostream>\n#include <iterator>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Timer {\npublic:\n    void set(std::function<void()> callback) {\n        callback_ = std::move(callback);\n    }\n    void fire() const {\n        if (callback_) {\n            callback_();\n        }\n    }\n\nprivate:\n    std::function<void()> callback_;\n};\n\nclass Session : public std::enable_shared_from_this<Session> {\npublic:\n    explicit Session(std::string user) : user_(std::move(user)) {}\n    ~Session() {\n        std::println(\"сессия {} закрыта\", user_);\n    }\n\n    void start() {\n        timer_.set([weak = weak_from_this()] {\n            if (auto self = weak.lock()) {\n                self->ping();\n            }\n        });\n    }\n\n    void tick() const {\n        timer_.fire();\n    }\n\nprivate:\n    void ping() {\n        ++pings_;\n        std::println(\"пинг {} #{}\", user_, pings_);\n    }\n\n    std::string user_;\n    int pings_ = 0;\n    Timer timer_;\n};\n\nint main() {\n    std::map<std::string, std::shared_ptr<Session>> sessions;\n    std::string command, user;\n    while (std::cin >> command >> user) {\n        if (command == \"start\") {\n            auto s = std::make_shared<Session>(user);\n            s->start();\n            sessions[user] = std::move(s);\n        } else if (command == \"tick\") {\n            sessions.at(user)->tick();\n        } else {\n            sessions.erase(user);\n        }\n    }\n    while (!sessions.empty()) {\n        sessions.erase(std::prev(sessions.end()));\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Сессия владеет таймером, таймер — колбэком, а колбэк захватил `shared_from_this()` — ещё одного владельца сессии. Получился цикл: сессия → таймер → лямбда → сессия. Удаление из словаря убирает внешнего владельца, но счётчик остаётся равным единице, деструктор не вызывается, и память утекает.\n\nЗахват `weak_from_this()` разрывает цикл: колбэк знает о сессии, но не держит её. Если сессия жива, `lock()` даёт временного владельца на время пинга; если нет — колбэк ничего не делает. Это стандартный приём для колбэков, таймеров и асинхронных обработчиков.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-cyclic-references-task-4",
+      "title": "Сборщик циклов",
+      "description": "Смоделируйте подсчёт ссылок и найдите то, что он пропускает. У каждого объекта счётчик = число входящих сильных ссылок от других объектов + 1, если на него есть внешний владелец (корень).\n\nКоманды:\n\n- `new X` — объект с внешним владельцем (счётчик 1);\n- `ref A B` — A получает сильную ссылку на B (B: +1; ссылки могут повторяться);\n- `unref A B` — убрать одну ссылку A → B (она есть);\n- `drop X` — убрать внешнего владельца X (он был).\n\nКогда счётчик объекта становится 0, объект освобождается: печатается `освобождён X`, затем убираются все его исходящие ссылки в порядке добавления — это может каскадно освободить другие объекты.\n\n- `leaks` — живые объекты, недостижимые по сильным ссылкам от объектов с внешним владельцем: `утечка: имена по алфавиту` или `утечек нет`;\n- `alive` — `живых N`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "new a\nnew b\nref a b\nref b a\ndrop a\ndrop b\nalive\nleaks\n",
+          "output": "живых 2\nутечка: a b\n"
+        },
+        {
+          "input": "new a\nnew b\nref a b\ndrop b\ndrop a\nalive\nleaks\n",
+          "output": "освобождён a\nосвобождён b\nживых 0\nутечек нет\n"
+        }
+      ],
+      "constraints": [
+        "Команд не больше 500; ref, unref и drop — только для живых объектов; имена уникальны."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Храните для объекта: счётчик, флаг корня, вектор исходящих ссылок. Освобождение рекурсивно: release(x) печатает, помечает мёртвым и для каждой исходящей ссылки уменьшает счётчик цели, вызывая release при нуле.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "leaks — обход в ширину или глубину от всех живых корней по исходящим ссылкам; живые и непосещённые — утечки.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "new a\nnew b\nref a b\nref b a\ndrop a\ndrop b\nalive\nleaks\n",
+          "expected": "живых 2\nутечка: a b\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "new a\nnew b\nref a b\ndrop b\ndrop a\nalive\nleaks\n",
+          "expected": "освобождён a\nосвобождён b\nживых 0\nутечек нет\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Петля",
+          "stdin": "new a\nref a a\ndrop a\nleaks\n",
+          "expected": "утечка: a\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Каскад по цепочке",
+          "stdin": "new a\nnew b\nnew c\nref a b\nref b c\ndrop b\ndrop c\nleaks\ndrop a\nalive\n",
+          "expected": "утечек нет\nосвобождён a\nосвобождён b\nосвобождён c\nживых 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Цикл с корнем",
+          "stdin": "new a\nnew b\nref a b\nref b a\ndrop b\nleaks\nunref a b\nalive\nleaks\n",
+          "expected": "утечек нет\nосвобождён b\nживых 1\nутечек нет\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Повторная ссылка",
+          "stdin": "new a\nnew b\nref a b\nref a b\ndrop b\nunref a b\nalive\nunref a b\nalive\n",
+          "expected": "живых 2\nосвобождён b\nживых 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Цикл из трёх",
+          "stdin": "new a\nnew b\nnew c\nref a b\nref b c\nref c a\ndrop a\ndrop b\ndrop c\nleaks\n",
+          "expected": "утечка: a b c\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Пусто",
+          "stdin": "alive\nleaks\n",
+          "expected": "живых 0\nутечек нет\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Цикл становится утечкой",
+          "stdin": "new x\nnew y\nref x y\nref y x\ndrop y\nleaks\ndrop x\nleaks\n",
+          "expected": "утечек нет\nутечка: x y\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Общая цель",
+          "stdin": "new a\nnew b\nnew c\nref a c\nref b c\ndrop c\ndrop a\nalive\ndrop b\nalive\n",
+          "expected": "освобождён a\nживых 2\nосвобождён b\nосвобождён c\nживых 0\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <map>\n#include <print>\n#include <set>\n#include <string>\n#include <vector>\n\nstruct Object {\n    int count = 0;\n    bool root = false;\n    bool alive = true;\n    std::vector<std::string> refs;\n};\n\nstd::map<std::string, Object> objects;\n\nvoid dec(const std::string &name);\n\nvoid release(const std::string &name) {\n    Object &o = objects.at(name);\n    o.alive = false;\n    std::println(\"освобождён {}\", name);\n    const std::vector<std::string> refs = std::move(o.refs);\n    for (const std::string &target : refs) {\n        dec(target);\n    }\n}\n\nvoid dec(const std::string &name) {\n    Object &o = objects.at(name);\n    if (--o.count == 0) {\n        release(name);\n    }\n}\n\nvoid visit(const std::string &name, std::set<std::string> &seen) {\n    if (!seen.insert(name).second) {\n        return;\n    }\n    for (const std::string &target : objects.at(name).refs) {\n        visit(target, seen);\n    }\n}\n\nint main() {\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"leaks\" || command == \"alive\") {\n            if (command == \"alive\") {\n                int n = 0;\n                for (const auto &[name, o] : objects) {\n                    n += o.alive;\n                }\n                std::println(\"живых {}\", n);\n                continue;\n            }\n            std::set<std::string> seen;\n            for (const auto &[name, o] : objects) {\n                if (o.alive && o.root) {\n                    visit(name, seen);\n                }\n            }\n            std::string leaked;\n            for (const auto &[name, o] : objects) {\n                if (o.alive && !seen.contains(name)) {\n                    leaked += \" \" + name;\n                }\n            }\n            std::println(\"{}\", leaked.empty() ? \"утечек нет\" : \"утечка:\" + leaked);\n            continue;\n        }\n        std::string a;\n        std::cin >> a;\n        if (command == \"new\") {\n            objects[a] = Object{1, true, true, {}};\n        } else if (command == \"drop\") {\n            objects.at(a).root = false;\n            dec(a);\n        } else {\n            std::string b;\n            std::cin >> b;\n            if (command == \"ref\") {\n                objects.at(a).refs.push_back(b);\n                ++objects.at(b).count;\n            } else {\n                auto &refs = objects.at(a).refs;\n                refs.erase(std::ranges::find(refs, b));\n                dec(b);\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Подсчёт ссылок работает локально: он знает только число входящих ссылок и освобождает объект, как только оно стало нулём. Поэтому цепочки освобождаются каскадом, а циклы — никогда: у объектов в цикле счётчики больше нуля, хотя ни до одного из них нельзя добраться от внешних владельцев.\n\nОбход от корней смотрит глобально: всё, что недостижимо, — мусор, сколько бы ссылок на него ни было. Так работают сборщики мусора Java и C# и дополнительный детектор циклов в CPython, который дополняет его подсчёт ссылок. В C++ сборщика нет — поэтому циклы проектируют так, чтобы их не было: одна связь в каждом цикле — `weak_ptr` или сырой указатель.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
       }
     }
   ],
@@ -207,31 +442,89 @@
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Почему разрыв цикла в деструкторе не решает проблему удержания?",
+        "id": "q1",
+        "question": "Почему два объекта, владеющие друг другом через shared_ptr, не освобождаются?",
+        "explanation": "Подсчёт ссылок видит только числа, а не то, что владельцы сами недостижимы.",
         "options": [
-          "Потому что shared_ptr всегда удаляет объект слишком рано",
-          "До деструктора не доходит исполнение: сильные счётчики не равны нулю"
+          "Каждый держит другого, и счётчики не опускаются ниже единицы",
+          "shared_ptr не умеет удалять объекты",
+          "Деструкторы вызываются, но память не освобождается",
+          "Они освобождаются при следующем выделении памяти"
         ],
-        "correct": 1,
-        "explanation": "Нарисуйте ориентированный граф владения отдельно от графа доступа. В дереве родитель владеет детьми через shared_ptr, а ребёнок наблюдает родителя через weak_ptr. Для общего графа выберите внешний реестр владельцев с невладеющими рёбрами или явный протокол teardown. Циклы прячутся и в замыканиях: объект хранит std::function, а лямбда захватила shared_ptr на этот же объект — граф владения объект → callback → объект. Не заменяйте все рёбра на weak без модели владения: узлы начнут исчезать слишком рано."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["1", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "Дефект: внешние p и q удалены\nA ──shared──> B и B ──shared──> A\nсильных у каждого: 1 → деструкторы не выполняются → утечка\nИсправление: A ──shared──> B; B - - weak - -> A\nВнешний владелец A исчезает → ~A → освобождение B → ~B"
+        "id": "q2",
+        "question": "Как разорвать цикл «родитель ↔ ребёнок» в дереве?",
+        "explanation": "Направление владения — сверху вниз.",
+        "options": [
+          "Родитель владеет детьми, ребёнок хранит weak_ptr или сырой указатель на родителя",
+          "Оба направления — weak_ptr",
+          "Оба направления — shared_ptr, а в конце вызвать reset",
+          "Ребёнок владеет родителем"
+        ],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <memory>\n#include <print>\n\nstruct Node {\n    std::shared_ptr<Node> next;\n    ~Node() { std::print(\"~\"); }\n};\n\nint main() {\n    {\n        auto a = std::make_shared<Node>();\n        auto b = std::make_shared<Node>();\n        a->next = b;\n    }\n    std::print(\"|\");\n    {\n        auto c = std::make_shared<Node>();\n        c->next = c;\n        std::print(\"{}\", c.use_count());\n        c->next.reset();\n    }\n    std::println(\"|\");\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "a → b — не цикл, оба удаляются в конце блока. c → c — цикл из одного объекта (счётчик 2); без ручного c->next.reset() он не удалился бы никогда.",
+        "type": "text",
+        "answers": ["~~|2~|"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Чем опасен колбэк [self = shared_from_this()] { … }, сохранённый в поле того же объекта?",
+        "explanation": "Нужно захватить weak_from_this() и вызывать lock() внутри.",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Успешный stdout не доказывает отсутствие удержания: цикл проявляется только исчезновением деструкторов. Тест на утечку обязан завершить все внешние области владения, а наблюдатели в нём должны быть слабыми."
+          "Объект владеет колбэком, колбэк владеет объектом — цикл и утечка",
+          "shared_from_this нельзя вызывать в методах",
+          "Колбэк вызовется дважды",
+          "Ничем"
         ],
-        "correct": 1,
-        "explanation": "В практике счётчик живых узлов должен вернуться к нулю после блока. Внешние weak-наблюдатели помогают проверить это, не удерживая узлы сами. Добавьте третий узел и определите, какие рёбра должны быть слабыми."
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какая связь в двусвязном списке на shared_ptr должна быть невладеющей?",
+        "explanation": "next владеет цепочкой от головы, prev лишь смотрит назад.",
+        "options": ["prev", "next", "обе", "никакая"],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Почему ручной reset() партнёра перед выходом из функции — плохое решение цикла?",
+        "explanation": "Чинить нужно структуру связей, а не отдельные пути выполнения.",
+        "options": [
+          "Он не выполнится при исключении или раннем выходе, и утечка вернётся",
+          "reset нельзя вызывать для полей",
+          "Он удаляет оба объекта сразу",
+          "Это хорошее решение"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Как сборщик мусора находит циклы, которые не видит подсчёт ссылок?",
+        "explanation": "Так работают сборщики Java, C# и детектор циклов в Python.",
+        "options": [
+          "Обходит граф ссылок от корней; всё недостижимое — мусор, даже если счётчики больше нуля",
+          "Считает ссылки точнее",
+          "Удаляет все объекты с одинаковыми счётчиками",
+          "Никак"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какой санитайзер сообщает о памяти, которая не освобождена к концу программы?",
+        "explanation": "Он входит в AddressSanitizer на Linux.",
+        "type": "text",
+        "answers": ["LeakSanitizer", "LSan", "lsan"],
+        "placeholder": "Название"
       }
     ]
   }

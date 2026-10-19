@@ -1,117 +1,445 @@
 {
   "id": "advanced-void-pointer",
-  "title": "void*",
-  "description": "void * переносит адрес объекта без информации о его конкретном типе.",
+  "title": "Обобщённые контейнеры: void * и размер элемента",
+  "description": "Обобщённый динамический массив на void *: данные, количество, вместимость и размер элемента; адрес элемента через char *; копирование по адресу; значения и указатели, владение и функция уничтожения элемента; недолговечность указателя на элемент; qsort над контейнером; типизированные обёртки; void * и неполные типы.",
   "moduleId": "advanced-c",
-  "order": 16,
+  "order": 15,
   "difficulty": "advanced",
-  "estimatedMinutes": 40,
+  "estimatedMinutes": 70,
   "prerequisites": ["advanced-callbacks"],
   "objectives": [
-    "Объяснить: void*",
-    "Различать корректный контракт и ошибку: void * не означает «можно разыменовать как любой тип»; произвольный cast может нарушить alignment и aliasing.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Проектировать контейнер, который хранит элементы любого типа по их размеру",
+    "Вычислять адреса элементов и копировать значения через void * и memcpy",
+    "Решать вопрос владения элементами-указателями с помощью функции уничтожения",
+    "Не хранить указатели на элементы контейнера между его изменениями"
   ],
-  "tags": ["C17", "углублённый C", "void*"],
+  "tags": ["void *", "Обобщённый контейнер", "Динамический массив", "memcpy", "Владение"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-void-pointer-exercise",
-    "title": "Практика: void*",
-    "description": "Реализуйте swap_bytes(void *, void *, size_t) через unsigned char. Ввод два int −1000…1000; поменяйте их представления и выведите значения.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-void-pointer-task-1",
+    "title": "Обобщённый максимум",
+    "description": "Напишите обобщённую функцию поиска максимума\n\n```c\ntypedef int Compare(const void *a, const void *b);\nconst void *max_element(const void *base, size_t count, size_t size, Compare *cmp);\n```\n\nОна возвращает адрес **первого** наибольшего элемента массива или `NULL`, если `count == 0`. Функция сравнения возвращает отрицательное число, ноль или положительное — как у `qsort`.\n\nВвод состоит из блоков до конца ввода. Блок начинается с типа и количества элементов `n`:\n- `int n` и `n` целых чисел — напечатайте наибольшее;\n- `double n` и `n` чисел — напечатайте наибольшее с двумя знаками после точки;\n- `student n` и `n` пар `имя баллы` — напечатайте `имя баллы` студента с наибольшими баллами (первого из равных).\n\nЕсли `n = 0`, напечатайте `пусто`. Для всех трёх типов используйте одну функцию `max_element` и три функции сравнения.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "2 9",
-        "output": "9 2\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "int 5 3 9 2 9 1\ndouble 3 1.5 -2 0.25\n",
+        "output": "9\n1.50\n"
       },
       {
-        "input": "-5 0",
-        "output": "0 -5\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "student 3 ann 90 bob 95 cid 95\nint 0\n",
+        "output": "bob 95\nпусто\n"
       }
     ],
     "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+      "0 ≤ n ≤ 100; имена — до 15 символов; баллы — целые от 0 до 100; блоков не больше 10."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Адрес без этикетки: прежде чем открыть коробку, восстановите размер, тип и владельца."
+        "text": "Внутри max_element храните указатель best на текущий максимум и сравнивайте с ним каждый элемент: const char *p = (const char *)base + i * size.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "void * не означает «можно разыменовать как любой тип»; произвольный cast может нарушить alignment и aliasing."
+        "text": "Строгое сравнение cmp(p, best) > 0 оставляет первым из равных тот элемент, что встретился раньше.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Для студентов заведите структуру { char name[16]; int score; } и функцию сравнения только по score.",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "2 9",
-        "expected": "9 2\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "int 5 3 9 2 9 1\ndouble 3 1.5 -2 0.25\n",
+        "expected": "9\n1.50\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "-5 0",
-        "expected": "0 -5\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "student 3 ann 90 bob 95 cid 95\nint 0\n",
+        "expected": "bob 95\nпусто\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "7 7",
-        "expected": "7 7\n"
+        "id": "hidden-1",
+        "name": "Один элемент",
+        "stdin": "int 1 -7\n",
+        "expected": "-7\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Отрицательные",
+        "stdin": "int 4 -5 -2 -9 -2\n",
+        "expected": "-2\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Маленькие дробные",
+        "stdin": "double 2 0.004 0.003\n",
+        "expected": "0.00\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Один студент",
+        "stdin": "student 1 solo 0\n",
+        "expected": "solo 0\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Первый из равных",
+        "stdin": "student 4 a 10 b 20 c 20 d 5\n",
+        "expected": "b 20\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Пустые блоки",
+        "stdin": "double 0\nstudent 0\n",
+        "expected": "пусто\nпусто\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Крайние int",
+        "stdin": "int 3 2147483647 -2147483648 0\n",
+        "expected": "2147483647\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Все типы",
+        "stdin": "int 2 1 2\ndouble 2 2 1\nstudent 2 x 1 y 2\n",
+        "expected": "2\n2.00\ny 2\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\nstatic void swap_bytes(void *left,void *right,size_t count){unsigned char *a=left,*b=right;for(size_t i=0;i<count;++i){unsigned char t=a[i];a[i]=b[i];b[i]=t;}}\nint main(void) {\n    int a,b; if(scanf(\"%d%d\",&a,&b)!=2)return 1;\n    swap_bytes(&a,&b,sizeof a);\n    printf(\"%d %d\\n\",a,b);\n    return 0;\n}\n",
-    "solutionExplanation": "Адрес без этикетки: прежде чем открыть коробку, восстановите размер, тип и владельца.\n\nvoid * не означает «можно разыменовать как любой тип»; произвольный cast может нарушить alignment и aliasing.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '2 9' → '9 2\\n'; '-5 0' → '0 -5\\n'; '7 7' → '7 7\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\ntypedef int Compare(const void *a, const void *b);\n\nstatic const void *max_element(const void *base, size_t count, size_t size, Compare *cmp) {\n    if (count == 0) {\n        return NULL;\n    }\n    const char *best = base;\n    for (size_t i = 1; i < count; i++) {\n        const char *p = (const char *)base + i * size;\n        if (cmp(p, best) > 0) {\n            best = p;\n        }\n    }\n    return best;\n}\n\ntypedef struct {\n    char name[16];\n    int score;\n} Student;\n\nstatic int compare_int(const void *a, const void *b) {\n    int x = *(const int *)a, y = *(const int *)b;\n    return (x > y) - (x < y);\n}\n\nstatic int compare_double(const void *a, const void *b) {\n    double x = *(const double *)a, y = *(const double *)b;\n    return (x > y) - (x < y);\n}\n\nstatic int compare_student(const void *a, const void *b) {\n    const Student *s = a, *t = b;\n    return (s->score > t->score) - (s->score < t->score);\n}\n\nint main(void) {\n    char type[16];\n    int n;\n    while (scanf(\"%15s %d\", type, &n) == 2 && n >= 0 && n <= 100) {\n        if (strcmp(type, \"int\") == 0) {\n            int values[100];\n            for (int i = 0; i < n; i++) {\n                if (scanf(\"%d\", &values[i]) != 1) {\n                    return 0;\n                }\n            }\n            const int *best = max_element(values, (size_t)n, sizeof values[0], compare_int);\n            if (best == NULL) {\n                puts(\"пусто\");\n            } else {\n                printf(\"%d\\n\", *best);\n            }\n        } else if (strcmp(type, \"double\") == 0) {\n            double values[100];\n            for (int i = 0; i < n; i++) {\n                if (scanf(\"%lf\", &values[i]) != 1) {\n                    return 0;\n                }\n            }\n            const double *best = max_element(values, (size_t)n, sizeof values[0], compare_double);\n            if (best == NULL) {\n                puts(\"пусто\");\n            } else {\n                printf(\"%.2f\\n\", *best);\n            }\n        } else {\n            Student group[100];\n            for (int i = 0; i < n; i++) {\n                if (scanf(\"%15s %d\", group[i].name, &group[i].score) != 2) {\n                    return 0;\n                }\n            }\n            const Student *best = max_element(group, (size_t)n, sizeof group[0], compare_student);\n            if (best == NULL) {\n                puts(\"пусто\");\n            } else {\n                printf(\"%s %d\\n\", best->name, best->score);\n            }\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "`max_element` не знает, что сравнивает: она двигается по массиву шагами по `size` байтов (через `const char *`) и спрашивает у функции сравнения, больше ли текущий элемент. Возвращается адрес, а не значение — функция не может вернуть «значение любого типа», а адрес подходит для всех.\n\nРезультат приводится обратно к нужному типу при присваивании: `const int *best = max_element(...)` — `const void *` неявно превращается в `const int *`. Это и есть место, где ответственность за тип лежит на программисте: компилятор не проверит, что массив действительно состоит из `int`.\n\nСтрогое `> 0` в сравнении делает результат устойчивым: из равных выбирается первый. Так же ведёт себя `std::max_element` в C++.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-void-pointer-task-2",
+      "title": "Найди ошибку: указатель после роста",
+      "description": "Программа считает, сколько раз встречается каждое слово ввода, и хранит пары «слово — количество» в обобщённом векторе. Она печатает слова в порядке первого появления с их количеством, а затем `чаще всего: СЛОВО (K)` — слово, которое **первым** достигло наибольшего количества. Если слов нет, печатается `слов нет`.\n\nНа коротких входах всё работает, а на длинных AddressSanitizer сообщает `heap-use-after-free`. Найдите и исправьте ошибку.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct {\n    void *data;\n    size_t size, capacity, elem_size;\n} Vector;\n\nstatic void *vector_at(const Vector *v, size_t i) {\n    return (char *)v->data + i * v->elem_size;\n}\n\nstatic int vector_push(Vector *v, const void *elem) {\n    if (v->size == v->capacity) {\n        size_t bigger = v->capacity ? v->capacity * 2 : 4;\n        void *grown = realloc(v->data, bigger * v->elem_size);\n        if (grown == NULL) {\n            return 0;\n        }\n        v->data = grown;\n        v->capacity = bigger;\n    }\n    memcpy(vector_at(v, v->size), elem, v->elem_size);\n    v->size++;\n    return 1;\n}\n\ntypedef struct {\n    char word[16];\n    int count;\n} Entry;\n\nstatic Entry *find(const Vector *v, const char *word) {\n    for (size_t i = 0; i < v->size; i++) {\n        Entry *e = vector_at(v, i);\n        if (strcmp(e->word, word) == 0) {\n            return e;\n        }\n    }\n    return NULL;\n}\n\nint main(void) {\n    Vector entries = {NULL, 0, 0, sizeof(Entry)};\n    Entry *best = NULL;\n    char word[16];\n    while (scanf(\"%15s\", word) == 1) {\n        Entry *e = find(&entries, word);\n        if (e == NULL) {\n            Entry fresh;\n            strcpy(fresh.word, word);\n            fresh.count = 0;\n            if (!vector_push(&entries, &fresh)) {\n                free(entries.data);\n                return 1;\n            }\n            e = vector_at(&entries, entries.size - 1);\n        }\n        e->count++;\n        if (best == NULL || e->count > best->count) {\n            best = e;\n        }\n    }\n    if (entries.size == 0) {\n        printf(\"слов нет\\n\");\n        return 0;\n    }\n    for (size_t i = 0; i < entries.size; i++) {\n        const Entry *e = vector_at(&entries, i);\n        printf(\"%s %d\\n\", e->word, e->count);\n    }\n    printf(\"чаще всего: %s (%d)\\n\", best->word, best->count);\n    free(entries.data);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "кот пёс кот\n",
+          "output": "кот 2\nпёс 1\nчаще всего: кот (2)\n"
+        },
+        {
+          "input": "a b c d e f a b a\n",
+          "output": "a 3\nb 2\nc 1\nd 1\ne 1\nf 1\nчаще всего: a (3)\n"
+        }
+      ],
+      "constraints": ["Слов не больше 200, каждое до 15 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Указатель best ссылается на элемент внутри блока entries.data. Что происходит с этим блоком, когда вектор растёт?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "vector_push может вызвать realloc, и best становится висячим. Храните индекс лучшего элемента, а указатель получайте заново через vector_at, когда он нужен.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "кот пёс кот\n",
+          "expected": "кот 2\nпёс 1\nчаще всего: кот (2)\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "a b c d e f a b a\n",
+          "expected": "a 3\nb 2\nc 1\nd 1\ne 1\nf 1\nчаще всего: a (3)\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": "слов нет\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Одно слово",
+          "stdin": "one\n",
+          "expected": "one 1\nчаще всего: one (1)\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Повтор после роста",
+          "stdin": "x y z w v u x\n",
+          "expected": "x 2\ny 1\nz 1\nw 1\nv 1\nu 1\nчаще всего: x (2)\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Много разных слов",
+          "stdin": "a b c d e f g h i j k l m n o p q\n",
+          "expected": "a 1\nb 1\nc 1\nd 1\ne 1\nf 1\ng 1\nh 1\ni 1\nj 1\nk 1\nl 1\nm 1\nn 1\no 1\np 1\nq 1\nчаще всего: a (1)\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Ничья",
+          "stdin": "b a b a\n",
+          "expected": "b 2\na 2\nчаще всего: b (2)\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Лидер меняется",
+          "stdin": "w1 w2 w3 w4 w5 w5 w4 w5\n",
+          "expected": "w1 1\nw2 1\nw3 1\nw4 2\nw5 3\nчаще всего: w5 (3)\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Одно слово много раз",
+          "stdin": "z z z z z z\n",
+          "expected": "z 6\nчаще всего: z (6)\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Длинный текст",
+          "stdin": "alpha beta gamma delta epsilon zeta eta theta iota kappa alpha beta alpha\n",
+          "expected": "alpha 3\nbeta 2\ngamma 1\ndelta 1\nepsilon 1\nzeta 1\neta 1\ntheta 1\niota 1\nkappa 1\nчаще всего: alpha (3)\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct {\n    void *data;\n    size_t size, capacity, elem_size;\n} Vector;\n\nstatic void *vector_at(const Vector *v, size_t i) {\n    return (char *)v->data + i * v->elem_size;\n}\n\nstatic int vector_push(Vector *v, const void *elem) {\n    if (v->size == v->capacity) {\n        size_t bigger = v->capacity ? v->capacity * 2 : 4;\n        void *grown = realloc(v->data, bigger * v->elem_size);\n        if (grown == NULL) {\n            return 0;\n        }\n        v->data = grown;\n        v->capacity = bigger;\n    }\n    memcpy(vector_at(v, v->size), elem, v->elem_size);\n    v->size++;\n    return 1;\n}\n\ntypedef struct {\n    char word[16];\n    int count;\n} Entry;\n\nstatic Entry *find(const Vector *v, const char *word) {\n    for (size_t i = 0; i < v->size; i++) {\n        Entry *e = vector_at(v, i);\n        if (strcmp(e->word, word) == 0) {\n            return e;\n        }\n    }\n    return NULL;\n}\n\nint main(void) {\n    Vector entries = {NULL, 0, 0, sizeof(Entry)};\n    Entry *best = NULL;\n    size_t best_index = 0;\n    char word[16];\n    while (scanf(\"%15s\", word) == 1) {\n        Entry *e = find(&entries, word);\n        if (e == NULL) {\n            Entry fresh;\n            strcpy(fresh.word, word);\n            fresh.count = 0;\n            if (!vector_push(&entries, &fresh)) {\n                free(entries.data);\n                return 1;\n            }\n            e = vector_at(&entries, entries.size - 1);\n        }\n        e->count++;\n        best = vector_at(&entries, best_index);\n        if (entries.size == 1 || e->count > best->count) {\n            best_index = (size_t)(e - (Entry *)entries.data);\n        }\n    }\n    if (entries.size == 0) {\n        printf(\"слов нет\\n\");\n        return 0;\n    }\n    for (size_t i = 0; i < entries.size; i++) {\n        const Entry *e = vector_at(&entries, i);\n        printf(\"%s %d\\n\", e->word, e->count);\n    }\n    best = vector_at(&entries, best_index);\n    printf(\"чаще всего: %s (%d)\\n\", best->word, best->count);\n    free(entries.data);\n    return 0;\n}\n",
+      "solutionExplanation": "`best` хранит адрес элемента внутри блока `entries.data`. Когда в вектор добавляется пятое различное слово, `vector_push` вызывает `realloc`: блок переезжает, старый освобождается, а `best` продолжает указывать в него. Следующее сравнение `e->count > best->count` читает освобождённую память — это и находит AddressSanitizer.\n\nИндекс не зависит от расположения блока: элемент номер 3 остаётся элементом номер 3 после любого роста. Поэтому долгоживущие ссылки на элементы контейнера хранят индексами, а указатель получают через `vector_at` непосредственно перед использованием. Так же устроены итераторы `std::vector` в C++: они становятся недействительными после роста.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-project-vector",
+      "title": "Обобщённый динамический массив",
+      "description": "Реализуйте обобщённый динамический массив `Vector` на `void *` и с его помощью обработайте команды для **двух** векторов: целых чисел (`i`) и точек (`p`, структура `{ int x, y; }`). Код контейнера должен быть один для обоих типов: он знает только размер элемента.\n\nИнтерфейс контейнера:\n- `vector_init(v, elem_size)` — пустой вектор, вместимость 0;\n- `vector_reserve(v, n)` — если `n` больше вместимости, вместимость становится ровно `n`, данные сохраняются;\n- `vector_push(v, elem)` — добавить в конец; при заполненном векторе вместимость удваивается (с 0 — до 4);\n- `vector_pop(v, out)` — снять последний элемент, скопировав его в `out`;\n- `vector_get(v, i)` — адрес элемента или `NULL` при `i ≥ size`;\n- `vector_insert(v, i, elem)` — вставить перед позицией `i` (`0 ≤ i ≤ size`), сдвинув хвост; рост — как у `push`;\n- `vector_remove(v, i, out)` — удалить элемент `i`, скопировав его в `out`;\n- `vector_free(v)`.\n\nКоманды до конца ввода — `ВЕКТОР КОМАНДА [аргументы]`, где `ВЕКТОР` — `i` или `p`, а элемент записывается одним числом `X` или парой `X Y`:\n- `push элемент`; `pop` — напечатать снятый элемент или `пусто`;\n- `get K` — напечатать элемент или `ошибка индекса`; `set K элемент` — заменить или напечатать `ошибка индекса`;\n- `insert K элемент` — вставить (при `K > size` — `ошибка индекса`); `remove K` — удалить и напечатать элемент или `ошибка индекса`;\n- `sort` — по возрастанию (точки — по `x`, затем по `y`) с помощью `qsort`;\n- `print` — элементы через пробел или `пусто`; `info` — `size=S capacity=C`; `reserve N`.\n\nТочка печатается как `(X, Y)`. После последней команды освободите оба вектора; при нехватке памяти завершите программу с ненулевым кодом. Тесты проверяют вывод и диагностику памяти.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "i push 5\ni push 7\ni push 9\ni get 1\ni insert 0 1\ni print\ni remove 2\ni print\ni info\n",
+          "output": "7\n1 5 7 9\n7\n1 5 9\nsize=3 capacity=4\n"
+        },
+        {
+          "input": "p push 3 1\np push 1 2\np push 3 0\np sort\np print\np pop\np get 5\np info\n",
+          "output": "(1, 2) (3, 0) (3, 1)\n(3, 1)\nошибка индекса\nsize=2 capacity=4\n"
+        }
+      ],
+      "constraints": [
+        "Команд не больше 300; числа — int; индексы K и N — от 0 до 10⁶.",
+        "Сдвиг хвоста при вставке и удалении — memmove: области пересекаются."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сначала напишите и проверьте контейнер: функцию slot(v, i) для адреса элемента, затем reserve, push, pop, get, insert и remove. В каждой функции работайте только с байтами и elem_size.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Чтобы не писать обработку команд дважды, передайте в общую функцию run указатели на функции чтения, печати и сравнения элемента: read_int/read_point, print_int/print_point, compare_int/compare_point.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Временный элемент любого из двух типов можно хранить в объединении union { int i; Point p; } — его размера хватит для обоих.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "i push 5\ni push 7\ni push 9\ni get 1\ni insert 0 1\ni print\ni remove 2\ni print\ni info\n",
+          "expected": "7\n1 5 7 9\n7\n1 5 9\nsize=3 capacity=4\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "p push 3 1\np push 1 2\np push 3 0\np sort\np print\np pop\np get 5\np info\n",
+          "expected": "(1, 2) (3, 0) (3, 1)\n(3, 1)\nошибка индекса\nsize=2 capacity=4\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Рост 4 → 8 → 16",
+          "stdin": "i push 1\ni push 2\ni push 3\ni push 4\ni push 5\ni push 6\ni push 7\ni push 8\ni push 9\ni info\n",
+          "expected": "size=9 capacity=16\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "reserve и удвоение после него",
+          "stdin": "i reserve 10\ni info\ni push 1\ni reserve 5\ni info\ni push 2\ni push 3\ni push 4\ni push 5\ni push 6\ni push 7\ni push 8\ni push 9\ni push 10\ni push 11\ni info\n",
+          "expected": "size=0 capacity=10\nsize=1 capacity=10\nsize=11 capacity=20\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Вставка",
+          "stdin": "i insert 1 5\ni insert 0 5\ni insert 1 6\ni insert 1 7\ni print\n",
+          "expected": "ошибка индекса\n5 7 6\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Замена, снять всё и добавить снова",
+          "stdin": "p push 1 1\np set 0 9 9\np set 1 0 0\np print\np pop\np pop\np push 5 5\np print\np info\n",
+          "expected": "ошибка индекса\n(9, 9)\n(9, 9)\nпусто\n(5, 5)\nsize=1 capacity=4\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Сортировка int",
+          "stdin": "i push 3\ni push -1\ni push 3\ni push 0\ni push -1\ni sort\ni print\n",
+          "expected": "-1 -1 0 3 3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Пустые и независимые векторы",
+          "stdin": "i pop\ni remove 0\ni get 0\np print\ni push 1\np push 1 1\ni push 2\np push 2 2\ni print\np print\ni info\np info\n",
+          "expected": "пусто\nошибка индекса\nошибка индекса\nпусто\n1 2\n(1, 1) (2, 2)\nsize=2 capacity=4\nsize=2 capacity=4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Удаление с краёв и из середины",
+          "stdin": "i push 1\ni push 2\ni push 3\ni push 4\ni push 5\ni remove 0\ni remove 3\ni remove 1\ni print\ni info\n",
+          "expected": "1\n5\n3\n2 4\nsize=2 capacity=8\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Сортировка точек",
+          "stdin": "p push 2 3\np push 1 9\np push 2 1\np push 1 -9\np insert 2 0 0\np sort\np print\np remove 4\n",
+          "expected": "(0, 0) (1, -9) (1, 9) (2, 1) (2, 3)\n(2, 3)\n"
+        }
+      ],
+      "referenceSolution": "#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct {\n    void *data;\n    size_t size, capacity, elem_size;\n} Vector;\n\ntypedef struct {\n    int x, y;\n} Point;\n\nstatic void vector_init(Vector *v, size_t elem_size) {\n    v->data = NULL;\n    v->size = 0;\n    v->capacity = 0;\n    v->elem_size = elem_size;\n}\n\nstatic void *slot(const Vector *v, size_t i) {\n    return (char *)v->data + i * v->elem_size;\n}\n\nstatic int vector_reserve(Vector *v, size_t n) {\n    if (n <= v->capacity) {\n        return 1;\n    }\n    if (n > SIZE_MAX / v->elem_size) {\n        return 0;\n    }\n    void *grown = realloc(v->data, n * v->elem_size);\n    if (grown == NULL) {\n        return 0;\n    }\n    v->data = grown;\n    v->capacity = n;\n    return 1;\n}\n\nstatic int grow_if_full(Vector *v) {\n    if (v->size < v->capacity) {\n        return 1;\n    }\n    if (v->capacity > SIZE_MAX / 2) {\n        return 0;\n    }\n    return vector_reserve(v, v->capacity ? v->capacity * 2 : 4);\n}\n\nstatic int vector_push(Vector *v, const void *elem) {\n    if (!grow_if_full(v)) {\n        return 0;\n    }\n    memcpy(slot(v, v->size), elem, v->elem_size);\n    v->size++;\n    return 1;\n}\n\nstatic int vector_pop(Vector *v, void *out) {\n    if (v->size == 0) {\n        return 0;\n    }\n    v->size--;\n    memcpy(out, slot(v, v->size), v->elem_size);\n    return 1;\n}\n\nstatic void *vector_get(const Vector *v, size_t i) {\n    return i < v->size ? slot(v, i) : NULL;\n}\n\nstatic int vector_insert(Vector *v, size_t i, const void *elem) {\n    if (!grow_if_full(v)) {\n        return 0;\n    }\n    memmove(slot(v, i + 1), slot(v, i), (v->size - i) * v->elem_size);\n    memcpy(slot(v, i), elem, v->elem_size);\n    v->size++;\n    return 1;\n}\n\nstatic int vector_remove(Vector *v, size_t i, void *out) {\n    if (i >= v->size) {\n        return 0;\n    }\n    memcpy(out, slot(v, i), v->elem_size);\n    memmove(slot(v, i), slot(v, i + 1), (v->size - i - 1) * v->elem_size);\n    v->size--;\n    return 1;\n}\n\nstatic void vector_free(Vector *v) {\n    free(v->data);\n    vector_init(v, v->elem_size);\n}\n\n// ---- Операции над элементами конкретных типов ----\ntypedef int ReadElem(void *out);\ntypedef void PrintElem(const void *elem);\ntypedef int CompareElem(const void *a, const void *b);\n\nstatic int read_int(void *out) {\n    return scanf(\"%d\", (int *)out) == 1;\n}\n\nstatic void print_int(const void *elem) {\n    printf(\"%d\", *(const int *)elem);\n}\n\nstatic int compare_int(const void *a, const void *b) {\n    int x = *(const int *)a, y = *(const int *)b;\n    return (x > y) - (x < y);\n}\n\nstatic int read_point(void *out) {\n    Point *p = out;\n    return scanf(\"%d %d\", &p->x, &p->y) == 2;\n}\n\nstatic void print_point(const void *elem) {\n    const Point *p = elem;\n    printf(\"(%d, %d)\", p->x, p->y);\n}\n\nstatic int compare_point(const void *a, const void *b) {\n    const Point *p = a, *q = b;\n    if (p->x != q->x) {\n        return (p->x > q->x) - (p->x < q->x);\n    }\n    return (p->y > q->y) - (p->y < q->y);\n}\n\nstatic void print_line(const void *elem, PrintElem *print) {\n    print(elem);\n    putchar('\\n');\n}\n\n// Возвращает 0 при нехватке памяти.\nstatic int run(Vector *v, const char *cmd, ReadElem *read, PrintElem *print, CompareElem *cmp) {\n    union {\n        int i;\n        Point p;\n    } elem;                                        // места хватает для любого элемента\n    size_t k;\n    if (strcmp(cmd, \"push\") == 0) {\n        return !read(&elem) || vector_push(v, &elem);\n    }\n    if (strcmp(cmd, \"pop\") == 0) {\n        if (vector_pop(v, &elem)) {\n            print_line(&elem, print);\n        } else {\n            puts(\"пусто\");\n        }\n    } else if (strcmp(cmd, \"get\") == 0 && scanf(\"%zu\", &k) == 1) {\n        void *found = vector_get(v, k);\n        if (found != NULL) {\n            print_line(found, print);\n        } else {\n            puts(\"ошибка индекса\");\n        }\n    } else if (strcmp(cmd, \"set\") == 0 && scanf(\"%zu\", &k) == 1 && read(&elem)) {\n        void *found = vector_get(v, k);\n        if (found != NULL) {\n            memcpy(found, &elem, v->elem_size);\n        } else {\n            puts(\"ошибка индекса\");\n        }\n    } else if (strcmp(cmd, \"insert\") == 0 && scanf(\"%zu\", &k) == 1 && read(&elem)) {\n        if (k > v->size) {\n            puts(\"ошибка индекса\");\n        } else if (!vector_insert(v, k, &elem)) {\n            return 0;\n        }\n    } else if (strcmp(cmd, \"remove\") == 0 && scanf(\"%zu\", &k) == 1) {\n        if (vector_remove(v, k, &elem)) {\n            print_line(&elem, print);\n        } else {\n            puts(\"ошибка индекса\");\n        }\n    } else if (strcmp(cmd, \"sort\") == 0) {\n        if (v->size > 1) {\n            qsort(v->data, v->size, v->elem_size, cmp);\n        }\n    } else if (strcmp(cmd, \"print\") == 0) {\n        if (v->size == 0) {\n            puts(\"пусто\");\n        }\n        for (size_t i = 0; i < v->size; i++) {\n            print(slot(v, i));\n            putchar(i + 1 < v->size ? ' ' : '\\n');\n        }\n    } else if (strcmp(cmd, \"info\") == 0) {\n        printf(\"size=%zu capacity=%zu\\n\", v->size, v->capacity);\n    } else if (strcmp(cmd, \"reserve\") == 0 && scanf(\"%zu\", &k) == 1) {\n        return vector_reserve(v, k);\n    }\n    return 1;\n}\n\nint main(void) {\n    Vector ints, points;\n    vector_init(&ints, sizeof(int));\n    vector_init(&points, sizeof(Point));\n    char which[4], cmd[16];\n    int ok = 1;\n    while (ok && scanf(\"%3s %15s\", which, cmd) == 2) {\n        if (strcmp(which, \"i\") == 0) {\n            ok = run(&ints, cmd, read_int, print_int, compare_int);\n        } else if (strcmp(which, \"p\") == 0) {\n            ok = run(&points, cmd, read_point, print_point, compare_point);\n        }\n    }\n    vector_free(&ints);\n    vector_free(&points);\n    return ok ? 0 : 1;\n}\n",
+      "solutionExplanation": "Контейнер не знает о `int` и `Point`: все его функции работают с адресами, количеством байтов и `memcpy`/`memmove`. Тип элементов появляется только в функциях чтения, печати и сравнения, которые передаются в `run` как указатели на функции. Так одна логика обработки команд обслуживает оба вектора — без копирования кода и без `switch` по типу.\n\nИнварианты: `size ≤ capacity`, инициализированы только элементы `[0, size)`. `reserve` при отказе `realloc` возвращает 0 и не трогает старый блок — состояние вектора сохраняется. Произведение `n * elem_size` проверяется на переполнение до вызова `realloc`.\n\nВставка и удаление сдвигают хвост через `memmove`: источник и приёмник — части одного блока, и `memcpy` здесь была бы неопределённым поведением. Сортировка — обычная `qsort`: обобщённый вектор хранит ровно те сведения, которые ей нужны. `vector_get` возвращает адрес, действительный до следующего изменения вектора, поэтому `run` пользуется им сразу.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-void-pointer-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Как обходить байты объекта в C17?",
-        "options": ["Через unsigned char *", "Через арифметику void *"],
-        "correct": 0,
-        "explanation": "void * переносит адрес объекта без информации о его конкретном типе. Преобразование объектного указателя в void * и обратно к исходному типу сохраняет возможность доступа. Для разыменования нужен подходящий тип, корректное выравнивание и живой объект. Арифметика void * не входит в стандарт C17; для обхода представления используют unsigned char *."
-      },
-      {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q1",
+        "question": "Как вычислить адрес элемента номер i в обобщённом векторе с полями void *data и size_t elem_size?",
+        "explanation": "Смещение считается в байтах, поэтому data приводят к char *. Арифметика с void * в стандартном C запрещена, а приведение к int * верно только для вектора int.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "void * не означает «можно разыменовать как любой тип»; произвольный cast может нарушить alignment и aliasing."
+          "(char *)data + i * elem_size",
+          "data + i",
+          "data + i * elem_size",
+          "(int *)data + i"
         ],
-        "correct": 1,
-        "explanation": "Адрес без этикетки: прежде чем открыть коробку, восстановите размер, тип и владельца."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["9", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: int value=9;void *opaque=&value;int *restored=opaque;printf(\"%d\\n\",*restored); Ожидаемый результат: 9"
+        "id": "q2",
+        "question": "Вектор хранит int. Как правильно добавить в него число 42 функцией int vector_push(Vector *v, const void *elem)?",
+        "explanation": "push копирует elem_size байтов по переданному адресу. Значение нужно положить в переменную и передать её адрес; (void *)42 — адрес 42, по которому ничего нет.",
+        "options": [
+          "int x = 42; vector_push(&v, &x);",
+          "vector_push(&v, 42);",
+          "vector_push(&v, (void *)42);",
+          "vector_push(&v, \"42\");"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    double storage[4];\n    void *data = storage;\n    size_t elem_size = sizeof(double);\n    for (int i = 0; i < 4; i++) {\n        double value = i * 1.5;\n        memcpy((char *)data + i * elem_size, &value, elem_size);\n    }\n    double third;\n    memcpy(&third, (char *)data + 2 * elem_size, elem_size);\n    printf(\"%.1f\\n\", third);\n    return 0;\n}",
+        "explanation": "Элемент с индексом 2 лежит со смещением 2 · 8 байтов, и в нём записано 2 · 1.5 = 3.0.",
+        "type": "text",
+        "answers": ["3.0"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Вектор хранит строки как char *, и ему передана функция уничтожения элемента. Что эта функция получает аргументом?",
+        "explanation": "Обобщённый вектор знает только адреса элементов. Элемент здесь — указатель, значит, его адрес — указатель на указатель: free(*(char **)elem).",
+        "options": [
+          "Адрес элемента — значение типа char **, которое нужно разыменовать перед free",
+          "Саму строку типа char *",
+          "Указатель на весь вектор",
+          "Номер элемента"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Почему указатель int *first = vector_get(&v, 0); нельзя использовать после vector_push(&v, &x);?",
+        "explanation": "Любое изменение размера может переместить блок. Указатель на элемент действителен до следующего изменения контейнера, а надолго запоминают индекс.",
+        "options": [
+          "push может вызвать realloc, который переместит данные, и first будет указывать в освобождённую память",
+          "push обнуляет первый элемент",
+          "vector_get возвращает копию, а не адрес",
+          "Можно: адрес первого элемента никогда не меняется"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Какие сведения о векторе нужны, чтобы отсортировать его элементы функцией qsort? Выберите все.",
+        "explanation": "qsort(data, size, elem_size, cmp) — ровно те же сведения, что хранит обобщённый вектор. Вместимость для сортировки не нужна: сортируются только существующие элементы.",
+        "type": "multiple",
+        "options": [
+          "Адрес данных",
+          "Количество элементов",
+          "Размер элемента",
+          "Функция сравнения для типа элементов",
+          "Вместимость"
+        ],
+        "correct": [0, 1, 2, 3]
+      },
+      {
+        "id": "q7",
+        "question": "Какой размер элемента нужно указать для вектора, хранящего указатели на строки?",
+        "explanation": "Элемент вектора — указатель, а не символ и не строка. sizeof(char) скопировал бы один байт указателя.",
+        "type": "text",
+        "answers": ["sizeof(char *)", "sizeof (char *)"],
+        "placeholder": "Выражение"
+      },
+      {
+        "id": "q8",
+        "question": "Почему для непрозрачных дескрипторов лучше typedef struct Stack Stack;, чем typedef void *Stack;?",
+        "explanation": "void * стирает тип, и путаница дескрипторов не будет замечена. Неполные структуры — разные типы, поэтому ошибка видна при компиляции.",
+        "options": [
+          "С неполным типом компилятор не даст передать Queue * туда, где ждут Stack *; с void * все дескрипторы взаимозаменяемы",
+          "void * занимает больше памяти",
+          "Неполный тип быстрее разыменовывается",
+          "void * нельзя вернуть из функции"
+        ],
+        "correct": 0
       }
     ]
   }

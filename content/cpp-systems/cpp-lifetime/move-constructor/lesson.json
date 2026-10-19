@@ -1,204 +1,439 @@
 {
   "id": "lifetime-move-constructor",
-  "title": "Перемещающий конструктор — Move constructor",
-  "description": "Перемещающий конструктор T(T&& other) создаёт нового владельца из источника, ресурсы которого разрешено забрать.",
+  "title": "Перемещающий конструктор",
+  "description": "Перемещающий конструктор T(T &&) noexcept: забрать ресурс и оставить источник пустым и разрушаемым; std::exchange для обнуления указателей; почему noexcept определяет, копирует или перемещает std::vector при росте (move_if_noexcept); когда компилятор создаёт перемещение сам и как его теряют, объявив деструктор; = default.",
   "moduleId": "cpp-lifetime",
   "order": 14,
   "difficulty": "advanced",
-  "estimatedMinutes": 75,
+  "estimatedMinutes": 55,
   "prerequisites": ["lifetime-std-move"],
   "objectives": [
-    "Сформулировать инвариант «один блок — один владелец» для перемещающего конструктора.",
-    "Проследить на MemoryDiagram обнуление источника через std::exchange.",
-    "Диагностировать move-конструктор с двумя владельцами и исправить его обменом указателя."
+    "Писать перемещающий конструктор для класса, владеющего ресурсом",
+    "Оставлять источник в пустом корректном состоянии",
+    "Объяснять роль noexcept при росте вектора",
+    "Знать, когда перемещающий конструктор создаётся неявно"
   ],
-  "tags": [
-    "C++20",
-    "время жизни",
-    "управление ресурсами",
-    "Перемещающий конструктор — Move constructor",
-    "диагностика",
-    "исправление ошибок",
-    "Неправильный move constructor"
-  ],
+  "tags": ["C++23", "Время жизни", "Перемещение", "noexcept", "std::exchange"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "lifetime-move-constructor-diagnose",
-    "title": "1. Диагностика: Неправильный move constructor",
-    "description": "Сначала диагностируйте четыре независимых фрагмента по номерам 0–3; не исполняйте их. solve(a,b) принимает номер фрагмента a; b не используется. Верните код первичного дефекта: 0 — безопасно в показанных границах; 1 — double delete; 2 — use-after-free; 3 — dangling reference при возврате; 4 — нарушение заявленного договора заимствования; 5 — цикл сильного владения; 6 — move constructor оставил двух владельцев. Для 4 и 6 выбирайте причину, а не последующий double delete. В комментарии к решению укажите строку, событие окончания жизни и владельца. После проверки диагноза перейдите к заданию 2 и исправьте исходник.\n\nФрагмент 0:\n// ~Cell вызывает delete p.\nCell(Cell&& other) noexcept : p(other.p) {}\n\nФрагмент 1:\nCell(Cell&& other) noexcept : p(other.p) { other.p = nullptr; }\n\nФрагмент 2:\nCell(Cell&& other) : p(std::exchange(other.p, nullptr)) {}\n\nФрагмент 3:\nauto src = std::make_unique<int>(2); int* raw = src.get(); src.reset(); int v = *raw;",
-    "difficulty": "advanced",
+    "id": "lifetime-move-constructor-exercise",
+    "title": "Перемещаемый буфер",
+    "description": "Класс `Buffer` владеет массивом `int` из кучи и считает статически: выделения массивов, копии и перемещения. Напишите конструктор `Buffer(n, v)`, глубокий конструктор копирования, перемещающий конструктор `noexcept` через `std::exchange` и деструктор; присваивание запретите.\n\nБуферы хранятся в векторе с местом, зарезервированным на 1000 элементов. Команды:\n\n- `make n v` — `push_back(Buffer(n, v))`;\n- `clone i` — `push_back(buffers[i - 1])`;\n- `sum i` — `сумма S` (у пустого буфера — 0);\n- `stats` — `выделений A, копий C, перемещений M`.",
+    "difficulty": "intermediate",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(0, 0)",
-        "output": "6\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "make 3 5\nclone 1\nsum 2\nstats\n",
+        "output": "сумма 15\nвыделений 2, копий 1, перемещений 1\n"
       },
       {
-        "input": "solve(1, 0)",
-        "output": "0\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "make 0 9\nsum 1\nstats\n",
+        "output": "сумма 0\nвыделений 1, копий 0, перемещений 1\n"
       }
     ],
-    "constraints": [
-      "Аргумент a — номер фрагмента 0…3; b=0. Возвращайте код 0…6 согласно условию.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Команд не больше 500; 0 ≤ n ≤ 1000; индексы существуют."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Не исполняйте фрагменты. Для каждого найдите объект, чьё время жизни заканчивается раньше использования, и сопоставьте событие с кодами 0–6. Если дефектов два, выбирайте первопричину: нарушение договора или неверный move, а не их следствие в виде double delete."
+        "id": "hint-1",
+        "text": "Выделение — в конструкторе и в конструкторе копирования; перемещение массив не выделяет.",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "В варианте 0 операция названа перемещением, но источник сохраняет указатель: два объекта считают себя единственными владельцами и оба вызовут delete. Выбирайте первопричину — неверный move constructor (код 6), а не его следствие double delete. В варианте 1 источник явно обнулён, инвариант «один блок — один владелец» сохранён. В варианте 2 std::exchange делает то же самое; отсутствие noexcept снижает эффективность в контейнерах, но дефектом памяти не является. В варианте 3 raw используется после reset владельца — use-after-free."
+        "id": "hint-2",
+        "text": "Buffer(Buffer &&other) noexcept : size_(std::exchange(other.size_, 0)), data_(std::exchange(other.data_, nullptr)) { ++moves; }",
+        "order": 2
       }
     ],
     "publicTests": [
       {
-        "id": "fragment-0",
-        "name": "Фрагмент 0",
-        "arguments": [0, 0],
-        "expected": "6\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "make 3 5\nclone 1\nsum 2\nstats\n",
+        "expected": "сумма 15\nвыделений 2, копий 1, перемещений 1\n"
       },
       {
-        "id": "fragment-1",
-        "name": "Фрагмент 1",
-        "arguments": [1, 0],
-        "expected": "0\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "make 0 9\nsum 1\nstats\n",
+        "expected": "сумма 0\nвыделений 1, копий 0, перемещений 1\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "fragment-2",
-        "name": "Фрагмент 2",
-        "arguments": [2, 0],
-        "expected": "0\n"
+        "id": "hidden-1",
+        "name": "Ничего не создано",
+        "stdin": "stats\n",
+        "expected": "выделений 0, копий 0, перемещений 0\n"
       },
       {
-        "id": "fragment-3",
-        "name": "Фрагмент 3",
-        "arguments": [3, 0],
-        "expected": "2\n"
+        "id": "hidden-2",
+        "name": "Три буфера",
+        "stdin": "make 1 1\nmake 2 2\nmake 3 3\nstats\n",
+        "expected": "выделений 3, копий 0, перемещений 3\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Большой буфер",
+        "stdin": "make 1000 1000\nsum 1\n",
+        "expected": "сумма 1000000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Цепочка копий",
+        "stdin": "make 2 1\nclone 1\nclone 2\nclone 3\nstats\nsum 4\n",
+        "expected": "выделений 4, копий 3, перемещений 1\nсумма 2\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Отрицательные значения",
+        "stdin": "make 5 -3\nsum 1\n",
+        "expected": "сумма -15\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Чередование",
+        "stdin": "make 1 7\nclone 1\nmake 1 8\nsum 3\nstats\n",
+        "expected": "сумма 8\nвыделений 3, копий 1, перемещений 2\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Нули",
+        "stdin": "make 3 0\nclone 1\nsum 1\nsum 2\n",
+        "expected": "сумма 0\nсумма 0\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Клон второго",
+        "stdin": "make 10 10\nmake 10 10\nclone 2\nstats\n",
+        "expected": "выделений 3, копий 1, перемещений 2\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint solve(int a,int b){(void)b; const int diagnosis[4]={6,0,0,2}; return diagnosis[a];}",
-    "solutionExplanation": "В варианте 0 операция названа перемещением, но источник сохраняет указатель: два объекта считают себя единственными владельцами и оба вызовут delete. Выбирайте первопричину — неверный move constructor (код 6), а не его следствие double delete. В варианте 1 источник явно обнулён, инвариант «один блок — один владелец» сохранён. В варианте 2 std::exchange делает то же самое; отсутствие noexcept снижает эффективность в контейнерах, но дефектом памяти не является. В варианте 3 raw используется после reset владельца — use-after-free.",
+    "referenceSolution": "#include <algorithm>\n#include <cstddef>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Buffer {\npublic:\n    static inline int allocations = 0;\n    static inline int copies = 0;\n    static inline int moves = 0;\n\n    Buffer(std::size_t size, int fill) : size_(size), data_(new int[size]) {\n        ++allocations;\n        std::fill_n(data_, size_, fill);\n    }\n    Buffer(const Buffer &other) : size_(other.size_), data_(new int[other.size_]) {\n        ++allocations;\n        ++copies;\n        std::copy_n(other.data_, size_, data_);\n    }\n    Buffer(Buffer &&other) noexcept\n        : size_(std::exchange(other.size_, 0)), data_(std::exchange(other.data_, nullptr)) {\n        ++moves;\n    }\n    Buffer &operator=(const Buffer &) = delete;\n    ~Buffer() {\n        delete[] data_;\n    }\n\n    long long sum() const {\n        long long s = 0;\n        for (std::size_t i = 0; i < size_; ++i) {\n            s += data_[i];\n        }\n        return s;\n    }\n\nprivate:\n    std::size_t size_;\n    int *data_;\n};\n\nint main() {\n    std::vector<Buffer> buffers;\n    buffers.reserve(1000);\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"make\") {\n            std::size_t n;\n            int v;\n            std::cin >> n >> v;\n            buffers.push_back(Buffer(n, v));\n        } else if (command == \"clone\") {\n            std::size_t i;\n            std::cin >> i;\n            buffers.push_back(buffers[i - 1]);\n        } else if (command == \"sum\") {\n            std::size_t i;\n            std::cin >> i;\n            std::println(\"сумма {}\", buffers[i - 1].sum());\n        } else {\n            std::println(\"выделений {}, копий {}, перемещений {}\", Buffer::allocations, Buffer::copies,\n                         Buffer::moves);\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Временный `Buffer(n, v)` выделяет массив один раз, а в вектор попадает перемещением — указатель переходит к элементу, и временный объект умирает пустым. Без перемещающего конструктора `push_back` копировал бы: два выделения и копирование всех чисел на каждую команду `make`. Копия нужна только в `clone`, где оригинал остаётся в векторе.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
   "additionalExercises": [
     {
-      "id": "lifetime-move-constructor-exercise",
-      "title": "2. Исправление: Неправильный move constructor",
-      "description": "Исправьте move-конструктор Cell: передавайте указатель с обнулением источника, копирование запрещено. get пустого Cell возвращает 0. solve создаёт source(a), перемещает его во вложенный target, сохраняет target.get() + b; после блока проверяет source.get() == 0 и возвращает сохранённое, иначе -9999.",
+      "id": "lifetime-move-constructor-task-2",
+      "title": "noexcept и рост вектора",
+      "description": "Два типа считают свои копии и перемещения: `Fast` с перемещающим конструктором `noexcept` и `Slow` — с таким же, но без `noexcept`.\n\nКаждая строка ввода — число n. Для неё обнулите счётчики, создайте два **пустых** вектора (без `reserve`) и добавьте в каждый n элементов вызовом `push_back(T())`. Напечатайте `n=N: Fast копий C, перемещений M; Slow копий C, перемещений M`.",
       "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "cpp",
-      "standard": "c++20",
-      "compiler": "clang",
+      "standard": "c++23",
+      "compiler": "gcc",
       "diagnostics": "sanitizers",
-      "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct Cell {int* p;explicit Cell(int n):p(new int(n)){} ~Cell(){delete p;} Cell(const Cell&)=delete;Cell& operator=(const Cell&)=delete;Cell(Cell&& x) noexcept:p(x.p){} int get()const{return p?*p:0;}};\nint solve(int a,int b){Cell source{a};int saved;{Cell target(std::move(source));saved=target.get()+b;} return saved;}",
       "examples": [
         {
-          "input": "solve(3, 7)",
-          "output": "10\n",
-          "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+          "input": "5\n",
+          "output": "n=5: Fast копий 0, перемещений 12; Slow копий 7, перемещений 5\n"
         },
         {
-          "input": "solve(0, 0)",
-          "output": "0\n",
-          "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+          "input": "0\n1\n",
+          "output": "n=0: Fast копий 0, перемещений 0; Slow копий 0, перемещений 0\nn=1: Fast копий 0, перемещений 1; Slow копий 0, перемещений 1\n"
         }
       ],
       "constraints": [
-        "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-        "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-        "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
+        "До 20 строк; 0 ≤ n ≤ 1000. Проверка использует libstdc++, где ёмкость вектора растёт вдвое: 1, 2, 4, 8, …"
       ],
       "hints": [
         {
-          "id": "owners",
-          "order": 1,
-          "text": "После передачи проверьте два состояния: target владеет блоком, source пуст. Доведите оба объекта до разрушения — именно там проявляется ошибка."
+          "id": "hint-1",
+          "text": "push_back(T()) перемещает временный объект в вектор у обоих типов — noexcept для этого не нужен.",
+          "order": 1
         },
         {
-          "id": "boundary",
-          "order": 2,
-          "text": "Пустое состояние становится частью публичного договора: метод get не может безусловно разыменовывать p. В учебном Cell get возвращает 0 для пустого объекта; другая допустимая политика — предусловие has_value, но его нужно явно проверять. noexcept важен: vector при росте перемещает элементы только если перемещение noexcept или копия недоступна. Но noexcept обязан быть правдой — исключение из noexcept-функции завершает программу через terminate; передача указателя не бросает, поэтому здесь он обоснован.\n\nНеправильный move-конструктор часто компилируется и выдаёт верные значения до выхода из области: ошибка проявляется во втором delete при разрушении. Проверяйте разрушение обоих объектов, а не только напечатанные значения.\n\nВ варианте 0 операция названа перемещением, но источник сохраняет указатель: два объекта считают себя единственными владельцами и оба вызовут delete. Выбирайте первопричину — неверный move constructor (код 6), а не его следствие double delete. В варианте 1 источник явно обнулён, инвариант «один блок — один владелец» сохранён. В варианте 2 std::exchange делает то же самое; отсутствие noexcept снижает эффективность в контейнерах, но дефектом памяти не является. В варианте 3 raw используется после reset владельца — use-after-free."
+          "id": "hint-2",
+          "text": "Разница — в переносе старых элементов при росте: Fast переносится перемещением, Slow — копированием.",
+          "order": 2
         }
       ],
       "publicTests": [
         {
           "id": "case-1",
           "name": "Пример 1",
-          "arguments": [3, 7],
-          "expected": "10\n"
+          "stdin": "5\n",
+          "expected": "n=5: Fast копий 0, перемещений 12; Slow копий 7, перемещений 5\n"
         },
         {
           "id": "case-2",
           "name": "Пример 2",
-          "arguments": [0, 0],
-          "expected": "0\n"
+          "stdin": "0\n1\n",
+          "expected": "n=0: Fast копий 0, перемещений 0; Slow копий 0, перемещений 0\nn=1: Fast копий 0, перемещений 1; Slow копий 0, перемещений 1\n"
         }
       ],
       "hiddenTests": [
         {
-          "id": "case-3",
-          "name": "Граничный случай 1",
-          "arguments": [-8, 3],
-          "expected": "-5\n"
+          "id": "hidden-1",
+          "name": "Два элемента",
+          "stdin": "2\n",
+          "expected": "n=2: Fast копий 0, перемещений 3; Slow копий 1, перемещений 2\n"
         },
         {
-          "id": "case-4",
-          "name": "Граничный случай 2",
-          "arguments": [5, -9],
-          "expected": "-4\n"
+          "id": "hidden-2",
+          "name": "Ровно степень двойки",
+          "stdin": "4\n",
+          "expected": "n=4: Fast копий 0, перемещений 7; Slow копий 3, перемещений 4\n"
         },
         {
-          "id": "case-5",
-          "name": "Граничный случай 3",
-          "arguments": [-1000, 1000],
-          "expected": "0\n"
+          "id": "hidden-3",
+          "name": "Сразу после степени двойки",
+          "stdin": "9\n",
+          "expected": "n=9: Fast копий 0, перемещений 24; Slow копий 15, перемещений 9\n"
         },
         {
-          "id": "case-6",
-          "name": "Граничный случай 4",
-          "arguments": [1000, -1000],
-          "expected": "0\n"
+          "id": "hidden-4",
+          "name": "Сто",
+          "stdin": "100\n",
+          "expected": "n=100: Fast копий 0, перемещений 227; Slow копий 127, перемещений 100\n"
         },
         {
-          "id": "case-7",
-          "name": "Граничный случай 5",
-          "arguments": [4, 4],
-          "expected": "8\n"
+          "id": "hidden-5",
+          "name": "Тысяча",
+          "stdin": "1000\n",
+          "expected": "n=1000: Fast копий 0, перемещений 2023; Slow копий 1023, перемещений 1000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Счётчики обнуляются",
+          "stdin": "3\n3\n",
+          "expected": "n=3: Fast копий 0, перемещений 6; Slow копий 3, перемещений 3\nn=3: Fast копий 0, перемещений 6; Slow копий 3, перемещений 3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Граница роста",
+          "stdin": "16\n17\n",
+          "expected": "n=16: Fast копий 0, перемещений 31; Slow копий 15, перемещений 16\nn=17: Fast копий 0, перемещений 48; Slow копий 31, перемещений 17\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": ""
         }
       ],
-      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct Cell { int* p; explicit Cell(int n): p(new int(n)) {} ~Cell() { delete p; } Cell(const Cell&) = delete; Cell& operator=(const Cell&) = delete; Cell(Cell&& x) noexcept : p(std::exchange(x.p, nullptr)) {} int get() const { return p ? *p : 0; } };\nint solve(int a, int b) { Cell source{a}; int saved; { Cell target(std::move(source)); saved = target.get() + b; } return source.get() == 0 ? saved : -9999; }",
-      "solutionExplanation": "Пустое состояние становится частью публичного договора: метод get не может безусловно разыменовывать p. В учебном Cell get возвращает 0 для пустого объекта; другая допустимая политика — предусловие has_value, но его нужно явно проверять. noexcept важен: vector при росте перемещает элементы только если перемещение noexcept или копия недоступна. Но noexcept обязан быть правдой — исключение из noexcept-функции завершает программу через terminate; передача указателя не бросает, поэтому здесь он обоснован.\n\nНеправильный move-конструктор часто компилируется и выдаёт верные значения до выхода из области: ошибка проявляется во втором delete при разрушении. Проверяйте разрушение обоих объектов, а не только напечатанные значения.\n\nВ варианте 0 операция названа перемещением, но источник сохраняет указатель: два объекта считают себя единственными владельцами и оба вызовут delete. Выбирайте первопричину — неверный move constructor (код 6), а не его следствие double delete. В варианте 1 источник явно обнулён, инвариант «один блок — один владелец» сохранён. В варианте 2 std::exchange делает то же самое; отсутствие noexcept снижает эффективность в контейнерах, но дефектом памяти не является. В варианте 3 raw используется после reset владельца — use-after-free.",
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <vector>\n\nstruct Fast {\n    static inline int copies = 0;\n    static inline int moves = 0;\n    Fast() = default;\n    Fast(const Fast &) {\n        ++copies;\n    }\n    Fast(Fast &&) noexcept {\n        ++moves;\n    }\n};\n\nstruct Slow {\n    static inline int copies = 0;\n    static inline int moves = 0;\n    Slow() = default;\n    Slow(const Slow &) {\n        ++copies;\n    }\n    Slow(Slow &&) {\n        ++moves;\n    }\n};\n\nint main() {\n    int n;\n    while (std::cin >> n) {\n        Fast::copies = Fast::moves = 0;\n        Slow::copies = Slow::moves = 0;\n        std::vector<Fast> fast;\n        std::vector<Slow> slow;\n        for (int i = 0; i < n; ++i) {\n            fast.push_back(Fast());\n            slow.push_back(Slow());\n        }\n        std::println(\"n={}: Fast копий {}, перемещений {}; Slow копий {}, перемещений {}\", n, Fast::copies,\n                     Fast::moves, Slow::copies, Slow::moves);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Каждый `push_back` перемещает временный объект — это n перемещений у обоих типов. При росте вектор переносит уже лежащие элементы в новый буфер через `std::move_if_noexcept`: `Fast` переносится перемещением, а `Slow` — копированием, потому что перемещение без `noexcept` могло бы бросить исключение посреди переноса и оставить вектор испорченным.\n\nДля n = 5 ёмкость растёт 1 → 2 → 4 → 8, переносится 1 + 2 + 4 = 7 элементов. У настоящих классов с буферами каждая такая «копия» — выделение памяти и копирование данных.",
       "checking": {
-        "type": "function",
-        "functionName": "solve",
-        "returnType": "int",
-        "parameters": [
-          { "name": "a", "type": "int" },
-          { "name": "b", "type": "int" }
-        ]
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-move-constructor-task-3",
+      "title": "Найди ошибку: два владельца после перемещения",
+      "description": "Программа создаёт буферы командой `make n v` (n чисел, равных v) и печатает сумму буфера командой `sum i`. Буферы попадают в вектор перемещением. С первого же `make` AddressSanitizer сообщает об ошибке. Найдите и исправьте её в классе `Buffer`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <algorithm>\n#include <cstddef>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Buffer {\npublic:\n    Buffer(std::size_t size, int fill) : size_(size), data_(new int[size]) {\n        std::fill_n(data_, size_, fill);\n    }\n    Buffer(const Buffer &other) : size_(other.size_), data_(new int[other.size_]) {\n        std::copy_n(other.data_, size_, data_);\n    }\n    Buffer(Buffer &&other) noexcept\n        : size_(other.size_), data_(other.data_) {}\n    Buffer &operator=(const Buffer &) = delete;\n    ~Buffer() {\n        delete[] data_;\n    }\n\n    long long sum() const {\n        long long s = 0;\n        for (std::size_t i = 0; i < size_; ++i) {\n            s += data_[i];\n        }\n        return s;\n    }\n\nprivate:\n    std::size_t size_;\n    int *data_;\n};\n\nint main() {\n    std::vector<Buffer> buffers;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"make\") {\n            std::size_t n;\n            int v;\n            std::cin >> n >> v;\n            buffers.push_back(Buffer(n, v));\n        } else {\n            std::size_t i;\n            std::cin >> i;\n            std::println(\"сумма {}\", buffers[i - 1].sum());\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "make 3 2\nsum 1\n",
+          "output": "сумма 6\n"
+        },
+        {
+          "input": "make 1 5\nmake 2 5\nsum 2\n",
+          "output": "сумма 10\n"
+        }
+      ],
+      "constraints": ["Команд не больше 200; 0 ≤ n ≤ 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сколько объектов владеют массивом после перемещающего конструктора? Что сделает деструктор временного Buffer(n, v)?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Обнулите источник: size_(std::exchange(other.size_, 0)), data_(std::exchange(other.data_, nullptr)).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "make 3 2\nsum 1\n",
+          "expected": "сумма 6\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "make 1 5\nmake 2 5\nsum 2\n",
+          "expected": "сумма 10\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "make 0 1\nsum 1\n",
+          "expected": "сумма 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "make 10 10\nsum 1\n",
+          "expected": "сумма 100\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "make 1 1\nmake 1 2\nmake 1 3\nsum 3\n",
+          "expected": "сумма 3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "make 1000 1\nsum 1\n",
+          "expected": "сумма 1000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "make 2 -4\nsum 1\n",
+          "expected": "сумма -8\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "make 3 3\nmake 3 3\nmake 3 3\nmake 3 3\nmake 3 3\nsum 5\n",
+          "expected": "сумма 9\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "make 1 0\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "make 7 7\nsum 1\nsum 1\n",
+          "expected": "сумма 49\nсумма 49\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <cstddef>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Buffer {\npublic:\n    Buffer(std::size_t size, int fill) : size_(size), data_(new int[size]) {\n        std::fill_n(data_, size_, fill);\n    }\n    Buffer(const Buffer &other) : size_(other.size_), data_(new int[other.size_]) {\n        std::copy_n(other.data_, size_, data_);\n    }\n    Buffer(Buffer &&other) noexcept\n        : size_(std::exchange(other.size_, 0)), data_(std::exchange(other.data_, nullptr)) {}\n    Buffer &operator=(const Buffer &) = delete;\n    ~Buffer() {\n        delete[] data_;\n    }\n\n    long long sum() const {\n        long long s = 0;\n        for (std::size_t i = 0; i < size_; ++i) {\n            s += data_[i];\n        }\n        return s;\n    }\n\nprivate:\n    std::size_t size_;\n    int *data_;\n};\n\nint main() {\n    std::vector<Buffer> buffers;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"make\") {\n            std::size_t n;\n            int v;\n            std::cin >> n >> v;\n            buffers.push_back(Buffer(n, v));\n        } else {\n            std::size_t i;\n            std::cin >> i;\n            std::println(\"сумма {}\", buffers[i - 1].sum());\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Перемещающий конструктор скопировал указатель, но не обнулил его у источника. Временный `Buffer(n, v)` умирает сразу после `push_back` и освобождает массив, которым теперь пользуется элемент вектора: `sum` читает освобождённую память, а в конце программы элемент освобождает её ещё раз. При росте вектора то же происходит с каждым перенесённым элементом.\n\nПеремещение без обнуления источника — это поверхностная копия с другим названием. `std::exchange` забирает значение и одновременно ставит на его место пустое.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-move-constructor-task-4",
+      "title": "Связный список",
+      "description": "Односвязный список `List` владеет узлами `Node { int value; Node *next; }`, выделенными `new`. Статический счётчик считает выделенные узлы. Реализуйте: `push_back` за O(1) (храните и хвост), глубокий конструктор копирования, перемещающий конструктор `noexcept` за O(1), деструктор; присваивание запретите.\n\nСписки хранятся в `std::map<std::string, List>`; создавайте их через `erase` и `try_emplace`. Команды:\n\n- `make L n v₁ … vₙ` — новый список;\n- `copy M L` — M становится копией L (M ≠ L);\n- `move M L` — M забирает узлы L перемещением, L остаётся пустым (M ≠ L);\n- `push L x`;\n- `print L` — `L (размер): значения` или `L (0): пусто`;\n- `stats` — `узлов выделено N`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "make A 3 1 2 3\ncopy B A\nmove C A\npush B 4\nprint A\nprint B\nprint C\nstats\n",
+          "output": "A (0): пусто\nB (4): 1 2 3 4\nC (3): 1 2 3\nузлов выделено 7\n"
+        },
+        {
+          "input": "make X 0\nprint X\nstats\n",
+          "output": "X (0): пусто\nузлов выделено 0\n"
+        }
+      ],
+      "constraints": ["Команд не больше 300; списки в copy, move, push и print существуют."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Перемещение: head_(std::exchange(o.head_, nullptr)), tail_(std::exchange(o.tail_, nullptr)), size_(std::exchange(o.size_, 0)) — ни одного нового узла.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "move M L: сначала List tmp(std::move(lists.at(L))); затем lists.erase(M); lists.try_emplace(M, std::move(tmp)); — так M ≠ L и порядок операций безопасен.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "make A 3 1 2 3\ncopy B A\nmove C A\npush B 4\nprint A\nprint B\nprint C\nstats\n",
+          "expected": "A (0): пусто\nB (4): 1 2 3 4\nC (3): 1 2 3\nузлов выделено 7\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "make X 0\nprint X\nstats\n",
+          "expected": "X (0): пусто\nузлов выделено 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ничего",
+          "stdin": "stats\n",
+          "expected": "узлов выделено 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Цепочка перемещений",
+          "stdin": "make A 2 5 6\nmove B A\nmove C B\nprint C\nstats\n",
+          "expected": "C (2): 5 6\nузлов выделено 2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Цепочка копий",
+          "stdin": "make A 2 5 6\ncopy B A\ncopy C B\nprint C\nstats\n",
+          "expected": "C (2): 5 6\nузлов выделено 6\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Использование после перемещения",
+          "stdin": "make A 1 1\nmove B A\npush A 9\nprint A\nprint B\n",
+          "expected": "A (1): 9\nB (1): 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Пересоздание",
+          "stdin": "make A 1 1\nmake A 2 2 2\nprint A\nstats\n",
+          "expected": "A (2): 2 2\nузлов выделено 3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Перемещение поверх существующего",
+          "stdin": "make A 3 1 2 3\nmake B 1 9\nmove B A\nprint B\nprint A\n",
+          "expected": "B (3): 1 2 3\nA (0): пусто\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Push в пустой",
+          "stdin": "make A 0\npush A -1\npush A -2\ncopy B A\nprint B\n",
+          "expected": "B (2): -1 -2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Копия перемещённого",
+          "stdin": "make A 5 1 2 3 4 5\nmove B A\ncopy C B\nprint A\nprint B\nprint C\nstats\n",
+          "expected": "A (0): пусто\nB (5): 1 2 3 4 5\nC (5): 1 2 3 4 5\nузлов выделено 10\n"
+        }
+      ],
+      "referenceSolution": "#include <cstddef>\n#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Node {\n    int value;\n    Node *next = nullptr;\n};\n\nclass List {\npublic:\n    static inline int allocated = 0;\n\n    List() = default;\n    List(const List &other) {\n        for (const Node *n = other.head_; n; n = n->next) {\n            push_back(n->value);\n        }\n    }\n    List(List &&other) noexcept\n        : head_(std::exchange(other.head_, nullptr)), tail_(std::exchange(other.tail_, nullptr)),\n          size_(std::exchange(other.size_, 0)) {}\n    List &operator=(const List &) = delete;\n    ~List() {\n        while (head_) {\n            delete std::exchange(head_, head_->next);\n        }\n    }\n\n    void push_back(int v) {\n        Node *node = new Node{v};\n        ++allocated;\n        if (tail_) {\n            tail_->next = node;\n        } else {\n            head_ = node;\n        }\n        tail_ = node;\n        ++size_;\n    }\n\n    void print(const std::string &name) const {\n        std::string s;\n        for (const Node *n = head_; n; n = n->next) {\n            s += (s.empty() ? \"\" : \" \") + std::to_string(n->value);\n        }\n        std::println(\"{} ({}): {}\", name, size_, s.empty() ? \"пусто\" : s);\n    }\n\nprivate:\n    Node *head_ = nullptr;\n    Node *tail_ = nullptr;\n    std::size_t size_ = 0;\n};\n\nint main() {\n    std::map<std::string, List> lists;\n    std::string command, a;\n    while (std::cin >> command) {\n        if (command == \"stats\") {\n            std::println(\"узлов выделено {}\", List::allocated);\n            continue;\n        }\n        std::cin >> a;\n        if (command == \"make\") {\n            std::size_t n;\n            std::cin >> n;\n            lists.erase(a);\n            List &list = lists.try_emplace(a).first->second;\n            for (std::size_t i = 0; i < n; ++i) {\n                int v;\n                std::cin >> v;\n                list.push_back(v);\n            }\n        } else if (command == \"copy\" || command == \"move\") {\n            std::string from;\n            std::cin >> from;\n            List tmp = command == \"copy\" ? List(lists.at(from)) : List(std::move(lists.at(from)));\n            lists.erase(a);\n            lists.try_emplace(a, std::move(tmp));\n        } else if (command == \"push\") {\n            int x;\n            std::cin >> x;\n            lists.at(a).push_back(x);\n        } else {\n            lists.at(a).print(a);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Копия списка обходит все узлы и создаёт новые — O(n) выделений. Перемещение передаёт три поля: голову, хвост и размер, — O(1) и ни одного выделения, сколько бы узлов ни было. Источник становится пустым списком, и его деструктор ничего не удаляет.\n\nДеструктор удаляет узлы циклом, а не рекурсией: рекурсивное удаление длинного списка могло бы переполнить стек. `std::exchange(head_, head_->next)` сдвигает голову и возвращает старый узел для удаления.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
       }
     }
   ],
@@ -207,31 +442,95 @@
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Зачем обнулять сырой указатель источника при перемещении?",
+        "id": "q1",
+        "question": "Что должен сделать перемещающий конструктор класса с полем-указателем int *data_?",
+        "explanation": "Иначе два деструктора освободят один блок.",
         "options": [
-          "Чтобы изменить адрес самого выделенного объекта",
-          "Чтобы источник потерял право освободить переданный ресурс"
+          "Забрать указатель и обнулить его у источника",
+          "Скопировать данные в новый блок",
+          "Освободить блок источника",
+          "Только скопировать указатель"
         ],
-        "correct": 1,
-        "explanation": "Пустое состояние становится частью публичного договора: метод get не может безусловно разыменовывать p. В учебном Cell get возвращает 0 для пустого объекта; другая допустимая политика — предусловие has_value, но его нужно явно проверять. noexcept важен: vector при росте перемещает элементы только если перемещение noexcept или копия недоступна. Но noexcept обязан быть правдой — исключение из noexcept-функции завершает программу через terminate; передача указателя не бросает, поэтому здесь он обоснован."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["0 20", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "До: source.p → A; target не существует\nОшибочно: target.p = source.p → два владельца A → double delete\nПравильно: target.p = exchange(source.p, null)\nПосле: source.p = null; target.p → A; оба объекта живы"
+        "id": "q2",
+        "question": "Что возвращает std::exchange(x, v)?",
+        "explanation": "Удобно для перемещения: data_(std::exchange(other.data_, nullptr)).",
+        "options": [
+          "Старое значение x, присвоив x значение v",
+          "Новое значение x",
+          "void",
+          "Ссылку на x"
+        ],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q3",
+        "question": "Почему std::vector при росте копирует элементы, у которых перемещающий конструктор не noexcept?",
+        "explanation": "Решение принимает std::move_if_noexcept.",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Неправильный move-конструктор часто компилируется и выдаёт верные значения до выхода из области: ошибка проявляется во втором delete при разрушении. Проверяйте разрушение обоих объектов, а не только напечатанные значения."
+          "Чтобы сохранить строгую гарантию: при исключении на середине оригиналы должны остаться целыми",
+          "Копирование быстрее",
+          "Перемещение без noexcept запрещено",
+          "Это ошибка стандартной библиотеки"
         ],
-        "correct": 1,
-        "explanation": "Поместите перемещённый объект во внутренний блок и выйдите из него: источник должен остаться допустимым пустым объектом. Затем переместите уже пустой источник ещё раз и проверьте, что ничего не падает."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Когда компилятор НЕ создаст неявный перемещающий конструктор? Выберите все.",
+        "explanation": "Поле-строка, наоборот, само прекрасно перемещается.",
+        "type": "multiple",
+        "options": [
+          "Объявлен пользовательский деструктор",
+          "Объявлен конструктор копирования",
+          "Объявлено копирующее присваивание",
+          "В классе есть поле std::string"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <utility>\n\nstruct S {\n    int *p;\n    explicit S(int v) : p(new int(v)) {}\n    S(S &&o) noexcept : p(std::exchange(o.p, nullptr)) {}\n    ~S() { delete p; }\n};\n\nint main() {\n    S a(5);\n    S b = std::move(a);\n    std::println(\"{} {}\", a.p == nullptr, *b.p);\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "b забрал указатель, у a остался nullptr; delete nullptr безопасен.",
+        "type": "text",
+        "answers": ["true 5"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "В каком состоянии должен остаться источник после перемещения?",
+        "explanation": "Деструктор источника всё равно будет вызван.",
+        "options": [
+          "Корректном: его можно разрушить и присвоить ему новое значение",
+          "Любом — его всё равно уничтожат",
+          "Таком же, как до перемещения",
+          "Разрушенном"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Как вернуть неявное перемещение классу, в котором объявлен деструктор?",
+        "explanation": "Явное = default создаёт почленное перемещение.",
+        "options": [
+          "T(T &&) noexcept = default;",
+          "T(T &&) = delete;",
+          "Сделать деструктор виртуальным",
+          "Никак"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какое ключевое слово обещает, что функция не бросает исключений?",
+        "explanation": "Для перемещающих операций это не украшение, а условие их использования контейнерами.",
+        "type": "text",
+        "answers": ["noexcept"],
+        "placeholder": "Ключевое слово"
       }
     ]
   }

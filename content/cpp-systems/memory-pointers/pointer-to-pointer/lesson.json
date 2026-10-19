@@ -13,9 +13,9 @@
     "Писать функции-курсоры, сдвигающие указатель вызывающего кода",
     "Работать с массивами строк char ** и освобождать их в правильном порядке"
   ],
-  "tags": ["C17", "Память", "Указатели", "Указатель на указатель", "Массив строк"],
+  "tags": ["C23", "Память", "Указатели", "Указатель на указатель", "Массив строк"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-pointer-to-pointer-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint find_negative(int *a, int n, int **found) {\n    // Найдите первый отрицательный элемент.\n    return 0;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int a[100];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    int *where = NULL;\n    if (!find_negative(a, n, &where)) {\n        printf(\"none\\n\");\n        return 0;\n    }\n    printf(\"%td\\n\", where - a);\n    *where = 0;\n    for (int i = 0; i < n; i++) {\n        printf(i + 1 < n ? \"%d \" : \"%d\\n\", a[i]);\n    }\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -129,7 +129,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <ctype.h>\n#include <stdio.h>\n\nint next_number(const char **cursor, long long *value) {\n    // Найдите и прочитайте следующее число, сдвигая *cursor.\n    return 0;\n}\n\nint main(void) {\n    char line[256];\n    if (fgets(line, sizeof line, stdin) == NULL) {\n        line[0] = '\\0';\n    }\n    const char *pos = line;\n    long long value = 0, sum = 0;\n    int count = 0;\n    while (next_number(&pos, &value)) {\n        count++;\n        sum += value;\n    }\n    printf(\"count=%d sum=%lld\\n\", count, sum);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -244,7 +244,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -353,7 +353,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint read_array(int **out, int *length) {\n    // Прочитайте n и n чисел в новый блок.\n    return -1;\n}\n\nint main(void) {\n    int *a = NULL;\n    int n = 0;\n    if (read_array(&a, &n) != 0) {\n        printf(\"error\\n\");\n        return 0;\n    }\n    if (n == 0) {\n        printf(\"empty\\n\");\n    } else {\n        long long sum = 0;\n        int max = a[0];\n        for (int i = 0; i < n; i++) {\n            sum += a[i];\n            if (a[i] > max) {\n                max = a[i];\n            }\n        }\n        printf(\"sum=%lld max=%d\\n\", sum, max);\n    }\n    free(a);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

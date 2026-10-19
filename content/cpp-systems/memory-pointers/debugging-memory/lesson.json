@@ -13,9 +13,9 @@
     "Использовать assert для проверки инвариантов",
     "Писать и исправлять программы с динамическими строками и структурами без ошибок памяти"
   ],
-  "tags": ["C17", "Память", "Отладка", "Практикум", "Найди ошибку"],
+  "tags": ["C23", "Память", "Отладка", "Практикум", "Найди ошибку"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-debugging-memory-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "advanced",
     "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Contact {\n    char *name;\n    char *phone;\n};\n\nchar *copy_text(const char *s) {\n    char *c = malloc(strlen(s));\n    if (c != NULL) {\n        strcpy(c, s);\n    }\n    return c;\n}\n\nint main(void) {\n    struct Contact book[50];\n    int count = 0;\n    char cmd[8];\n    while (scanf(\"%7s\", cmd) == 1) {\n        if (strcmp(cmd, \"add\") == 0) {\n            char name[32], phone[32];\n            scanf(\"%31s %31s\", name, phone);\n            if (count == 50) {\n                continue;\n            }\n            book[count].name = copy_text(name);\n            book[count].phone = copy_text(phone);\n            count++;\n        } else if (strcmp(cmd, \"del\") == 0) {\n            char name[32];\n            scanf(\"%31s\", name);\n            int found = -1;\n            for (int i = 0; i < count; i++) {\n                if (strcmp(book[i].name, name) == 0) {\n                    found = i;\n                    break;\n                }\n            }\n            if (found < 0) {\n                printf(\"not found\\n\");\n                continue;\n            }\n            free(book[found].name);\n            memmove(&book[found], &book[found + 1], (size_t)(count - found - 1) * sizeof book[0]);\n            count--;\n            printf(\"deleted\\n\");\n        } else {\n            if (count == 0) {\n                printf(\"empty\\n\");\n            }\n            for (int i = 0; i < count; i++) {\n                printf(\"%s %s\\n\", book[i].name, book[i].phone);\n            }\n        }\n    }\n    for (int i = 0; i < count; i++) {\n        free(book[i].name);\n        free(book[i].phone);\n    }\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -129,7 +129,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint main(void) {\n    int capacity;\n    scanf(\"%d\", &capacity);\n    int *items = malloc((size_t)capacity * sizeof *items);\n    if (items == NULL) {\n        return 1;\n    }\n    int head = 0, size = 0;\n    char cmd[8];\n    while (scanf(\"%7s\", cmd) == 1) {\n        if (strcmp(cmd, \"push\") == 0) {\n            int x;\n            scanf(\"%d\", &x);\n            int tail = (head + size) % (capacity + 1);\n            items[tail] = x;\n            if (size == capacity) {\n                head = (head + 1) % (capacity + 1);\n            } else {\n                size++;\n            }\n        } else if (strcmp(cmd, \"pop\") == 0) {\n            if (size == 0) {\n                printf(\"empty\\n\");\n            } else {\n                printf(\"%d\\n\", items[head]);\n                head = (head + 1) % (capacity + 1);\n                size--;\n            }\n        } else {\n            printf(\"%d\\n\", size);\n        }\n    }\n    free(items);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -233,7 +233,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Record {\n    char *name;\n    char *city;\n    int age;\n};\n\nint main(void) {\n    int min_age;\n    char line[128];\n    if (fgets(line, sizeof line, stdin) == NULL || sscanf(line, \"%d\", &min_age) != 1) {\n        return 1;\n    }\n    struct Record records[50];\n    int count = 0;\n    while (count < 50 && fgets(line, sizeof line, stdin) != NULL) {\n        line[strcspn(line, \"\\n\")] = '\\0';\n        char *comma1 = strchr(line, ',');\n        char *comma2 = comma1 ? strchr(comma1 + 1, ',') : NULL;\n        if (comma2 == NULL) {\n            continue;\n        }\n        *comma1 = '\\0';\n        *comma2 = '\\0';\n        records[count].name = line;\n        records[count].city = comma1 + 1;\n        records[count].age = atoi(comma2 + 1);\n        count++;\n    }\n    for (int i = 0; i < count; i++) {\n        if (records[i].age >= min_age) {\n            printf(\"%s (%s) %d\\n\", records[i].name, records[i].city, records[i].age);\n        }\n    }\n\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -337,7 +337,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

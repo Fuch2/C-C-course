@@ -1,140 +1,519 @@
 {
   "id": "algo-tree",
-  "title": "Бинарное дерево — Binary tree",
-  "description": "В бинарном дереве у узла не более двух детей.",
+  "title": "Бинарное дерево",
+  "description": "Иерархические данные и термины деревьев; узел бинарного дерева и рекурсивные алгоритмы: размер, высота, листья; освобождение снизу вверх; прямой, центральный и обратный обходы и их назначение; обход по уровням с очередью; полное дерево в массиве.",
   "moduleId": "algorithms-structures",
   "order": 23,
   "difficulty": "intermediate",
-  "estimatedMinutes": 60,
+  "estimatedMinutes": 55,
   "prerequisites": ["algo-hash"],
   "objectives": [
-    "Объяснить инвариант: Вложенные развилки без обещания, что меньшие числа лежат слева.",
-    "Обосновать время: O(n) для высоты и подсчёта листьев.",
-    "Оценить память и компромиссы: Гибкая структура против указателей и сложности владения; плотный массив удобен для почти полного дерева."
+    "Описывать дерево терминами: корень, лист, глубина, высота",
+    "Писать рекурсивные функции на бинарном дереве",
+    "Выполнять прямой, центральный, обратный обходы и обход по уровням",
+    "Правильно освобождать дерево"
   ],
-  "tags": [
-    "алгоритмы",
-    "C17",
-    "Бинарное дерево — Binary tree",
-    "структуры данных",
-    "cache locality"
-  ],
+  "tags": ["Структуры данных", "Дерево", "Рекурсия", "Обход"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "algo-tree-exercise",
-    "title": "Высота и листья дерева",
-    "description": "Ввод n (0…256) и n позиций бинарного дерева в порядке индексов: дети i находятся в 2i+1 и 2i+2. Значение −9999 означает отсутствие узла, остальные значения −1000…1000. Потомки отсутствующих узлов также отсутствуют. Создайте узлы со ссылками, выведите высоту в узлах и число листьев; пустое дерево даёт 0 0. Освободите дерево.",
-    "difficulty": "intermediate",
+    "id": "algo-tree-task-1",
+    "title": "Размер, высота, листья",
+    "description": "Дерево задаётся так: первая строка — число узлов `n`, дальше `n` строк `значение левый правый`, где `левый` и `правый` — номера детей (с нуля) или `-1`. Корень — узел 0; ввод всегда описывает корректное дерево.\n\nНапечатайте через пробел число узлов, высоту дерева (у дерева из одного узла высота 0) и число листьев. Освободите все узлы.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "7 5 2 8 1 3 7 9",
-        "output": "3 4\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "8\n8 1 2\n3 3 4\n10 -1 5\n1 -1 -1\n6 6 7\n14 -1 -1\n4 -1 -1\n7 -1 -1\n",
+        "output": "8 3 4\n"
       },
       {
-        "input": "1 4",
-        "output": "1 1\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "1\n42 -1 -1\n",
+        "output": "1 0 1\n"
       }
     ],
-    "constraints": [
-      "Используйте C17 и диапазоны входа из условия.",
-      "Выводите только требуемый результат.",
-      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
-    ],
+    "constraints": ["1 ≤ n ≤ 1000; значения int."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Вложенные развилки без обещания, что меньшие числа лежат слева."
+        "text": "Постройте настоящие узлы: сначала выделите все n узлов в массив указателей, затем расставьте left и right по номерам.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Бинарное дерево не обязательно является деревом поиска."
-      },
-      {
-        "id": "hint-3",
-        "order": 3,
-        "text": "Корень с двумя листьями имеет высоту 2 и два листа. Цепочка из трёх узлов — высоту 3 и один лист."
+        "text": "Рекурсия: size(NULL) = 0, height(NULL) = −1, leaves(NULL) = 0; лист — узел, у которого оба ребёнка NULL.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "7 5 2 8 1 3 7 9",
-        "expected": "3 4\n"
+        "stdin": "8\n8 1 2\n3 3 4\n10 -1 5\n1 -1 -1\n6 6 7\n14 -1 -1\n4 -1 -1\n7 -1 -1\n",
+        "expected": "8 3 4\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "1 4",
-        "expected": "1 1\n"
+        "stdin": "1\n42 -1 -1\n",
+        "expected": "1 0 1\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "0",
-        "expected": "0 0\n"
+        "id": "hidden-1",
+        "name": "Только левый ребёнок",
+        "stdin": "2\n1 1 -1\n2 -1 -1\n",
+        "expected": "2 1 1\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "1 -9999",
-        "expected": "0 0\n"
+        "id": "hidden-2",
+        "name": "Корень и два листа",
+        "stdin": "3\n1 1 2\n2 -1 -1\n3 -1 -1\n",
+        "expected": "3 1 2\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный сценарий 3",
-        "stdin": "7 5 -9999 8 -9999 -9999 7 9",
-        "expected": "3 2\n"
+        "id": "hidden-3",
+        "name": "Правая палка",
+        "stdin": "4\n1 -1 1\n2 -1 2\n3 -1 3\n4 -1 -1\n",
+        "expected": "4 3 1\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Полное дерево",
+        "stdin": "7\n1 1 2\n2 3 4\n3 5 6\n4 -1 -1\n5 -1 -1\n6 -1 -1\n7 -1 -1\n",
+        "expected": "7 2 4\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Левая палка",
+        "stdin": "5\n0 1 -1\n0 2 -1\n0 3 -1\n0 4 -1\n0 -1 -1\n",
+        "expected": "5 4 1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Номера не по порядку",
+        "stdin": "6\n5 3 1\n5 -1 -1\n5 -1 -1\n5 4 5\n5 -1 2\n5 -1 -1\n",
+        "expected": "6 3 3\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Отрицательные значения",
+        "stdin": "3\n-1 2 1\n-2 -1 -1\n-3 -1 -1\n",
+        "expected": "3 1 2\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Несимметричное",
+        "stdin": "6\n1 1 -1\n2 2 3\n3 -1 -1\n4 4 -1\n5 -1 5\n6 -1 -1\n",
+        "expected": "6 4 2\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\ntypedef struct Node { int value; struct Node *left,*right; } Node;\nstatic void destroy(Node *root){if(root){destroy(root->left);destroy(root->right);free(root);}}\nstatic Node *build(const int *a,int n,int i,int *ok){\n    if(i>=n || a[i]==-9999)return NULL;\n    Node *node=malloc(sizeof *node);if(!node){*ok=0;return NULL;}\n    *node=(Node){a[i],NULL,NULL};\n    node->left=build(a,n,2*i+1,ok);node->right=build(a,n,2*i+2,ok);\n    return node;\n}\nstatic int height(const Node *root){\n    if(!root)return 0;int l=height(root->left),r=height(root->right);return 1+(l>r?l:r);\n}\nstatic int leaves(const Node *root){\n    if(!root)return 0;\n    if(!root->left && !root->right)return 1;\n    return leaves(root->left)+leaves(root->right);\n}\nint main(void) {\nint a[256]; int n;\nif (scanf(\"%d\", &n)!=1 || n<0 || n>256) return 1;\nfor(int i=0;i<n;++i) if(scanf(\"%d\", &a[i])!=1) return 1;\nint ok=1;Node *root=build(a,n,0,&ok);if(!ok){destroy(root);return 1;}printf(\"%d %d\\n\",height(root),leaves(root));destroy(root);\nreturn 0;\n}\n",
-    "solutionExplanation": "Инвариант: Вложенные развилки без обещания, что меньшие числа лежат слева.\n\nКорень с двумя листьями имеет высоту 2 и два листа. Цепочка из трёх узлов — высоту 3 и один лист.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. Бинарное дерево не обязательно является деревом поиска.\n\nВремя: O(n) для высоты и подсчёта листьев.\nПамять: O(n) узлов плюс O(h) стека обхода.\nКомпромисс: Гибкая структура против указателей и сложности владения; плотный массив удобен для почти полного дерева.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *left;\n    struct Node *right;\n} Node;\n\n// Читает дерево: n, затем n строк «значение левый правый». Возвращает корень или NULL.\nstatic Node *read_tree(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return NULL;\n    }\n    static Node *nodes[1000];\n    static int left[1000], right[1000];\n    for (int i = 0; i < n; i++) {\n        nodes[i] = malloc(sizeof *nodes[i]);\n        if (nodes[i] == NULL) {\n            exit(1);\n        }\n        if (scanf(\"%d %d %d\", &nodes[i]->value, &left[i], &right[i]) != 3) {\n            exit(1);\n        }\n    }\n    for (int i = 0; i < n; i++) {\n        nodes[i]->left = left[i] >= 0 ? nodes[left[i]] : NULL;\n        nodes[i]->right = right[i] >= 0 ? nodes[right[i]] : NULL;\n    }\n    return nodes[0];\n}\n\nstatic int size(const Node *t) {\n    return t == NULL ? 0 : 1 + size(t->left) + size(t->right);\n}\n\nstatic int height(const Node *t) {\n    if (t == NULL) {\n        return -1;\n    }\n    int l = height(t->left), r = height(t->right);\n    return 1 + (l > r ? l : r);\n}\n\nstatic int leaves(const Node *t) {\n    if (t == NULL) {\n        return 0;\n    }\n    if (t->left == NULL && t->right == NULL) {\n        return 1;\n    }\n    return leaves(t->left) + leaves(t->right);\n}\n\nstatic void destroy(Node *t) {\n    if (t == NULL) {\n        return;\n    }\n    destroy(t->left);\n    destroy(t->right);\n    free(t);\n}\n\nint main(void) {\n    Node *root = read_tree();\n    if (root == NULL) {\n        return 0;\n    }\n    printf(\"%d %d %d\\n\", size(root), height(root), leaves(root));\n    destroy(root);\n    return 0;\n}\n",
+    "solutionExplanation": "Все три функции устроены одинаково: ответ для пустого дерева задан явно, а для непустого складывается из ответов для поддеревьев. Размер — один плюс размеры поддеревьев; высота — один плюс наибольшая из высот; листья — сумма листьев поддеревьев, кроме случая, когда сам узел — лист.\n\nСоглашение «высота пустого дерева −1» делает формулу `1 + max` верной и для одного узла: `1 + max(−1, −1) = 0`. Каждая функция посещает каждый узел один раз — `O(n)`; глубина рекурсии — высота дерева, не больше 1000 узлов во входе.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "algo-tree-task-2",
+      "title": "Три обхода",
+      "description": "Дерево задаётся так: первая строка — число узлов `n`, дальше `n` строк `значение левый правый`, где `левый` и `правый` — номера детей (с нуля) или `-1`. Корень — узел 0; ввод всегда описывает корректное дерево.\n\nНапечатайте три строки — значения узлов в прямом, центральном и обратном порядке обхода, через пробел. Освободите все узлы.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "8\n8 1 2\n3 3 4\n10 -1 5\n1 -1 -1\n6 6 7\n14 -1 -1\n4 -1 -1\n7 -1 -1\n",
+          "output": "8 3 1 6 4 7 10 14\n1 3 4 6 7 8 10 14\n1 4 7 6 3 14 10 8\n"
+        },
+        {
+          "input": "1\n5 -1 -1\n",
+          "output": "5\n5\n5\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; значения int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Три рекурсивные функции различаются только местом печати: до рекурсивных вызовов, между ними или после.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Чтобы не было пробела в конце строки, печатайте пробел перед каждым значением, кроме первого: заведите флаг или счётчик напечатанных.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "8\n8 1 2\n3 3 4\n10 -1 5\n1 -1 -1\n6 6 7\n14 -1 -1\n4 -1 -1\n7 -1 -1\n",
+          "expected": "8 3 1 6 4 7 10 14\n1 3 4 6 7 8 10 14\n1 4 7 6 3 14 10 8\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n5 -1 -1\n",
+          "expected": "5\n5\n5\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Три узла",
+          "stdin": "3\n1 1 2\n2 -1 -1\n3 -1 -1\n",
+          "expected": "1 2 3\n2 1 3\n2 3 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Левая палка",
+          "stdin": "3\n1 1 -1\n2 2 -1\n3 -1 -1\n",
+          "expected": "1 2 3\n3 2 1\n3 2 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Правая палка",
+          "stdin": "3\n1 -1 1\n2 -1 2\n3 -1 -1\n",
+          "expected": "1 2 3\n1 2 3\n3 2 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Полное дерево",
+          "stdin": "7\n1 1 2\n2 3 4\n3 5 6\n4 -1 -1\n5 -1 -1\n6 -1 -1\n7 -1 -1\n",
+          "expected": "1 2 4 5 3 6 7\n4 2 5 1 6 3 7\n4 5 2 6 7 3 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Номера не по порядку",
+          "stdin": "4\n10 3 -1\n20 -1 -1\n30 -1 -1\n40 1 2\n",
+          "expected": "10 40 20 30\n20 40 30 10\n20 30 40 10\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Отрицательные",
+          "stdin": "5\n-1 1 2\n-2 -1 3\n-3 4 -1\n-4 -1 -1\n-5 -1 -1\n",
+          "expected": "-1 -2 -4 -3 -5\n-2 -4 -1 -5 -3\n-4 -2 -5 -3 -1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Равные значения",
+          "stdin": "6\n1 1 2\n1 3 -1\n1 -1 4\n1 -1 -1\n1 5 -1\n1 -1 -1\n",
+          "expected": "1 1 1 1 1 1\n1 1 1 1 1 1\n1 1 1 1 1 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Дерево поиска",
+          "stdin": "5\n50 1 2\n30 3 -1\n70 -1 4\n20 -1 -1\n80 -1 -1\n",
+          "expected": "50 30 20 70 80\n20 30 50 70 80\n20 30 80 70 50\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *left;\n    struct Node *right;\n} Node;\n\n// Читает дерево: n, затем n строк «значение левый правый». Возвращает корень или NULL.\nstatic Node *read_tree(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return NULL;\n    }\n    static Node *nodes[1000];\n    static int left[1000], right[1000];\n    for (int i = 0; i < n; i++) {\n        nodes[i] = malloc(sizeof *nodes[i]);\n        if (nodes[i] == NULL) {\n            exit(1);\n        }\n        if (scanf(\"%d %d %d\", &nodes[i]->value, &left[i], &right[i]) != 3) {\n            exit(1);\n        }\n    }\n    for (int i = 0; i < n; i++) {\n        nodes[i]->left = left[i] >= 0 ? nodes[left[i]] : NULL;\n        nodes[i]->right = right[i] >= 0 ? nodes[right[i]] : NULL;\n    }\n    return nodes[0];\n}\n\nstatic bool first;\n\nstatic void put(int value) {\n    printf(first ? \"%d\" : \" %d\", value);\n    first = false;\n}\n\nstatic void preorder(const Node *t) {\n    if (t == NULL) {\n        return;\n    }\n    put(t->value);\n    preorder(t->left);\n    preorder(t->right);\n}\n\nstatic void inorder(const Node *t) {\n    if (t == NULL) {\n        return;\n    }\n    inorder(t->left);\n    put(t->value);\n    inorder(t->right);\n}\n\nstatic void postorder(const Node *t) {\n    if (t == NULL) {\n        return;\n    }\n    postorder(t->left);\n    postorder(t->right);\n    put(t->value);\n}\n\nstatic void destroy(Node *t) {\n    if (t == NULL) {\n        return;\n    }\n    destroy(t->left);\n    destroy(t->right);\n    free(t);\n}\n\nint main(void) {\n    Node *root = read_tree();\n    if (root == NULL) {\n        return 0;\n    }\n    void (*orders[])(const Node *) = {preorder, inorder, postorder};\n    for (int i = 0; i < 3; i++) {\n        first = true;\n        orders[i](root);\n        printf(\"\\n\");\n    }\n    destroy(root);\n    return 0;\n}\n",
+      "solutionExplanation": "Все три обхода посещают узлы рекурсивно «корень и два поддерева», и различаются только тем, когда печатается корень. Прямой обход печатает его до детей — родитель всегда раньше потомков. Обратный — после, поэтому корень печатается последним. Центральный — между левым и правым поддеревом.\n\nМассив указателей на функции из урока о функциях как данных позволяет выполнить три обхода одним циклом. Функция `put` расставляет пробелы только между значениями. Каждый обход — `O(n)`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-tree-task-3",
+      "title": "Найди ошибку: освобождение дерева",
+      "description": "Дерево задаётся так: первая строка — число узлов `n`, дальше `n` строк `значение левый правый`, где `левый` и `правый` — номера детей (с нуля) или `-1`. Корень — узел 0; ввод всегда описывает корректное дерево.\n\nПрограмма читает дерево, печатает сумму значений и освобождает его. Сумма правильная, но AddressSanitizer сообщает об ошибке. Найдите и исправьте её.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *left;\n    struct Node *right;\n} Node;\n\n// Читает дерево: n, затем n строк «значение левый правый». Возвращает корень или NULL.\nstatic Node *read_tree(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return NULL;\n    }\n    static Node *nodes[1000];\n    static int left[1000], right[1000];\n    for (int i = 0; i < n; i++) {\n        nodes[i] = malloc(sizeof *nodes[i]);\n        if (nodes[i] == NULL) {\n            exit(1);\n        }\n        if (scanf(\"%d %d %d\", &nodes[i]->value, &left[i], &right[i]) != 3) {\n            exit(1);\n        }\n    }\n    for (int i = 0; i < n; i++) {\n        nodes[i]->left = left[i] >= 0 ? nodes[left[i]] : NULL;\n        nodes[i]->right = right[i] >= 0 ? nodes[right[i]] : NULL;\n    }\n    return nodes[0];\n}\n\nstatic long long sum(const Node *t) {\n    return t == NULL ? 0 : t->value + sum(t->left) + sum(t->right);\n}\n\nstatic void destroy(Node *t) {\n    if (t == NULL) {\n        return;\n    }\n    free(t);\n    destroy(t->left);\n    destroy(t->right);\n}\n\nint main(void) {\n    Node *root = read_tree();\n    printf(\"%lld\\n\", sum(root));\n    destroy(root);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\n1 1 2\n2 -1 -1\n3 -1 -1\n",
+          "output": "6\n"
+        },
+        {
+          "input": "1\n7 -1 -1\n",
+          "output": "7\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; значения int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что делает destroy сразу после free(t)?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "После free(t) поля t->left и t->right читать нельзя. Освобождайте узел последним: сначала destroy(t->left) и destroy(t->right), потом free(t).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\n1 1 2\n2 -1 -1\n3 -1 -1\n",
+          "expected": "6\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n7 -1 -1\n",
+          "expected": "7\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "2\n5 1 -1\n6 -1 -1\n",
+          "expected": "11\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "4\n1 -1 1\n2 -1 2\n3 -1 3\n4 -1 -1\n",
+          "expected": "10\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "7\n1 1 2\n2 3 4\n3 5 6\n4 -1 -1\n5 -1 -1\n6 -1 -1\n7 -1 -1\n",
+          "expected": "28\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "3\n-1 1 2\n-2 -1 -1\n-3 -1 -1\n",
+          "expected": "-6\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "3\n2147483647 1 2\n2147483647 -1 -1\n2147483647 -1 -1\n",
+          "expected": "6442450941\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "5\n0 1 2\n0 3 -1\n0 -1 4\n0 -1 -1\n0 -1 -1\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "6\n1 1 -1\n2 2 3\n3 -1 -1\n4 4 -1\n5 -1 5\n6 -1 -1\n",
+          "expected": "21\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "4\n10 3 -1\n20 -1 -1\n30 -1 -1\n40 1 2\n",
+          "expected": "100\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *left;\n    struct Node *right;\n} Node;\n\n// Читает дерево: n, затем n строк «значение левый правый». Возвращает корень или NULL.\nstatic Node *read_tree(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return NULL;\n    }\n    static Node *nodes[1000];\n    static int left[1000], right[1000];\n    for (int i = 0; i < n; i++) {\n        nodes[i] = malloc(sizeof *nodes[i]);\n        if (nodes[i] == NULL) {\n            exit(1);\n        }\n        if (scanf(\"%d %d %d\", &nodes[i]->value, &left[i], &right[i]) != 3) {\n            exit(1);\n        }\n    }\n    for (int i = 0; i < n; i++) {\n        nodes[i]->left = left[i] >= 0 ? nodes[left[i]] : NULL;\n        nodes[i]->right = right[i] >= 0 ? nodes[right[i]] : NULL;\n    }\n    return nodes[0];\n}\n\nstatic long long sum(const Node *t) {\n    return t == NULL ? 0 : t->value + sum(t->left) + sum(t->right);\n}\n\nstatic void destroy(Node *t) {\n    if (t == NULL) {\n        return;\n    }\n    destroy(t->left);\n    destroy(t->right);\n    free(t);\n}\n\nint main(void) {\n    Node *root = read_tree();\n    printf(\"%lld\\n\", sum(root));\n    destroy(root);\n    return 0;\n}\n",
+      "solutionExplanation": "Функция освобождения обходит дерево в **прямом** порядке: освобождает узел, а затем читает его поля `left` и `right`, чтобы спуститься к детям. Но после `free` узел больше не принадлежит программе — это использование после освобождения, AddressSanitizer сообщает `heap-use-after-free`. Без санитайзера ошибка часто незаметна: освобождённый блок ещё хранит старые указатели, пока его не займут.\n\nПравильный порядок — **обратный** обход: узел освобождается, когда оба поддерева уже освобождены и его поля больше не нужны. Ошибка проявляется на любом дереве, даже из одного узла: поле `t->left` читается уже после `free`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-tree-task-4",
+      "title": "По уровням",
+      "description": "Дерево задаётся так: первая строка — число узлов `n`, дальше `n` строк `значение левый правый`, где `левый` и `правый` — номера детей (с нуля) или `-1`. Корень — узел 0; ввод всегда описывает корректное дерево.\n\nНапечатайте значения узлов по уровням: каждый уровень — на отдельной строке, слева направо, через пробел. Используйте очередь, а не рекурсию. Освободите все узлы.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "8\n8 1 2\n3 3 4\n10 -1 5\n1 -1 -1\n6 6 7\n14 -1 -1\n4 -1 -1\n7 -1 -1\n",
+          "output": "8\n3 10\n1 6 14\n4 7\n"
+        },
+        {
+          "input": "1\n5 -1 -1\n",
+          "output": "5\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; значения int; высота дерева может достигать 999."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Очередь указателей на узлы — массив из n элементов с индексами head и tail: каждый узел попадает в очередь ровно один раз.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Чтобы отделить уровни, перед обработкой уровня запомните count = tail − head — столько узлов в нём. Извлеките ровно count узлов, добавляя их детей, затем напечатайте перевод строки.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "После обхода в массиве очереди лежат все узлы — по нему их удобно освободить без рекурсии.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "8\n8 1 2\n3 3 4\n10 -1 5\n1 -1 -1\n6 6 7\n14 -1 -1\n4 -1 -1\n7 -1 -1\n",
+          "expected": "8\n3 10\n1 6 14\n4 7\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n5 -1 -1\n",
+          "expected": "5\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Два уровня",
+          "stdin": "3\n1 1 2\n2 -1 -1\n3 -1 -1\n",
+          "expected": "1\n2 3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Палка",
+          "stdin": "4\n1 1 -1\n2 2 -1\n3 3 -1\n4 -1 -1\n",
+          "expected": "1\n2\n3\n4\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Полное дерево",
+          "stdin": "7\n1 1 2\n2 3 4\n3 5 6\n4 -1 -1\n5 -1 -1\n6 -1 -1\n7 -1 -1\n",
+          "expected": "1\n2 3\n4 5 6 7\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Правая ветка",
+          "stdin": "5\n1 -1 1\n2 2 3\n3 -1 -1\n4 -1 4\n5 -1 -1\n",
+          "expected": "1\n2\n3 4\n5\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Номера не по порядку",
+          "stdin": "4\n10 3 -1\n20 -1 -1\n30 -1 -1\n40 1 2\n",
+          "expected": "10\n40\n20 30\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Равные значения",
+          "stdin": "6\n0 1 2\n0 3 -1\n0 -1 4\n0 5 -1\n0 -1 -1\n0 -1 -1\n",
+          "expected": "0\n0 0\n0 0\n0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Отрицательные",
+          "stdin": "6\n-1 1 2\n-2 3 4\n-3 -1 5\n-4 -1 -1\n-5 -1 -1\n-6 -1 -1\n",
+          "expected": "-1\n-2 -3\n-4 -5 -6\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Зигзаг",
+          "stdin": "9\n1 1 2\n2 3 -1\n3 -1 4\n4 5 -1\n5 -1 6\n6 7 -1\n7 -1 8\n8 -1 -1\n9 -1 -1\n",
+          "expected": "1\n2 3\n4 5\n6 7\n8 9\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *left;\n    struct Node *right;\n} Node;\n\n// Читает дерево: n, затем n строк «значение левый правый». Возвращает корень или NULL.\nstatic Node *read_tree(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return NULL;\n    }\n    static Node *nodes[1000];\n    static int left[1000], right[1000];\n    for (int i = 0; i < n; i++) {\n        nodes[i] = malloc(sizeof *nodes[i]);\n        if (nodes[i] == NULL) {\n            exit(1);\n        }\n        if (scanf(\"%d %d %d\", &nodes[i]->value, &left[i], &right[i]) != 3) {\n            exit(1);\n        }\n    }\n    for (int i = 0; i < n; i++) {\n        nodes[i]->left = left[i] >= 0 ? nodes[left[i]] : NULL;\n        nodes[i]->right = right[i] >= 0 ? nodes[right[i]] : NULL;\n    }\n    return nodes[0];\n}\n\nint main(void) {\n    Node *root = read_tree();\n    if (root == NULL) {\n        return 0;\n    }\n    static Node *queue[1000];\n    int head = 0, tail = 0;\n    queue[tail++] = root;\n    while (head < tail) {\n        int count = tail - head;\n        for (int k = 0; k < count; k++) {\n            Node *node = queue[head++];\n            printf(k == 0 ? \"%d\" : \" %d\", node->value);\n            if (node->left != NULL) {\n                queue[tail++] = node->left;\n            }\n            if (node->right != NULL) {\n                queue[tail++] = node->right;\n            }\n        }\n        printf(\"\\n\");\n    }\n    for (int i = 0; i < tail; i++) {\n        free(queue[i]);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Инвариант: когда начинается обработка уровня, в очереди лежат все узлы этого уровня и только они. Извлекая их, мы добавляем в конец их детей — узлы следующего уровня, в порядке слева направо. Поэтому `count = tail − head` перед началом уровня — его ширина.\n\nРекурсия здесь не нужна: обход по уровням — поиск в ширину, он работает с очередью. Это важно и для глубины: дерево-«палка» из 999 узлов не переполнит стек вызовов. Каждый узел попадает в очередь один раз, поэтому массива из `n` указателей хватает, а после обхода через него можно освободить все узлы. Время — `O(n)`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "algo-tree-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "invariant",
-        "question": "Какова высота пустого дерева по контракту урока?",
-        "options": ["0", "1"],
-        "correct": 0,
-        "explanation": "Вложенные развилки без обещания, что меньшие числа лежат слева. Корень с двумя листьями имеет высоту 2 и два листа. Цепочка из трёх узлов — высоту 3 и один лист."
+        "id": "q1",
+        "question": "У дерева 7 узлов на трёх полностью заполненных уровнях (1 + 2 + 4). Какова его высота, если высота одного узла — 0?",
+        "explanation": "Высота — число рёбер от корня до самого глубокого листа: корень на глубине 0, листья — на глубине 2.",
+        "type": "text",
+        "answers": ["2"],
+        "placeholder": "Число"
       },
       {
-        "id": "complexity",
-        "question": "Какая оценка соответствует рассмотренной реализации?",
-        "options": [
-          "Всегда O(1), потому что все тесты ограничены по размеру.",
-          "O(n) для высоты и подсчёта листьев."
-        ],
-        "correct": 1,
-        "explanation": "Гибкая структура против указателей и сложности владения; плотный массив удобен для почти полного дерева."
+        "id": "q2",
+        "question": "Дерево: корень 1, у него левый ребёнок 2 и правый 3; у узла 2 левый ребёнок 4. Какой будет прямой обход?",
+        "explanation": "Прямой обход: корень, затем левое поддерево целиком, затем правое: 1, (2, 4), 3.",
+        "type": "text",
+        "answers": ["1 2 4 3"],
+        "placeholder": "Значения через пробел"
       },
       {
-        "id": "engineering",
-        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "id": "q3",
+        "question": "Для того же дерева (1; слева 2 с левым ребёнком 4; справа 3) какой будет обратный обход?",
+        "explanation": "Обратный обход посещает узел после обоих поддеревьев: 4, 2, затем 3, и корень последним.",
+        "type": "text",
+        "answers": ["4 2 3 1"],
+        "placeholder": "Значения через пробел"
+      },
+      {
+        "id": "q4",
+        "question": "Каким обходом нужно освобождать дерево?",
+        "explanation": "Если освободить узел раньше детей, указатели на детей придётся читать из освобождённой памяти.",
         "options": [
-          "Бинарное дерево не обязательно является деревом поиска.",
-          "Совпадение Big O гарантирует одинаковое время на любой машине."
+          "Обратным: дети освобождаются раньше родителя",
+          "Прямым: сначала корень",
+          "Центральным",
+          "Любым"
         ],
-        "correct": 0,
-        "explanation": "Указатели удобны для произвольной формы, но размещение по отдельным malloc ухудшает локальность. O(n) узлов плюс O(h) стека обхода."
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *left, *right;\n} Node;\n\nstatic int f(const Node *t) {\n    if (t == NULL) {\n        return 0;\n    }\n    int l = f(t->left), r = f(t->right);\n    return t->value + (l > r ? l : r);\n}\n\nint main(void) {\n    Node d = {4, NULL, NULL}, e = {9, NULL, NULL};\n    Node b = {2, &d, NULL}, c = {1, NULL, &e};\n    Node a = {5, &b, &c};\n    printf(\"%d\\n\", f(&a));\n    return 0;\n}",
+        "explanation": "f — наибольшая сумма на пути от корня к листу: 5 + 2 + 4 = 11 или 5 + 1 + 9 = 15. Выбирается 15.",
+        "type": "text",
+        "answers": ["15"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Какая структура нужна для обхода дерева по уровням?",
+        "explanation": "Очередь выдаёт узлы в порядке добавления, а дети каждого уровня добавляются после всех узлов этого уровня. Стек дал бы обход в глубину.",
+        "options": ["Очередь", "Стек", "Хеш-таблица", "Отсортированный массив"],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Полное бинарное дерево хранится в массиве по уровням. Где лежат дети узла с индексом 4?",
+        "explanation": "Дети узла i — в ячейках 2i + 1 и 2i + 2: 9 и 10. Родитель узла 4 — (4 − 1) / 2 = 1.",
+        "options": ["9 и 10", "8 и 9", "5 и 6", "2 и 3"],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какова наибольшая глубина рекурсии при обходе дерева из n узлов?",
+        "explanation": "Рекурсия спускается по пути от корня к листу. У дерева-«палки» этот путь проходит через все узлы.",
+        "options": [
+          "Равна высоте дерева: от log₂ n для сбалансированного до n для вырожденного",
+          "Всегда log₂ n",
+          "Всегда n",
+          "Всегда 2"
+        ],
+        "correct": 0
       }
     ]
   }

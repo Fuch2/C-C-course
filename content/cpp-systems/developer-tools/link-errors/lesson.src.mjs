@@ -15,7 +15,7 @@ export default {
     'Располагать библиотеки в команде сборки в правильном порядке',
   ],
   tags: ['Линковка', 'Библиотеки', 'undefined reference', 'multiple definition', 'ld'],
-  standard: 'c17',
+  standard: 'c23',
   quiz: [
     {
       q: 'Сборка gcc main.c -o app завершилась ошибкой undefined reference to `parse_config`. Функция определена в config.c. Что вероятнее всего не так?',

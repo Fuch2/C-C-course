@@ -15,7 +15,7 @@
   ],
   "tags": ["GCC", "Clang", "Флаги", "Предупреждения", "Оптимизация"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "gcc-and-clang-task-1",
@@ -24,12 +24,12 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
-        "input": "gcc -std=c17 -Wall -Wextra -g -O0 -Iinclude -DDEBUG main.c util.c -o app -lm\n",
-        "output": "компилятор: gcc\nстандарт: c17\nоптимизация: -O0\nотладка: да\nпредупреждения: -Wall -Wextra\nмакросы: DEBUG\nзаголовки: include\nбиблиотеки: m\nфайлы: main.c util.c\nрезультат: app\n"
+        "input": "gcc -std=c23 -Wall -Wextra -g -O0 -Iinclude -DDEBUG main.c util.c -o app -lm\n",
+        "output": "компилятор: gcc\nстандарт: c23\nоптимизация: -O0\nотладка: да\nпредупреждения: -Wall -Wextra\nмакросы: DEBUG\nзаголовки: include\nбиблиотеки: m\nфайлы: main.c util.c\nрезультат: app\n"
       },
       {
         "input": "clang main.c\n",
@@ -58,8 +58,8 @@
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "gcc -std=c17 -Wall -Wextra -g -O0 -Iinclude -DDEBUG main.c util.c -o app -lm\n",
-        "expected": "компилятор: gcc\nстандарт: c17\nоптимизация: -O0\nотладка: да\nпредупреждения: -Wall -Wextra\nмакросы: DEBUG\nзаголовки: include\nбиблиотеки: m\nфайлы: main.c util.c\nрезультат: app\n"
+        "stdin": "gcc -std=c23 -Wall -Wextra -g -O0 -Iinclude -DDEBUG main.c util.c -o app -lm\n",
+        "expected": "компилятор: gcc\nстандарт: c23\nоптимизация: -O0\nотладка: да\nпредупреждения: -Wall -Wextra\nмакросы: DEBUG\nзаголовки: include\nбиблиотеки: m\nфайлы: main.c util.c\nрезультат: app\n"
       },
       {
         "id": "case-2",
@@ -126,8 +126,8 @@
       {
         "id": "hidden-10",
         "name": "Всё вместе",
-        "stdin": "clang -std=c17 -O3 -g3 -march=native -DUSE_SIMD a.c b.c c.c -o bench -lm\n",
-        "expected": "компилятор: clang\nстандарт: c17\nоптимизация: -O3\nотладка: да\nпредупреждения: -\nмакросы: USE_SIMD\nзаголовки: -\nбиблиотеки: m\nфайлы: a.c b.c c.c\nрезультат: bench\n"
+        "stdin": "clang -std=c23 -O3 -g3 -march=native -DUSE_SIMD a.c b.c c.c -o bench -lm\n",
+        "expected": "компилятор: clang\nстандарт: c23\nоптимизация: -O3\nотладка: да\nпредупреждения: -\nмакросы: USE_SIMD\nзаголовки: -\nбиблиотеки: m\nфайлы: a.c b.c c.c\nрезультат: bench\n"
       }
     ],
     "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define LIST 2048\n\nstatic void append(char *list, const char *item) {\n    if (list[0] != '\\0') {\n        strcat(list, \" \");\n    }\n    strcat(list, item);\n}\n\nstatic void print_list(const char *title, const char *list) {\n    printf(\"%s: %s\\n\", title, list[0] != '\\0' ? list : \"-\");\n}\n\nint main(void) {\n    char word[64];\n    char compiler[64] = \"\";\n    char standard[64] = \"gnu17\";\n    char optimization[64] = \"-O0\";\n    char output[64] = \"a.out\";\n    int debug = 0;\n    static char warnings[LIST];\n    static char macros[LIST];\n    static char includes[LIST];\n    static char libraries[LIST];\n    static char files[LIST];\n    if (scanf(\"%63s\", compiler) != 1) {\n        return 0;\n    }\n    while (scanf(\"%63s\", word) == 1) {\n        if (strncmp(word, \"-std=\", 5) == 0) {\n            strcpy(standard, word + 5);\n        } else if (strcmp(word, \"-o\") == 0) {\n            if (scanf(\"%63s\", output) != 1) {\n                strcpy(output, \"a.out\");\n            }\n        } else if (strcmp(word, \"-O\") == 0) {\n            strcpy(optimization, \"-O1\");\n        } else if (strncmp(word, \"-O\", 2) == 0) {\n            strcpy(optimization, word);\n        } else if (strncmp(word, \"-g\", 2) == 0) {\n            debug = 1;\n        } else if (strncmp(word, \"-W\", 2) == 0) {\n            append(warnings, word);\n        } else if (strncmp(word, \"-D\", 2) == 0) {\n            append(macros, word + 2);\n        } else if (strncmp(word, \"-I\", 2) == 0) {\n            append(includes, word + 2);\n        } else if (strncmp(word, \"-l\", 2) == 0) {\n            append(libraries, word + 2);\n        } else if (word[0] != '-') {\n            append(files, word);\n        }\n    }\n    printf(\"компилятор: %s\\n\", compiler);\n    printf(\"стандарт: %s\\n\", standard);\n    printf(\"оптимизация: %s\\n\", optimization);\n    printf(\"отладка: %s\\n\", debug ? \"да\" : \"нет\");\n    print_list(\"предупреждения\", warnings);\n    print_list(\"макросы\", macros);\n    print_list(\"заголовки\", includes);\n    print_list(\"библиотеки\", libraries);\n    print_list(\"файлы\", files);\n    printf(\"результат: %s\\n\", output);\n    return 0;\n}\n",
@@ -145,7 +145,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -265,7 +265,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    unsigned int min_level;\n    int n;\n    scanf(\"%u %d\", &min_level, &n);\n    int rejected = 0;\n    for (int i = 0; i < n; i++) {\n        int value;\n        scanf(\"%d\", &value);\n        if (value < min_level) {\n            rejected++;\n        }\n    }\n    printf(\"отбраковано: %d\\n\", rejected);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -374,7 +374,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int missing = 0;\n    long long sum = 0;\n    for (int i = 0; i < n; i++) {\n        int value;\n        scanf(\"%d\", &value);\n        if (value = 0) {\n            missing++;\n        }\n        sum += value;\n    }\n    printf(\"пропусков: %d, сумма: %lld\\n\", missing, sum);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -548,13 +548,13 @@
       },
       {
         "id": "q8",
-        "question": "Чем -std=c17 отличается от поведения GCC по умолчанию?",
-        "explanation": "Режим gnu17 разрешает расширения, которых нет в стандарте. -std=c17 вместе с -Wpedantic помогает писать переносимый код.",
+        "question": "Почему стандарт в командах сборки задают явно (-std=c23), а не полагаются на режим по умолчанию?",
+        "explanation": "GCC 14 по умолчанию использует gnu17, GCC 15 — gnu23. Обновление компилятора меняет язык, на котором собирается проект, если стандарт не указан. -std=c23 вместе с -Wpedantic фиксирует стандарт и сообщает о расширениях.",
         "options": [
-          "По умолчанию GCC использует gnu17 — C17 с расширениями GNU",
-          "По умолчанию GCC компилирует C89",
-          "Ничем",
-          "-std=c17 включает все предупреждения"
+          "Режим по умолчанию — gnu17 или gnu23 в зависимости от версии GCC, с расширениями GNU; явный -std с -Wpedantic делает сборку одинаковой и переносимой",
+          "Без -std компилятор собирает по C89",
+          "Без -std не работают предупреждения",
+          "-std=c23 включает все предупреждения"
         ],
         "correct": 0
       },

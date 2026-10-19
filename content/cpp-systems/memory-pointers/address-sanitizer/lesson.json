@@ -13,9 +13,9 @@
     "Знать, какие ошибки находят санитайзеры и какие остаются незамеченными",
     "Читать отчёт по четырём вопросам и исправлять несколько ошибок по одной"
   ],
-  "tags": ["C17", "Память", "AddressSanitizer", "UBSan", "Отладка"],
+  "tags": ["C23", "Память", "AddressSanitizer", "UBSan", "Отладка"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-address-sanitizer-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    int stores, days;\n    scanf(\"%d %d\", &stores, &days);\n    int *sales = malloc((size_t)stores * days * sizeof *sales);\n    if (sales == NULL) {\n        return 1;\n    }\n    for (int s = 0; s < stores; s++) {\n        for (int d = 0; d < days; d++) {\n            scanf(\"%d\", &sales[s * stores + d]);\n        }\n    }\n    for (int s = 0; s < stores; s++) {\n        long long total = 0;\n        for (int d = 0; d < days; d++) {\n            total += sales[s * stores + d];\n        }\n        printf(s + 1 < stores ? \"%lld \" : \"%lld\\n\", total);\n    }\n    for (int d = 0; d < days; d++) {\n        long long total = 0;\n        for (int s = 0; s < stores; s++) {\n            total += sales[s * stores + d];\n        }\n        printf(d + 1 < days ? \"%lld \" : \"%lld\\n\", total);\n    }\n    free(sales);\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -129,7 +129,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        unsigned minutes;\n        scanf(\"%u\", &minutes);\n        char text[5];\n        snprintf(text, sizeof text, \"%02u:%02u\", minutes / 60 % 24, minutes % 60);\n        printf(\"%s\\n\", text);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -233,7 +233,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nstatic const char *const DAYS[7] = {\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Sat\", \"Sun\"};\n\nint main(void) {\n    int start, q;\n    scanf(\"%d %d\", &start, &q);\n    for (int i = 0; i < q; i++) {\n        int offset;\n        scanf(\"%d\", &offset);\n        printf(\"%s\\n\", DAYS[(start + offset) % 8]);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -337,7 +337,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint main(void) {\n    char **words = NULL;\n    int count = 0, capacity = 0;\n    char buffer[32];\n    while (scanf(\"%31s\", buffer) == 1) {\n        if (count == capacity) {\n            capacity = capacity ? capacity * 2 : 4;\n            char **bigger = realloc(words, (size_t)capacity * sizeof *bigger);\n            if (bigger == NULL) {\n                return 1;\n            }\n            words = bigger;\n        }\n        words[count] = malloc(strlen(buffer) + 1);\n        if (words[count] == NULL) {\n            return 1;\n        }\n        strcpy(words[count], buffer);\n        count++;\n    }\n    printf(\"%d\\n\", count);\n    for (int i = count; i >= 0; i--) {\n        printf(i > 0 ? \"%s \" : \"%s\\n\", words[i]);\n    }\n    free(words);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

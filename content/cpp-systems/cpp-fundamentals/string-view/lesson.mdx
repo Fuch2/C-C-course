@@ -1,0 +1,327 @@
+## Лишние копии строк
+
+Функция, которая только **читает** строку, обычно принимает `const std::string &`: копии нет, изменить строку нельзя. Но такой параметр требует именно `std::string`. Если передать строковый литерал `"report.pdf"`, компилятор сначала создаст временную `std::string` — а длинной строке для этого нужна память в куче. То же со «срезом»: `s.substr(0, 3)` возвращает **новую** строку, копируя символы.
+
+Для чтения копия не нужна. Достаточно знать, где лежат символы и сколько их. Именно это хранит `std::string_view` из `<string_view>` (C++17) — **представление строки**: указатель на первый символ и длину. Само представление символов не хранит и не владеет ими.
+
+## Указатель и длина
+
+```cpp
+#include <print>
+#include <string>
+#include <string_view>
+
+int main() {
+    std::string file = "report.final.pdf";
+    std::string_view view = file;
+    std::println("{} {} {}", view.size(), view[0], view.substr(7, 5));
+    std::string_view literal = "hello";
+    std::println("{} {}", literal, literal.size());
+    std::println("{}", sizeof(std::string_view));
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+16 r final
+hello 5
+16
+```
+
+`std::string_view` создаётся из `std::string`, из строкового литерала и из массива `char` — без копирования символов. Интерфейс для чтения такой же, как у `std::string`: `size`, `[]`, `find`, `substr`, сравнения, печать. А вот `substr` здесь возвращает не новую строку, а **ещё одно представление** той же памяти — за постоянное время, сколько бы символов ни было. Сам объект — два слова по 8 байт: указатель и длина.
+
+## Параметр функции
+
+Главное применение — параметры функций, которые читают текст. `std::string_view` принимают **по значению**: копировать два числа дешевле, чем обращаться по ссылке.
+
+```cpp
+#include <print>
+#include <string>
+#include <string_view>
+
+int count_vowels(std::string_view text) {
+    int count = 0;
+    for (char c : text) {
+        if (std::string_view("aeiouy").find(c) != std::string_view::npos) {
+            count++;
+        }
+    }
+    return count;
+}
+
+int main() {
+    std::string phrase = "programming in modern style";
+    char buffer[] = "array of chars";
+    std::println("{}", count_vowels(phrase));
+    std::println("{}", count_vowels("literal without copies"));
+    std::println("{}", count_vowels(buffer));
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+8
+9
+5
+```
+
+Одна функция работает со всеми видами строк, и ни в одном вызове символы не копируются. Сравните: с параметром `const std::string &` второй вызов создал бы временную строку из литерала.
+
+## Срезы без копирования
+
+Представление можно «сужать» с краёв: `remove_prefix(n)` отбрасывает `n` символов в начале, `remove_suffix(n)` — в конце. Исходная строка не меняется — меняется только то, на какую её часть смотрит представление. Так удобно, например, обрезать пробелы:
+
+```cpp
+#include <print>
+#include <string_view>
+
+std::string_view trim(std::string_view text) {
+    while (!text.empty() && text.front() == ' ') {
+        text.remove_prefix(1);
+    }
+    while (!text.empty() && text.back() == ' ') {
+        text.remove_suffix(1);
+    }
+    return text;
+}
+
+int main() {
+    std::string_view line = "   name = Ada   ";
+    std::size_t eq = line.find('=');
+    std::string_view key = trim(line.substr(0, eq));
+    std::string_view value = trim(line.substr(eq + 1));
+    std::println("[{}] [{}]", key, value);
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+[name] [Ada]
+```
+
+Ни одной новой строки: `key` и `value` указывают внутрь литерала. Функция `trim` возвращает `std::string_view` — и это безопасно, потому что результат указывает в ту же память, что и аргумент, а она принадлежит вызывающему коду.
+
+## Проверки начала, конца и вхождения
+
+C++20 добавил `starts_with` и `ends_with`, C++23 — `contains`. Они есть и у `std::string`, и у `std::string_view`:
+
+```cpp
+#include <print>
+#include <string_view>
+
+int main() {
+    std::string_view files[] = {"main.cpp", "README.md", "test_main.cpp", "notes.txt"};
+    for (std::string_view name : files) {
+        std::println("{:<14} {} {} {}", name, name.ends_with(".cpp"), name.starts_with("test_"),
+                     name.contains("main"));
+    }
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+main.cpp       true false true
+README.md      false false false
+test_main.cpp  true true true
+notes.txt      false false false
+```
+
+Раньше то же записывали через `find` и сравнение позиций: `name.find("main") != npos`, `name.rfind("test_", 0) == 0`. Новые имена читаются сразу и не оставляют места для ошибки с позицией.
+
+## Разбор строки на части
+
+Разбить строку по разделителю — частая задача. С `std::string_view` части не копируются: каждая — представление внутри исходной строки.
+
+```cpp
+#include <print>
+#include <string_view>
+#include <vector>
+
+std::vector<std::string_view> split(std::string_view text, char separator) {
+    std::vector<std::string_view> parts;
+    while (true) {
+        std::size_t pos = text.find(separator);
+        parts.push_back(text.substr(0, pos));
+        if (pos == std::string_view::npos) {
+            break;
+        }
+        text.remove_prefix(pos + 1);
+    }
+    return parts;
+}
+
+int main() {
+    for (std::string_view part : split("2026-10-18", '-')) {
+        std::print("[{}]", part);
+    }
+    std::println();
+    std::println("{}", split("a,,b,", ',').size());
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+[2026][10][18]
+4
+```
+
+`substr(0, npos)` берёт всё до конца — так последняя часть добавляется тем же вызовом. Пустые части между соседними разделителями сохраняются: в `"a,,b,"` четыре поля, два из них пустые.
+
+## Число из строки: `std::from_chars`
+
+Части строки часто нужно превратить в числа. Для этого есть `std::from_chars` из `<charconv>` (C++17). Она не создаёт строк, не бросает исключений и сообщает, сколько символов прочитала:
+
+```cpp
+#include <charconv>
+#include <print>
+#include <string_view>
+
+void parse(std::string_view text) {
+    int value = 0;
+    auto [end, error] = std::from_chars(text.data(), text.data() + text.size(), value);
+    if (error == std::errc::invalid_argument) {
+        std::println("{:>12}: не число", text);
+    } else if (error == std::errc::result_out_of_range) {
+        std::println("{:>12}: не помещается в int", text);
+    } else if (end != text.data() + text.size()) {
+        std::println("{:>12}: число {}, но дальше мусор", text, value);
+    } else {
+        std::println("{:>12}: {}", text, value);
+    }
+}
+
+int main() {
+    parse("123");
+    parse("-17");
+    parse("42abc");
+    parse("abc");
+    parse("99999999999");
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+         123: 123
+         -17: -17
+       42abc: число 42, но дальше мусор
+         abc: не число
+ 99999999999: не помещается в int
+```
+
+`from_chars` возвращает структуру из двух полей: указатель на первый непрочитанный символ и код ошибки (`std::errc{}` — успех). Структурная привязка `auto [end, error]` раскладывает её на две переменные — подробно о ней в уроке о `std::pair`. Строгость полезна: `"42abc"` — не число, хотя начинается с цифр, и это видно по `end`. Знак `+` перед числом `from_chars` не принимает.
+
+## Представление не владеет строкой
+
+Цена дешевизны — ответственность. `std::string_view` указывает на чужую память и **не продлевает ей жизнь**. Если строка, на которую оно смотрит, уничтожена, представление «висит», и чтение из него — неопределённое поведение:
+
+```cpp
+#include <print>
+#include <string>
+#include <string_view>
+
+std::string_view make_title(std::string_view name) {
+    std::string title = "Отчёт: " + std::string(name);
+    return title;                     // представление на локальную строку
+}
+
+int main() {
+    std::string_view t = make_title("продажи за октябрь");   // Ошибка памяти
+    std::println("{}", t);
+    return 0;
+}
+```
+
+`title` уничтожается при выходе из функции, и `t` указывает в освобождённую память. AddressSanitizer сообщает `heap-use-after-free`. Clang замечает ошибку ещё при компиляции (`address of stack memory associated with local variable 'title' returned`), GCC 14 — нет. Исправление — вернуть `std::string`: функция **создаёт** новую строку, значит, должна отдать её владельцу.
+
+Та же ловушка с временными строками: `std::string_view v = std::string("abc") + "def";` — временная строка исчезает в конце строки кода, и `v` сразу висит.
+
+<Important title="Правило">
+
+`std::string_view` — для **параметров** функций, которые читают текст, и для локальных переменных, пока жива исходная строка. Не возвращайте `string_view` на то, что создано внутри функции, и не храните его дольше, чем живёт строка-владелец.
+
+</Important>
+
+## Нет завершающего нуля
+
+Строка C заканчивается символом `'\0'`, а представление — нет: его конец задан длиной. Поэтому `view.data()` нельзя передавать функциям C, которые ищут `'\0'`, — `printf("%s")`, `strlen`, `fopen`. Если представление — часть строки, функция C прочитает дальше нужного. Нужна строка C — создайте `std::string(view)` и вызовите у неё `c_str()`.
+
+## string или string_view
+
+|                                   | `std::string`                    | `std::string_view`                   |
+| --------------------------------- | -------------------------------- | ------------------------------------ |
+| владеет символами                 | да, освобождает память сама      | нет, смотрит на чужую память         |
+| можно изменить текст              | да: `+=`, `push_back`, `[i] = …` | нет, только сузить представление     |
+| `substr`                          | новая строка, копирование        | новое представление, без копирования |
+| завершающий `'\0'`, `c_str()`     | есть                             | нет                                  |
+| в параметре функции для чтения    | `const std::string &`            | `std::string_view` по значению       |
+| вернуть созданный в функции текст | да                               | нельзя                               |
+
+Превращение в одну сторону бесплатно и неявно: `std::string` → `std::string_view`. В обратную — явно и с копированием: `std::string(view)`. Это сделано намеренно: каждая копия видна в коде.
+
+<Concept title="std::string_view">
+
+Невладеющее представление строки: указатель и длина. Создаётся из `std::string`, литерала и массива без копирования; `substr`, `remove_prefix` и `remove_suffix` дают новые представления за постоянное время. Передаётся по значению. Не продлевает жизнь строке-владельцу и не гарантирует `'\0'` в конце.
+
+</Concept>
+
+## Частые ошибки
+
+<CommonMistake title="Возврат представления на локальную строку">
+
+`std::string_view f() { std::string s = …; return s; }` — после выхода из функции `s` уничтожена. Если функция создаёт текст, она возвращает `std::string`.
+
+</CommonMistake>
+
+<CommonMistake title="Представление на временную строку">
+
+`std::string_view v = a + b;` при `std::string a, b` — сумма временная и исчезает сразу. Сохраните сумму в `std::string`.
+
+</CommonMistake>
+
+<CommonMistake title="data() в функцию C">
+
+`printf("%s", view.data())` печатает до первого `'\0'` в памяти — возможно, далеко за концом представления. Используйте `std::println("{}", view)` или `std::string(view).c_str()`.
+
+</CommonMistake>
+
+<CommonMistake title="Представление на строку, которая растёт">
+
+`std::string_view v = s; s += "очень длинное продолжение…";` — при росте строка может переехать в новый блок памяти, и `v` будет указывать на освобождённый. Создавайте представление после последнего изменения строки.
+
+</CommonMistake>
+
+## Попробуйте сами
+
+1. В примере с `count_vowels` замените параметр на `const std::string &`. Работают ли все три вызова? В каком из них появляется временная строка?
+2. Вызовите `split("", ',')`. Сколько частей вернулось и почему?
+3. Добавьте в пример с `from_chars` вызовы `parse("")`, `parse("-")` и `parse("2147483648")`.
+4. Соберите пример с `make_title` компилятором Clang и прочитайте предупреждение.
+
+## Практика
+
+1. **Расширение файла** — `rfind`, `substr` и `ends_with`.
+2. **Поля через запятую** — разбор строки на представления и обрезка пробелов.
+3. **Найди ошибку: висячее представление** — функция возвращает `string_view` на локальную строку.
+4. **Сумма чисел из строки** — `std::from_chars` и проверка каждого поля.
+
+<CodingExercise />
+
+## Итоги
+
+- `std::string_view` (C++17) — указатель и длина: смотрит на чужие символы, не копирует их и не владеет ими.
+- Параметр функции, которая читает текст, — `std::string_view` по значению: подходит для `std::string`, литералов и массивов без копирования.
+- `substr`, `remove_prefix`, `remove_suffix` дают новые представления за постоянное время; `starts_with`, `ends_with` (C++20) и `contains` (C++23) проверяют начало, конец и вхождение.
+- `std::from_chars` (C++17) разбирает число без исключений и сообщает, где остановилась.
+- Представление не продлевает жизнь строке: не возвращайте его на локальную или временную строку. В конце нет `'\0'` — не передавайте `data()` в функции C.

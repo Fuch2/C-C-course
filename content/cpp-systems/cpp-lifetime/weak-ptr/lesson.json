@@ -1,154 +1,534 @@
 {
   "id": "lifetime-weak-ptr",
-  "title": "std::weak_ptr — наблюдение без владения",
-  "description": "weak_ptr хранит возможность попытаться получить совместное владение, не продлевая жизнь объекта.",
+  "title": "std::weak_ptr: наблюдение без владения",
+  "description": "Наблюдатель, который не продлевает жизнь объекту: weak_ptr, lock и expired; почему доступ только через lock и проверка expired перед обращением ненадёжна; блок управления живёт ради наблюдателей; кэши, списки подписчиков, ссылки на родителя и колбэки; enable_shared_from_this и weak_from_this; очистка истёкших записей.",
   "moduleId": "cpp-lifetime",
   "order": 22,
-  "difficulty": "advanced",
-  "estimatedMinutes": 55,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
   "prerequisites": ["lifetime-reference-counting"],
   "objectives": [
-    "Объяснить, почему lock(), а не expired(), является безопасным способом доступа.",
-    "Проследить на MemoryDiagram, как held продлевает жизнь объекта после reset владельца.",
-    "Построить наблюдателя, который честно переживает смерть объекта и сообщает о ней."
+    "Наблюдать за объектом через weak_ptr, не продлевая ему жизнь",
+    "Получать доступ к объекту только через lock",
+    "Строить кэши и списки подписчиков на слабых ссылках",
+    "Подписывать объект на события через weak_from_this"
   ],
-  "tags": [
-    "C++20",
-    "время жизни",
-    "управление ресурсами",
-    "std::weak_ptr — наблюдение без владения"
-  ],
+  "tags": ["C++23", "Время жизни", "weak_ptr", "Умные указатели", "Наблюдатель"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "lifetime-weak-ptr-exercise",
-    "title": "Практика: std::weak_ptr — наблюдение без владения",
-    "description": "В solve создайте owner(a) и weak-наблюдателя, получите held = weak.lock(), сбросьте owner, сохраните *held, затем сбросьте held. Верните сохранённое + b, только если последующий weak.lock() пуст; иначе -9999.",
-    "difficulty": "advanced",
+    "title": "Наблюдение за документом",
+    "description": "Документ `Doc` печатает `удалён название`. Владельцы — `std::map<std::string, std::shared_ptr<Doc>>`, наблюдатели — `std::map<std::string, std::weak_ptr<Doc>>` (`operator[]` создаёт пустые). Команды:\n\n- `new O название` — владелец O получает новый документ;\n- `share O2 O` — O2 становится ещё одним владельцем документа O;\n- `watch W O` — наблюдатель W следит за документом O;\n- `drop O` — владелец отпускает документ;\n- `peek W` — `W: название (владельцев K)` или `W: удалён`. Число владельцев считайте **до** создания временного владельца в `lock` — то есть `use_count() - 1` у результата `lock()`.\n\nВ конце отпустите владельцев от последнего имени к первому.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 7)",
-        "output": "10\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "new a отчёт\nshare b a\nwatch w a\npeek w\ndrop a\npeek w\ndrop b\npeek w\n",
+        "output": "w: отчёт (владельцев 2)\nw: отчёт (владельцев 1)\nудалён отчёт\nw: удалён\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "peek x\n",
+        "output": "x: удалён\n"
       }
     ],
-    "constraints": [
-      "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Команд не больше 300."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Проверьте паттерн на гонку: между expired() и действием объект может умереть. lock() возвращает владельца — с ним объект не умрёт, пока владелец жив."
+        "id": "hint-1",
+        "text": "if (auto doc = watchers[w].lock()) { … doc.use_count() - 1 … } else { … удалён … }",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "expired() сообщает, осталось ли сильное владение, но схема if (!weak.expired()) с последующим действием не закрепляет объект: между проверкой и доступом состояние может измениться даже в однопоточном коде с вложенными областями. lock объединяет проверку и получение владения атомарно относительно счётчика. Классические применения: обратное ребро child → parent, кеш с исчезающими объектами, подписки, где смерть получателя означает «пропустить уведомление». Заранее решите, что делать при отсутствии объекта: пропустить, вернуть fallback или сообщить об ошибке.\n\nНе сохраняйте сырой адрес из временного weak.lock().get(): временный shared_ptr может быть последним владельцем и исчезнет в конце полного выражения.\n\nУдерживайте результат lock, сбросьте первоначального владельца и проверьте доступ через удержанный shared_ptr. Только после его reset наблюдатель становится expired."
+        "id": "hint-2",
+        "text": "Наблюдатель от пустого владельца — пустой weak_ptr: lock() вернёт nullptr.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 7],
-        "expected": "10\n"
+        "stdin": "new a отчёт\nshare b a\nwatch w a\npeek w\ndrop a\npeek w\ndrop b\npeek w\n",
+        "expected": "w: отчёт (владельцев 2)\nw: отчёт (владельцев 1)\nудалён отчёт\nw: удалён\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "peek x\n",
+        "expected": "x: удалён\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный случай 1",
-        "arguments": [-8, 3],
-        "expected": "-5\n"
+        "id": "hidden-1",
+        "name": "Замена документа у владельца",
+        "stdin": "new a d\nwatch w a\nnew a e\npeek w\n",
+        "expected": "удалён d\nw: удалён\nудалён e\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный случай 2",
-        "arguments": [5, -9],
-        "expected": "-4\n"
+        "id": "hidden-2",
+        "name": "Наблюдатель за пустым",
+        "stdin": "watch w nobody\npeek w\n",
+        "expected": "w: удалён\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный случай 3",
-        "arguments": [-1000, 1000],
-        "expected": "0\n"
+        "id": "hidden-3",
+        "name": "Имена наблюдателей и владельцев раздельны",
+        "stdin": "new a d\nwatch w a\nwatch v w\npeek v\n",
+        "expected": "v: удалён\nудалён d\n"
       },
       {
-        "id": "case-6",
-        "name": "Граничный случай 4",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-4",
+        "name": "Два наблюдателя",
+        "stdin": "new a d\nwatch w a\nwatch w2 a\ndrop a\npeek w\npeek w2\n",
+        "expected": "удалён d\nw: удалён\nw2: удалён\n"
       },
       {
-        "id": "case-7",
-        "name": "Граничный случай 5",
-        "arguments": [4, 4],
-        "expected": "8\n"
+        "id": "hidden-5",
+        "name": "Три владельца",
+        "stdin": "new a d\nshare b a\nshare c b\nwatch w c\npeek w\n",
+        "expected": "w: d (владельцев 3)\nудалён d\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Удаление в конце",
+        "stdin": "new z 1\nnew a 2\nwatch w z\n",
+        "expected": "удалён 1\nудалён 2\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Новый документ с тем же названием",
+        "stdin": "new a d\nwatch w a\ndrop a\nnew a d\npeek w\n",
+        "expected": "удалён d\nw: удалён\nудалён d\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Двойной drop",
+        "stdin": "new a x\ndrop a\ndrop a\npeek a\n",
+        "expected": "удалён x\na: удалён\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint solve(int a, int b) { auto owner = std::make_shared<int>(a); std::weak_ptr<int> weak = owner; auto held = weak.lock(); owner.reset(); int saved = *held; held.reset(); return weak.lock() ? -9999 : saved + b; }",
-    "solutionExplanation": "expired() сообщает, осталось ли сильное владение, но схема if (!weak.expired()) с последующим действием не закрепляет объект: между проверкой и доступом состояние может измениться даже в однопоточном коде с вложенными областями. lock объединяет проверку и получение владения атомарно относительно счётчика. Классические применения: обратное ребро child → parent, кеш с исчезающими объектами, подписки, где смерть получателя означает «пропустить уведомление». Заранее решите, что делать при отсутствии объекта: пропустить, вернуть fallback или сообщить об ошибке.\n\nНе сохраняйте сырой адрес из временного weak.lock().get(): временный shared_ptr может быть последним владельцем и исчезнет в конце полного выражения.\n\nУдерживайте результат lock, сбросьте первоначального владельца и проверьте доступ через удержанный shared_ptr. Только после его reset наблюдатель становится expired.",
+    "referenceSolution": "#include <iostream>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Doc {\n    std::string name;\n    explicit Doc(std::string n) : name(std::move(n)) {}\n    ~Doc() {\n        std::println(\"удалён {}\", name);\n    }\n};\n\nint main() {\n    std::map<std::string, std::shared_ptr<Doc>> owners;\n    std::map<std::string, std::weak_ptr<Doc>> watchers;\n    std::string command, a;\n    while (std::cin >> command >> a) {\n        if (command == \"new\") {\n            std::string name;\n            std::cin >> name;\n            owners[a] = std::make_shared<Doc>(name);\n        } else if (command == \"share\") {\n            std::string from;\n            std::cin >> from;\n            owners[a] = owners[from];\n        } else if (command == \"watch\") {\n            std::string o;\n            std::cin >> o;\n            watchers[a] = owners[o];\n        } else if (command == \"drop\") {\n            owners[a].reset();\n        } else if (auto doc = watchers[a].lock()) {\n            std::println(\"{}: {} (владельцев {})\", a, doc->name, doc.use_count() - 1);\n        } else {\n            std::println(\"{}: удалён\", a);\n        }\n    }\n    for (auto it = owners.rbegin(); it != owners.rend(); ++it) {\n        it->second.reset();\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Наблюдатель не входит в число владельцев: документ удаляется, когда его отпустит последний владелец, сколько бы наблюдателей за ним ни следило. `lock()` на время проверки создаёт ещё одного владельца — поэтому из `use_count()` вычитается единица. После удаления документа `lock()` честно возвращает пустой указатель, а не висячий.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "lifetime-weak-ptr-task-2",
+      "title": "Слабый кэш",
+      "description": "Картинка `Image` печатает `загружено имя` и `выгружено имя`. Кэш хранит `std::map<std::string, std::weak_ptr<Image>>`: `get(имя)` возвращает живую картинку из кэша или загружает новую и запоминает слабую ссылку. Окна держат картинки `std::map<std::string, std::shared_ptr<Image>>`.\n\nКоманды:\n\n- `show W имя` — `windows[W] = cache.get(имя)`;\n- `close W` — `windows[W].reset()`;\n- `size` — `записей N, живых K`;\n- `prune` — удалить истёкшие записи и напечатать `удалено N`.\n\nВ конце закройте окна от последнего имени к первому.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "show w1 кот\nshow w2 кот\nsize\nclose w1\nclose w2\nsize\nprune\nsize\n",
+          "output": "загружено кот\nзаписей 1, живых 1\nвыгружено кот\nзаписей 1, живых 0\nудалено 1\nзаписей 0, живых 0\n"
+        },
+        {
+          "input": "show w a\nshow w b\nsize\n",
+          "output": "загружено a\nзагружено b\nвыгружено a\nзаписей 2, живых 1\nвыгружено b\n"
+        }
+      ],
+      "constraints": ["Команд не больше 300."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Живые записи: std::ranges::count_if(slots_, [](const auto &p) { return !p.second.expired(); }); здесь expired уместен — к объекту мы не обращаемся.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "prune: std::erase_if(slots_, [](const auto &p) { return p.second.expired(); }) возвращает число удалённых.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "show w1 кот\nshow w2 кот\nsize\nclose w1\nclose w2\nsize\nprune\nsize\n",
+          "expected": "загружено кот\nзаписей 1, живых 1\nвыгружено кот\nзаписей 1, живых 0\nудалено 1\nзаписей 0, живых 0\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "show w a\nshow w b\nsize\n",
+          "expected": "загружено a\nзагружено b\nвыгружено a\nзаписей 2, живых 1\nвыгружено b\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустой кэш",
+          "stdin": "size\nprune\n",
+          "expected": "записей 0, живых 0\nудалено 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Повторная загрузка",
+          "stdin": "show w a\nclose w\nshow v a\n",
+          "expected": "загружено a\nвыгружено a\nзагружено a\nвыгружено a\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Ещё есть владелец",
+          "stdin": "show w a\nshow v a\nclose w\nsize\n",
+          "expected": "загружено a\nзаписей 1, живых 1\nвыгружено a\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Чистка одной записи",
+          "stdin": "show a x\nshow b y\nshow c z\nclose b\nprune\nsize\n",
+          "expected": "загружено x\nзагружено y\nзагружено z\nвыгружено y\nудалено 1\nзаписей 2, живых 2\nвыгружено z\nвыгружено x\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "То же окно, та же картинка",
+          "stdin": "show w a\nshow w a\nsize\n",
+          "expected": "загружено a\nзаписей 1, живых 1\nвыгружено a\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Выгрузка в конце",
+          "stdin": "show z 1\nshow a 2\n",
+          "expected": "загружено 1\nзагружено 2\nвыгружено 1\nвыгружено 2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Повторные операции",
+          "stdin": "show w a\nclose w\nclose w\nprune\nprune\n",
+          "expected": "загружено a\nвыгружено a\nудалено 1\nудалено 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Перезагрузка после выгрузки",
+          "stdin": "show a p\nshow b q\nclose a\nshow c p\nsize\n",
+          "expected": "загружено p\nзагружено q\nвыгружено p\nзагружено p\nзаписей 2, живых 2\nвыгружено p\nвыгружено q\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Image {\n    std::string name;\n    explicit Image(std::string n) : name(std::move(n)) {\n        std::println(\"загружено {}\", name);\n    }\n    ~Image() {\n        std::println(\"выгружено {}\", name);\n    }\n};\n\nclass Cache {\npublic:\n    std::shared_ptr<Image> get(const std::string &name) {\n        std::weak_ptr<Image> &slot = slots_[name];\n        if (auto alive = slot.lock()) {\n            return alive;\n        }\n        auto fresh = std::make_shared<Image>(name);\n        slot = fresh;\n        return fresh;\n    }\n\n    void size() const {\n        const auto alive = std::ranges::count_if(slots_, [](const auto &p) { return !p.second.expired(); });\n        std::println(\"записей {}, живых {}\", slots_.size(), alive);\n    }\n\n    void prune() {\n        const auto removed = std::erase_if(slots_, [](const auto &p) { return p.second.expired(); });\n        std::println(\"удалено {}\", removed);\n    }\n\nprivate:\n    std::map<std::string, std::weak_ptr<Image>> slots_;\n};\n\nint main() {\n    Cache cache;\n    std::map<std::string, std::shared_ptr<Image>> windows;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"size\") {\n            cache.size();\n        } else if (command == \"prune\") {\n            cache.prune();\n        } else {\n            std::string w;\n            std::cin >> w;\n            if (command == \"show\") {\n                std::string name;\n                std::cin >> name;\n                windows[w] = cache.get(name);\n            } else {\n                windows[w].reset();\n            }\n        }\n    }\n    for (auto it = windows.rbegin(); it != windows.rend(); ++it) {\n        it->second.reset();\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Слабый кэш не влияет на время жизни картинок: они выгружаются, как только их отпустит последнее окно, а кэш лишь помогает не загружать одно и то же дважды, пока картинка кому-то нужна. Цена — истёкшие записи: `weak_ptr` не удаляет себя из контейнера, и их приходится чистить.\n\nСравните с прошлым уроком, где кэш держал `shared_ptr`: там картинки жили, пока их не выгнали из кэша явно. Какой вариант выбрать, зависит от того, кто должен решать, сколько живёт объект.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-weak-ptr-task-3",
+      "title": "Найди ошибку: мёртвый подписчик",
+      "description": "Рассылка хранит подписчиков. Команды: `join имя` — создать читателя (им владеет словарь читателей) и подписать его, `leave имя` — читатель уходит и удаляется, `post заголовок` — каждый подписчик печатает `имя читает заголовок`. В конце печатается, сколько выпусков получил каждый оставшийся читатель.\n\nПосле ухода любого читателя следующая рассылка обращается к удалённому объекту. Исправьте `Newsletter`, не меняя `main`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nstruct Reader {\n    std::string name;\n    int received = 0;\n    explicit Reader(std::string n) : name(std::move(n)) {}\n};\n\nclass Newsletter {\npublic:\n    void subscribe(const std::shared_ptr<Reader> &reader) {\n        readers_.push_back(reader.get());\n    }\n\n    void publish(const std::string &title) {\n        for (const auto &r : readers_) {\n            ++r->received;\n            std::println(\"{} читает {}\", r->name, title);\n        }\n    }\n\nprivate:\n    std::vector<Reader *> readers_;\n};\n\nint main() {\n    Newsletter news;\n    std::map<std::string, std::shared_ptr<Reader>> readers;\n    std::string command, arg;\n    while (std::cin >> command >> arg) {\n        if (command == \"join\") {\n            auto reader = std::make_shared<Reader>(arg);\n            news.subscribe(reader);\n            readers[arg] = std::move(reader);\n        } else if (command == \"leave\") {\n            readers.erase(arg);\n        } else {\n            news.publish(arg);\n        }\n    }\n    for (const auto &[name, reader] : readers) {\n        std::println(\"{}: получено {}\", name, reader->received);\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "join Ада\njoin Алан\npost №1\nleave Ада\npost №2\n",
+          "output": "Ада читает №1\nАлан читает №1\nАлан читает №2\nАлан: получено 2\n"
+        },
+        {
+          "input": "join x\nleave x\npost a\n",
+          "output": ""
+        }
+      ],
+      "constraints": ["Команд не больше 200; имена читателей уникальны."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Как рассылка узнает, что читатель удалён, если хранит сырой указатель?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Храните std::weak_ptr<Reader> и доставляйте только тем, кого удаётся заблокировать через lock().",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "join Ада\njoin Алан\npost №1\nleave Ада\npost №2\n",
+          "expected": "Ада читает №1\nАлан читает №1\nАлан читает №2\nАлан: получено 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "join x\nleave x\npost a\n",
+          "expected": ""
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "join a\njoin b\nleave b\npost p\n",
+          "expected": "a читает p\na: получено 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "join a\npost p\nleave a\npost q\n",
+          "expected": "a читает p\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "join a\njoin b\njoin c\nleave a\nleave c\npost p\npost q\n",
+          "expected": "b читает p\nb читает q\nb: получено 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "join длинное-имя-читателя\nleave длинное-имя-читателя\npost a\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "join a\nleave a\njoin b\npost p\n",
+          "expected": "b читает p\nb: получено 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "join p\njoin q\npost 1\nleave p\npost 2\nleave q\npost 3\n",
+          "expected": "p читает 1\nq читает 1\nq читает 2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "join z\npost x\n",
+          "expected": "z читает x\nz: получено 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "join a\njoin b\nleave a\nleave b\npost p\n",
+          "expected": ""
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nstruct Reader {\n    std::string name;\n    int received = 0;\n    explicit Reader(std::string n) : name(std::move(n)) {}\n};\n\nclass Newsletter {\npublic:\n    void subscribe(const std::shared_ptr<Reader> &reader) {\n        readers_.push_back(reader);\n    }\n\n    void publish(const std::string &title) {\n        for (const auto &r : readers_) {\n            if (auto reader = r.lock()) {\n                ++reader->received;\n                std::println(\"{} читает {}\", reader->name, title);\n            }\n        }\n    }\n\nprivate:\n    std::vector<std::weak_ptr<Reader>> readers_;\n};\n\nint main() {\n    Newsletter news;\n    std::map<std::string, std::shared_ptr<Reader>> readers;\n    std::string command, arg;\n    while (std::cin >> command >> arg) {\n        if (command == \"join\") {\n            auto reader = std::make_shared<Reader>(arg);\n            news.subscribe(reader);\n            readers[arg] = std::move(reader);\n        } else if (command == \"leave\") {\n            readers.erase(arg);\n        } else {\n            news.publish(arg);\n        }\n    }\n    for (const auto &[name, reader] : readers) {\n        std::println(\"{}: получено {}\", name, reader->received);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Рассылка хранит `Reader *` — сырой указатель, по которому нельзя узнать, жив ли объект. После `leave` читатель удалён, а указатель остался в списке, и следующая рассылка пишет в освобождённую память: `heap-use-after-free`.\n\n`std::weak_ptr<Reader>` решает задачу: рассылка не продлевает жизнь читателям, но перед доставкой проверяет через `lock()`, жив ли каждый из них, и на время доставки становится его совладельцем. Ушедшие читатели просто пропускаются.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-weak-ptr-task-4",
+      "title": "Шина событий",
+      "description": "Шина `Bus` хранит подписки `std::map<std::string, std::vector<std::weak_ptr<Listener>>>` (тема → подписчики в порядке подписки). Слушатель `Listener` наследует `std::enable_shared_from_this<Listener>` и подписывается сам: `void follow(Bus &bus, const std::string &topic)` вызывает `bus.subscribe(topic, weak_from_this())`. Слушателями владеет `main` в `std::map<std::string, std::shared_ptr<Listener>>`.\n\nКоманды:\n\n- `new L` — создать слушателя;\n- `follow L тема` — подписаться (повторная подписка на ту же тему игнорируется);\n- `drop L` — удалить слушателя;\n- `publish тема текст` — доставить живым подписчикам в порядке подписки: `L получил текст`; затем удалить из темы истёкшие подписки и, если такие были, напечатать `очищено N`;\n- `count тема` — `тема: подписок N` (вместе с истёкшими, ещё не очищенными).",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "new a\nnew b\nfollow a news\nfollow b news\nfollow a news\npublish news привет\ndrop a\ncount news\npublish news пока\ncount news\n",
+          "output": "a получил привет\nb получил привет\nnews: подписок 2\nb получил пока\nочищено 1\nnews: подписок 1\n"
+        },
+        {
+          "input": "publish x y\ncount x\n",
+          "output": "x: подписок 0\n"
+        }
+      ],
+      "constraints": ["Команд не больше 300."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Повторная подписка: найдите в векторе weak_ptr, указывающий на тот же объект; сравнить слабые ссылки можно через owner_before или по результату lock().get().",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Очистка после доставки: std::erase_if(subs, [](const auto &w) { return w.expired(); }).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "new a\nnew b\nfollow a news\nfollow b news\nfollow a news\npublish news привет\ndrop a\ncount news\npublish news пока\ncount news\n",
+          "expected": "a получил привет\nb получил привет\nnews: подписок 2\nb получил пока\nочищено 1\nnews: подписок 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "publish x y\ncount x\n",
+          "expected": "x: подписок 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Все подписчики удалены",
+          "stdin": "new a\nfollow a t\ndrop a\npublish t m\ncount t\n",
+          "expected": "очищено 1\nt: подписок 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Две темы",
+          "stdin": "new a\nfollow a t1\nfollow a t2\npublish t2 m\npublish t1 n\n",
+          "expected": "a получил m\na получил n\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Порядок подписки",
+          "stdin": "new a\nnew b\nnew c\nfollow c t\nfollow a t\nfollow b t\npublish t m\n",
+          "expected": "c получил m\na получил m\nb получил m\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Пересоздание слушателя",
+          "stdin": "new a\nfollow a t\nnew a\npublish t m\nfollow a t\npublish t n\n",
+          "expected": "очищено 1\na получил n\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Повторная подписка",
+          "stdin": "new a\nfollow a t\nfollow a t\nfollow a t\ncount t\n",
+          "expected": "t: подписок 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Очистка двух",
+          "stdin": "new a\nnew b\nfollow a t\nfollow b t\ndrop a\ndrop b\npublish t m\ncount t\n",
+          "expected": "очищено 2\nt: подписок 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Пустая тема",
+          "stdin": "count nothing\n",
+          "expected": "nothing: подписок 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Несколько публикаций",
+          "stdin": "new a\nfollow a t\npublish t 1\npublish t 2\ndrop a\npublish t 3\npublish t 4\n",
+          "expected": "a получил 1\na получил 2\nочищено 1\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Listener;\n\nclass Bus {\npublic:\n    void subscribe(const std::string &topic, std::weak_ptr<Listener> listener);\n    void publish(const std::string &topic, const std::string &text);\n    void count(const std::string &topic) const {\n        const auto it = topics_.find(topic);\n        std::println(\"{}: подписок {}\", topic, it == topics_.end() ? 0 : it->second.size());\n    }\n\nprivate:\n    std::map<std::string, std::vector<std::weak_ptr<Listener>>> topics_;\n};\n\nclass Listener : public std::enable_shared_from_this<Listener> {\npublic:\n    explicit Listener(std::string name) : name_(std::move(name)) {}\n\n    void follow(Bus &bus, const std::string &topic) {\n        bus.subscribe(topic, weak_from_this());\n    }\n\n    void receive(const std::string &text) const {\n        std::println(\"{} получил {}\", name_, text);\n    }\n\nprivate:\n    std::string name_;\n};\n\nvoid Bus::subscribe(const std::string &topic, std::weak_ptr<Listener> listener) {\n    auto &subs = topics_[topic];\n    const auto self = listener.lock();\n    const bool already = std::ranges::any_of(subs, [&](const auto &w) { return w.lock() == self; });\n    if (!already) {\n        subs.push_back(std::move(listener));\n    }\n}\n\nvoid Bus::publish(const std::string &topic, const std::string &text) {\n    auto &subs = topics_[topic];\n    for (const auto &w : subs) {\n        if (auto listener = w.lock()) {\n            listener->receive(text);\n        }\n    }\n    const auto removed = std::erase_if(subs, [](const auto &w) { return w.expired(); });\n    if (removed > 0) {\n        std::println(\"очищено {}\", removed);\n    }\n}\n\nint main() {\n    Bus bus;\n    std::map<std::string, std::shared_ptr<Listener>> listeners;\n    std::string command, a;\n    while (std::cin >> command >> a) {\n        if (command == \"new\") {\n            listeners[a] = std::make_shared<Listener>(a);\n        } else if (command == \"follow\") {\n            std::string topic;\n            std::cin >> topic;\n            listeners.at(a)->follow(bus, topic);\n        } else if (command == \"drop\") {\n            listeners.erase(a);\n        } else if (command == \"publish\") {\n            std::string text;\n            std::cin >> text;\n            bus.publish(a, text);\n        } else {\n            bus.count(a);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Шина не владеет слушателями и не продлевает им жизнь: подписка — слабая ссылка, которую слушатель отдал сам через `weak_from_this()`. Удалённый слушатель перестаёт получать события без отписки, а шина при следующей публикации убирает его мёртвую запись.\n\n`weak_from_this()` берёт слабую ссылку из того же блока управления, что у `shared_ptr` в `main`. Если бы слушатель передал `this`, шина хранила бы висячий указатель; если бы `shared_from_this()` — шина стала бы совладельцем и не дала бы слушателю умереть.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "lifetime-weak-ptr-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Как безопасно получить объект через weak_ptr?",
+        "id": "q1",
+        "question": "Что делает weak_ptr с объектом, за которым наблюдает?",
+        "explanation": "Объект удаляется вместе с последним shared_ptr, сколько бы ни было weak_ptr.",
         "options": [
-          "Проверить expired() и разыменовать weak_ptr",
-          "Сохранить результат lock() и работать через него"
+          "Не продлевает ему жизнь и не учитывается в use_count",
+          "Владеет им вместе с shared_ptr",
+          "Удаляет его, когда истекает",
+          "Копирует его"
         ],
-        "correct": 1,
-        "explanation": "expired() сообщает, осталось ли сильное владение, но схема if (!weak.expired()) с последующим действием не закрепляет объект: между проверкой и доступом состояние может измениться даже в однопоточном коде с вложенными областями. lock объединяет проверку и получение владения атомарно относительно счётчика. Классические применения: обратное ребро child → parent, кеш с исчезающими объектами, подписки, где смерть получателя означает «пропустить уведомление». Заранее решите, что делать при отсутствии объекта: пропустить, вернуть fallback или сообщить об ошибке."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["6 1", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "owner → блок: сильных 1 → A(6)\nweak - - наблюдает -> блок; жизнь A не продлевает\nheld = weak.lock(): сильных 2\nowner.reset(): A жив благодаря held\nheld.reset(): A уничтожен; следующий lock пуст"
+        "id": "q2",
+        "question": "Как правильно обратиться к объекту через weak_ptr w?",
+        "explanation": "У weak_ptr нет операторов доступа; lock атомарно проверяет и захватывает владение.",
+        "options": [
+          "if (auto sp = w.lock()) { sp->… }",
+          "if (!w.expired()) { w->… }",
+          "w->…",
+          "(*w).…"
+        ],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q3",
+        "question": "Почему «if (!w.expired()) { auto sp = w.lock(); sp->f(); }» ненадёжно?",
+        "explanation": "Результат lock всё равно нужно проверять — а тогда expired лишний.",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Не сохраняйте сырой адрес из временного weak.lock().get(): временный shared_ptr может быть последним владельцем и исчезнет в конце полного выражения."
+          "Между проверкой и lock другой поток может отпустить последнего владельца",
+          "expired всегда возвращает false",
+          "lock удаляет объект",
+          "Это надёжно"
         ],
-        "correct": 1,
-        "explanation": "Удерживайте результат lock, сбросьте первоначального владельца и проверьте доступ через удержанный shared_ptr. Только после его reset наблюдатель становится expired."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <memory>\n#include <print>\n\nint main() {\n    auto a = std::make_shared<int>(5);\n    std::weak_ptr<int> w = a;\n    auto b = w.lock();\n    std::println(\"{}\", a.use_count());\n    a.reset();\n    std::println(\"{} {}\", w.expired(), *b);\n    b.reset();\n    std::println(\"{}\", w.expired());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "lock создал второго владельца b; объект жив, пока жив b.",
+        "type": "text",
+        "answers": ["2\nfalse 5\ntrue"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Когда удаляется блок управления, если остались только weak_ptr?",
+        "explanation": "Наблюдателям нужен блок, чтобы узнать, что объект удалён.",
+        "options": [
+          "Когда исчезнет последний weak_ptr",
+          "Сразу вместе с объектом",
+          "Никогда",
+          "При вызове lock"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Где weak_ptr уместен? Выберите все.",
+        "explanation": "Владение выражают unique_ptr или shared_ptr.",
+        "type": "multiple",
+        "options": [
+          "Кэш, который не должен держать объекты в памяти",
+          "Список подписчиков у издателя",
+          "Ссылка ребёнка на родителя при shared_ptr сверху вниз",
+          "Единственный владелец объекта"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q7",
+        "question": "Как объекту, которым владеет shared_ptr, получить слабую ссылку на себя?",
+        "explanation": "weak_from_this появился в C++17.",
+        "options": [
+          "Наследовать enable_shared_from_this и вызвать weak_from_this()",
+          "std::weak_ptr<T>(this)",
+          "std::make_shared<T>(*this)",
+          "Никак"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какой метод weak_ptr возвращает shared_ptr на живой объект или пустой shared_ptr?",
+        "explanation": "Это единственный способ получить доступ к объекту.",
+        "type": "text",
+        "answers": ["lock", "lock()"],
+        "placeholder": "Метод"
       }
     ]
   }

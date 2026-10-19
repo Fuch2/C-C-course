@@ -1,132 +1,536 @@
 {
   "id": "cpp20-overload",
-  "title": "Function overload",
-  "description": "Перегрузки связывают одно понятие с разными статическими типами. Они удобнее макросов C, но неоднозначные преобразования дают ошибку компиляции.",
+  "title": "Перегрузка и шаблоны функций",
+  "description": "Перегрузка функций по типам и количеству параметров; почему возвращаемый тип не различает перегрузки; правила выбора и неоднозначные вызовы; nullptr и перегрузка; шаблоны функций, вывод параметра-типа и явное указание.",
   "moduleId": "cpp-fundamentals",
-  "order": 10,
+  "order": 12,
   "difficulty": "intermediate",
-  "estimatedMinutes": 50,
+  "estimatedMinutes": 45,
   "prerequisites": ["cpp20-range-for"],
   "objectives": [
-    "Объяснить, зачем появился Function overload и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Объявлять перегруженные функции",
+    "Предсказывать, какую перегрузку выберет компилятор, и устранять неоднозначность",
+    "Объяснять, зачем нужен nullptr",
+    "Писать простые шаблоны функций"
   ],
-  "tags": ["C++20", "основы C++", "Function overload"],
+  "tags": ["C++", "Перегрузка", "Шаблоны"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-overload-exercise",
-    "title": "Масштабирование двух видов измерений",
-    "description": "Ввод: I и int −1000…1000 либо D и конечное double в том же диапазоне, кратное 1. Создайте scale(int) → value×2 и scale(double) → value×0.5. Вызовите нужную через аргумент соответствующего типа. Для I выведите целое, для D — fixed с одной цифрой после точки.",
-    "difficulty": "intermediate",
+    "id": "cpp20-overload-task-1",
+    "title": "Площади фигур",
+    "description": "Каждая строка ввода — фигура и её размеры: `circle r`, `rect w h` или `triangle a b c` (длины сторон). Напишите три перегрузки функции `area` — с одним, двумя и тремя параметрами `double` — и напечатайте площадь каждой фигуры с двумя знаками после точки. Если треугольник с такими сторонами не существует (одна сторона не меньше суммы двух других), напечатайте `нет`.\n\nПлощадь треугольника по формуле Герона: `√(p(p − a)(p − b)(p − c))`, где `p` — полупериметр.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "I 7",
-        "output": "14\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "circle 1\nrect 2 3.5\n",
+        "output": "3.14\n7.00\n"
       },
       {
-        "input": "D 7",
-        "output": "3.5\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "triangle 3 4 5\ntriangle 1 2 3\n",
+        "output": "6.00\nнет\n"
       }
     ],
     "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
+      "Размеры положительны и не больше 10⁴; строк не больше 30. π = 3.14159265358979."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "double area(double r), double area(double w, double h), double area(double a, double b, double c) — компилятор выберет перегрузку по числу аргументов.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "Проверку существования треугольника сделайте до вызова area. Вывод: std::fixed и std::setprecision(2); корень — std::sqrt из <cmath>.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "I 7",
-        "expected": "14\n"
+        "stdin": "circle 1\nrect 2 3.5\n",
+        "expected": "3.14\n7.00\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "D 7",
-        "expected": "3.5\n"
+        "stdin": "triangle 3 4 5\ntriangle 1 2 3\n",
+        "expected": "6.00\nнет\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "I -4",
-        "expected": "-8\n"
+        "id": "hidden-1",
+        "name": "Круг радиуса 10",
+        "stdin": "circle 10\n",
+        "expected": "314.16\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "D -8",
-        "expected": "-4.0\n"
+        "id": "hidden-2",
+        "name": "Маленький круг",
+        "stdin": "circle 0.5\n",
+        "expected": "0.79\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный сценарий 3",
-        "stdin": "D 0",
-        "expected": "0.0\n"
+        "id": "hidden-3",
+        "name": "Большой прямоугольник",
+        "stdin": "rect 10000 10000\n",
+        "expected": "100000000.00\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Равносторонний",
+        "stdin": "triangle 2 2 2\n",
+        "expected": "1.73\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Невозможный",
+        "stdin": "triangle 1 1 3\n",
+        "expected": "нет\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Прямоугольный",
+        "stdin": "triangle 5 12 13\n",
+        "expected": "30.00\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Дробные",
+        "stdin": "rect 0.1 0.2\n",
+        "expected": "0.02\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Все фигуры",
+        "stdin": "circle 2\nrect 1 1\ntriangle 7 8 9\n",
+        "expected": "12.57\n1.00\n26.83\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <iomanip>\n\nint scale(int value) { return value * 2; }\ndouble scale(double value) { return value * 0.5; }\nint main() {\n    char tag{};\n    if (!(std::cin >> tag)) return 1;\n    if (tag == 'I') {\n        int value{};\n        if (!(std::cin >> value)) return 1;\n        std::cout << scale(value) << '\\n';\n    } else if (tag == 'D') {\n        double value{};\n        if (!(std::cin >> value)) return 1;\n        std::cout << std::fixed << std::setprecision(1) << scale(value) << '\\n';\n    } else return 1;\n}\n",
-    "solutionExplanation": "Статический тип аргумента выбирает точную перегрузку. Значение 7.0 не выбирает int только потому, что математически целое. Работа O(1). Для реального API смысл перегрузок стоит согласовывать; здесь различие намеренно делает выбор видимым в результате.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <cmath>\n#include <iomanip>\n#include <iostream>\n#include <string>\n\ndouble area(double r) {\n    return 3.14159265358979 * r * r;\n}\n\ndouble area(double w, double h) {\n    return w * h;\n}\n\ndouble area(double a, double b, double c) {\n    double p = (a + b + c) / 2;\n    return std::sqrt(p * (p - a) * (p - b) * (p - c));\n}\n\nint main() {\n    std::cout << std::fixed << std::setprecision(2);\n    std::string shape;\n    while (std::cin >> shape) {\n        if (shape == \"circle\") {\n            double r;\n            std::cin >> r;\n            std::cout << area(r) << '\\n';\n        } else if (shape == \"rect\") {\n            double w, h;\n            std::cin >> w >> h;\n            std::cout << area(w, h) << '\\n';\n        } else {\n            double a, b, c;\n            std::cin >> a >> b >> c;\n            if (a >= b + c || b >= a + c || c >= a + b) {\n                std::cout << \"нет\\n\";\n            } else {\n                std::cout << area(a, b, c) << '\\n';\n            }\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Три функции называются одинаково, потому что делают одно и то же — считают площадь, — а различаются числом параметров. Компилятор выбирает версию по вызову: `area(r)`, `area(w, h)` или `area(a, b, c)`. В C пришлось бы придумать три имени.\n\nПроверка существования треугольника стоит до формулы Герона: для вырожденного треугольника под корнем был бы 0 (площадь 0.00 — сомнительный ответ), а для невозможного — отрицательное число и `nan`.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-overload-task-2",
+      "title": "Описание значения",
+      "description": "До конца ввода идут слова. Каждое слово — целое число (необязательный знак и цифры), дробное число (необязательный знак, цифры, одна точка, цифры; хотя бы одна цифра) или что-то иное. Напишите три перегрузки `describe` для `long long`, `double` и `const std::string &` и для каждого слова напечатайте:\n\n- `целое N, чётное` или `целое N, нечётное`;\n- `дробное, округлено N` — до ближайшего целого (`std::llround`);\n- `слово S, длина L`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "42 -7 3.6 hello\n",
+          "output": "целое 42, чётное\nцелое -7, нечётное\nдробное, округлено 4\nслово hello, длина 5\n"
+        },
+        {
+          "input": ".5 - 1.2.3\n",
+          "output": "дробное, округлено 1\nслово -, длина 1\nслово 1.2.3, длина 5\n"
+        }
+      ],
+      "constraints": ["Слов не больше 100; целые числа по модулю до 10¹⁸; дробные — до 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сначала определите вид слова проверкой символов: функции is_integer и is_real. Затем преобразуйте: std::stoll для целых, std::stod для дробных, — и вызовите describe с нужным типом.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Перегрузка выбирается по типу аргумента: describe(std::stoll(w)), describe(std::stod(w)), describe(w).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "42 -7 3.6 hello\n",
+          "expected": "целое 42, чётное\nцелое -7, нечётное\nдробное, округлено 4\nслово hello, длина 5\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": ".5 - 1.2.3\n",
+          "expected": "дробное, округлено 1\nслово -, длина 1\nслово 1.2.3, длина 5\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ноль",
+          "stdin": "0\n",
+          "expected": "целое 0, чётное\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Большие целые",
+          "stdin": "1000000000000000000 -999999999999999999\n",
+          "expected": "целое 1000000000000000000, чётное\nцелое -999999999999999999, нечётное\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Округление половин",
+          "stdin": "2.5 -2.5 0.49\n",
+          "expected": "дробное, округлено 3\nдробное, округлено -3\nдробное, округлено 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Знак плюс",
+          "stdin": "+5 +2.0\n",
+          "expected": "целое 5, нечётное\nдробное, округлено 2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Точка с краю",
+          "stdin": "5. .\n",
+          "expected": "дробное, округлено 5\nслово ., длина 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Смешанные",
+          "stdin": "abc 12a a12\n",
+          "expected": "слово abc, длина 3\nслово 12a, длина 3\nслово a12, длина 3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Минус ноль",
+          "stdin": "-0 -0.0\n",
+          "expected": "целое 0, чётное\nдробное, округлено 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Разное",
+          "stdin": "C++ 3.14159 2026\n",
+          "expected": "слово C++, длина 3\nдробное, округлено 3\nцелое 2026, чётное\n"
+        }
+      ],
+      "referenceSolution": "#include <cmath>\n#include <iostream>\n#include <string>\n\nbool is_digit(char c) {\n    return c >= '0' && c <= '9';\n}\n\nbool is_integer(const std::string &w) {\n    std::size_t i = (w[0] == '-' || w[0] == '+') ? 1 : 0;\n    if (i == w.size()) {\n        return false;\n    }\n    for (; i < w.size(); i++) {\n        if (!is_digit(w[i])) {\n            return false;\n        }\n    }\n    return true;\n}\n\nbool is_real(const std::string &w) {\n    std::size_t i = (w[0] == '-' || w[0] == '+') ? 1 : 0;\n    int dots = 0, digits = 0;\n    for (; i < w.size(); i++) {\n        if (w[i] == '.') {\n            dots++;\n        } else if (is_digit(w[i])) {\n            digits++;\n        } else {\n            return false;\n        }\n    }\n    return dots == 1 && digits > 0;\n}\n\nvoid describe(long long n) {\n    std::cout << \"целое \" << n << \", \" << (n % 2 == 0 ? \"чётное\" : \"нечётное\") << '\\n';\n}\n\nvoid describe(double x) {\n    std::cout << \"дробное, округлено \" << std::llround(x) << '\\n';\n}\n\nvoid describe(const std::string &s) {\n    std::cout << \"слово \" << s << \", длина \" << s.size() << '\\n';\n}\n\nint main() {\n    std::string w;\n    while (std::cin >> w) {\n        if (is_integer(w)) {\n            describe(std::stoll(w));\n        } else if (is_real(w)) {\n            describe(std::stod(w));\n        } else {\n            describe(w);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Перегрузка позволяет назвать все три действия одним словом — «описать», — а выбор делает компилятор по типу аргумента: `std::stoll` возвращает `long long`, `std::stod` — `double`, а строка остаётся строкой. Если бы перегрузки для `long long` не было, вызов `describe(std::stoll(w))` молча выбрал бы `describe(double)`: преобразования `long long` в `std::string` нет, а в `double` есть, — и большие целые потеряли бы точность.\n\nВид слова определяется заранее проверкой символов, поэтому `stoll` и `stod` получают только корректные строки и не бросают исключений. `std::llround` округляет половины от нуля: 2.5 → 3, −2.5 → −3. Остаток `n % 2` для отрицательных нечётных равен −1, поэтому проверка — `== 0`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-overload-task-3",
+      "title": "Найди ошибку: ограничение диапазона",
+      "description": "Программа читает целые числа до конца ввода и для каждого печатает его, ограниченное отрезком `[0, 100]`: меньше 0 — печатается 0, больше 100 — 100. Для этого есть две перегрузки `clamp_value` — для `long long` и для `double`.\n\nПрограмма не компилируется. Исправьте её.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nlong long clamp_value(long long value, long long lo, long long hi) {\n    return value < lo ? lo : hi < value ? hi : value;\n}\n\ndouble clamp_value(double value, double lo, double hi) {\n    return value < lo ? lo : hi < value ? hi : value;\n}\n\nint main() {\n    int x;\n    while (std::cin >> x) {\n        std::cout << clamp_value(x, 0, 100) << '\\n';\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "50\n-5\n150\n",
+          "output": "50\n0\n100\n"
+        },
+        {
+          "input": "0 100\n",
+          "output": "0\n100\n"
+        }
+      ],
+      "constraints": ["Числа int; не больше 100 чисел."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Прочитайте сообщение компилятора: call of overloaded clamp_value(int&, int, int) is ambiguous. Почему ни одна перегрузка не подходит лучше другой?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "int → long long и int → double — преобразования одного ранга. Замените две перегрузки одним шаблоном template <typename T> T clamp_value(T value, T lo, T hi) — для int компилятор создаст точную версию.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "50\n-5\n150\n",
+          "expected": "50\n0\n100\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0 100\n",
+          "expected": "0\n100\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "-2147483648\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "2147483647\n",
+          "expected": "100\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1\n99\n",
+          "expected": "1\n99\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "101\n-1\n",
+          "expected": "100\n0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "42\n",
+          "expected": "42\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "7 -7 77 777\n",
+          "expected": "7\n0\n77\n100\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "100 100 0 0\n",
+          "expected": "100\n100\n0\n0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "55 66 -77 188\n",
+          "expected": "55\n66\n0\n100\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n\ntemplate <typename T>\nT clamp_value(T value, T lo, T hi) {\n    return value < lo ? lo : hi < value ? hi : value;\n}\n\nint main() {\n    int x;\n    while (std::cin >> x) {\n        std::cout << clamp_value(x, 0, 100) << '\\n';\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Аргументы вызова `clamp_value(x, 0, 100)` — три `int`. Перегрузки для `int` нет, а превращение `int` в `long long` и `int` в `double` — преобразования одного ранга. Ни один вариант не лучше другого, и компилятор сообщает о неоднозначности.\n\nМожно было бы привести аргументы явно или добавить третью перегрузку для `int`. Но все три функции одинаковы, кроме типа, — это прямое показание для шаблона: одно тело, а версию для нужного типа создаст компилятор. Так устроена и стандартная `std::clamp` из `<algorithm>`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-overload-task-4",
+      "title": "Обобщённая статистика",
+      "description": "Первая строка — тип значений: `int` или `str`. Вторая — `n`, третья — `n` значений этого типа (числа или слова). Напечатайте `минимум A, максимум B, различных K`.\n\nНапишите **шаблоны** функций, работающие с `std::vector<T>` для любого `T` с оператором `<`: `smallest`, `largest` и `count_distinct`, — и вызовите их для `std::vector<long long>` или `std::vector<std::string>`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "int\n5\n3 -1 3 7 -1\n",
+          "output": "минимум -1, максимум 7, различных 3\n"
+        },
+        {
+          "input": "str\n4\npear apple pear fig\n",
+          "output": "минимум apple, максимум pear, различных 3\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 1000; числа по модулю до 10¹⁸; слова — латинские буквы до 20 символов."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "template <typename T> T smallest(const std::vector<T> &v) — цикл по элементам с запоминанием наименьшего. largest — так же.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "count_distinct: скопируйте вектор (параметр по значению — уже копия), отсортируйте std::sort, удалите соседние повторы std::unique и верните новый размер.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Чтобы не писать вывод дважды, сделайте шаблон report(const std::vector<T> &v), который вызывает остальные и печатает строку.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "int\n5\n3 -1 3 7 -1\n",
+          "expected": "минимум -1, максимум 7, различных 3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "str\n4\npear apple pear fig\n",
+          "expected": "минимум apple, максимум pear, различных 3\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одно число",
+          "stdin": "int\n1\n42\n",
+          "expected": "минимум 42, максимум 42, различных 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Одно слово",
+          "stdin": "str\n1\nsolo\n",
+          "expected": "минимум solo, максимум solo, различных 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Все равны",
+          "stdin": "int\n4\n5 5 5 5\n",
+          "expected": "минимум 5, максимум 5, различных 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Крайние значения",
+          "stdin": "int\n3\n1000000000000000000 -1000000000000000000 0\n",
+          "expected": "минимум -1000000000000000000, максимум 1000000000000000000, различных 3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Регистр",
+          "stdin": "str\n3\nb B a\n",
+          "expected": "минимум B, максимум b, различных 3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Префиксы",
+          "stdin": "str\n5\nab a abc abcd a\n",
+          "expected": "минимум a, максимум abcd, различных 4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Все различны",
+          "stdin": "int\n6\n9 8 7 6 5 4\n",
+          "expected": "минимум 4, максимум 9, различных 6\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Повтор слова",
+          "stdin": "str\n4\nzeta zeta zeta zeta\n",
+          "expected": "минимум zeta, максимум zeta, различных 1\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <string>\n#include <vector>\n\ntemplate <typename T>\nT smallest(const std::vector<T> &v) {\n    T best = v[0];\n    for (const auto &x : v) {\n        if (x < best) {\n            best = x;\n        }\n    }\n    return best;\n}\n\ntemplate <typename T>\nT largest(const std::vector<T> &v) {\n    T best = v[0];\n    for (const auto &x : v) {\n        if (best < x) {\n            best = x;\n        }\n    }\n    return best;\n}\n\ntemplate <typename T>\nstd::size_t count_distinct(std::vector<T> v) {\n    std::sort(v.begin(), v.end());\n    return static_cast<std::size_t>(std::unique(v.begin(), v.end()) - v.begin());\n}\n\ntemplate <typename T>\nvoid report(int n) {\n    std::vector<T> values(static_cast<std::size_t>(n));\n    for (auto &x : values) {\n        std::cin >> x;\n    }\n    std::cout << \"минимум \" << smallest(values) << \", максимум \" << largest(values)\n              << \", различных \" << count_distinct(values) << '\\n';\n}\n\nint main() {\n    std::string type;\n    int n;\n    if (!(std::cin >> type >> n) || n < 1) {\n        return 0;\n    }\n    if (type == \"int\") {\n        report<long long>(n);\n    } else {\n        report<std::string>(n);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Все функции используют только оператор `<`, копирование и сортировку — поэтому одно и то же тело работает и для чисел, и для строк. Компилятор создаёт две версии каждого шаблона: с `T = long long` и с `T = std::string`. Для строк `<` сравнивает по алфавиту (по кодам символов), поэтому минимум — первое по алфавиту слово.\n\n`report` — шаблон, у которого `T` не выводится из аргументов (параметр только `int n`), поэтому тип указан явно: `report<long long>(n)`. `count_distinct` принимает вектор **по значению**: функции нужна своя копия для сортировки, и передача по значению выражает это честнее, чем копирование внутри.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-overload-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «Function overload»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "Перегрузки связывают одно понятие с разными статическими типами. Они удобнее макросов C, но неоднозначные преобразования дают ошибку компиляции."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n\nint f(int) { return 1; }\nint f(double) { return 2; }\nint f(char) { return 3; }\n\nint main() {\n    std::cout << f(10) << f(1.5) << f('x') << f(2.5f) << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "int, double и char совпадают точно. float продвигается до double — это лучше, чем преобразование в int или char.",
+        "type": "text",
+        "answers": ["1232"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
+        "id": "q2",
+        "question": "Можно ли объявить вместе int parse(std::string s) и double parse(std::string s)?",
+        "explanation": "Вызов parse(s) не содержит информации о нужном возвращаемом типе — различить функции невозможно.",
         "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
+          "Нет: перегрузки должны различаться параметрами, а возвращаемый тип не учитывается",
+          "Да: компилятор выберет по типу переменной, в которую сохраняют результат",
+          "Да, если функции в одном файле",
+          "Только для шаблонов"
         ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "correct": 0
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Какая функция будет вызвана: check(0) при перегрузках check(int) и check(int *)?",
+        "explanation": "0 — литерал типа int, точное совпадение с check(int). Для пустого указателя нужен nullptr.",
+        "options": ["check(int)", "check(int *)", "Ошибка неоднозначности", "Ни одна"],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Почему вызов show(5) неоднозначен при перегрузках show(long) и show(double)?",
+        "explanation": "Добавьте show(int) или приведите аргумент явно: show(5L), show(5.0).",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "int → long и int → double — преобразования одного ранга, лучшего варианта нет",
+          "5 подходит только к show(double)",
+          "Перегрузки с long запрещены",
+          "Компилятор не знает тип литерала 5"
         ],
-        "correct": 0,
-        "explanation": "Используйте Function overload как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <string>\n\ntemplate <typename T>\nT repeat_add(T value, int times) {\n    T result = value;\n    for (int i = 1; i < times; i++) {\n        result = result + value;\n    }\n    return result;\n}\n\nint main() {\n    std::cout << repeat_add(5, 3) << ' ' << repeat_add(std::string(\"ab\"), 3) << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Один шаблон, две версии: для int сложение чисел, для std::string — склеивание строк.",
+        "type": "text",
+        "answers": ["15 ababab"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Почему не компилируется std::max(3, 2.5)?",
+        "explanation": "Укажите тип явно — std::max<double>(3, 2.5) — или передайте аргументы одного типа.",
+        "options": [
+          "У шаблона один параметр-тип T, а аргументы разных типов — T не выводится однозначно",
+          "std::max работает только с целыми",
+          "std::max принимает три аргумента",
+          "Нужно подключить <cmath>"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Чем шаблон функции лучше макроса #define MAX(a, b) ((a) > (b) ? (a) : (b))?",
+        "explanation": "Скорость обычно одинакова — функция-шаблон встраивается. Главное — безопасность и понятность.",
+        "type": "multiple",
+        "options": [
+          "Проверяются типы",
+          "Аргументы вычисляются один раз",
+          "Ошибки сообщаются в терминах функции, а не текстовой подстановки",
+          "Шаблон работает быстрее при любых условиях"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q8",
+        "question": "Какой тип T выведет компилятор при вызове largest('a', 'z') для template <typename T> T largest(T, T)?",
+        "explanation": "Оба аргумента — символьные литералы типа char, поэтому T = char.",
+        "type": "text",
+        "answers": ["char"],
+        "placeholder": "Тип"
       }
     ]
   }

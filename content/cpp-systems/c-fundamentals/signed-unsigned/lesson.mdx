@@ -87,7 +87,7 @@ int main(void) {
 Сравнение `-1 < 10` должно быть истинным (1), но программа говорит, что ложно. Перед сравнением `balance` превратился в 4 294 967 295, а это больше 10. Компилятор предупреждает:
 
 ```text
-warning: comparison of integer expressions of different signedness: ‘int’ and ‘unsigned int’ [-Wsign-compare]
+warning: comparison of integer expressions of different signedness: 'int' and 'unsigned int' [-Wsign-compare]
 ```
 
 Если видите такое предупреждение — это не формальность, а реальная ошибка в логике.

@@ -1,196 +1,439 @@
 {
   "id": "oop-interfaces",
-  "title": "Интерфейсы: минимальные зависимости",
-  "description": "В C++ нет отдельного ключевого слова interface. Интерфейс обычно выражают абстрактным классом с небольшим набором чисто виртуальных операций и подходящим деструктором. Он описывает не только сигнатуру, но и смысл: единицы, допустимые аргументы, состояние после вызова, возможные ошибки. Два метода с одинаковыми типами ещё не означают одинаковый контракт.",
+  "title": "Интерфейсы",
+  "description": "Интерфейс в C++ — только открытые чисто виртуальные функции и виртуальный деструктор; способность вместо родства; реализация нескольких интерфейсов; принцип разделения интерфейсов и методы-заглушки; зависимость от абстракции, внедрение и подмена реализаций — принцип инверсии зависимостей. Второй этап проекта «Система обработки датчиков».",
   "moduleId": "cpp-oop",
-  "order": 21,
-  "difficulty": "advanced",
-  "estimatedMinutes": 60,
-  "prerequisites": ["oop-virtual-destructor"],
+  "order": 24,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["oop-slicing"],
   "objectives": [
-    "Применить Интерфейсы: минимальные зависимости в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Описывать способности объектов интерфейсами",
+    "Реализовывать несколько интерфейсов в одном классе",
+    "Делить толстые интерфейсы на маленькие",
+    "Писать логику, зависящую от интерфейса, и подменять реализацию"
   ],
-  "tags": ["C++20", "ООП", "Интерфейсы: минимальные зависимости", "датчики", "проект"],
+  "tags": ["C++23", "ООП", "Интерфейс", "SOLID", "Проект"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-interfaces-exercise",
-    "title": "Практика: Интерфейсы: минимальные зависимости",
-    "description": "Создайте Reader с pure virtual int read() const и виртуальным деструктором. ConstantReader(int) реализует его. int difference(const Reader& left,const Reader& right) возвращает left.read()-right.read(). solve(a,b) передаёт два ConstantReader в difference. Функция difference не должна зависеть от ConstantReader. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Печать и цены",
+    "description": "Два интерфейса: `Printable` (`std::string text() const`) и `Priced` (`long long price() const`). Классы: `Book` (название, цена) — реализует оба, текст `книга «название»`; `Delivery` (цена) — только `Priced`; `Note` (текст) — только `Printable`, текст — сама заметка.\n\nСтроки ввода: `book название цена`, `delivery цена`, `note текст` (одно слово). Сначала напечатайте тексты всех печатаемых объектов в порядке ввода (функция `void print_all(const std::vector<const Printable *> &)`), затем `итого S` — сумму цен всех объектов с ценой (функция `long long total(const std::vector<const Priced *> &)`).",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(8, 3)",
-        "output": "5\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "book Дюна 900\ndelivery 300\nnote срочно\n",
+        "output": "книга «Дюна»\nсрочно\nитого 1200\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "",
+        "output": "итого 0\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Строк не больше 30; цены до 10⁶."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "Объекты храните в std::vector<std::unique_ptr<…>> конкретных типов или по отдельности; для книги кладите указатель и в вектор Printable, и в вектор Priced.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Один объект Book можно добавить в оба вектора: &*book_ptr превращается и в const Printable *, и в const Priced *.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [8, 3],
-        "expected": "5\n"
+        "stdin": "book Дюна 900\ndelivery 300\nnote срочно\n",
+        "expected": "книга «Дюна»\nсрочно\nитого 1200\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "",
+        "expected": "итого 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [-2, 5],
-        "expected": "-7\n"
+        "id": "hidden-1",
+        "name": "Только заметки",
+        "stdin": "note a\nnote b\n",
+        "expected": "a\nb\nитого 0\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [1000, -1000],
-        "expected": "2000\n"
+        "id": "hidden-2",
+        "name": "Только доставка",
+        "stdin": "delivery 1\ndelivery 2\n",
+        "expected": "итого 3\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Дорогая книга",
+        "stdin": "book Кобзарь 1000000\n",
+        "expected": "книга «Кобзарь»\nитого 1000000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Порядок печати",
+        "stdin": "note x\nbook y 5\nnote z\n",
+        "expected": "x\nкнига «y»\nz\nитого 5\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Две книги",
+        "stdin": "book a 1\nbook b 2\ndelivery 3\n",
+        "expected": "книга «a»\nкнига «b»\nитого 6\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Бесплатная доставка",
+        "stdin": "delivery 0\n",
+        "expected": "итого 0\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Заказ",
+        "stdin": "book Война 700\nnote подарок\ndelivery 250\nbook Мир 700\n",
+        "expected": "книга «Война»\nподарок\nкнига «Мир»\nитого 1650\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Одна заметка",
+        "stdin": "note только_текст\n",
+        "expected": "только_текст\nитого 0\n"
       }
     ],
-    "referenceSolution": "struct Reader { virtual int read() const = 0; virtual ~Reader() = default; };\nclass ConstantReader : public Reader { int value_; public: explicit ConstantReader(int x) : value_(x) {} int read() const override { return value_; } };\nint difference(const Reader& left,const Reader& right) { return left.read()-right.read(); }\nint solve(int a,int b) { ConstantReader x{a},y{b}; return difference(x,y); }",
-    "solutionExplanation": "Создайте Reader с pure virtual int read() const и виртуальным деструктором. ConstantReader(int) реализует его. int difference(const Reader& left,const Reader& right) возвращает left.read()-right.read(). solve(a,b) передаёт два ConstantReader в difference. Функция difference не должна зависеть от ConstantReader. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не добавляйте в Sensor метод сохранения отчёта: он принадлежит потребителю телеметрии. Не заставляйте фильтр знать конкретный класс датчика. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Printable {\npublic:\n    virtual ~Printable() = default;\n    virtual std::string text() const = 0;\n};\n\nclass Priced {\npublic:\n    virtual ~Priced() = default;\n    virtual long long price() const = 0;\n};\n\nclass Book final : public Printable, public Priced {\npublic:\n    Book(std::string title, long long price) : title_(std::move(title)), price_(price) {}\n    std::string text() const override {\n        return \"книга «\" + title_ + \"»\";\n    }\n    long long price() const override {\n        return price_;\n    }\n\nprivate:\n    std::string title_;\n    long long price_;\n};\n\nclass Delivery final : public Priced {\npublic:\n    explicit Delivery(long long price) : price_(price) {}\n    long long price() const override {\n        return price_;\n    }\n\nprivate:\n    long long price_;\n};\n\nclass Note final : public Printable {\npublic:\n    explicit Note(std::string text) : text_(std::move(text)) {}\n    std::string text() const override {\n        return text_;\n    }\n\nprivate:\n    std::string text_;\n};\n\nvoid print_all(const std::vector<const Printable *> &items) {\n    for (const Printable *p : items) {\n        std::println(\"{}\", p->text());\n    }\n}\n\nlong long total(const std::vector<const Priced *> &items) {\n    long long sum = 0;\n    for (const Priced *p : items) {\n        sum += p->price();\n    }\n    return sum;\n}\n\nint main() {\n    std::vector<std::unique_ptr<Book>> books;\n    std::vector<std::unique_ptr<Delivery>> deliveries;\n    std::vector<std::unique_ptr<Note>> notes;\n    std::vector<const Printable *> printable;\n    std::vector<const Priced *> priced;\n    std::string kind;\n    while (std::cin >> kind) {\n        if (kind == \"book\") {\n            std::string title;\n            long long price;\n            std::cin >> title >> price;\n            books.push_back(std::make_unique<Book>(title, price));\n            printable.push_back(books.back().get());\n            priced.push_back(books.back().get());\n        } else if (kind == \"delivery\") {\n            long long price;\n            std::cin >> price;\n            deliveries.push_back(std::make_unique<Delivery>(price));\n            priced.push_back(deliveries.back().get());\n        } else {\n            std::string text;\n            std::cin >> text;\n            notes.push_back(std::make_unique<Note>(text));\n            printable.push_back(notes.back().get());\n        }\n    }\n    print_all(printable);\n    std::println(\"итого {}\", total(priced));\n    return 0;\n}\n",
+    "solutionExplanation": "Книга, доставка и заметка ничем не родственны — у них разные способности. Интерфейсы описывают именно способности, и каждая функция требует ровно то, что использует: `print_all` — печать, `total` — цену. Книга умеет и то и другое и попадает в оба списка.\n\nОбъекты принадлежат векторам `unique_ptr`, а списки интерфейсов лишь указывают на них. Указатели на объекты в куче не портятся при росте векторов `unique_ptr`, поэтому `reserve` не нужен.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
   "additionalExercises": [
     {
-      "id": "oop-project-filter",
-      "title": "Проект, этап 2: инвариант фильтра",
-      "description": "Реализуйте Measurement{int sensorId,int value} и Filter(int low,int high). Границы private, конструктор бросает std::invalid_argument при low>high. bool accepts(const Measurement&) const использует замкнутый диапазон. solve(a,b) создаёт Filter{a,b} и возвращает количество принятых измерений с value −100, 0, 100 (id=1,2,3 соответственно); при std::invalid_argument возвращает −1. Аргументы целые −1000…1000. Без main. Не перехватывайте другие исключения.",
-      "difficulty": "advanced",
+      "id": "oop-interfaces-task-2",
+      "title": "Подменный отправитель",
+      "description": "Интерфейс `Sender` с методом `void send(const std::string &to, const std::string &text)`. Класс `OrderService` получает ссылку на `Sender` в конструкторе и в методе `place(customer, amount)` отправляет `заказ на N принят` — если сумма положительна, иначе ничего не делает. Реализации:\n\n- `ConsoleSender` печатает `для имя: текст`;\n- `RecordingSender` ничего не печатает, а запоминает получателей.\n\nПервое слово ввода — `console` или `record` — выбирает реализацию. Затем строки `имя сумма`. После всех заказов для `record` напечатайте `отправлено N: имена через пробел` (или `отправлено 0`); для `console` — ничего дополнительно.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "cpp",
-      "standard": "c++20",
-      "compiler": "clang",
+      "standard": "c++23",
+      "compiler": "gcc",
       "diagnostics": "sanitizers",
-      "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <stdexcept>\n#include <utility>\nstruct Measurement { int sensorId; int value; };\nclass Filter {\n    int low_; int high_;\npublic:\n    Filter(int low, int high) : low_(low), high_(high) {\n        // Добавьте проверку инварианта границ.\n    }\n    bool accepts(const Measurement& m) const {\n        (void)m; (void)low_; (void)high_;\n        throw std::logic_error(\"Реализуйте проверку диапазона\");\n    }\n};\nint solve(int a,int b) { (void)a; (void)b; throw std::logic_error(\"Проверьте три измерения и обработайте отказ конструктора\"); }",
       "examples": [
         {
-          "input": "solve(-100, 100)",
-          "output": "3\n",
-          "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+          "input": "console\nАда 1500\nАлан 0\n",
+          "output": "для Ада: заказ на 1500 принят\n"
         },
         {
-          "input": "solve(0, 0)",
-          "output": "1\n",
-          "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+          "input": "record\na 1\nb 0\nc 5\n",
+          "output": "отправлено 2: a c\n"
         }
       ],
-      "constraints": [
-        "Аргументы a, b — целые от −1000 до 1000 включительно.",
-        "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-        "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-      ],
+      "constraints": ["Заказов не больше 30; суммы по модулю до 10⁶."],
       "hints": [
         {
           "id": "hint-1",
-          "order": 1,
-          "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+          "text": "OrderService хранит Sender &sender_ и не знает, какая реализация ему досталась.",
+          "order": 1
         },
         {
           "id": "hint-2",
-          "order": 2,
-          "text": "Проверка в конструкторе исключает существование ошибочного фильтра. accepts не зависит от вида датчика и не меняет измерение. Обе границы включены; точечный диапазон допустим. Один вызов O(1), тестовый обход трёх значений O(1)."
+          "text": "RecordingSender: std::vector<std::string> recipients_; send добавляет to; метод recipients() const возвращает константную ссылку на вектор.",
+          "order": 2
         }
       ],
       "publicTests": [
         {
           "id": "case-1",
           "name": "Пример 1",
-          "arguments": [-100, 100],
-          "expected": "3\n"
+          "stdin": "console\nАда 1500\nАлан 0\n",
+          "expected": "для Ада: заказ на 1500 принят\n"
         },
         {
           "id": "case-2",
           "name": "Пример 2",
-          "arguments": [0, 0],
-          "expected": "1\n"
+          "stdin": "record\na 1\nb 0\nc 5\n",
+          "expected": "отправлено 2: a c\n"
         }
       ],
       "hiddenTests": [
         {
-          "id": "case-3",
-          "name": "Граничный сценарий 1",
-          "arguments": [1, -1],
-          "expected": "-1\n"
+          "id": "hidden-1",
+          "name": "Пустая запись",
+          "stdin": "record\n",
+          "expected": "отправлено 0\n"
         },
         {
-          "id": "case-4",
-          "name": "Граничный сценарий 2",
-          "arguments": [-99, 99],
-          "expected": "1\n"
+          "id": "hidden-2",
+          "name": "Пустая консоль",
+          "stdin": "console\n",
+          "expected": ""
         },
         {
-          "id": "case-5",
-          "name": "Граничный сценарий 3",
-          "arguments": [101, 1000],
-          "expected": "0\n"
+          "id": "hidden-3",
+          "name": "Отрицательная сумма",
+          "stdin": "record\nx -5\n",
+          "expected": "отправлено 0\n"
         },
         {
-          "id": "case-6",
-          "name": "Граничный сценарий 4",
-          "arguments": [-100, -100],
-          "expected": "1\n"
+          "id": "hidden-4",
+          "name": "Две отправки",
+          "stdin": "console\na 1\nb 2\n",
+          "expected": "для a: заказ на 1 принят\nдля b: заказ на 2 принят\n"
         },
         {
-          "id": "case-7",
-          "name": "Граничный сценарий 5",
-          "arguments": [100, 100],
-          "expected": "1\n"
+          "id": "hidden-5",
+          "name": "Один получатель дважды",
+          "stdin": "record\nИван 100\nИван 200\n",
+          "expected": "отправлено 2: Иван Иван\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Большая сумма",
+          "stdin": "console\nbig 1000000\n",
+          "expected": "для big: заказ на 1000000 принят\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Три из четырёх",
+          "stdin": "record\np 1\nq 1\nr 1\ns 0\n",
+          "expected": "отправлено 3: p q r\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Ничего не отправлено",
+          "stdin": "console\nz 0\n",
+          "expected": ""
         }
       ],
-      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <stdexcept>\n#include <utility>\nstruct Measurement { int sensorId; int value; };\nclass Filter {\n    int low_;\n    int high_;\npublic:\n    Filter(int low, int high) : low_(low), high_(high) {\n        if (low > high) throw std::invalid_argument(\"Некорректный диапазон\");\n    }\n    bool accepts(const Measurement& m) const {\n        return low_ <= m.value && m.value <= high_;\n    }\n};\nint solve(int a,int b) { try { Filter f{a,b}; int count=0; for (const auto& m : std::vector<Measurement>{{1,-100},{2,0},{3,100}}) if(f.accepts(m)) ++count; return count; } catch(const std::invalid_argument&) { return -1; } }",
-      "solutionExplanation": "Проверка в конструкторе исключает существование ошибочного фильтра. accepts не зависит от вида датчика и не меняет измерение. Обе границы включены; точечный диапазон допустим. Один вызов O(1), тестовый обход трёх значений O(1).",
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Sender {\npublic:\n    virtual ~Sender() = default;\n    virtual void send(const std::string &to, const std::string &text) = 0;\n};\n\nclass ConsoleSender final : public Sender {\npublic:\n    void send(const std::string &to, const std::string &text) override {\n        std::println(\"для {}: {}\", to, text);\n    }\n};\n\nclass RecordingSender final : public Sender {\npublic:\n    void send(const std::string &to, const std::string &) override {\n        recipients_.push_back(to);\n    }\n\n    const std::vector<std::string> &recipients() const {\n        return recipients_;\n    }\n\nprivate:\n    std::vector<std::string> recipients_;\n};\n\nclass OrderService {\npublic:\n    explicit OrderService(Sender &sender) : sender_(sender) {}\n\n    void place(const std::string &customer, long long amount) {\n        if (amount > 0) {\n            sender_.send(customer, \"заказ на \" + std::to_string(amount) + \" принят\");\n        }\n    }\n\nprivate:\n    Sender &sender_;\n};\n\nvoid run(Sender &sender) {\n    OrderService service(sender);\n    std::string name;\n    long long amount;\n    while (std::cin >> name >> amount) {\n        service.place(name, amount);\n    }\n}\n\nint main() {\n    std::string mode;\n    std::cin >> mode;\n    if (mode == \"console\") {\n        ConsoleSender console;\n        run(console);\n    } else {\n        RecordingSender recorder;\n        run(recorder);\n        std::string names;\n        for (const std::string &n : recorder.recipients()) {\n            names += \" \" + n;\n        }\n        std::println(\"отправлено {}{}\", recorder.recipients().size(), names.empty() ? \"\" : \":\" + names);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`OrderService` и `run` написаны против интерфейса и работают с любой реализацией. Проверочный `RecordingSender` позволяет убедиться, что сервис отправляет уведомления нужным людям и не отправляет при неположительной сумме, — без настоящей отправки и без разбора напечатанного текста.\n\nЭто и есть смысл инверсии зависимостей: логика магазина не зависит от способа доставки сообщений. Завтра появится отправка в мессенджер — сервис не изменится.",
       "checking": {
-        "type": "function",
-        "functionName": "solve",
-        "returnType": "int",
-        "parameters": [
-          { "name": "a", "type": "int" },
-          { "name": "b", "type": "int" }
-        ]
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-interfaces-task-3",
+      "title": "Найди ошибку: толстый интерфейс",
+      "description": "Журнал пополняется заметками (`note слово`), команда `restore` дописывает в журнал содержимое архива `[архив]`, `backup` печатает текущее содержимое журнала. В конце печатается `журнал: …`.\n\nПрограмма написана с одним интерфейсом `Storage` (чтение и запись), и архив вынужден реализовать запись заглушкой. Команда `restore` приводит к аварийному завершению. Найдите причину и исправьте устройство интерфейсов так, чтобы попытка записать в архив стала **ошибкой компиляции**.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <stdexcept>\n#include <string>\n#include <utility>\n\nclass Storage {\npublic:\n    virtual ~Storage() = default;\n    virtual std::string read() const = 0;\n    virtual void write(const std::string &text) = 0;\n};\n\nclass Archive final : public Storage {\npublic:\n    explicit Archive(std::string text) : text_(std::move(text)) {}\n    std::string read() const override {\n        return text_;\n    }\n    void write(const std::string &) override {\n        throw std::logic_error(\"архив только для чтения\");\n    }\n\nprivate:\n    std::string text_;\n};\n\nclass Journal final : public Storage {\npublic:\n    std::string read() const override {\n        return text_;\n    }\n    void write(const std::string &text) override {\n        text_ += text;\n    }\n\nprivate:\n    std::string text_;\n};\n\nvoid copy_to(Storage &from, Storage &to) {\n    to.write(from.read());\n}\n\nint main() {\n    Archive archive(\"[архив]\");\n    Journal journal;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"note\") {\n            std::string text;\n            std::cin >> text;\n            journal.write(text);\n        } else if (command == \"restore\") {\n            copy_to(journal, archive);\n        } else if (command == \"backup\") {\n            std::println(\"резервная копия: {}\", journal.read());\n        }\n    }\n    std::println(\"журнал: {}\", journal.read());\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "note a\nrestore\nnote b\n",
+          "output": "журнал: a[архив]b\n"
+        },
+        {
+          "input": "note x\nbackup\n",
+          "output": "резервная копия: x\nжурнал: x\n"
+        }
+      ],
+      "constraints": ["Команд не больше 30."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что делает copy_to(archive, journal), если перепутать аргументы? А что происходит сейчас?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Разделите Storage на Readable (read) и Writable (write). Архив реализует только Readable, журнал — оба. copy_to принимает const Readable & и Writable &.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "note a\nrestore\nnote b\n",
+          "expected": "журнал: a[архив]b\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "note x\nbackup\n",
+          "expected": "резервная копия: x\nжурнал: x\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "restore\n",
+          "expected": "журнал: [архив]\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "restore\nrestore\n",
+          "expected": "журнал: [архив][архив]\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "note q\nrestore\nbackup\n",
+          "expected": "резервная копия: q[архив]\nжурнал: q[архив]\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "backup\n",
+          "expected": "резервная копия: \nжурнал: \n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "note one\nnote two\nrestore\n",
+          "expected": "журнал: onetwo[архив]\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "restore\nnote end\n",
+          "expected": "журнал: [архив]end\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "note a\nbackup\nrestore\nbackup\n",
+          "expected": "резервная копия: a\nрезервная копия: a[архив]\nжурнал: a[архив]\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "note только\n",
+          "expected": "журнал: только\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <stdexcept>\n#include <string>\n#include <utility>\n\nclass Readable {\npublic:\n    virtual ~Readable() = default;\n    virtual std::string read() const = 0;\n};\n\nclass Writable {\npublic:\n    virtual ~Writable() = default;\n    virtual void write(const std::string &text) = 0;\n};\n\nclass Archive final : public Readable {\npublic:\n    explicit Archive(std::string text) : text_(std::move(text)) {}\n    std::string read() const override {\n        return text_;\n    }\n\nprivate:\n    std::string text_;\n};\n\nclass Journal final : public Readable, public Writable {\npublic:\n    std::string read() const override {\n        return text_;\n    }\n    void write(const std::string &text) override {\n        text_ += text;\n    }\n\nprivate:\n    std::string text_;\n};\n\nvoid copy_to(const Readable &from, Writable &to) {\n    to.write(from.read());\n}\n\nint main() {\n    Archive archive(\"[архив]\");\n    Journal journal;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"note\") {\n            std::string text;\n            std::cin >> text;\n            journal.write(text);\n        } else if (command == \"restore\") {\n            copy_to(archive, journal);\n        } else if (command == \"backup\") {\n            std::println(\"резервная копия: {}\", journal.read());\n        }\n    }\n    std::println(\"журнал: {}\", journal.read());\n    return 0;\n}\n",
+      "solutionExplanation": "В `main` перепутаны аргументы: `copy_to(journal, archive)` копирует из журнала в архив. `copy_to(Storage &from, Storage &to)` принимает два хранилища с одинаковыми возможностями, поэтому компилятор не возражает, а метод-заглушка архива бросает `std::logic_error`, которое никто не ловит, — программа завершается через `std::terminate`. Толстый интерфейс сделал ошибку возможной и спрятал её до запуска.\n\nПоменять аргументы местами мало: такая же ошибка повторится в следующей функции. После разделения архив вообще не умеет писать: он реализует только `Readable`, и передать его туда, где нужен `Writable`, — ошибка компиляции. `copy_to(const Readable &, Writable &)` своими типами говорит, откуда и куда копируются данные.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-project-filter",
+      "title": "Проект, этап 2: фильтр измерений",
+      "description": "Второй этап проекта. К моделям датчиков из первого этапа (`Measurement`, интерфейс `Sensor`, `TemperatureSensor`, `PressureSensor`) добавьте класс `Filter`:\n\n- конструктор `Filter(int low, int high)` бросает `std::invalid_argument`, если `low > high`; границы закрыты;\n- `bool accepts(const Measurement &m) const` — `low ≤ m.value ≤ high`.\n\nПервая строка ввода — `low high`, затем строки датчиков `T id калибровка raw` или `P id калибровка raw`. Если диапазон некорректен, напечатайте `некорректный диапазон` и завершитесь. Иначе для каждого измерения, прошедшего фильтр, напечатайте `id value`, а в конце `принято K из N`. Фильтр применяется к **преобразованному** значению, а не к сырому.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "0 20\nT 1 2 8\nP 2 3 7\nP 3 2 5\n",
+          "output": "1 10\n3 10\nпринято 2 из 3\n"
+        },
+        {
+          "input": "1 -1\nT 1 0 0\n",
+          "output": "некорректный диапазон\n"
+        }
+      ],
+      "constraints": [
+        "−10 000 ≤ low, high ≤ 10 000; строк датчиков до 100; id от 1 до 1000; калибровка от −10 до 10; raw от −1000 до 1000."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Создание фильтра — в try; catch (const std::invalid_argument &) печатает сообщение и завершает программу.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сначала measure(sensor, raw) из первого этапа, потом filter.accepts(m). Фильтр ничего не знает о видах датчиков — только о Measurement.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "0 20\nT 1 2 8\nP 2 3 7\nP 3 2 5\n",
+          "expected": "1 10\n3 10\nпринято 2 из 3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 -1\nT 1 0 0\n",
+          "expected": "некорректный диапазон\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Точечный диапазон",
+          "stdin": "0 0\nP 9 0 1000\nT 2 -5 5\n",
+          "expected": "9 0\n2 0\nпринято 2 из 2\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Ничего не принято",
+          "stdin": "1 2\nT 1 0 -10\nP 2 2 5\n",
+          "expected": "принято 0 из 2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Широкий диапазон",
+          "stdin": "-10000 10000\nP 1 10 1000\nP 2 -10 1000\n",
+          "expected": "1 10000\n2 -10000\nпринято 2 из 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Ровно граница",
+          "stdin": "5 5\nT 42 2 3\n",
+          "expected": "42 5\nпринято 1 из 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Отрицательные",
+          "stdin": "-20 -1\nT 8 -2 -3\nP 2 2 -10\nP 4 -1 2\n",
+          "expected": "8 -5\n2 -20\n4 -2\nпринято 3 из 3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Фильтр после преобразования",
+          "stdin": "0 10\nT 7 -5 5\nP 7 2 5\nT 3 1 10\nP 4 -1 1\n",
+          "expected": "7 0\n7 10\nпринято 2 из 4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Некорректный без датчиков",
+          "stdin": "3 2\n",
+          "expected": "некорректный диапазон\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Без датчиков",
+          "stdin": "-1 1\n",
+          "expected": "принято 0 из 0\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <stdexcept>\n\nstruct Measurement {\n    int sensorId;\n    int value;\n};\n\nclass Sensor {\npublic:\n    virtual ~Sensor() = default;\n    virtual Measurement read(int raw) const = 0;\n};\n\nclass TemperatureSensor final : public Sensor {\npublic:\n    TemperatureSensor(int id, int offset) : id_(id), offset_(offset) {}\n    Measurement read(int raw) const override {\n        return {id_, raw + offset_};\n    }\n\nprivate:\n    int id_;\n    int offset_;\n};\n\nclass PressureSensor final : public Sensor {\npublic:\n    PressureSensor(int id, int scale) : id_(id), scale_(scale) {}\n    Measurement read(int raw) const override {\n        return {id_, raw * scale_};\n    }\n\nprivate:\n    int id_;\n    int scale_;\n};\n\nclass Filter {\npublic:\n    Filter(int low, int high) : low_(low), high_(high) {\n        if (low > high) {\n            throw std::invalid_argument(\"некорректный диапазон\");\n        }\n    }\n\n    bool accepts(const Measurement &m) const {\n        return low_ <= m.value && m.value <= high_;\n    }\n\nprivate:\n    int low_;\n    int high_;\n};\n\nMeasurement measure(const Sensor &sensor, int raw) {\n    return sensor.read(raw);\n}\n\nint main() {\n    int low, high;\n    std::cin >> low >> high;\n    try {\n        const Filter filter(low, high);\n        char type;\n        int id, calibration, raw;\n        int accepted = 0, total = 0;\n        while (std::cin >> type >> id >> calibration >> raw) {\n            const Measurement m = type == 'T' ? measure(TemperatureSensor(id, calibration), raw)\n                                              : measure(PressureSensor(id, calibration), raw);\n            total++;\n            if (filter.accepts(m)) {\n                std::println(\"{} {}\", m.sensorId, m.value);\n                accepted++;\n            }\n        }\n        std::println(\"принято {} из {}\", accepted, total);\n    } catch (const std::invalid_argument &e) {\n        std::println(\"{}\", e.what());\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Фильтр — класс с инвариантом «нижняя граница не больше верхней», и конструктор либо устанавливает его, либо отказывается создавать объект. Поэтому `accepts` не проверяет границы: некорректного фильтра не существует.\n\nФильтр работает с `Measurement` и ничего не знает о датчиках, а датчики — о фильтре. Связывает их внешний код: прочитать через интерфейс `Sensor`, затем проверить. На третьем этапе эту связь возьмёт на себя процессор телеметрии, который будет владеть набором датчиков.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
       }
     }
   ],
@@ -199,28 +442,99 @@
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "От какого типа должен зависеть алгоритм difference?",
-        "options": ["От минимального Reader", "От каждого конкретного датчика отдельно"],
-        "correct": 0,
-        "explanation": "Отделите чтение от настройки. Источник, который умеет только читать, не должен притворяться настраиваемым и выбрасывать исключение из обязательного configure. Для тестирования алгоритма реализуйте TestSource с заранее известными показаниями. Это настоящий объект с тем же контрактом, а не подмена выполнения интерфейса пользователю. Производственная реализация в проекте обрабатывает детерминированные сырые данные; подключение реального оборудования осталось бы задачей отдельного адаптера."
-      },
-      {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "12", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 12. В C++ нет отдельного ключевого слова interface. Интерфейс обычно выражают абстрактным классом с небольшим набором чисто виртуальных операций и подходящим деструктором. Он описывает не только сигнатуру, но и смысл: единицы, допустимые аргументы, состояние после вызова, возможные ошибки. Два метода с одинаковыми типами ещё не означают одинаковый контракт."
-      },
-      {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q1",
+        "question": "Что входит в интерфейс в C++? Выберите все.",
+        "explanation": "Поля и реализации превращают интерфейс в абстрактный класс.",
+        "type": "multiple",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Не добавляйте в Sensor метод сохранения отчёта: он принадлежит потребителю телеметрии. Не заставляйте фильтр знать конкретный класс датчика."
+          "Открытые чисто виртуальные функции",
+          "Виртуальный деструктор",
+          "Поля с данными",
+          "Реализации методов"
         ],
-        "correct": 1,
-        "explanation": "Добавьте датчик, не поддерживающий настройку. Он по-прежнему должен удовлетворять Reader. Если пришлось добавить пустой configure, интерфейс слишком широк. Для теста алгоритма используйте источник со счётчиком чтений: так обнаруживается лишний read с побочным эффектом."
+        "correct": [0, 1]
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct Named {\n    virtual ~Named() = default;\n    virtual const char *name() const = 0;\n};\n\nstruct Counted {\n    virtual ~Counted() = default;\n    virtual int count() const = 0;\n};\n\nstruct Team final : Named, Counted {\n    const char *name() const override { return \"Альфа\"; }\n    int count() const override { return 5; }\n};\n\nint main() {\n    Team t;\n    const Named &n = t;\n    const Counted &c = t;\n    std::println(\"{} {}\", n.name(), c.count());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Один объект реализует оба интерфейса и виден через ссылку на любой из них.",
+        "type": "text",
+        "answers": ["Альфа 5"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Почему множественное наследование интерфейсов безопасно?",
+        "explanation": "Проблемы множественного наследования возникают из-за общих данных в базах.",
+        "options": [
+          "У интерфейсов нет данных, поэтому нечему дублироваться и конфликтовать",
+          "C++ запрещает одинаковые имена в интерфейсах",
+          "Интерфейсы не занимают памяти вообще",
+          "Оно не безопасно"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "О чём говорит принцип разделения интерфейсов?",
+        "explanation": "Буква I в SOLID.",
+        "options": [
+          "Много маленьких интерфейсов лучше одного большого: клиент зависит только от того, чем пользуется",
+          "Каждый класс должен реализовать ровно один интерфейс",
+          "Интерфейсы нужно объявлять в отдельных файлах",
+          "Методы интерфейса должны быть закрытыми"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Класс реализует интерфейс Storage, но его метод write бросает «не поддерживается». Что это значит?",
+        "explanation": "Разделите интерфейс, чтобы класс реализовывал только то, что умеет.",
+        "options": [
+          "Интерфейс слишком толстый: ошибка проявится во время работы, хотя могла бы при компиляции",
+          "Так правильно реализуют интерфейсы",
+          "Нужно добавить виртуальный деструктор",
+          "Метод нужно сделать final"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что утверждает принцип инверсии зависимостей?",
+        "explanation": "Буква D в SOLID: OrderService зависит от Sender, а не от ConsoleSender.",
+        "options": [
+          "Логика верхнего уровня и детали зависят от абстракций, а не логика — от конкретных деталей",
+          "Классы наследников должны зависеть от базы",
+          "Зависимости нужно создавать внутри класса",
+          "Зависимостей не должно быть"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Зачем в тесте передавать OrderService «подставной» CountingSender?",
+        "explanation": "Зависимость от интерфейса позволяет подменять реализацию.",
+        "options": [
+          "Чтобы проверить логику, не отправляя настоящих сообщений, и посчитать вызовы",
+          "Чтобы ускорить компиляцию",
+          "Потому что настоящий отправитель нельзя создать",
+          "Чтобы обойти виртуальные функции"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Чего не хватает в интерфейсе class Sender { public: virtual void send(const std::string &) = 0; }; если объекты удаляют через std::unique_ptr<Sender>?",
+        "explanation": "Без него удаление через указатель на интерфейс — неопределённое поведение.",
+        "type": "text",
+        "answers": [
+          "виртуального деструктора",
+          "virtual ~Sender() = default;",
+          "virtual ~Sender() = default"
+        ],
+        "placeholder": "Ответ"
       }
     ]
   }

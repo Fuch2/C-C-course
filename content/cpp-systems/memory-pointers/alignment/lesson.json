@@ -13,9 +13,9 @@
     "Читать значения из байтовых буферов через memcpy без невыровненного доступа",
     "Округлять размеры и адреса вверх до кратного степени двойки"
   ],
-  "tags": ["C17", "Память", "Выравнивание", "alignof", "memcpy"],
+  "tags": ["C23", "Память", "Выравнивание", "alignof", "memcpy"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-alignment-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -129,7 +129,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -233,7 +233,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdint.h>\n#include <stdio.h>\n#include <string.h>\n\nstruct Header {\n    uint32_t id;\n    uint16_t length;\n    uint16_t flags;\n};\n\nint main(void) {\n    unsigned char buffer[64];\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        unsigned value;\n        scanf(\"%x\", &value);\n        buffer[i] = (unsigned char)value;\n    }\n    int offset = 1;\n    while (offset + (int)sizeof(struct Header) <= n) {\n        const struct Header *p = (const struct Header *)(buffer + offset);\n        struct Header h = {p->id, p->length, p->flags};\n        printf(\"id=%u length=%u flags=%u\\n\", (unsigned)h.id, (unsigned)h.length, (unsigned)h.flags);\n        offset += (int)sizeof(struct Header) + 1;\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -337,7 +337,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -468,7 +468,7 @@
       {
         "id": "q3",
         "question": "Что выведет программа?",
-        "code": "#include <stdalign.h>\n#include <stdio.h>\n\nint main(void) {\n    printf(\"%zu %zu %zu\\n\", alignof(char), alignof(int), alignof(double));\n    return 0;\n}",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%zu %zu %zu\\n\", alignof(char), alignof(int), alignof(double));\n    return 0;\n}",
         "explanation": "На 64-битном Linux выравнивание простых типов совпадает с их размером.",
         "type": "text",
         "answers": ["1 4 8"],

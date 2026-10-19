@@ -1,134 +1,548 @@
 {
   "id": "oop-class",
-  "title": "class — тип с инвариантом",
-  "description": "Объявление class объединяет представление и операции. Его члены по умолчанию private. Это позволяет требовать, чтобы все изменения проходили через согласованный набор методов. Инвариант — условие, истинное после создания объекта и после каждой успешно завершённой публичной операции. Например, счётчик принятых измерений никогда не отрицателен.",
+  "title": "Класс и инвариант",
+  "description": "Инвариант — правило, верное для объекта всегда; class, public и private: открытый интерфейс и закрытое представление; ошибка компиляции при доступе к закрытому полю; чем struct отличается от class и что выбрать; инвариант с несколькими полями; три способа реагировать на недопустимое значение.",
   "moduleId": "cpp-oop",
   "order": 2,
-  "difficulty": "advanced",
-  "estimatedMinutes": 45,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 40,
   "prerequisites": ["oop-struct"],
   "objectives": [
-    "Применить class — тип с инвариантом в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Формулировать инвариант типа",
+    "Закрывать данные в private и открывать методы в public",
+    "Выбирать между struct и class",
+    "Писать методы, которые сохраняют инвариант при любом вызове"
   ],
-  "tags": ["C++20", "ООП", "class — тип с инвариантом"],
+  "tags": ["C++23", "ООП", "class", "Инвариант", "Инкапсуляция"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-class-exercise",
-    "title": "Практика: class — тип с инвариантом",
-    "description": "Реализуйте class Counter с закрытым int count_{}, public add(int x), увеличивающим счётчик только при x > 0, и int value() const. solve(a,b) вызывает add(a), add(b) для одного счётчика и возвращает value(). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Громкость",
+    "description": "Опишите класс `Volume` с закрытым полем — громкостью от 0 до 100 (начальное значение 50) — и методами `int get() const` и `void set(int value)`, который приводит значение к границам. Каждая строка ввода — команда:\n\n- `+ n` — громче на `n`;\n- `- n` — тише на `n`;\n- `= n` — установить `n`.\n\nПосле каждой команды напечатайте текущую громкость.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 5)",
-        "output": "8\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "+ 30\n+ 30\n- 5\n",
+        "output": "80\n100\n95\n"
       },
       {
-        "input": "solve(-2, 4)",
-        "output": "4\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "= 1000\n- 1000\n",
+        "output": "100\n0\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Команд не больше 50; n от 0 до 1000."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "Все три команды выражаются через set: set(get() + n), set(get() - n), set(n).",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Приведение к границам: если value < 0 — 0, если value > 100 — 100.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 5],
-        "expected": "8\n"
+        "stdin": "+ 30\n+ 30\n- 5\n",
+        "expected": "80\n100\n95\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [-2, 4],
-        "expected": "4\n"
+        "stdin": "= 1000\n- 1000\n",
+        "expected": "100\n0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [-3, -9],
+        "id": "hidden-1",
+        "name": "Без изменения",
+        "stdin": "+ 0\n",
+        "expected": "50\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Ровно до нуля",
+        "stdin": "- 50\n",
         "expected": "0\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "id": "hidden-3",
+        "name": "Ровно до ста",
+        "stdin": "+ 50\n",
+        "expected": "100\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный сценарий 3",
-        "arguments": [1000, 1000],
-        "expected": "2000\n"
+        "id": "hidden-4",
+        "name": "Установка",
+        "stdin": "= 37\n+ 3\n- 40\n",
+        "expected": "37\n40\n0\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Ниже нуля",
+        "stdin": "- 1\n- 1\n- 100\n+ 1\n",
+        "expected": "49\n48\n0\n1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Выше ста",
+        "stdin": "+ 1000\n+ 1000\n- 1\n",
+        "expected": "100\n100\n99\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Границы",
+        "stdin": "= 0\n= 100\n= 50\n",
+        "expected": "0\n100\n50\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Без команд",
+        "stdin": "",
+        "expected": ""
       }
     ],
-    "referenceSolution": "class Counter { int count_{}; public: void add(int x) { if (x > 0) count_ += x; } int value() const { return count_; } };\nint solve(int a, int b) { Counter c; c.add(a); c.add(b); return c.value(); }",
-    "solutionExplanation": "Реализуйте class Counter с закрытым int count_{}, public add(int x), увеличивающим счётчик только при x > 0, и int value() const. solve(a,b) вызывает add(a), add(b) для одного счётчика и возвращает value(). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Закрытое поле само по себе не обеспечивает корректность: публичный метод может записать туда ошибочное значение. Проверяйте условия до изменения состояния. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n\nclass Volume {\npublic:\n    int get() const {\n        return value_;\n    }\n\n    void set(int value) {\n        if (value < 0) {\n            value = 0;\n        }\n        if (value > 100) {\n            value = 100;\n        }\n        value_ = value;\n    }\n\nprivate:\n    int value_ = 50;\n};\n\nint main() {\n    Volume v;\n    char command;\n    int n;\n    while (std::cin >> command >> n) {\n        if (command == '+') {\n            v.set(v.get() + n);\n        } else if (command == '-') {\n            v.set(v.get() - n);\n        } else {\n            v.set(n);\n        }\n        std::println(\"{}\", v.get());\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Правило «от 0 до 100» проверяется в одном месте — в `set`. Все изменения проходят через этот метод, поэтому никакая команда не может вывести громкость за границы. Добавьте завтра команду «тише вдвое» — достаточно выразить её через `set`, и правило будет соблюдено автоматически.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-class-task-2",
+      "title": "Лифт",
+      "description": "Опишите класс `Elevator` для дома из 20 этажей. Лифт стоит на первом этаже. Метод `bool move_to(int floor)` отправляет лифт на этаж `floor` и возвращает `true`, а если такого этажа нет (меньше 1 или больше 20) — возвращает `false` и ничего не меняет. Лифт считает, сколько этажей проехал.\n\nДля каждого числа из ввода вызовите `move_to` и напечатайте `этаж F` (текущий этаж) или `нет этажа N`. В конце напечатайте `пройдено K этажей`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5 3 25 20\n",
+          "output": "этаж 5\nэтаж 3\nнет этажа 25\nэтаж 20\nпройдено 23 этажей\n"
+        },
+        {
+          "input": "",
+          "output": "пройдено 0 этажей\n"
+        }
+      ],
+      "constraints": ["Чисел не больше 50, каждое по модулю до 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Закрытые поля: floor_ = 1 и travelled_ = 0. Метод floor() const возвращает текущий этаж.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сначала проверка — потом изменение: если этажа нет, return false до любых присваиваний. Пройденный путь — модуль разности этажей, std::abs из <cstdlib>.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5 3 25 20\n",
+          "expected": "этаж 5\nэтаж 3\nнет этажа 25\nэтаж 20\nпройдено 23 этажей\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "пройдено 0 этажей\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Тот же этаж",
+          "stdin": "1\n",
+          "expected": "этаж 1\nпройдено 0 этажей\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Только неверные",
+          "stdin": "0 -5 21\n",
+          "expected": "нет этажа 0\nнет этажа -5\nнет этажа 21\nпройдено 0 этажей\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Туда и обратно",
+          "stdin": "20 1 20 1\n",
+          "expected": "этаж 20\nэтаж 1\nэтаж 20\nэтаж 1\nпройдено 76 этажей\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "По одному",
+          "stdin": "2 3 4 5\n",
+          "expected": "этаж 2\nэтаж 3\nэтаж 4\nэтаж 5\nпройдено 4 этажей\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Большие числа",
+          "stdin": "1000 -1000 10\n",
+          "expected": "нет этажа 1000\nнет этажа -1000\nэтаж 10\nпройдено 9 этажей\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Повторы",
+          "stdin": "7 7 7\n",
+          "expected": "этаж 7\nэтаж 7\nэтаж 7\nпройдено 6 этажей\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Отказ посередине",
+          "stdin": "19 0 2\n",
+          "expected": "этаж 19\nнет этажа 0\nэтаж 2\nпройдено 35 этажей\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Зигзаг",
+          "stdin": "10 11 9 12 8\n",
+          "expected": "этаж 10\nэтаж 11\nэтаж 9\nэтаж 12\nэтаж 8\nпройдено 19 этажей\n"
+        }
+      ],
+      "referenceSolution": "#include <cstdlib>\n#include <iostream>\n#include <print>\n\nclass Elevator {\npublic:\n    int floor() const {\n        return floor_;\n    }\n\n    int travelled() const {\n        return travelled_;\n    }\n\n    bool move_to(int target) {\n        if (target < 1 || target > 20) {\n            return false;\n        }\n        travelled_ += std::abs(target - floor_);\n        floor_ = target;\n        return true;\n    }\n\nprivate:\n    int floor_ = 1;\n    int travelled_ = 0;\n};\n\nint main() {\n    Elevator lift;\n    int target;\n    while (std::cin >> target) {\n        if (lift.move_to(target)) {\n            std::println(\"этаж {}\", lift.floor());\n        } else {\n            std::println(\"нет этажа {}\", target);\n        }\n    }\n    std::println(\"пройдено {} этажей\", lift.travelled());\n    return 0;\n}\n",
+      "solutionExplanation": "Инвариант лифта — «этаж от 1 до 20». `move_to` проверяет запрос **до** изменения полей и при отказе ничего не трогает: и этаж, и счётчик пути остаются прежними. Результат `bool` сообщает вызывающему коду, удалась ли поездка, — решать, что печатать, остаётся ему.\n\nСчётчик пути закрыт так же, как этаж: снаружи его можно только прочитать, а увеличивается он единственным способом — настоящей поездкой.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-class-task-3",
+      "title": "Найди ошибку: метод в обход правила",
+      "description": "Класс `Thermostat` хранит целевую температуру и обещает, что она всегда от 10 до 30 градусов (начальное значение 20). Команды ввода: `set n` — установить, `warmer` — на 5 градусов теплее, `colder` — на 5 холоднее. После каждой команды печатается текущая цель.\n\nПосле нескольких команд `warmer` температура выходит за 30. Найдите и исправьте ошибку в классе.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n\n// Инвариант: целевая температура всегда от 10 до 30 градусов.\nclass Thermostat {\npublic:\n    int target() const {\n        return target_;\n    }\n\n    void set_target(int value) {\n        if (value < 10) {\n            value = 10;\n        }\n        if (value > 30) {\n            value = 30;\n        }\n        target_ = value;\n    }\n\n    void warmer() {\n        target_ += 5;\n    }\n\n    void colder() {\n        target_ -= 5;\n    }\n\nprivate:\n    int target_ = 20;\n};\n\nint main() {\n    Thermostat t;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"set\") {\n            int value;\n            std::cin >> value;\n            t.set_target(value);\n        } else if (command == \"warmer\") {\n            t.warmer();\n        } else {\n            t.colder();\n        }\n        std::println(\"{}\", t.target());\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "warmer\nwarmer\nwarmer\n",
+          "output": "25\n30\n30\n"
+        },
+        {
+          "input": "set 12\ncolder\n",
+          "output": "12\n10\n"
+        }
+      ],
+      "constraints": ["Команд не больше 50; в set — числа по модулю до 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Через какой путь проверку проходит set, а через какой — warmer и colder?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Методы класса имеют доступ к закрытому полю и могут обойти проверку. Выразите warmer и colder через set_target.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "warmer\nwarmer\nwarmer\n",
+          "expected": "25\n30\n30\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "set 12\ncolder\n",
+          "expected": "12\n10\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "set 1000\nwarmer\n",
+          "expected": "30\n30\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "colder\ncolder\ncolder\n",
+          "expected": "15\n10\n10\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "set -1000\ncolder\nwarmer\n",
+          "expected": "10\n10\n15\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "warmer\nwarmer\nwarmer\nwarmer\ncolder\n",
+          "expected": "25\n30\n30\n30\n25\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "set 29\nwarmer\n",
+          "expected": "29\n30\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "set 11\ncolder\n",
+          "expected": "11\n10\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "colder\nwarmer\nwarmer\nwarmer\n",
+          "expected": "15\n20\n25\n30\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "set 15\n",
+          "expected": "15\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\n// Инвариант: целевая температура всегда от 10 до 30 градусов.\nclass Thermostat {\npublic:\n    int target() const {\n        return target_;\n    }\n\n    void set_target(int value) {\n        if (value < 10) {\n            value = 10;\n        }\n        if (value > 30) {\n            value = 30;\n        }\n        target_ = value;\n    }\n\n    void warmer() {\n        set_target(target_ + 5);\n    }\n\n    void colder() {\n        set_target(target_ - 5);\n    }\n\nprivate:\n    int target_ = 20;\n};\n\nint main() {\n    Thermostat t;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"set\") {\n            int value;\n            std::cin >> value;\n            t.set_target(value);\n        } else if (command == \"warmer\") {\n            t.warmer();\n        } else {\n            t.colder();\n        }\n        std::println(\"{}\", t.target());\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`private` защищает поле от кода **снаружи** класса, но методы самого класса пишут в него напрямую. `warmer` и `colder` меняли `target_` в обход проверки, и инвариант нарушался изнутри.\n\nНадёжный приём — один «шлюз» для изменения поля: все изменяющие методы выражаются через проверяющий `set_target`. Тогда правило записано один раз, и новый метод, написанный через тот же шлюз, не сможет его нарушить.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-class-task-4",
+      "title": "Окно на экране",
+      "description": "Экран — 1920 × 1080 точек. Класс `Window` хранит позицию левого верхнего угла `x`, `y` и размеры `w`, `h` и обещает:\n\n- окно целиком на экране: `x ≥ 0`, `y ≥ 0`, `x + w ≤ 1920`, `y + h ≤ 1080`;\n- окно не меньше 100 × 100.\n\nНачальное состояние: `0 0 800 600`. Команды:\n\n- `move dx dy` — сдвинуть; если окно выходит за край, оно останавливается у края (новая позиция приводится к границам `[0, 1920 − w]` и `[0, 1080 − h]`);\n- `resize w h` — новые размеры, приведённые к границам `[100, 1920 − x]` и `[100, 1080 − y]`; позиция не меняется.\n\nПосле каждой команды напечатайте `x y w h`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "move 1500 100\nresize 2000 50\n",
+          "output": "1120 100 800 600\n1120 100 800 100\n"
+        },
+        {
+          "input": "move -50 -50\nresize 1920 1080\n",
+          "output": "0 0 800 600\n0 0 1920 1080\n"
+        }
+      ],
+      "constraints": ["Команд не больше 50; числа по модулю до 10⁵."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Удобна вспомогательная функция clamp(value, low, high) — или std::clamp из <algorithm>.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "move меняет только позицию и ограничивает её с учётом текущего размера; resize меняет только размер и ограничивает его с учётом текущей позиции. Почему тогда диапазон [100, 1920 − x] никогда не бывает пустым?",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "move 1500 100\nresize 2000 50\n",
+          "expected": "1120 100 800 600\n1120 100 800 100\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "move -50 -50\nresize 1920 1080\n",
+          "expected": "0 0 800 600\n0 0 1920 1080\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Во весь экран",
+          "stdin": "resize 1920 1080\nmove 10 10\n",
+          "expected": "0 0 1920 1080\n0 0 1920 1080\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Огромные сдвиги",
+          "stdin": "move 100000 100000\nresize 100000 100000\n",
+          "expected": "1120 480 800 600\n1120 480 800 600\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Минимальное окно в угол",
+          "stdin": "resize 0 0\nmove 1820 980\n",
+          "expected": "0 0 100 100\n1820 980 100 100\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Сдвиг после увеличения",
+          "stdin": "move 500 300\nresize 1500 900\nmove -1000 -1000\n",
+          "expected": "500 300 800 600\n500 300 1420 780\n0 0 1420 780\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Почти у края",
+          "stdin": "resize 100 100\nmove 1819 979\nresize 500 500\n",
+          "expected": "0 0 100 100\n1819 979 100 100\n1819 979 101 101\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Нулевой сдвиг",
+          "stdin": "move 0 0\n",
+          "expected": "0 0 800 600\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Упор в край",
+          "stdin": "move 1119 479\nmove 1 1\nmove 1 1\n",
+          "expected": "1119 479 800 600\n1120 480 800 600\n1120 480 800 600\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Отрицательные размеры",
+          "stdin": "resize -5 -5\nresize 99999 50\n",
+          "expected": "0 0 100 100\n0 0 1920 100\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <print>\n#include <string>\n\nclass Window {\npublic:\n    void move(int dx, int dy) {\n        x_ = std::clamp(x_ + dx, 0, screen_w - w_);\n        y_ = std::clamp(y_ + dy, 0, screen_h - h_);\n    }\n\n    void resize(int w, int h) {\n        w_ = std::clamp(w, min_size, screen_w - x_);\n        h_ = std::clamp(h, min_size, screen_h - y_);\n    }\n\n    void print() const {\n        std::println(\"{} {} {} {}\", x_, y_, w_, h_);\n    }\n\nprivate:\n    static constexpr int screen_w = 1920;\n    static constexpr int screen_h = 1080;\n    static constexpr int min_size = 100;\n    int x_ = 0;\n    int y_ = 0;\n    int w_ = 800;\n    int h_ = 600;\n};\n\nint main() {\n    Window window;\n    std::string command;\n    int a, b;\n    while (std::cin >> command >> a >> b) {\n        if (command == \"move\") {\n            window.move(a, b);\n        } else {\n            window.resize(a, b);\n        }\n        window.print();\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Инвариант связывает четыре поля, и каждый метод сохраняет его, меняя только «свою» половину: `move` — позицию, ограничивая её текущим размером, `resize` — размер, ограничивая его текущей позицией. Диапазон для размера никогда не пуст: окно уже на экране и шире 100, значит `1920 − x ≥ w ≥ 100`.\n\nРазмеры экрана и минимум записаны как `static constexpr` — константы, общие для всех окон и известные при компиляции. `std::clamp` из `<algorithm>` возвращает значение, приведённое к отрезку; он требует, чтобы нижняя граница не превышала верхнюю, — и инвариант это гарантирует.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-class-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Какой доступ имеют члены class до первого спецификатора доступа?",
-        "options": ["private", "public"],
-        "correct": 0,
-        "explanation": "Клиент работает с обещанием типа, а не с расположением полей. Сначала сформулируйте допустимые состояния, затем операции перехода между ними. В примере счётчик начинается с нуля, increment увеличивает значение, value только наблюдает. Отсутствие конструктора в тексте не означает отсутствие создания объекта: при таком объявлении компилятор обеспечивает подходящую инициализацию. Реализация маленького метода внутри класса не требует отдельной функции на каждый объект."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nclass Level {\npublic:\n    int get() const { return level_; }\n    void up() { if (level_ < 3) level_++; }\n    void down() { if (level_ > 1) level_--; }\n\nprivate:\n    int level_ = 1;\n};\n\nint main() {\n    Level l;\n    l.up(); l.up(); l.up(); l.up();\n    l.down();\n    std::println(\"{}\", l.get());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Уровень растёт до 3 и дальше не поднимается; down опускает его до 2.",
+        "type": "text",
+        "answers": ["2"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "2", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 2. Объявление class объединяет представление и операции. Его члены по умолчанию private. Это позволяет требовать, чтобы все изменения проходили через согласованный набор методов. Инвариант — условие, истинное после создания объекта и после каждой успешно завершённой публичной операции. Например, счётчик принятых измерений никогда не отрицателен."
-      },
-      {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q2",
+        "question": "Что такое инвариант класса?",
+        "explanation": "Например, «громкость от 0 до 100» или «нижняя граница не больше верхней».",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Закрытое поле само по себе не обеспечивает корректность: публичный метод может записать туда ошибочное значение. Проверяйте условия до изменения состояния."
+          "Правило о данных объекта, которое верно всегда — после создания и после любого открытого метода",
+          "Поле, которое нельзя изменить",
+          "Метод, который вызывается при создании объекта",
+          "Константа внутри класса"
         ],
-        "correct": 1,
-        "explanation": "Попробуйте добавить decrement. До написания метода решите, что делать при нулевом счётчике: отказ, насыщение или исключение. Добавьте тест последовательности increment, decrement, decrement. Это проверяет достижимые состояния, а не только арифметику одного вызова."
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Чем struct отличается от class в C++?",
+        "explanation": "Всё остальное у них одинаковое. Выбор — вопрос смысла: есть ли у данных правила.",
+        "options": [
+          "Только доступом по умолчанию: в struct всё открыто, в class — закрыто",
+          "У struct не бывает методов",
+          "struct нельзя наследовать",
+          "Объекты class хранятся в куче"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что произойдёт при компиляции строки p.volume_ = 250; если volume_ объявлено в секции private класса Player?",
+        "explanation": "Доступ проверяет компилятор; обойти private из обычного кода нельзя.",
+        "options": [
+          "Ошибка компиляции: поле закрыто",
+          "Значение запишется, но будет исправлено на 100",
+          "Ошибка во время выполнения",
+          "Предупреждение, программа соберётся"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Почему для диапазона [low, high] метод set(a, b) лучше, чем два метода set_low и set_high?",
+        "explanation": "Связанные поля меняют вместе — тогда инвариант не нарушается ни на мгновение.",
+        "options": [
+          "Между двумя отдельными вызовами объект может оказаться в состоянии low > high",
+          "Один метод работает быстрее двух",
+          "Методы с одним параметром запрещены",
+          "set_low и set_high нельзя сделать public"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nclass Stock {\npublic:\n    int count() const { return count_; }\n    bool take(int n) {\n        if (n > count_) return false;\n        count_ -= n;\n        return true;\n    }\n\nprivate:\n    int count_ = 10;\n};\n\nint main() {\n    Stock s;\n    bool a = s.take(4), b = s.take(7), c = s.take(6);\n    std::println(\"{} {} {} {}\", a, b, c, s.count());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "10 − 4 = 6; взять 7 нельзя — отказ без изменения; взять 6 можно — остаётся 0.",
+        "type": "text",
+        "answers": ["true false true 0"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Какие варианты реакции метода на недопустимое значение корректны? Выберите все.",
+        "explanation": "Запрещено одно: оставить объект в недопустимом состоянии.",
+        "type": "multiple",
+        "options": [
+          "Исправить значение, если исправление очевидно, и сохранить",
+          "Отказаться, не меняя объект, и сообщить об этом результатом",
+          "Сообщить об ошибке исключением",
+          "Записать значение, а проверить его при следующем вызове"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q8",
+        "question": "Для какого типа уместна struct с открытыми полями?",
+        "explanation": "У цвета нет правил, связывающих поля, — защищать нечего. У остальных типов есть инварианты.",
+        "options": [
+          "RGB-цвет: любые три значения 0–255 допустимы",
+          "Банковский счёт с правилом «баланс не меньше нуля»",
+          "Дробь, у которой знаменатель не равен нулю",
+          "Очередь с ограниченной ёмкостью"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q9",
+        "question": "Метод класса Player пишет volume_ += 10; напрямую, хотя в классе есть проверяющий set_volume. Что не так?",
+        "explanation": "private защищает от кода снаружи, но не от ошибок в методах самого класса.",
+        "options": [
+          "Метод имеет доступ к полю и обходит проверку — инвариант может нарушиться изнутри",
+          "Методы не могут менять поля",
+          "Ничего: внутри класса правило не действует",
+          "Это ошибка компиляции"
+        ],
+        "correct": 0
       }
     ]
   }

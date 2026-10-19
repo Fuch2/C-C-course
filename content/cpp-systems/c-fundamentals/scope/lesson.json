@@ -14,9 +14,9 @@
     "Объяснять недостатки глобальных переменных",
     "Сохранять состояние функции между вызовами с помощью static"
   ],
-  "tags": ["C17", "Область видимости", "static", "Глобальные переменные"],
+  "tags": ["C23", "Область видимости", "static", "Глобальные переменные"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-scope-task-1",
@@ -25,7 +25,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint next_ticket(void) {\n    // Возвращайте 1, 2, 3, ... при последовательных вызовах.\n    return 0;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        printf(\"%d\\n\", next_ticket());\n    }\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -117,7 +117,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nlong long add_to_total(int x) {\n    // Прибавьте x к накопленной сумме и верните её.\n    return 0;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        int x;\n        scanf(\"%d\", &x);\n        if (i > 0) {\n            printf(\" \");\n        }\n        printf(\"%lld\", add_to_total(x));\n    }\n    printf(\"\\n\");\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -214,7 +214,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    long long sum = 0;\n    for (int i = 0; i < n; i++) {\n        int x;\n        scanf(\"%d\", &x);\n        if (x > 0) {\n            long long sum = 0;\n            sum += x;\n        }\n    }\n    printf(\"%lld\\n\", sum);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -292,7 +292,7 @@
         }
       ],
       "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    long long sum = 0;\n    for (int i = 0; i < n; i++) {\n        int x;\n        scanf(\"%d\", &x);\n        if (x > 0) {\n            sum += x;\n        }\n    }\n    printf(\"%lld\\n\", sum);\n    return 0;\n}\n",
-      "solutionExplanation": "Строка `long long sum = 0;` внутри `if` создаёт **новую** переменную с тем же именем. Все прибавления шли к ней, а она исчезала при выходе из блока. Внешняя `sum` оставалась нулём.\n\nКомпилятор с флагом `-Wshadow` предупредил бы: `declaration of ‘sum’ shadows a previous local`. Включайте этот флаг в собственных проектах.",
+      "solutionExplanation": "Строка `long long sum = 0;` внутри `if` создаёт **новую** переменную с тем же именем. Все прибавления шли к ней, а она исчезала при выходе из блока. Внешняя `sum` оставалась нулём.\n\nКомпилятор с флагом `-Wshadow` предупредил бы: `declaration of 'sum' shadows a previous local`. Включайте этот флаг в собственных проектах.",
       "checking": {
         "type": "stdout",
         "comparison": "exact"
@@ -305,7 +305,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\n// Объявите здесь общее состояние генератора.\n\nvoid set_seed(unsigned int seed) {\n}\n\nint next_random(void) {\n    return 0;\n}\n\nint main(void) {\n    unsigned int seed;\n    int k;\n    scanf(\"%u %d\", &seed, &k);\n    set_seed(seed);\n    for (int i = 0; i < k; i++) {\n        if (i > 0) {\n            printf(\" \");\n        }\n        printf(\"%d\", next_random());\n    }\n    printf(\"\\n\");\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

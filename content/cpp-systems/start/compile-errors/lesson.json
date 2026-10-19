@@ -15,7 +15,7 @@
   ],
   "tags": ["Старт", "Ошибки компиляции", "GCC", "Отладка"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "compile-errors-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    printf(\"Компилятор нашёл ошибку\\n\")\n    printf(\"Я её исправил!\\n);\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -36,7 +36,7 @@
     "hints": [
       {
         "id": "hint-1",
-        "text": "Первое сообщение — expected ‘;’ before ‘printf’. Посмотрите на конец строки над указанной.",
+        "text": "Первое сообщение — expected ';' before 'printf'. Посмотрите на конец строки над указанной.",
         "order": 1
       },
       {
@@ -76,7 +76,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int first, second;\n    scanf(\"%d %d\", &first, &secnd);\n    int sum = first + second;\n    int product = frist * second;\n    prinft(\"%d\\n\", sum);\n    printf(\"%d\\n\", prodcut);\n    Return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -168,7 +168,7 @@
         }
       ],
       "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int first, second;\n    scanf(\"%d %d\", &first, &second);\n    int sum = first + second;\n    int product = first * second;\n    printf(\"%d\\n\", sum);\n    printf(\"%d\\n\", product);\n    return 0;\n}\n",
-      "solutionExplanation": "Все пять ошибок — опечатки в именах:\n\n- `secnd`, `frist`, `prodcut` — переменные с такими именами не объявлены (`undeclared`), компилятор предлагает правильные варианты;\n- `prinft` — несуществующая функция: предупреждение `implicit declaration` и ошибка компоновщика `undefined reference`;\n- `Return` — C различает регистр, и ключевое слово пишется только как `return`.\n\nОпечатки в именах — самая частая ошибка начинающих. Подсказка `did you mean` почти всегда указывает правильное имя.",
+      "solutionExplanation": "Все пять ошибок — опечатки в именах:\n\n- `secnd`, `frist`, `prodcut` — переменные с такими именами не объявлены (`undeclared`), компилятор предлагает правильные варианты;\n- `prinft` — несуществующая функция: ошибка `implicit declaration` с подсказкой `did you mean 'printf'`;\n- `Return` — C различает регистр, и ключевое слово пишется только как `return`.\n\nОпечатки в именах — самая частая ошибка начинающих. Подсказка `did you mean` почти всегда указывает правильное имя.",
       "checking": {
         "type": "stdout",
         "comparison": "exact"
@@ -181,7 +181,7 @@
       "difficulty": "beginner",
       "starterCode": "int main(void)\n    int n;\n    scanf(\"%d\", &n);\n    printf(\"%d\\n\", n + 1);\n    printf(\"%d\\n\", n - 1);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -259,7 +259,7 @@
         }
       ],
       "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    printf(\"%d\\n\", n + 1);\n    printf(\"%d\\n\", n - 1);\n    return 0;\n}\n",
-      "solutionExplanation": "Без `{` после `int main(void)` компилятор не понимает, где начинается тело функции, и выдаёт ошибки уже на следующей строке. Закрывающая `}` в конце была, но без пары она тоже «лишняя».\n\nБез `#include <stdio.h>` компилятор предупреждает о неявном объявлении `scanf` и `printf`. Даже если программа соберётся, работать с неописанными функциями нельзя: компилятор может неправильно передать им данные.",
+      "solutionExplanation": "Без `{` после `int main(void)` компилятор не понимает, где начинается тело функции, и выдаёт ошибки уже на следующей строке. Закрывающая `}` в конце была, но без пары она тоже «лишняя».\n\nБез `#include <stdio.h>` компилятор сообщает о неявном объявлении (`implicit declaration`) `scanf` и `printf` и не собирает программу: не зная объявления, он не может правильно передать функции данные. Старые компиляторы в этом случае лишь предупреждали — отсюда в интернете советы «не обращать внимания», которые сегодня не работают.",
       "checking": {
         "type": "stdout",
         "comparison": "exact"
@@ -272,7 +272,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int width, height;\n    scanf(\"%d %d\", &width, &height);\n    int perimeter = 2 * (width + height;\n    int area = width * height\n    printf(\"Периметр: %d\\n\", perimeter);\n    printf(\"Площадь: %d\\n, area);\n    return 0;\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -363,7 +363,7 @@
         }
       ],
       "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int width, height;\n    scanf(\"%d %d\", &width, &height);\n    int perimeter = 2 * (width + height);\n    int area = width * height;\n    printf(\"Периметр: %d\\n\", perimeter);\n    printf(\"Площадь: %d\\n\", area);\n    return 0;\n}\n",
-      "solutionExplanation": "Четыре ошибки и сообщения, которые на них указывают:\n\n1. `2 * (width + height;` — не закрыта круглая скобка: `expected ‘)’ before ‘;’ token`.\n2. `width * height` без `;` — `expected ‘,’ or ‘;’ before ‘printf’`, ошибка на строке выше указанной.\n3. `\"Площадь: %d\\n, area);` — строка не закрыта: `missing terminating \" character`.\n4. Нет `}` в конце — `expected declaration or statement at end of input`.\n\nКомпилятор не всегда показывает все четыре сообщения сразу: некоторые ошибки «прячут» следующие. Поэтому цикл «исправить одну — скомпилировать» надёжнее попытки найти всё глазами.",
+      "solutionExplanation": "Четыре ошибки и сообщения, которые на них указывают:\n\n1. `2 * (width + height;` — не закрыта круглая скобка: `expected ')' before ';' token`.\n2. `width * height` без `;` — `expected ',' or ';' before 'printf'`, ошибка на строке выше указанной.\n3. `\"Площадь: %d\\n, area);` — строка не закрыта: `missing terminating \" character`.\n4. Нет `}` в конце — `expected declaration or statement at end of input`.\n\nКомпилятор не всегда показывает все четыре сообщения сразу: некоторые ошибки «прячут» следующие. Поэтому цикл «исправить одну — скомпилировать» надёжнее попытки найти всё глазами.",
       "checking": {
         "type": "stdout",
         "comparison": "exact"
@@ -388,7 +388,7 @@
       },
       {
         "id": "q2",
-        "question": "Компилятор сообщил: main.c:5:5: error: expected ‘;’ before ‘return’. В какой строке на самом деле нужно поставить точку с запятой?",
+        "question": "Компилятор сообщил: main.c:5:5: error: expected ';' before 'return'. В какой строке на самом деле нужно поставить точку с запятой?",
         "code": "#include <stdio.h>                 // строка 1\n                                   // строка 2\nint main(void) {                   // строка 3\n    printf(\"Готово\\n\")             // строка 4\n    return 0;                      // строка 5\n}                                  // строка 6",
         "explanation": "Компилятор понял, что точки с запятой не хватает, только увидев return на строке 5. Пропущена же она в конце строки 4, после вызова printf.",
         "type": "text",
@@ -398,11 +398,11 @@
       {
         "id": "q3",
         "question": "Какие сообщения чаще всего означают опечатку в имени? Выберите все подходящие.",
-        "explanation": "undeclared и undefined reference говорят о несуществующем имени. missing terminating — нет закрывающей кавычки, at end of input — не закрыта фигурная скобка.",
+        "explanation": "undeclared (переменная) и implicit declaration (функция) говорят о незнакомом имени, а did you mean подсказывает правильное. missing terminating — нет закрывающей кавычки, at end of input — не закрыта фигурная скобка.",
         "type": "multiple",
         "options": [
-          "‘summ’ undeclared (first use in this function)",
-          "undefined reference to `prinft`",
+          "'summ' undeclared (first use in this function)",
+          "implicit declaration of function 'prinft'; did you mean 'printf'?",
           "missing terminating \" character",
           "expected declaration or statement at end of input"
         ],
@@ -434,11 +434,11 @@
       },
       {
         "id": "q6",
-        "question": "Программа собралась, но компилятор предупредил: implicit declaration of function ‘printf’. Как правильно исправить?",
-        "explanation": "Предупреждение означает, что компилятор не видел описания printf. Его даёт заголовок stdio.h — об этом прямо говорит подсказка note.",
+        "question": "Компилятор сообщил: error: implicit declaration of function 'printf', а note предлагает include '<stdio.h>'. Как правильно исправить?",
+        "explanation": "Имя printf написано верно, но компилятор не видел его объявления. Объявление даёт заголовок stdio.h — об этом прямо говорит подсказка note. Современные GCC и Clang не собирают программу, пока функция не объявлена.",
         "options": [
           "Добавить в начало #include <stdio.h>",
-          "Ничего: программа ведь работает",
+          "Объявить переменную printf",
           "Заменить printf на Printf",
           "Удалить return 0;"
         ],
@@ -447,7 +447,7 @@
       {
         "id": "q7",
         "question": "Кто сообщает об ошибке undefined reference — компилятор или компоновщик?",
-        "explanation": "Компоновщик ld собирает программу из частей и не находит функцию с таким именем. В сообщении это видно по /usr/bin/ld и «ld returned 1 exit status».",
+        "explanation": "Компоновщик ld собирает программу из частей и не находит функцию с таким именем — например, main, если написать Main. В сообщении это видно по /usr/bin/ld и «ld returned 1 exit status».",
         "options": ["Компилятор", "Компоновщик (линковщик)", "Операционная система", "Процессор"],
         "correct": 1
       }

@@ -1,128 +1,533 @@
 {
   "id": "oop-final",
-  "title": "final: осознанно закрываем расширение",
-  "description": "final у класса запрещает наследование от него. final у виртуального метода запрещает дальнейшее переопределение этого метода, но не обязательно наследование от всего класса. Так фиксируют поведение законченного адаптера или критическую часть контракта. final не делает поля неизменяемыми и не заменяет const.",
+  "title": "final: закрываем расширение",
+  "description": "Наследование нужно проектировать; final на классе запрещает наследовать, final на функции — переопределять дальше; типы-значения и листья иерархии; обязательное правило как финальная функция с одной точкой расширения; final подразумевает override; девиртуализация; почему снять final безопасно, а добавить — нет.",
   "moduleId": "cpp-oop",
-  "order": 16,
-  "difficulty": "advanced",
-  "estimatedMinutes": 60,
+  "order": 18,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 35,
   "prerequisites": ["oop-override"],
   "objectives": [
-    "Применить final: осознанно закрываем расширение в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Закрывать классы, не предназначенные для наследования",
+    "Фиксировать обязательные правила финальными функциями",
+    "Оставлять наследникам узкие точки расширения"
   ],
-  "tags": ["C++20", "ООП", "final: осознанно закрываем расширение"],
+  "tags": ["C++23", "ООП", "final", "Наследование"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-final-exercise",
-    "title": "Практика: final: осознанно закрываем расширение",
-    "description": "Создайте Base с virtual int read() const = 0 и виртуальным деструктором. Fixed final : public Base хранит значение из explicit Fixed(int) и возвращает его в read() const override. solve(a,b) создаёт два Fixed и возвращает разность read через две const Base&. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Финальные деньги",
+    "description": "Опишите финальный класс `Money final` (копейки) с операторами `+=` и `<=>` (по умолчанию) и методом `std::string str() const`, возвращающим `R.KK`. Прочитайте суммы в копейках до конца ввода и напечатайте `итого R.KK` и `максимум R.KK` (или только `итого 0.00`, если сумм нет).",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(7, 2)",
-        "output": "5\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "1050 99 300000\n",
+        "output": "итого 3011.49\nмаксимум 3000.00\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "",
+        "output": "итого 0.00\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Сумм не больше 50; каждая от 0 до 10⁹ копеек."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "auto operator<=>(const Money &) const = default; даст и сравнение, и std::max для Money.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "str(): std::format(\"{}.{:02}\", kopecks_ / 100, kopecks_ % 100).",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [7, 2],
-        "expected": "5\n"
+        "stdin": "1050 99 300000\n",
+        "expected": "итого 3011.49\nмаксимум 3000.00\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "",
+        "expected": "итого 0.00\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [-4, 5],
-        "expected": "-9\n"
+        "id": "hidden-1",
+        "name": "Ноль",
+        "stdin": "0\n",
+        "expected": "итого 0.00\nмаксимум 0.00\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [1000, -1000],
-        "expected": "2000\n"
+        "id": "hidden-2",
+        "name": "Копейка",
+        "stdin": "1\n",
+        "expected": "итого 0.01\nмаксимум 0.01\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Большие",
+        "stdin": "1000000000 1000000000\n",
+        "expected": "итого 20000000.00\nмаксимум 10000000.00\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Одинаковые",
+        "stdin": "5 5 5\n",
+        "expected": "итого 0.15\nмаксимум 0.05\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Убывание",
+        "stdin": "100 50\n",
+        "expected": "итого 1.50\nмаксимум 1.00\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Ровно рубль",
+        "stdin": "99 1\n",
+        "expected": "итого 1.00\nмаксимум 0.99\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Три суммы",
+        "stdin": "12345 67890 11111\n",
+        "expected": "итого 913.46\nмаксимум 678.90\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Одна сумма",
+        "stdin": "7\n",
+        "expected": "итого 0.07\nмаксимум 0.07\n"
       }
     ],
-    "referenceSolution": "struct Base { virtual int read() const = 0; virtual ~Base() = default; };\nclass Fixed final : public Base { int value_; public: explicit Fixed(int x) : value_(x) {} int read() const override { return value_; } };\nint solve(int a,int b) { Fixed x{a},y{b}; const Base& p=x; const Base& q=y; return p.read()-q.read(); }",
-    "solutionExplanation": "Создайте Base с virtual int read() const = 0 и виртуальным деструктором. Fixed final : public Base хранит значение из explicit Fixed(int) и возвращает его в read() const override. solve(a,b) создаёт два Fixed и возвращает разность read через две const Base&. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не объясняйте final как «объект больше нельзя менять». Это запрет наследования или переопределения; методы могут продолжать менять собственное состояние. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <algorithm>\n#include <format>\n#include <iostream>\n#include <optional>\n#include <print>\n#include <string>\n\nclass Money final {\npublic:\n    explicit Money(long long kopecks) : kopecks_(kopecks) {}\n\n    Money &operator+=(Money other) {\n        kopecks_ += other.kopecks_;\n        return *this;\n    }\n\n    auto operator<=>(const Money &) const = default;\n\n    std::string str() const {\n        return std::format(\"{}.{:02}\", kopecks_ / 100, kopecks_ % 100);\n    }\n\nprivate:\n    long long kopecks_;\n};\n\nint main() {\n    Money total(0);\n    std::optional<Money> largest;\n    long long k;\n    while (std::cin >> k) {\n        Money m(k);\n        total += m;\n        largest = largest ? std::max(*largest, m) : m;\n    }\n    std::println(\"итого {}\", total.str());\n    if (largest) {\n        std::println(\"максимум {}\", largest->str());\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "`Money` — тип-значение: его копируют, складывают и сравнивают, и никакого поведения «для наследников» у него нет. `final` фиксирует это решение в коде: попытка унаследоваться станет ошибкой компиляции.\n\nСравнение по умолчанию подходит, потому что деньги равны, когда равны копейки, — а с ним работает и `std::max`. Максимум хранится в `std::optional`: до первой суммы его нет.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-final-task-2",
+      "title": "Правило авторизации",
+      "description": "Абстрактный класс `Payment` объявляет `authorize(amount)` и `name()`. Класс `CardPayment` реализует `authorize` как **финальную** функцию: сумма положительна и не больше `limit()` — защищённой виртуальной функции (по умолчанию 50 000). Наследники карт: `DebitCard` (`дебетовая`, лимит по умолчанию) и `GoldCard` (`золотая`, лимит 1 000 000) — обе `final`. Отдельно — `Wallet` (`кошелёк`) с балансом: одобряет положительную сумму, не превышающую баланс.\n\nСтроки ввода: `debit сумма`, `gold сумма`, `wallet баланс сумма`. Напечатайте `имя сумма: одобрено` или `… отказ` через функцию `check(const Payment &, amount)`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "debit 60000\ngold 600000\nwallet 100 50\n",
+          "output": "дебетовая 60000: отказ\nзолотая 600000: одобрено\nкошелёк 50: одобрено\n"
+        },
+        {
+          "input": "gold -5\n",
+          "output": "золотая -5: отказ\n"
+        }
+      ],
+      "constraints": ["Строк не больше 30; суммы по модулю до 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "В CardPayment: bool authorize(long long amount) const final { return amount > 0 && amount <= limit(); }",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Wallet — прямой наследник Payment со своим authorize (override); баланс передаётся в конструктор.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "debit 60000\ngold 600000\nwallet 100 50\n",
+          "expected": "дебетовая 60000: отказ\nзолотая 600000: одобрено\nкошелёк 50: одобрено\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "gold -5\n",
+          "expected": "золотая -5: отказ\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ровно лимит",
+          "stdin": "debit 50000\n",
+          "expected": "дебетовая 50000: одобрено\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Ноль",
+          "stdin": "debit 0\n",
+          "expected": "дебетовая 0: отказ\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Лимит золотой",
+          "stdin": "gold 1000000\ngold 1000001\n",
+          "expected": "золотая 1000000: одобрено\nзолотая 1000001: отказ\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Больше баланса",
+          "stdin": "wallet 100 101\n",
+          "expected": "кошелёк 101: отказ\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Отрицательная сумма",
+          "stdin": "wallet 0 -1\n",
+          "expected": "кошелёк -1: отказ\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Единицы",
+          "stdin": "debit 1\ngold 1\nwallet 1 1\n",
+          "expected": "дебетовая 1: одобрено\nзолотая 1: одобрено\nкошелёк 1: одобрено\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Большой минус",
+          "stdin": "gold -1000000000\n",
+          "expected": "золотая -1000000000: отказ\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Весь баланс",
+          "stdin": "wallet 1000000000 1000000000\n",
+          "expected": "кошелёк 1000000000: одобрено\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nclass Payment {\npublic:\n    virtual ~Payment() = default;\n    virtual bool authorize(long long amount) const = 0;\n    virtual std::string name() const = 0;\n};\n\nclass CardPayment : public Payment {\npublic:\n    bool authorize(long long amount) const final {\n        return amount > 0 && amount <= limit();\n    }\n\nprotected:\n    virtual long long limit() const {\n        return 50000;\n    }\n};\n\nclass DebitCard final : public CardPayment {\npublic:\n    std::string name() const override {\n        return \"дебетовая\";\n    }\n};\n\nclass GoldCard final : public CardPayment {\npublic:\n    std::string name() const override {\n        return \"золотая\";\n    }\n\nprotected:\n    long long limit() const override {\n        return 1000000;\n    }\n};\n\nclass Wallet final : public Payment {\npublic:\n    explicit Wallet(long long balance) : balance_(balance) {}\n\n    bool authorize(long long amount) const override {\n        return amount > 0 && amount <= balance_;\n    }\n\n    std::string name() const override {\n        return \"кошелёк\";\n    }\n\nprivate:\n    long long balance_;\n};\n\nvoid check(const Payment &p, long long amount) {\n    std::println(\"{} {}: {}\", p.name(), amount, p.authorize(amount) ? \"одобрено\" : \"отказ\");\n}\n\nint main() {\n    DebitCard debit;\n    GoldCard gold;\n    std::string kind;\n    while (std::cin >> kind) {\n        long long amount;\n        if (kind == \"wallet\") {\n            long long balance;\n            std::cin >> balance >> amount;\n            check(Wallet(balance), amount);\n        } else {\n            std::cin >> amount;\n            if (kind == \"gold\") {\n                check(gold, amount);\n            } else {\n                check(debit, amount);\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Правило «сумма положительна и не больше лимита» общее для всех карт и записано в `CardPayment::authorize` один раз; `final` не даёт наследникам карт его ослабить. Каждая карта меняет только лимит — единственную точку расширения.\n\n`Wallet` — другая ветка иерархии: это не карта, и правило карт на него не распространяется, поэтому он реализует `authorize` сам. Конкретные классы помечены `final`: наследников у них не планируется.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-final-task-3",
+      "title": "Найди ошибку: правило обойдено",
+      "description": "Для всех карт действует обязательное правило: сумма **положительна** и не больше лимита карты (у дебетовой — 50 000, у золотой — 1 000 000). Строки ввода: `debit сумма` или `gold сумма`; программа печатает `имя сумма: одобрено` или `… отказ`.\n\nЗолотая карта одобряет отрицательные суммы. Найдите ошибку и исправьте иерархию так, чтобы ни одна карта не могла обойти обязательное правило.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n\nclass Payment {\npublic:\n    virtual ~Payment() = default;\n    virtual bool authorize(long long amount) const = 0;\n    virtual std::string name() const = 0;\n};\n\nclass CardPayment : public Payment {\npublic:\n    // Обязательное правило для всех карт: сумма положительна и не больше лимита.\n    bool authorize(long long amount) const override {\n        return amount > 0 && amount <= limit();\n    }\n\nprotected:\n    virtual long long limit() const {\n        return 50000;\n    }\n};\n\nclass DebitCard final : public CardPayment {\npublic:\n    std::string name() const override {\n        return \"дебетовая\";\n    }\n};\n\nclass GoldCard final : public CardPayment {\npublic:\n    std::string name() const override {\n        return \"золотая\";\n    }\n\n    bool authorize(long long amount) const override {\n        return amount <= 1000000;\n    }\n};\n\nvoid check(const Payment &p, long long amount) {\n    std::println(\"{} {}: {}\", p.name(), amount, p.authorize(amount) ? \"одобрено\" : \"отказ\");\n}\n\nint main() {\n    DebitCard debit;\n    GoldCard gold;\n    std::string kind;\n    long long amount;\n    while (std::cin >> kind >> amount) {\n        if (kind == \"gold\") {\n            check(gold, amount);\n        } else {\n            check(debit, amount);\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "gold -100\ngold 500000\n",
+          "output": "золотая -100: отказ\nзолотая 500000: одобрено\n"
+        },
+        {
+          "input": "debit 60000\n",
+          "output": "дебетовая 60000: отказ\n"
+        }
+      ],
+      "constraints": ["Строк не больше 30; суммы по модулю до 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какую функцию переопределила GoldCard и что в ней пропущено?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сделайте CardPayment::authorize финальной (final), а в GoldCard переопределите только limit(), вернув 1000000.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "gold -100\ngold 500000\n",
+          "expected": "золотая -100: отказ\nзолотая 500000: одобрено\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "debit 60000\n",
+          "expected": "дебетовая 60000: отказ\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "gold 0\n",
+          "expected": "золотая 0: отказ\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "gold -1\ndebit -1\n",
+          "expected": "золотая -1: отказ\nдебетовая -1: отказ\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "gold 1000000\n",
+          "expected": "золотая 1000000: одобрено\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "gold 1000001\n",
+          "expected": "золотая 1000001: отказ\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "debit 50000\n",
+          "expected": "дебетовая 50000: одобрено\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "gold -1000000000\n",
+          "expected": "золотая -1000000000: отказ\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "debit 1\ngold 1\n",
+          "expected": "дебетовая 1: одобрено\nзолотая 1: одобрено\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "gold 999999\n",
+          "expected": "золотая 999999: одобрено\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nclass Payment {\npublic:\n    virtual ~Payment() = default;\n    virtual bool authorize(long long amount) const = 0;\n    virtual std::string name() const = 0;\n};\n\nclass CardPayment : public Payment {\npublic:\n    // Обязательное правило для всех карт: сумма положительна и не больше лимита.\n    bool authorize(long long amount) const final {\n        return amount > 0 && amount <= limit();\n    }\n\nprotected:\n    virtual long long limit() const {\n        return 50000;\n    }\n};\n\nclass DebitCard final : public CardPayment {\npublic:\n    std::string name() const override {\n        return \"дебетовая\";\n    }\n};\n\nclass GoldCard final : public CardPayment {\npublic:\n    std::string name() const override {\n        return \"золотая\";\n    }\n\nprotected:\n    long long limit() const override {\n        return 1000000;\n    }\n};\n\nvoid check(const Payment &p, long long amount) {\n    std::println(\"{} {}: {}\", p.name(), amount, p.authorize(amount) ? \"одобрено\" : \"отказ\");\n}\n\nint main() {\n    DebitCard debit;\n    GoldCard gold;\n    std::string kind;\n    long long amount;\n    while (std::cin >> kind >> amount) {\n        if (kind == \"gold\") {\n            check(gold, amount);\n        } else {\n            check(debit, amount);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`GoldCard` переопределил `authorize` целиком, чтобы поднять лимит, — и по дороге потерял проверку положительности. Обязательное правило оказалось лишь «рекомендацией», которую каждый наследник может переписать.\n\n`final` у `CardPayment::authorize` делает правило неприкосновенным: попытка переопределить его станет ошибкой компиляции. Наследникам остаётся предусмотренная точка расширения — `limit()`. Так база управляет тем, что наследники **могут** менять, а что — нет.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-final-task-4",
+      "title": "Тарифы",
+      "description": "Абстрактный класс `Tariff` с функциями `long long cost(int minutes) const` и `std::string name() const` и три **финальных** тарифа:\n\n- `Поминутный`: 3 руб. за минуту;\n- `Базовый`: 300 руб. в месяц, включено 200 минут, сверх них — 2 руб.;\n- `Безлимитный`: 650 руб. в месяц.\n\nДля каждого числа минут из ввода найдите самый дешёвый тариф одним циклом по `std::vector<const Tariff *>` и напечатайте `N мин: тариф (стоимость руб.)`. При равной стоимости выбирайте тариф, стоящий в векторе раньше (порядок: поминутный, базовый, безлимитный).",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "50\n250\n1000\n",
+          "output": "50 мин: Поминутный (150 руб.)\n250 мин: Базовый (400 руб.)\n1000 мин: Безлимитный (650 руб.)\n"
+        },
+        {
+          "input": "0\n",
+          "output": "0 мин: Поминутный (0 руб.)\n"
+        }
+      ],
+      "constraints": ["Чисел не больше 30; минуты от 0 до 100 000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Базовый: 300 + 2 · max(0, minutes − 200).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Цикл: const Tariff *best = tariffs[0]; для каждого t: if (t->cost(m) < best->cost(m)) best = t;.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "50\n250\n1000\n",
+          "expected": "50 мин: Поминутный (150 руб.)\n250 мин: Базовый (400 руб.)\n1000 мин: Безлимитный (650 руб.)\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0\n",
+          "expected": "0 мин: Поминутный (0 руб.)\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Поровну поминутный и базовый",
+          "stdin": "100\n",
+          "expected": "100 мин: Поминутный (300 руб.)\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Ровно включено",
+          "stdin": "200\n",
+          "expected": "200 мин: Базовый (300 руб.)\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Поровну базовый и безлимитный",
+          "stdin": "375\n",
+          "expected": "375 мин: Базовый (650 руб.)\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Чуть больше",
+          "stdin": "376\n",
+          "expected": "376 мин: Безлимитный (650 руб.)\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Очень много",
+          "stdin": "100000\n",
+          "expected": "100000 мин: Безлимитный (650 руб.)\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Около ста",
+          "stdin": "99\n101\n",
+          "expected": "99 мин: Поминутный (297 руб.)\n101 мин: Базовый (300 руб.)\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Около порога",
+          "stdin": "216\n217\n",
+          "expected": "216 мин: Базовый (332 руб.)\n217 мин: Базовый (334 руб.)\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Минута",
+          "stdin": "1\n",
+          "expected": "1 мин: Поминутный (3 руб.)\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Tariff {\npublic:\n    virtual ~Tariff() = default;\n    virtual long long cost(int minutes) const = 0;\n    virtual std::string name() const = 0;\n};\n\nclass PerMinute final : public Tariff {\npublic:\n    long long cost(int minutes) const override {\n        return 3LL * minutes;\n    }\n\n    std::string name() const override {\n        return \"Поминутный\";\n    }\n};\n\nclass Basic final : public Tariff {\npublic:\n    long long cost(int minutes) const override {\n        return 300 + 2LL * std::max(0, minutes - 200);\n    }\n\n    std::string name() const override {\n        return \"Базовый\";\n    }\n};\n\nclass Unlimited final : public Tariff {\npublic:\n    long long cost(int) const override {\n        return 650;\n    }\n\n    std::string name() const override {\n        return \"Безлимитный\";\n    }\n};\n\nint main() {\n    PerMinute per_minute;\n    Basic basic;\n    Unlimited unlimited;\n    const std::vector<const Tariff *> tariffs = {&per_minute, &basic, &unlimited};\n    int minutes;\n    while (std::cin >> minutes) {\n        const Tariff *best = tariffs[0];\n        for (const Tariff *t : tariffs) {\n            if (t->cost(minutes) < best->cost(minutes)) {\n                best = t;\n            }\n        }\n        std::println(\"{} мин: {} ({} руб.)\", minutes, best->name(), best->cost(minutes));\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Тарифы — листья иерархии: каждый реализует договор `Tariff`, а наследников у них не будет, поэтому они `final`. Цикл выбора тарифа не знает формул — он сравнивает результаты виртуальных вызовов. Новый тариф добавляется в вектор, и цикл его учтёт.\n\nСравнение строго `<`, поэтому при равной стоимости остаётся тариф, стоящий раньше. В `Unlimited::cost` параметр не используется — у него нет имени, и компилятор не предупреждает о неиспользуемом параметре.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-final-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Что запрещает final после имени класса?",
-        "options": ["Создание производных классов", "Изменение всех объектов этого класса"],
-        "correct": 0,
-        "explanation": "В примере Fixed — конечная реализация интерфейса. Клиент по-прежнему работает через базовую ссылку. Для компилятора final иногда помогает убрать косвенный вызов, но гарантии ускорения нет: решение зависит от видимости кода и оптимизации. Главная причина использования — архитектурное ограничение. Не закрывайте каждую точку расширения автоматически: новый тип датчика должен добавляться через интерфейс Sensor, даже если конкретные TemperatureSensor и PressureSensor закончены."
-      },
-      {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "12", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 12. final у класса запрещает наследование от него. final у виртуального метода запрещает дальнейшее переопределение этого метода, но не обязательно наследование от всего класса. Так фиксируют поведение законченного адаптера или критическую часть контракта. final не делает поля неизменяемыми и не заменяет const."
-      },
-      {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q1",
+        "question": "Что запрещает запись class Money final { … };?",
+        "explanation": "final на классе закрывает его для наследования; всем остальным он пользуется как обычно.",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Не объясняйте final как «объект больше нельзя менять». Это запрет наследования или переопределения; методы могут продолжать менять собственное состояние."
+          "Наследовать от Money",
+          "Создавать объекты Money",
+          "Копировать Money",
+          "Изменять поля Money"
         ],
-        "correct": 1,
-        "explanation": "Рассмотрите класс-наследник от класса с final методом. Дополнительные новые методы допустимы, переопределение закрытого метода — нет. Сравните это с final на самом классе. Не обещайте ускорение из одного ключевого слова без измерений сборки с оптимизацией."
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Что запрещает final у виртуальной функции bool authorize(long long) const final?",
+        "explanation": "Переопределение становится последним: правило фиксируется для всех наследников.",
+        "options": [
+          "Переопределять её в наследниках этого класса",
+          "Вызывать её через ссылку на базу",
+          "Переопределять её в этом классе",
+          "Вызывать её у константных объектов"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct Base {\n    virtual ~Base() = default;\n    virtual int step() const { return 1; }\n    int run() const { return step() * 10; }\n};\n\nstruct Middle : Base {\n    int step() const final { return 2; }\n};\n\nstruct Leaf final : Middle {};\n\nint main() {\n    Leaf leaf;\n    const Base &b = leaf;\n    std::println(\"{}\", b.run());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Leaf наследует финальную версию step из Middle.",
+        "type": "text",
+        "answers": ["20"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Что верно о final у функции? Выберите все.",
+        "explanation": "final у функции, которая ничего не переопределяет, — ошибка компиляции.",
+        "type": "multiple",
+        "options": [
+          "Он подразумевает override: функция обязана переопределять виртуальную функцию базы",
+          "Наследники не могут переопределить функцию",
+          "Он делает класс абстрактным",
+          "Его можно указать у невиртуальной функции, которая ничего не переопределяет"
+        ],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q5",
+        "question": "Почему типы-значения (деньги, дата, координаты) удобно объявлять final?",
+        "explanation": "Тип-значение не проектируют для расширения; final делает это явным.",
+        "options": [
+          "Наследник мог бы добавить поля, теряющиеся при копировании в базовый тип, или изменить смысл операций",
+          "Иначе их нельзя копировать",
+          "final ускоряет арифметику",
+          "Так требует стандарт"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что такое девиртуализация?",
+        "explanation": "Для финального класса таблица виртуальных функций при вызове не нужна.",
+        "options": [
+          "Компилятор вызывает виртуальную функцию напрямую, зная, что у типа нет наследников",
+          "Удаление виртуальных функций из класса",
+          "Ошибка вызова виртуальной функции в конструкторе",
+          "Превращение класса в абстрактный"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Какое изменение безопасно для существующего кода клиентов?",
+        "explanation": "Снятие final ничего не ломает; добавление ломает существующих наследников.",
+        "options": [
+          "Снять final с класса",
+          "Добавить final к классу, от которого уже наследуют",
+          "Добавить final к функции, которую наследники переопределяют",
+          "Все три"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Класс CardPayment объявил authorize final и оставил наследникам protected virtual limit(). Сколько точек расширения у наследника карты в части авторизации?",
+        "explanation": "Только limit(): правило проверки зафиксировано, наследник выбирает лишь лимит.",
+        "type": "text",
+        "answers": ["1", "одна"],
+        "placeholder": "Число"
       }
     ]
   }

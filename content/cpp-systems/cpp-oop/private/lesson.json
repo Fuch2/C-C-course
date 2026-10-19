@@ -1,134 +1,548 @@
 {
   "id": "oop-private",
-  "title": "private — защита представления",
-  "description": "private ограничивает доступ к члену самим классом и его друзьями. Внешний код и производные классы не получают прямого доступа к закрытому полю. Это правило компиляции, а не шифрование памяти. Его задача — направить изменения через операции, сохраняющие контракт. Часто именно отказ операции показывает качество инкапсуляции: после ошибки старое значение должно сохраниться.",
+  "title": "Закрытое представление",
+  "description": "Вторая причина закрывать данные — возможность менять представление, не трогая клиентов: деньги в double и в копейках; доступ private проверяется по классу, а не по объекту; закрытые вспомогательные методы; что открыть, а что спрятать; friend как редкое исключение.",
   "moduleId": "cpp-oop",
-  "order": 4,
-  "difficulty": "advanced",
-  "estimatedMinutes": 45,
+  "order": 5,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 40,
   "prerequisites": ["oop-public"],
   "objectives": [
-    "Применить private — защита представления в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Отделять интерфейс от представления данных",
+    "Менять представление класса, не меняя клиентов",
+    "Выносить вспомогательные операции в закрытые методы",
+    "Понимать, когда уместен friend"
   ],
-  "tags": ["C++20", "ООП", "private — защита представления"],
+  "tags": ["C++23", "ООП", "private", "Представление", "friend"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-private-exercise",
-    "title": "Практика: private — защита представления",
-    "description": "Реализуйте Level с начальным private value_=0. try_set(int) принимает только [0,100], возвращает bool и при отказе не меняет состояние. value() const читает значение. solve(a,b) последовательно пытается записать a и b, затем возвращает value(). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Температура",
+    "description": "Опишите класс `Temperature`, который **хранит температуру в кельвинах** в закрытом поле, а снаружи умеет отдавать её в трёх шкалах: `celsius()`, `fahrenheit()`, `kelvin()`. Создание — статическими функциями `from_celsius`, `from_fahrenheit`, `from_kelvin`.\n\nКаждая строка ввода — шкала (`C`, `F` или `K`) и значение. Напечатайте `C=… F=… K=…` с двумя знаками после точки или `ниже абсолютного нуля`, если температура в кельвинах отрицательна.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(20, 200)",
-        "output": "20\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "C 25\nF 212\n",
+        "output": "C=25.00 F=77.00 K=298.15\nC=100.00 F=212.00 K=373.15\n"
       },
       {
-        "input": "solve(-1, 30)",
-        "output": "30\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "K -1\n",
+        "output": "ниже абсолютного нуля\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Значения по модулю до 10⁴; строк не больше 20."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "K = C + 273.15; C = (F − 32) · 5 / 9. Обратно: F = C · 9 / 5 + 32.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Статическая функция from_celsius(double c) возвращает Temperature(c + 273.15) через закрытый конструктор от кельвинов.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [20, 200],
-        "expected": "20\n"
+        "stdin": "C 25\nF 212\n",
+        "expected": "C=25.00 F=77.00 K=298.15\nC=100.00 F=212.00 K=373.15\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [-1, 30],
-        "expected": "30\n"
+        "stdin": "K -1\n",
+        "expected": "ниже абсолютного нуля\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [0, 100],
-        "expected": "100\n"
+        "id": "hidden-1",
+        "name": "Абсолютный ноль",
+        "stdin": "K 0\n",
+        "expected": "C=-273.15 F=-459.67 K=0.00\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [100, -1],
-        "expected": "100\n"
+        "id": "hidden-2",
+        "name": "Ноль в Цельсиях",
+        "stdin": "C -273.15\n",
+        "expected": "C=-273.15 F=-459.67 K=0.00\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный сценарий 3",
-        "arguments": [-1, 101],
-        "expected": "0\n"
+        "id": "hidden-3",
+        "name": "Ниже нуля в Цельсиях",
+        "stdin": "C -300\n",
+        "expected": "ниже абсолютного нуля\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Минус сорок",
+        "stdin": "F -40\nC -40\n",
+        "expected": "C=-40.00 F=-40.00 K=233.15\nC=-40.00 F=-40.00 K=233.15\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Замерзание",
+        "stdin": "F 32\n",
+        "expected": "C=0.00 F=32.00 K=273.15\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Горячо",
+        "stdin": "K 10000\n",
+        "expected": "C=9726.85 F=17540.33 K=10000.00\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Норма",
+        "stdin": "C 36.6\n",
+        "expected": "C=36.60 F=97.88 K=309.75\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Ниже нуля в Фаренгейтах",
+        "stdin": "F -500\n",
+        "expected": "ниже абсолютного нуля\n"
       }
     ],
-    "referenceSolution": "class Level { int value_{}; public: bool try_set(int x) { if (x < 0 || x > 100) return false; value_ = x; return true; } int value() const { return value_; } };\nint solve(int a,int b) { Level x; x.try_set(a); x.try_set(b); return x.value(); }",
-    "solutionExplanation": "Реализуйте Level с начальным private value_=0. try_set(int) принимает только [0,100], возвращает bool и при отказе не меняет состояние. value() const читает значение. solve(a,b) последовательно пытается записать a и b, затем возвращает value(). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Если setter сначала присваивает, а затем сообщает об ошибке, он нарушает обещание сохранения состояния. private такой логический дефект не обнаружит. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n\nclass Temperature {\npublic:\n    static Temperature from_kelvin(double k) {\n        return Temperature(k);\n    }\n\n    static Temperature from_celsius(double c) {\n        return Temperature(c + 273.15);\n    }\n\n    static Temperature from_fahrenheit(double f) {\n        return from_celsius((f - 32) * 5 / 9);\n    }\n\n    double kelvin() const {\n        return kelvin_;\n    }\n\n    double celsius() const {\n        return kelvin_ - 273.15;\n    }\n\n    double fahrenheit() const {\n        return celsius() * 9 / 5 + 32;\n    }\n\nprivate:\n    explicit Temperature(double kelvin) : kelvin_(kelvin) {}\n    double kelvin_;\n};\n\nint main() {\n    char scale;\n    double value;\n    while (std::cin >> scale >> value) {\n        Temperature t = scale == 'C'   ? Temperature::from_celsius(value)\n                        : scale == 'F' ? Temperature::from_fahrenheit(value)\n                                       : Temperature::from_kelvin(value);\n        if (t.kelvin() < 0) {\n            std::println(\"ниже абсолютного нуля\");\n        } else {\n            std::println(\"C={:.2f} F={:.2f} K={:.2f}\", t.celsius(), t.fahrenheit(), t.kelvin());\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Внутри — одно поле в одной шкале, снаружи — три. Все преобразования сосредоточены в классе, и клиент не знает, что хранится именно кельвин. Если бы понадобилось хранить градусы Цельсия, поменялись бы только тела методов.\n\nСтатические функции с говорящими именами решают проблему, которую не решить конструкторами: `Temperature(double)` не может означать одновременно «из Цельсия» и «из Фаренгейта» — у них одинаковые параметры. Имена `from_celsius` и `from_fahrenheit` делают единицы явными.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-private-task-2",
+      "title": "Время в секундах",
+      "description": "Опишите класс `Clock` — время суток. Снаружи — часы, минуты и секунды, а **внутри — одно число секунд от полуночи**. Интерфейс: конструктор `Clock(int h, int m, int s)`, метод `void add(int seconds)` (время идёт по кругу, секунды могут быть отрицательными) и `void print() const` в формате `ЧЧ:ММ:СС`.\n\nПервая строка ввода — начальное время `ч м с`. Каждая следующая — число секунд, на которое сдвинуть часы. После каждого сдвига напечатайте время.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "23 59 30\n45\n-60\n",
+          "output": "00:00:15\n23:59:15\n"
+        },
+        {
+          "input": "0 0 0\n86400\n-1\n",
+          "output": "00:00:00\n23:59:59\n"
+        }
+      ],
+      "constraints": ["0 ≤ ч < 24, 0 ≤ м, с < 60; сдвиги по модулю до 10⁹; их не больше 30."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Нормализация по кругу с учётом отрицательных: ((x % 86400) + 86400) % 86400.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Печать: часы — seconds_ / 3600, минуты — seconds_ / 60 % 60, секунды — seconds_ % 60; формат {:02}.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "23 59 30\n45\n-60\n",
+          "expected": "00:00:15\n23:59:15\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0 0 0\n86400\n-1\n",
+          "expected": "00:00:00\n23:59:59\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Час",
+          "stdin": "12 0 0\n3600\n",
+          "expected": "13:00:00\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Миллиард секунд",
+          "stdin": "0 0 0\n1000000000\n",
+          "expected": "01:46:40\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Минус миллиард",
+          "stdin": "0 0 0\n-1000000000\n",
+          "expected": "22:13:20\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Без сдвига",
+          "stdin": "10 30 15\n0\n",
+          "expected": "10:30:15\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Полночь",
+          "stdin": "23 59 59\n1\n1\n",
+          "expected": "00:00:00\n00:00:01\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Ровно в полночь",
+          "stdin": "6 15 0\n-22500\n",
+          "expected": "00:00:00\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Через минуту",
+          "stdin": "1 2 3\n59\n61\n",
+          "expected": "01:03:02\n01:04:03\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Сутки назад",
+          "stdin": "18 45 30\n-86401\n",
+          "expected": "18:45:29\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n\nclass Clock {\npublic:\n    Clock(int h, int m, int s) : seconds_(normalize(h * 3600LL + m * 60LL + s)) {}\n\n    void add(long long seconds) {\n        seconds_ = normalize(seconds_ + seconds);\n    }\n\n    void print() const {\n        std::println(\"{:02}:{:02}:{:02}\", seconds_ / 3600, seconds_ / 60 % 60, seconds_ % 60);\n    }\n\nprivate:\n    static constexpr long long day = 24 * 60 * 60;\n\n    static long long normalize(long long x) {\n        return (x % day + day) % day;\n    }\n\n    long long seconds_;\n};\n\nint main() {\n    int h, m, s;\n    std::cin >> h >> m >> s;\n    Clock clock(h, m, s);\n    long long delta;\n    while (std::cin >> delta) {\n        clock.add(delta);\n        clock.print();\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Хранить время одним числом секунд удобнее, чем тремя полями: сдвиг — одно сложение, переход через полночь — один остаток. Перенос секунд в минуты и минут в часы не нужен вовсе — разложение на части происходит только при печати.\n\nНормализация вынесена в закрытую статическую функцию: она нужна и конструктору, и `add`, но клиенту не интересна. `(x % day + day) % day` приводит и отрицательные значения к диапазону `[0, day)`: в C++ остаток от отрицательного числа отрицателен.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-private-task-3",
+      "title": "Найди ошибку: деньги в double",
+      "description": "Первая строка ввода — ожидаемая сумма, следующие — суммы покупок в рублях (с копейками). Программа складывает покупки и печатает `итого X.XX`, а затем `сходится` или `не сходится` — совпадает ли итог с ожидаемой суммой.\n\nИногда программа говорит «не сходится», хотя суммы равны. Исправьте класс `Money`, **не меняя его интерфейс и `main`**.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <cmath>\n#include <iostream>\n#include <print>\n\nclass Money {\npublic:\n    explicit Money(double rubles) : rubles_(rubles) {}\n\n    void add(Money other) {\n        rubles_ += other.rubles_;\n    }\n\n    bool equals(Money other) const {\n        return rubles_ == other.rubles_;\n    }\n\n    void print() const {\n        std::println(\"итого {:.2f}\", rubles_);\n    }\n\nprivate:\n    double rubles_;\n};\n\nint main() {\n    double target;\n    std::cin >> target;\n    Money total(0);\n    double amount;\n    while (std::cin >> amount) {\n        total.add(Money(amount));\n    }\n    total.print();\n    std::println(\"{}\", total.equals(Money(target)) ? \"сходится\" : \"не сходится\");\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "0.3\n0.1\n0.2\n",
+          "output": "итого 0.30\nсходится\n"
+        },
+        {
+          "input": "5\n2.5\n2.49\n",
+          "output": "итого 4.99\nне сходится\n"
+        }
+      ],
+      "constraints": [
+        "Суммы от 0 до 10⁶ с не более чем двумя знаками после точки; покупок не больше 50."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сложите 0.1 и 0.2 в double и сравните с 0.3 — равны ли они?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Храните внутри целое число копеек: kopecks_(std::llround(rubles * 100)). Интерфейс (конструктор, add, equals, print) остаётся прежним.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "0.3\n0.1\n0.2\n",
+          "expected": "итого 0.30\nсходится\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5\n2.5\n2.49\n",
+          "expected": "итого 4.99\nне сходится\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1\n0.1\n0.1\n0.1\n0.1\n0.1\n0.1\n0.1\n0.1\n0.1\n0.1\n",
+          "expected": "итого 1.00\nсходится\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "100\n99.99\n0.01\n",
+          "expected": "итого 100.00\nсходится\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "0\n",
+          "expected": "итого 0.00\nсходится\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1000000\n999999.99\n0.01\n",
+          "expected": "итого 1000000.00\nсходится\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "59.97\n19.99\n19.99\n19.99\n",
+          "expected": "итого 59.97\nсходится\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "0.6\n0.2\n0.2\n0.2\n",
+          "expected": "итого 0.60\nсходится\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "10.5\n10\n0.5\n",
+          "expected": "итого 10.50\nсходится\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "1.11\n0.37\n0.37\n0.37\n",
+          "expected": "итого 1.11\nсходится\n"
+        }
+      ],
+      "referenceSolution": "#include <cmath>\n#include <iostream>\n#include <print>\n\nclass Money {\npublic:\n    explicit Money(double rubles) : kopecks_(std::llround(rubles * 100)) {}\n\n    void add(Money other) {\n        kopecks_ += other.kopecks_;\n    }\n\n    bool equals(Money other) const {\n        return kopecks_ == other.kopecks_;\n    }\n\n    void print() const {\n        std::println(\"итого {}.{:02}\", kopecks_ / 100, kopecks_ % 100);\n    }\n\nprivate:\n    long long kopecks_;\n};\n\nint main() {\n    double target;\n    std::cin >> target;\n    Money total(0);\n    double amount;\n    while (std::cin >> amount) {\n        total.add(Money(amount));\n    }\n    total.print();\n    std::println(\"{}\", total.equals(Money(target)) ? \"сходится\" : \"не сходится\");\n    return 0;\n}\n",
+      "solutionExplanation": "`0.1`, `0.2` и `0.3` не представимы точно в двоичном `double`, и `0.1 + 0.2` даёт `0.30000000000000004`. Печать с двумя знаками это скрывает, а точное сравнение — нет. Чем больше покупок, тем больше накопленная погрешность.\n\nИсправление меняет только представление: конструктор один раз округляет рубли до целых копеек (`std::llround`), а дальше вся арифметика целочисленная и точная. Интерфейс и `main` не изменились — именно ради такой возможности поле и было закрытым.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-private-task-4",
+      "title": "Множество малых чисел",
+      "description": "Опишите класс `SmallSet` — множество чисел от 0 до 63. **Внутри — одно 64-битное число**, где бит `i` означает «число `i` есть в множестве». Интерфейс: `void add(int)`, `void remove(int)`, `bool contains(int) const`, `int size() const` и `std::string to_string() const` — элементы по возрастанию в фигурных скобках через запятую с пробелом: `{1, 5, 63}` или `{}`.\n\nКоманды: `add x`, `remove x`, `has x` (`да`/`нет`), `size`, `print`. Числа вне 0–63 в `add` и `remove` игнорируются, а `has` для них отвечает `нет`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "add 5\nadd 1\nadd 63\nprint\nsize\n",
+          "output": "{1, 5, 63}\n3\n"
+        },
+        {
+          "input": "add 64\nadd -1\nhas 64\nprint\n",
+          "output": "нет\n{}\n"
+        }
+      ],
+      "constraints": ["Команд не больше 100; числа по модулю до 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Поле — std::uint64_t bits_ = 0. Бит i: std::uint64_t{1} << i. add — |=, remove — &= ~, contains — & != 0.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "size — std::popcount(bits_) из <bit>. to_string перебирает i от 0 до 63; удобно вынести проверку диапазона в закрытый статический метод valid(int).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add 5\nadd 1\nadd 63\nprint\nsize\n",
+          "expected": "{1, 5, 63}\n3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "add 64\nadd -1\nhas 64\nprint\n",
+          "expected": "нет\n{}\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ноль",
+          "stdin": "add 0\nhas 0\nremove 0\nhas 0\n",
+          "expected": "да\nнет\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Старшие биты",
+          "stdin": "add 63\nadd 62\nremove 63\nprint\n",
+          "expected": "{62}\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Повторы",
+          "stdin": "add 7\nadd 7\nadd 7\nsize\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Удалить отсутствующее",
+          "stdin": "remove 5\nsize\nprint\n",
+          "expected": "0\n{}\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Последовательность",
+          "stdin": "add 1\nadd 2\nadd 3\nadd 4\nadd 5\nremove 3\nprint\nsize\n",
+          "expected": "{1, 2, 4, 5}\n4\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Вне диапазона",
+          "stdin": "has 1000\nhas -1000\n",
+          "expected": "нет\nнет\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Середина",
+          "stdin": "add 32\nadd 31\nadd 33\nprint\n",
+          "expected": "{31, 32, 33}\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пустое",
+          "stdin": "print\nsize\n",
+          "expected": "{}\n0\n"
+        }
+      ],
+      "referenceSolution": "#include <bit>\n#include <cstdint>\n#include <iostream>\n#include <print>\n#include <string>\n\nclass SmallSet {\npublic:\n    void add(int x) {\n        if (valid(x)) {\n            bits_ |= bit(x);\n        }\n    }\n\n    void remove(int x) {\n        if (valid(x)) {\n            bits_ &= ~bit(x);\n        }\n    }\n\n    bool contains(int x) const {\n        return valid(x) && (bits_ & bit(x)) != 0;\n    }\n\n    int size() const {\n        return std::popcount(bits_);\n    }\n\n    std::string to_string() const {\n        std::string out = \"{\";\n        for (int i = 0; i < 64; i++) {\n            if (contains(i)) {\n                out += out.size() > 1 ? \", \" : \"\";\n                out += std::to_string(i);\n            }\n        }\n        return out + \"}\";\n    }\n\nprivate:\n    static bool valid(int x) {\n        return x >= 0 && x < 64;\n    }\n\n    static std::uint64_t bit(int x) {\n        return std::uint64_t{1} << x;\n    }\n\n    std::uint64_t bits_ = 0;\n};\n\nint main() {\n    SmallSet set;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"size\") {\n            std::println(\"{}\", set.size());\n        } else if (command == \"print\") {\n            std::println(\"{}\", set.to_string());\n        } else {\n            int x;\n            std::cin >> x;\n            if (command == \"add\") {\n                set.add(x);\n            } else if (command == \"remove\") {\n                set.remove(x);\n            } else {\n                std::println(\"{}\", set.contains(x) ? \"да\" : \"нет\");\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Клиент видит обычное множество с понятными операциями, а внутри — восемь байт и битовые операции из модуля «Углублённый C». Каждая операция выполняется за несколько машинных команд, а `std::popcount` (C++20) подсчитывает элементы одной инструкцией процессора.\n\nЛитерал `std::uint64_t{1}` важен: `1 << 40` в типе `int` — неопределённое поведение, сдвигать нужно 64-битную единицу. Проверка диапазона и построение маски — закрытые статические методы: им не нужен объект, а клиенту они не нужны вовсе. Если завтра понадобятся числа до 1000, представление сменится на `std::bitset` или вектор — интерфейс останется прежним.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-private-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Какое состояние должно остаться после отклонённого try_set?",
-        "options": ["Предыдущее допустимое состояние", "Отклонённое значение, скрытое за private"],
-        "correct": 0,
-        "explanation": "В примере try_set проверяет диапазон до присваивания. Клиент видит результат bool и может повторить запрос. Порядок «проверить, затем изменить» проще, чем откатывать уже испорченное состояние. Не предоставляйте пару getter/setter автоматически каждому полю: setter должен иметь предметный смысл. Для чтения небольшого int достаточно копии; ссылка добавила бы ненужные вопросы времени жизни."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nclass Score {\npublic:\n    explicit Score(int v) : v_(v) {}\n    bool beats(const Score &other) const { return v_ > other.v_; }\n\nprivate:\n    int v_;\n};\n\nint main() {\n    Score a(7), b(5);\n    std::println(\"{} {}\", a.beats(b), b.beats(a));\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Метод видит закрытое поле другого объекта того же класса: доступ проверяется по классу.",
+        "type": "text",
+        "answers": ["true false"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "0 5", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 0 5. private ограничивает доступ к члену самим классом и его друзьями. Внешний код и производные классы не получают прямого доступа к закрытому полю. Это правило компиляции, а не шифрование памяти. Его задача — направить изменения через операции, сохраняющие контракт. Часто именно отказ операции показывает качество инкапсуляции: после ошибки старое значение должно сохраниться."
-      },
-      {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q2",
+        "question": "Почему закрытое представление можно заменить без изменения клиентов?",
+        "explanation": "Это вторая причина закрывать данные — наряду с защитой инварианта.",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Если setter сначала присваивает, а затем сообщает об ошибке, он нарушает обещание сохранения состояния. private такой логический дефект не обнаружит."
+          "Клиенты используют только открытый интерфейс и не знают, как хранятся данные",
+          "Компилятор сам переписывает клиентский код",
+          "Закрытые поля не занимают памяти",
+          "Нельзя — клиентов придётся переписать"
         ],
-        "correct": 1,
-        "explanation": "Проверьте последовательность: корректная запись, ошибочная запись, чтение. Она обнаруживает повреждение состояния, которое незаметно при единственном вызове. Отдельно проверьте обе включённые границы. Контроль доступа не добавляет отдельной проверки прав во время каждого вызова."
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Может ли метод класса Money обратиться к закрытому полю kopecks_ другого объекта Money?",
+        "explanation": "Поэтому сравнение и сложение объектов удобно писать методами.",
+        "options": [
+          "Да: private ограничивает доступ для других классов и функций, а не для других объектов того же класса",
+          "Нет: каждый объект видит только свои поля",
+          "Только если объект передан по указателю",
+          "Только в конструкторе"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Почему деньги не хранят в double?",
+        "explanation": "Деньги хранят в целых минимальных единицах — копейках — или в десятичном типе.",
+        "options": [
+          "Двоичная дробь не хранит точно 0.1, поэтому суммы перестают сравниваться и накапливают погрешность",
+          "double занимает слишком много памяти",
+          "double не умеет хранить отрицательные числа",
+          "double нельзя напечатать с двумя знаками"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <cmath>\n#include <print>\n\nint main() {\n    long long kopecks = std::llround(19.99 * 3 * 100);\n    std::println(\"{}.{:02}\", kopecks / 100, kopecks % 100);\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "19.99 · 3 = 59.97; llround убирает двоичную погрешность, и дальше арифметика целочисленная.",
+        "type": "text",
+        "answers": ["59.97"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Какие члены класса скорее стоит сделать закрытыми? Выберите все.",
+        "explanation": "Открывают операции, которые нужны клиенту независимо от способа хранения.",
+        "type": "multiple",
+        "options": [
+          "Поля",
+          "Вспомогательные методы промежуточных вычислений",
+          "Операции предметной области, нужные клиентам",
+          "Детали формата хранения («в копейках»)"
+        ],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q7",
+        "question": "Что даёт объявление friend double dot(Vector2 a, Vector2 b); внутри класса Vector2?",
+        "explanation": "Дружбу объявляет сам класс; это часть его интерфейса.",
+        "options": [
+          "Функция dot получает доступ к закрытым членам Vector2, оставаясь обычной функцией",
+          "dot становится методом Vector2",
+          "Все функции с именем dot получают доступ ко всем классам",
+          "Vector2 получает доступ к закрытым членам dot"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nclass Celsius {\npublic:\n    explicit Celsius(double c) : kelvin_(c + 273.15) {}\n    double value() const { return kelvin_ - 273.15; }\n    void warm(double d) { kelvin_ += d; }\n\nprivate:\n    double kelvin_;\n};\n\nint main() {\n    Celsius t(20);\n    t.warm(5);\n    std::println(\"{:.1f}\", t.value());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Внутри — кельвины, снаружи — градусы Цельсия. Клиент не знает о представлении.",
+        "type": "text",
+        "answers": ["25.0"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q9",
+        "question": "Вы не уверены, понадобится ли метод клиентам. Что безопаснее?",
+        "explanation": "Закрытое можно менять свободно, открытое — обещание.",
+        "options": [
+          "Сделать его закрытым: открыть потом легко, а закрыть открытое — значит сломать клиентов",
+          "Сделать его открытым на всякий случай",
+          "Сделать его friend",
+          "Сделать его static"
+        ],
+        "correct": 0
       }
     ]
   }

@@ -3,7 +3,7 @@
 AddressSanitizer требует пересборки программы со специальными флагами и не видит неинициализированные данные. **Valgrind** работает иначе: он запускает **обычную** программу на виртуальном процессоре и наблюдает за каждой командой. Его основной инструмент, **Memcheck**, для каждого байта памяти помнит, выделен ли он и записано ли в него значение — вплоть до отдельных битов.
 
 ```text
-gcc -std=c17 -g -O0 main.c -o main
+gcc -std=c23 -g -O0 main.c -o main
 valgrind --leak-check=full --track-origins=yes ./main
 ```
 
@@ -18,7 +18,7 @@ valgrind --leak-check=full --track-origins=yes ./main
 
 ## Неинициализированные значения
 
-Вот программа, которую AddressSanitizer считает **полностью чистой**:
+Вот программа, в которой AddressSanitizer находит только часть ошибок:
 
 ```c
 #include <stdio.h>
@@ -44,34 +44,34 @@ int main(void) {
     if (label != NULL) {
         snprintf(label, 32, "best=%d", best);
     }
-    return 0;
+    return 0;                           // Ошибка памяти: блоки не освобождены
 }
 ```
 
-С ASan она печатает `40` и завершается без единого предупреждения: все обращения в границах блоков, а утечки LeakSanitizer не увидел — указатели на блоки ещё лежали в кадре `main` к моменту проверки. Valgrind находит три ошибки:
+С ASan встроенный LeakSanitizer сообщает о двух утечках — 20 байт из строки 6 и 32 байта из строки 20, — а о чтении незаписанного `scores[0]` молчит: все обращения в границах блоков. Напечатанное `40` при этом может пропасть: LeakSanitizer завершает процесс раньше, чем сбрасывается буфер `stdout`, направленного в файл или канал. Valgrind находит все три ошибки:
 
 ```text
-==30== Conditional jump or move depends on uninitialised value(s)
-==30==    at 0x1091F1: main (main.c:15)
-==30==  Uninitialised value was created by a heap allocation
-==30==    at 0x48417B4: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
-==30==    by 0x109178: main (main.c:6)
-==30==
-==30== 20 bytes in 1 blocks are definitely lost in loss record 1 of 2
-==30==    at 0x48417B4: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
-==30==    by 0x109178: main (main.c:6)
-==30==
-==30== 32 bytes in 1 blocks are definitely lost in loss record 2 of 2
-==30==    at 0x48417B4: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
-==30==    by 0x10923A: main (main.c:20)
-==30==
-==30== LEAK SUMMARY:
-==30==    definitely lost: 52 bytes in 2 blocks
-==30==    indirectly lost: 0 bytes in 0 blocks
-==30==      possibly lost: 0 bytes in 0 blocks
-==30==    still reachable: 0 bytes in 0 blocks
-==30==
-==30== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 0 from 0)
+==29== Conditional jump or move depends on uninitialised value(s)
+==29==    at 0x1088E0: main (main.c:15)
+==29==  Uninitialised value was created by a heap allocation
+==29==    at 0x488545C: malloc (vg_replace_malloc.c:446)
+==29==    by 0x108843: main (main.c:6)
+==29==
+==29== 20 bytes in 1 blocks are definitely lost in loss record 1 of 2
+==29==    at 0x488545C: malloc (vg_replace_malloc.c:446)
+==29==    by 0x108843: main (main.c:6)
+==29==
+==29== 32 bytes in 1 blocks are definitely lost in loss record 2 of 2
+==29==    at 0x488545C: malloc (vg_replace_malloc.c:446)
+==29==    by 0x10892F: main (main.c:20)
+==29==
+==29== LEAK SUMMARY:
+==29==    definitely lost: 52 bytes in 2 blocks
+==29==    indirectly lost: 0 bytes in 0 blocks
+==29==      possibly lost: 0 bytes in 0 blocks
+==29==    still reachable: 0 bytes in 0 blocks
+==29==
+==29== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 0 from 0)
 ```
 
 Разберём первую ошибку. **Conditional jump … depends on uninitialised value** — условие `if (scores[i] > best)` в строке 15 зависит от неинициализированного значения: `best` получил мусор из `scores[0]`. Memcheck сообщает не в момент копирования мусора (строка 13), а когда от него **зависит решение** программы — ветвление, адрес обращения или системный вызов. Строка «created by a heap allocation … main.c:6» благодаря `--track-origins=yes` указывает, откуда взялся мусор: из блока `malloc` без инициализации.
@@ -94,7 +94,7 @@ int main(void) {
 ==30==    at 0x109189: sum_values (main.c:7)
 ==30==    by 0x109216: main (main.c:21)
 ==30==  Address 0x4a3a054 is 0 bytes after a block of size 20 alloc'd
-==30==    at 0x48417B4: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==30==    at 0x488545C: malloc (vg_replace_malloc.c:446)
 ==30==    by 0x1091C2: main (main.c:14)
 ```
 

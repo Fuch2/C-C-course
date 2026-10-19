@@ -1,117 +1,466 @@
 {
   "id": "advanced-extern",
-  "title": "extern",
-  "description": "Объявление extern int total; сообщает тип и имя объекта, обычно определённого в другой единице трансляции.",
+  "title": "extern: общие переменные",
+  "description": "Общая переменная для нескольких файлов: объявление extern в заголовке и одно определение в .c; предварительные определения и отказ от их склеивания в GCC 10; extern с инициализатором; массивы неполного типа и экспорт размера; extern у функций и внутри блока; константные инициализаторы; цена глобальных переменных.",
   "moduleId": "advanced-c",
-  "order": 10,
-  "difficulty": "advanced",
-  "estimatedMinutes": 40,
+  "order": 5,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
   "prerequisites": ["advanced-static"],
   "objectives": [
-    "Объяснить: extern",
-    "Различать корректный контракт и ошибку: Добавление extern к инициализированной переменной в заголовке не устраняет повторные определения.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Объявлять общую переменную через extern и определять её ровно в одном файле",
+    "Отличать объявление, определение и предварительное определение переменной",
+    "Экспортировать массив вместе с его размером",
+    "Оценивать, когда глобальная переменная оправдана, а когда её лучше заменить"
   ],
-  "tags": ["C17", "углублённый C", "extern"],
+  "tags": [
+    "extern",
+    "Глобальные переменные",
+    "Объявление",
+    "Предварительное определение",
+    "Связывание"
+  ],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-extern-exercise",
-    "title": "Практика: extern",
-    "description": "Объявите extern int total; и одно определение total=0. Прочитайте три значения −1000…1000, добавьте их функцией record и выведите total.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-extern-task-1",
+    "title": "Объявление или определение",
+    "description": "Каждая непустая строка ввода — объявление переменной вне функций в упрощённом C: возможно, `extern` или `static` в начале, затем тип из одного или нескольких слов (со звёздочками указателей), имя, возможно, размер массива в квадратных скобках, возможно, инициализатор после `=`, и точка с запятой.\n\nДля каждой строки напечатайте `имя: вид, связывание`, где:\n- **вид** — `объявление` (`extern` без инициализатора), `определение с предупреждением` (`extern` с инициализатором), `определение` (без `extern`, с инициализатором) или `предварительное определение` (без `extern` и без инициализатора);\n- **связывание** — `внутреннее` для строк со `static`, иначе `внешнее`.\n\nИмя — последний идентификатор (латинские буквы, цифры, `_`) перед первым из символов `[`, `=` или `;`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "2 3 4",
-        "output": "9\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "extern int verbose;\nint count = 0;\nstatic double ratio;\n",
+        "output": "verbose: объявление, внешнее\ncount: определение, внешнее\nratio: предварительное определение, внутреннее\n"
       },
       {
-        "input": "-5 5 0",
-        "output": "0\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "extern const char *names[];\nextern int limit = 100;\n",
+        "output": "names: объявление, внешнее\nlimit: определение с предупреждением, внешнее\n"
       }
     ],
     "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+      "Строки не длиннее 200 символов, их не больше 30.",
+      "Квадратные скобки не встречаются после =, а = — внутри размера массива."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "extern — ссылка на общую ячейку по имени, а не ещё одна ячейка."
+        "text": "Читайте строки fgets и пропускайте строки без точки с запятой. Наличие инициализатора — strchr(line, '=') != NULL.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Добавление extern к инициализированной переменной в заголовке не устраняет повторные определения."
+        "text": "Первое слово получите через sscanf(line, \"%15s\", word) и сравните с \"extern\" и \"static\".",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Чтобы найти имя, найдите конец «шапки» — первый из символов [ = ; — и идите от него влево: пропустите пробелы, затем соберите буквы, цифры и подчёркивания.",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "2 3 4",
-        "expected": "9\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "extern int verbose;\nint count = 0;\nstatic double ratio;\n",
+        "expected": "verbose: объявление, внешнее\ncount: определение, внешнее\nratio: предварительное определение, внутреннее\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "-5 5 0",
-        "expected": "0\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "extern const char *names[];\nextern int limit = 100;\n",
+        "expected": "names: объявление, внешнее\nlimit: определение с предупреждением, внешнее\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "1000 1000 1000",
-        "expected": "3000\n"
+        "id": "hidden-1",
+        "name": "Массив с инициализатором",
+        "stdin": "int table[] = {1, 2, 3};\n",
+        "expected": "table: определение, внешнее\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Тип из трёх слов",
+        "stdin": "unsigned long long big;\n",
+        "expected": "big: предварительное определение, внешнее\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Строка с двумя const",
+        "stdin": "static const char *const title = \"журнал\";\n",
+        "expected": "title: определение, внутреннее\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Пустые строки",
+        "stdin": "\nint a;\n\n",
+        "expected": "a: предварительное определение, внешнее\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Размер массива",
+        "stdin": "char buffer[256];\nextern char buffer[];\n",
+        "expected": "buffer: предварительное определение, внешнее\nbuffer: объявление, внешнее\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Указатель со static",
+        "stdin": "static int *cursor = 0;\n",
+        "expected": "cursor: определение, внутреннее\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Лишние пробелы",
+        "stdin": "double  x2_value   =  1.5 ;\n",
+        "expected": "x2_value: определение, внешнее\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Структуры и матрица",
+        "stdin": "extern struct Config settings;\nstruct Config settings = {0};\nint matrix[3][3];\n",
+        "expected": "settings: объявление, внешнее\nsettings: определение, внешнее\nmatrix: предварительное определение, внешнее\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\nextern int total;\nint total = 0;\nstatic void record(int value) { total += value; }\nint main(void) {\n    for (int i=0; i<3; ++i) { int x; if(scanf(\"%d\", &x)!=1) return 1; record(x); }\n    printf(\"%d\\n\", total);\n    return 0;\n}\n",
-    "solutionExplanation": "extern — ссылка на общую ячейку по имени, а не ещё одна ячейка.\n\nДобавление extern к инициализированной переменной в заголовке не устраняет повторные определения.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '2 3 4' → '9\\n'; '-5 5 0' → '0\\n'; '1000 1000 1000' → '3000\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <ctype.h>\n#include <stdio.h>\n#include <string.h>\n\nstatic int is_name_char(char c) {\n    return isalnum((unsigned char)c) || c == '_';\n}\n\nint main(void) {\n    char line[256];\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        if (strchr(line, ';') == NULL) {\n            continue;\n        }\n        char word[16] = \"\";\n        sscanf(line, \"%15s\", word);\n        int is_extern = strcmp(word, \"extern\") == 0;\n        int is_static = strcmp(word, \"static\") == 0;\n        int has_init = strchr(line, '=') != NULL;\n\n        size_t end = strcspn(line, \"[=;\");\n        while (end > 0 && !is_name_char(line[end - 1])) {\n            end--;\n        }\n        size_t start = end;\n        while (start > 0 && is_name_char(line[start - 1])) {\n            start--;\n        }\n\n        const char *kind;\n        if (is_extern) {\n            kind = has_init ? \"определение с предупреждением\" : \"объявление\";\n        } else {\n            kind = has_init ? \"определение\" : \"предварительное определение\";\n        }\n        printf(\"%.*s: %s, %s\\n\", (int)(end - start), line + start, kind,\n               is_static ? \"внутреннее\" : \"внешнее\");\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Вид объявления определяют два признака: есть ли `extern` и есть ли инициализатор. Инициализатор превращает в определение даже строку с `extern` — компилятор при этом предупреждает. Строка без обоих признаков — предварительное определение: в своём файле она станет определением с нулём, если не найдётся другого.\n\n`static` меняет только связывание: `static int x;` — тоже предварительное определение, но видимое лишь в своём файле.\n\nИмя ищется справа налево от конца «шапки»: функция `strcspn` находит первый из символов `[`, `=` или `;`, а всё левее — тип и имя. Звёздочки и пробелы между ними пропускаются, поэтому `const char *const title` даёт `title`. Формат `%.*s` печатает ровно нужное число символов строки, не копируя имя в отдельный массив.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-extern-task-2",
+      "title": "Найди ошибку: размер внешнего массива",
+      "description": "Программа читает номера дней года до конца ввода и для каждого печатает `день N: выходной` или `день N: рабочий`, а в конце — `выходных: K`. Нерабочие дни хранятся в таблице `holidays`, которую модуль `holidays` экспортирует через заголовок.\n\nПрограмма не компилируется: `invalid application of 'sizeof' to incomplete type`. Исправьте её так, чтобы модуль сообщал размер таблицы сам и при добавлении дня в таблицу не приходилось править другой код.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\n// ---- holidays.h ----\nextern const int holidays[];            // номера нерабочих дней года\n\n// ---- main.c ----\nint is_holiday(int day) {\n    int count = (int)(sizeof holidays / sizeof holidays[0]);\n    for (int i = 0; i < count; i++) {\n        if (holidays[i] == day) {\n            return 1;\n        }\n    }\n    return 0;\n}\n\nint main(void) {\n    int day, closed = 0;\n    while (scanf(\"%d\", &day) == 1) {\n        if (is_holiday(day)) {\n            printf(\"день %d: выходной\\n\", day);\n            closed++;\n        } else {\n            printf(\"день %d: рабочий\\n\", day);\n        }\n    }\n    printf(\"выходных: %d\\n\", closed);\n    return 0;\n}\n\n// ---- holidays.c ----\nconst int holidays[] = {1, 2, 3, 4, 5, 6, 7, 8, 54, 67, 121, 129, 163, 308};\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "1 9 54\n",
+          "output": "день 1: выходной\nдень 9: рабочий\nдень 54: выходной\nвыходных: 2\n"
+        },
+        {
+          "input": "308\n",
+          "output": "день 308: выходной\nвыходных: 1\n"
+        }
+      ],
+      "constraints": ["1 ≤ N ≤ 365, чисел не больше 30."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "В разделе main.c массив объявлен без размера: его тип неполный, и sizeof недоступен. Полный тип есть только в разделе holidays.c.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Объявите в заголовке extern const int holidays_count; и определите его в holidays.c как sizeof holidays / sizeof holidays[0]. В is_holiday используйте holidays_count.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1 9 54\n",
+          "expected": "день 1: выходной\nдень 9: рабочий\nдень 54: выходной\nвыходных: 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "308\n",
+          "expected": "день 308: выходной\nвыходных: 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "100\n",
+          "expected": "день 100: рабочий\nвыходных: 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "8 9\n",
+          "expected": "день 8: выходной\nдень 9: рабочий\nвыходных: 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "121 129 163\n",
+          "expected": "день 121: выходной\nдень 129: выходной\nдень 163: выходной\nвыходных: 3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "365\n",
+          "expected": "день 365: рабочий\nвыходных: 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1 2 3 4 5 6 7 8\n",
+          "expected": "день 1: выходной\nдень 2: выходной\nдень 3: выходной\nдень 4: выходной\nдень 5: выходной\nдень 6: выходной\nдень 7: выходной\nдень 8: выходной\nвыходных: 8\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "55 66 67 68\n",
+          "expected": "день 55: рабочий\nдень 66: рабочий\nдень 67: выходной\nдень 68: рабочий\nвыходных: 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "200 307 308 309\n",
+          "expected": "день 200: рабочий\nдень 307: рабочий\nдень 308: выходной\nдень 309: рабочий\nвыходных: 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "10 20 30 40 50 60\n",
+          "expected": "день 10: рабочий\nдень 20: рабочий\nдень 30: рабочий\nдень 40: рабочий\nдень 50: рабочий\nдень 60: рабочий\nвыходных: 0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\n// ---- holidays.h ----\nextern const int holidays[];            // номера нерабочих дней года\nextern const int holidays_count;\n\n// ---- main.c ----\nint is_holiday(int day) {\n    for (int i = 0; i < holidays_count; i++) {\n        if (holidays[i] == day) {\n            return 1;\n        }\n    }\n    return 0;\n}\n\nint main(void) {\n    int day, closed = 0;\n    while (scanf(\"%d\", &day) == 1) {\n        if (is_holiday(day)) {\n            printf(\"день %d: выходной\\n\", day);\n            closed++;\n        } else {\n            printf(\"день %d: рабочий\\n\", day);\n        }\n    }\n    printf(\"выходных: %d\\n\", closed);\n    return 0;\n}\n\n// ---- holidays.c ----\nconst int holidays[] = {1, 2, 3, 4, 5, 6, 7, 8, 54, 67, 121, 129, 163, 308};\nconst int holidays_count = sizeof holidays / sizeof holidays[0];\n",
+      "solutionExplanation": "Объявление `extern const int holidays[];` не содержит размера: в `main.c` у массива неполный тип, и компилятор не может вычислить `sizeof`. В настоящем проекте определение лежало бы в другом файле, и узнать размер было бы негде.\n\nРазмер знает только модуль, где массив определён, поэтому модуль и экспортирует его — константой `holidays_count`, вычисленной через `sizeof` прямо рядом с таблицей. Выражение `sizeof holidays / sizeof holidays[0]` — константное, так что подходит для инициализатора глобальной переменной. Добавили день в таблицу — счётчик изменился сам.\n\nЗаписать размер числом `14` в `main.c` — плохое исправление: при следующей правке таблицы число разойдётся с ней, и программа начнёт читать за границей массива.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-extern-task-3",
+      "title": "Переменные программы",
+      "description": "Смоделируйте, как компилятор и линковщик разбирают глобальные переменные программы из нескольких файлов.\n\nВ первой строке — число файлов `n`. Далее `n` описаний: строка `имя k` и `k` строк. Строка — одна из:\n- `extern X` — объявление `extern int X;`;\n- `tentative X` — предварительное определение `int X;`;\n- `define X` — определение `int X = …;`;\n- `static X` — `static int X;` (с инициализатором или без);\n- `use X` — обращение к `X` в функции этого файла.\n\n**Компиляция.** Каждый файл проверяется отдельно, строки по порядку. Ошибки:\n- `F: static после нестатического объявления X` — `static X` после `extern`, `tentative` или `define` того же имени в этом файле;\n- `F: нестатическое определение после static X` — `tentative X` или `define X` после `static X` (а `extern X` после `static X` допустим и ссылается на ту же внутреннюю переменную);\n- `F: повторное определение X` — второй `define X` в файле;\n- `F: X не объявлена` — `use X` раньше любого объявления `X` в файле.\n\nЕсли есть ошибки компиляции, напечатайте их в порядке появления и закончите работу.\n\n**Линковка.** Имя `X` в файле *внешнее*, если в этом файле нет `static X`. Файл *определяет* внешнее `X`, если в нём есть `tentative X` или `define X`. Для каждого имени в порядке первого появления во вводе:\n- `multiple definition of X` — внешнее `X` определяют два файла или больше (как в GCC 10 и новее);\n- `undefined reference to X` — внешнее `X` где-то используется, но его не определяет ни один файл.\n\nЕсли ошибки линковки есть, напечатайте их и закончите работу. Иначе для каждого `use` в порядке ввода напечатайте `F: X → G` — в каком файле находится переменная: для внутренней это сам файл `F`, для внешней — файл, который её определяет.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\nconfig.c 1\ndefine verbose\nmain.c 3\nextern verbose\nuse verbose\ntentative counter\nlog.c 3\nextern verbose\nstatic counter\nuse counter\n",
+          "output": "main.c: verbose → config.c\nlog.c: counter → log.c\n"
+        },
+        {
+          "input": "2\na.c 1\ntentative count\nb.c 2\ntentative count\nuse count\n",
+          "output": "multiple definition of count\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 10; 0 ≤ k ≤ 20; имена не длиннее 31 символа.",
+        "Строк во всех файлах вместе не больше 100."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сохраните все строки в массивы: файл, вид и имя для каждой. Тогда компиляцию можно проверить проходом по строкам одного файла, а линковку — проходом по всем.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Для компиляции заведите функцию seen(file, upto, name, kinds), которая проверяет, встречалось ли имя с одним из видов в строках файла до позиции upto.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Для линковки напишите функции is_static_in(file, name) и defining_files(name). Порядок первого появления: перебирайте строки по порядку и пропускайте имя, если оно встречалось в более ранней строке.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\nconfig.c 1\ndefine verbose\nmain.c 3\nextern verbose\nuse verbose\ntentative counter\nlog.c 3\nextern verbose\nstatic counter\nuse counter\n",
+          "expected": "main.c: verbose → config.c\nlog.c: counter → log.c\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\na.c 1\ntentative count\nb.c 2\ntentative count\nuse count\n",
+          "expected": "multiple definition of count\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Нет определения",
+          "stdin": "1\nmain.c 2\nextern total\nuse total\n",
+          "expected": "undefined reference to total\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "extern без использования",
+          "stdin": "1\nmain.c 1\nextern unused\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-3",
+          "name": "static после нестатического",
+          "stdin": "1\nmain.c 2\ntentative x\nstatic x\n",
+          "expected": "main.c: static после нестатического объявления x\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Определение после static",
+          "stdin": "1\nmain.c 2\nstatic x\ndefine x\n",
+          "expected": "main.c: нестатическое определение после static x\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "extern после static",
+          "stdin": "1\nmain.c 3\nstatic x\nextern x\nuse x\n",
+          "expected": "main.c: x → main.c\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Использование до объявления",
+          "stdin": "1\nmain.c 2\nuse y\ndefine y\n",
+          "expected": "main.c: y не объявлена\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Слияние и static в другом файле",
+          "stdin": "2\na.c 3\ndefine v\ntentative v\nuse v\nb.c 2\nstatic v\nuse v\n",
+          "expected": "a.c: v → a.c\nb.c: v → b.c\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Две ошибки компиляции",
+          "stdin": "2\na.c 2\ndefine z\ndefine z\nb.c 1\nuse w\n",
+          "expected": "a.c: повторное определение z\nb.c: w не объявлена\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Ошибка компиляции важнее линковки",
+          "stdin": "3\na.c 2\ndefine p\nuse q\nb.c 2\nextern q\nuse q\nc.c 1\ndefine p\n",
+          "expected": "a.c: q не объявлена\n"
+        },
+        {
+          "id": "hidden-10",
+          "name": "Порядок использований",
+          "stdin": "3\nmain.c 4\nextern a\nextern b\nuse b\nuse a\nx.c 1\ntentative a\ny.c 1\ndefine b\n",
+          "expected": "main.c: b → y.c\nmain.c: a → x.c\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define MAX_LINES 100\n#define NAME 32\n\nstatic char files[10][NAME];\nstatic int file_of[MAX_LINES];\nstatic char kind[MAX_LINES][16];\nstatic char name[MAX_LINES][NAME];\nstatic int lines;\n\n// Встречалось ли имя с видом из списка kinds в строках файла f до строки upto.\nstatic int seen(int f, int upto, const char *id, const char *kinds) {\n    for (int i = 0; i < upto; i++) {\n        if (file_of[i] == f && strcmp(name[i], id) == 0 && strstr(kinds, kind[i]) != NULL) {\n            return 1;\n        }\n    }\n    return 0;\n}\n\nstatic int is_static_in(int f, const char *id) {\n    return seen(f, lines, id, \"static\");\n}\n\nstatic int defines(int f, const char *id) {\n    return !is_static_in(f, id) && seen(f, lines, id, \"tentative define\");\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1) {\n        return 0;\n    }\n    for (int f = 0; f < n; f++) {\n        int k;\n        if (scanf(\"%31s %d\", files[f], &k) != 2) {\n            return 0;\n        }\n        for (int i = 0; i < k; i++, lines++) {\n            if (scanf(\"%15s %31s\", kind[lines], name[lines]) != 2) {\n                return 0;\n            }\n            file_of[lines] = f;\n        }\n    }\n\n    int errors = 0;\n    for (int i = 0; i < lines; i++) {\n        int f = file_of[i];\n        const char *id = name[i];\n        const char *problem = NULL;\n        if (strcmp(kind[i], \"static\") == 0 && seen(f, i, id, \"extern tentative define\")) {\n            problem = \"static после нестатического объявления\";\n        } else if ((strcmp(kind[i], \"tentative\") == 0 || strcmp(kind[i], \"define\") == 0) &&\n                   seen(f, i, id, \"static\")) {\n            problem = \"нестатическое определение после static\";\n        } else if (strcmp(kind[i], \"define\") == 0 && seen(f, i, id, \"define\")) {\n            problem = \"повторное определение\";\n        } else if (strcmp(kind[i], \"use\") == 0 &&\n                   !seen(f, i, id, \"extern tentative define static\")) {\n            printf(\"%s: %s не объявлена\\n\", files[f], id);\n            errors++;\n        }\n        if (problem != NULL) {\n            printf(\"%s: %s %s\\n\", files[f], problem, id);\n            errors++;\n        }\n    }\n    if (errors > 0) {\n        return 0;\n    }\n\n    for (int i = 0; i < lines; i++) {\n        const char *id = name[i];\n        int earlier = 0;\n        for (int j = 0; j < i && !earlier; j++) {\n            earlier = strcmp(name[j], id) == 0;\n        }\n        if (earlier) {\n            continue;\n        }\n        int definitions = 0, used = 0;\n        for (int f = 0; f < n; f++) {\n            definitions += defines(f, id);\n            used += !is_static_in(f, id) && seen(f, lines, id, \"use\");\n        }\n        if (definitions > 1) {\n            printf(\"multiple definition of %s\\n\", id);\n            errors++;\n        } else if (definitions == 0 && used > 0) {\n            printf(\"undefined reference to %s\\n\", id);\n            errors++;\n        }\n    }\n    if (errors > 0) {\n        return 0;\n    }\n\n    for (int i = 0; i < lines; i++) {\n        if (strcmp(kind[i], \"use\") != 0) {\n            continue;\n        }\n        int f = file_of[i];\n        int owner = f;\n        if (!is_static_in(f, name[i])) {\n            for (int g = 0; g < n; g++) {\n                if (defines(g, name[i])) {\n                    owner = g;\n                }\n            }\n        }\n        printf(\"%s: %s → %s\\n\", files[f], name[i], files[owner]);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Модель повторяет два этапа сборки. Компилятор видит один файл и проверяет только согласованность объявлений внутри него: нельзя сначала объявить имя внешним, а потом внутренним, и наоборот; нельзя дважды определить с инициализатором; нельзя использовать необъявленное имя. Сочетание `static X`, затем `extern X` разрешено стандартом: `extern` в этом случае ссылается на уже видимую внутреннюю переменную.\n\nЛинковщик видит только внешние имена. Внутренние (`static`) переменные разных файлов для него не существуют, поэтому одинаковые `static` имена в двух файлах никогда не конфликтуют. Предварительное определение `int X;` считается определением — так ведут себя GCC 10+ и Clang 11+, — и два таких определения в разных файлах дают `multiple definition`.\n\nОбъявление `extern X` без использования не требует определения: линковщику нужно разрешить только реальные обращения.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-extern-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Где разместить определение общей переменной?",
-        "options": ["В одном .c, объявление — в заголовке", "Во всех заголовках с инициализатором"],
-        "correct": 0,
-        "explanation": "Объявление extern int total; сообщает тип и имя объекта, обычно определённого в другой единице трансляции. Само это объявление без инициализатора не предоставляет определение. В одном .c размещают int total = 0;, а заголовок подключают во все места использования."
-      },
-      {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q1",
+        "question": "Чем строка extern int verbose; отличается от int verbose = 0; вне функций?",
+        "explanation": "extern без инициализатора сообщает тип и имя, но память не выделяет. Определение должно быть ровно в одном файле программы.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "Добавление extern к инициализированной переменной в заголовке не устраняет повторные определения."
+          "Первая только объявляет переменную, вторая создаёт её (определение)",
+          "Первая делает переменную видимой только в своём файле",
+          "Ничем: extern пишут по традиции",
+          "Первая создаёт переменную с нулевым значением, вторая — с явным"
         ],
-        "correct": 1,
-        "explanation": "extern — ссылка на общую ячейку по имени, а не ещё одна ячейка."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["8", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: printf(\"%d\\n\",limit); Ожидаемый результат: 8"
+        "id": "q2",
+        "question": "Как правильно сделать переменную int error_count общей для всех файлов? Выберите все нужные шаги.",
+        "explanation": "Объявление — в заголовке, единственное определение — в .c, который подключает заголовок, чтобы компилятор сверил типы. static дал бы каждому файлу свою копию, а int error_count; в нескольких файлах — multiple definition.",
+        "type": "multiple",
+        "options": [
+          "В заголовке написать extern int error_count;",
+          "В одном .c файле написать int error_count = 0;",
+          "Этот .c файл должен подключать заголовок с объявлением",
+          "В заголовке написать static int error_count;",
+          "В каждом .c файле написать int error_count;"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint score;\nint score;\nint score = 3;\n\nint main(void) {\n    score *= 4;\n    printf(\"%d\\n\", score);\n    return 0;\n}",
+        "explanation": "Все три строки описывают одну переменную: два предварительных определения сливаются с определением, у которого есть инициализатор 3. 3 * 4 = 12.",
+        "type": "text",
+        "answers": ["12"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "В файлах a.c и b.c есть строка int count; вне функций, других объявлений count нет. Что произойдёт при сборке современным GCC (10 и новее)?",
+        "explanation": "Каждая строка — предварительное определение, которое в своём файле становится определением. Старые компиляторы склеивали такие определения, но с GCC 10 и Clang 11 это ошибка линковки.",
+        "options": [
+          "multiple definition of count",
+          "Будет одна общая переменная count, равная нулю",
+          "У каждого файла будет своя переменная",
+          "undefined reference to count"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Объявлено extern const int table[]; без размера. Что из этого скомпилируется в файле, который видит только это объявление? Выберите все.",
+        "explanation": "У массива без размера неполный тип: обращаться к элементам и брать адрес можно, а sizeof всего массива неизвестен. Размер экспортируют отдельной константой.",
+        "type": "multiple",
+        "options": [
+          "int first = table[0];  (внутри функции)",
+          "const int *p = table;",
+          "size_t n = sizeof table / sizeof table[0];",
+          "size_t bytes = sizeof table;"
+        ],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint depth = 1;\n\nint main(void) {\n    int depth = 5;\n    {\n        extern int depth;\n        depth += 10;\n    }\n    printf(\"%d\\n\", depth);\n    return 0;\n}",
+        "explanation": "Внутри блока extern int depth ссылается на глобальную переменную, и 10 прибавляется к ней (она становится 11). printf стоит вне блока и печатает локальную depth, равную 5.",
+        "type": "text",
+        "answers": ["5"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Почему строка int half = width / 2; вне функций не компилируется, если выше есть int width = 80;?",
+        "explanation": "Глобальные переменные получают значения до запуска программы, поэтому их инициализаторы вычисляются при компиляции. Адрес &width — константа, а значение width — нет.",
+        "options": [
+          "Инициализатор глобальной переменной должен быть константным выражением, а значение другой переменной им не является",
+          "Глобальные переменные нельзя делить",
+          "width объявлена ниже main",
+          "Нужно написать extern перед half"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какое предупреждение выдаст GCC на строку extern int limit = 100; вне функций, и что она означает?",
+        "explanation": "Объявление с инициализатором всегда определение. В заголовке такая строка даст multiple definition.",
+        "options": [
+          "initialized and declared extern — это определение, слово extern ничего не меняет",
+          "Никакого: это обычное объявление",
+          "Ошибка: extern нельзя инициализировать",
+          "unused variable — переменная не будет создана"
+        ],
+        "correct": 0
       }
     ]
   }

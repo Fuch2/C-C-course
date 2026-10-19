@@ -13,9 +13,9 @@
     "Сообщать об успехе через return, а результат — через указатель",
     "Отличать входные const-параметры от выходных"
   ],
-  "tags": ["C17", "Указатели", "Функции", "swap"],
+  "tags": ["C23", "Указатели", "Функции", "swap"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-pointers-functions-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "intermediate",
     "starterCode": "#include <stdio.h>\n\nvoid swap(int *a, int *b) {\n    // Поменяйте местами значения по адресам a и b.\n}\n\nint main(void) {\n    int x, y, z;\n    scanf(\"%d %d %d\", &x, &y, &z);\n    if (x > y) {\n        swap(&x, &y);\n    }\n    if (y > z) {\n        swap(&y, &z);\n    }\n    if (x > y) {\n        swap(&x, &y);\n    }\n    printf(\"%d %d %d\\n\", x, y, z);\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -116,7 +116,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nvoid div_mod(int a, int b, int *q, int *r) {\n    // Запишите математические частное и остаток.\n}\n\nint main(void) {\n    int a, b;\n    while (scanf(\"%d %d\", &a, &b) == 2) {\n        int q, r;\n        div_mod(a, b, &q, &r);\n        printf(\"%d %d\\n\", q, r);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -207,7 +207,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nvoid min_max(const int *a, int n, int *min, int *max) {\n    // Найдите минимум и максимум; NULL-указатели пропустите.\n}\n\nint main(void) {\n    int a[1000];\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    int lo = 0, hi = 0;\n    min_max(a, n, &lo, &hi);\n    printf(\"%d %d\\n\", lo, hi);\n    int only_max = 0;\n    min_max(a, n, NULL, &only_max);\n    int only_min = 0;\n    min_max(a, n, &only_min, NULL);\n    printf(\"%d %d\\n\", only_min, only_max);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -296,9 +296,9 @@
       "title": "Разбор времени",
       "description": "Напишите функцию `bool parse_time(const char *s, int *minutes)`. Строка `s` должна иметь вид `ЧЧ:ММ` — ровно пять символов: две цифры, двоеточие, две цифры, причём часы от 00 до 23, а минуты от 00 до 59. Если строка корректна, функция записывает в `*minutes` количество минут с полуночи и возвращает `true`; иначе ничего не записывает и возвращает `false`.\n\n`main` уже написан: он читает слова до конца ввода и для каждого печатает число минут или `ошибка`.",
       "difficulty": "intermediate",
-      "starterCode": "#include <stdio.h>\n#include <stdbool.h>\n#include <ctype.h>\n\nbool parse_time(const char *s, int *minutes) {\n    // Проверьте формат ЧЧ:ММ и диапазоны, запишите результат.\n    return false;\n}\n\nint main(void) {\n    char word[21];\n    while (scanf(\"%20s\", word) == 1) {\n        int m;\n        if (parse_time(word, &m)) {\n            printf(\"%d\\n\", m);\n        } else {\n            printf(\"ошибка\\n\");\n        }\n    }\n    return 0;\n}\n",
+      "starterCode": "#include <stdio.h>\n#include <ctype.h>\n\nbool parse_time(const char *s, int *minutes) {\n    // Проверьте формат ЧЧ:ММ и диапазоны, запишите результат.\n    return false;\n}\n\nint main(void) {\n    char word[21];\n    while (scanf(\"%20s\", word) == 1) {\n        int m;\n        if (parse_time(word, &m)) {\n            printf(\"%d\\n\", m);\n        } else {\n            printf(\"ошибка\\n\");\n        }\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -381,7 +381,7 @@
           "expected": "545\n1190\nошибка\n"
         }
       ],
-      "referenceSolution": "#include <stdio.h>\n#include <stdbool.h>\n#include <ctype.h>\n\nbool parse_time(const char *s, int *minutes) {\n    for (int i = 0; i < 5; i++) {\n        if (s[i] == '\\0') {\n            return false;\n        }\n    }\n    if (s[5] != '\\0' || s[2] != ':') {\n        return false;\n    }\n    if (!isdigit(s[0]) || !isdigit(s[1]) || !isdigit(s[3]) || !isdigit(s[4])) {\n        return false;\n    }\n    int h = (s[0] - '0') * 10 + (s[1] - '0');\n    int m = (s[3] - '0') * 10 + (s[4] - '0');\n    if (h > 23 || m > 59) {\n        return false;\n    }\n    *minutes = h * 60 + m;\n    return true;\n}\n\nint main(void) {\n    char word[21];\n    while (scanf(\"%20s\", word) == 1) {\n        int m;\n        if (parse_time(word, &m)) {\n            printf(\"%d\\n\", m);\n        } else {\n            printf(\"ошибка\\n\");\n        }\n    }\n    return 0;\n}\n",
+      "referenceSolution": "#include <stdio.h>\n#include <ctype.h>\n\nbool parse_time(const char *s, int *minutes) {\n    for (int i = 0; i < 5; i++) {\n        if (s[i] == '\\0') {\n            return false;\n        }\n    }\n    if (s[5] != '\\0' || s[2] != ':') {\n        return false;\n    }\n    if (!isdigit(s[0]) || !isdigit(s[1]) || !isdigit(s[3]) || !isdigit(s[4])) {\n        return false;\n    }\n    int h = (s[0] - '0') * 10 + (s[1] - '0');\n    int m = (s[3] - '0') * 10 + (s[4] - '0');\n    if (h > 23 || m > 59) {\n        return false;\n    }\n    *minutes = h * 60 + m;\n    return true;\n}\n\nint main(void) {\n    char word[21];\n    while (scanf(\"%20s\", word) == 1) {\n        int m;\n        if (parse_time(word, &m)) {\n            printf(\"%d\\n\", m);\n        } else {\n            printf(\"ошибка\\n\");\n        }\n    }\n    return 0;\n}\n",
       "solutionExplanation": "Функция проверяет строку слоями сторожевых условий: длина (сначала убеждаемся, что в первых пяти символах нет `'\\0'`, — только потом безопасно смотреть на `s[5]`), разделитель, цифры, диапазоны. Результат записывается только при полном успехе.\n\nЭто шаблон «признак успеха + результат через указатель» — так устроены функции разбора во множестве библиотек. Вызывающий код не может перепутать «ошибку» с настоящим значением: `0` минут — законное время `00:00`.",
       "checking": {
         "type": "stdout",

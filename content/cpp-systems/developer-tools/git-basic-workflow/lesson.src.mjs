@@ -15,7 +15,7 @@ export default {
     'Отменять изменения, работать с ветками и решать конфликты',
   ],
   tags: ['Git', 'Контроль версий', 'diff', '.gitignore', 'Ветки'],
-  standard: 'c17',
+  standard: 'c23',
   quiz: [
     {
       q: 'Что делает git add main.c?',

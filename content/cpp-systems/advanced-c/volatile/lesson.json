@@ -1,120 +1,458 @@
 {
   "id": "advanced-volatile",
-  "title": "volatile",
-  "description": "volatile сообщает реализации, что доступы к объекту имеют наблюдаемое значение, например при работе с отображённым аппаратным регистром.",
+  "title": "volatile: обращения, которые нельзя убрать",
+  "description": "Правило «как если бы» и почему компилятор убирает обращения к памяти; квалификатор volatile и наблюдаемость каждого обращения; указатели на volatile и const volatile; регистры устройств, флаги сигналов volatile sig_atomic_t, setjmp/longjmp; чего volatile не делает и atomics C11; очистка секретов.",
   "moduleId": "advanced-c",
-  "order": 13,
+  "order": 21,
   "difficulty": "advanced",
-  "estimatedMinutes": 40,
-  "prerequisites": ["advanced-const"],
+  "estimatedMinutes": 55,
+  "prerequisites": ["advanced-bit-masks"],
   "objectives": [
-    "Объяснить: volatile",
-    "Различать корректный контракт и ошибку: volatile не устраняет data race и не превращает read-modify-write в атомарную операцию.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Объяснять, какие обращения к памяти компилятор вправе убрать и что меняет volatile",
+    "Писать обработчики сигналов, которые только ставят флаг volatile sig_atomic_t",
+    "Применять setjmp/longjmp и защищать изменённые локальные переменные с помощью volatile",
+    "Отличать volatile от средств синхронизации потоков"
   ],
-  "tags": ["C17", "углублённый C", "volatile"],
+  "tags": ["volatile", "Сигналы", "setjmp", "sig_atomic_t", "Оптимизация"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-volatile-exercise",
-    "title": "Практика: volatile",
-    "description": "Прочитайте unsigned 0…255, присвойте volatile-объекту status. Снимите один снимок и выведите младший бит.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-volatile-task-1",
+    "title": "Остановка по сигналу",
+    "description": "Программа читает слова до конца ввода. Числа она складывает. Слово `INT` имитирует нажатие Ctrl+C: программа посылает себе сигнал вызовом `raise(SIGINT)`.\n\nУстановите обработчик `SIGINT`, который только записывает 1 во флаг типа `volatile sig_atomic_t`. Основной цикл проверяет флаг **перед** чтением каждого следующего слова; если флаг установлен, программа печатает `остановка по сигналу` и прекращает чтение.\n\nВ конце (в любом случае) напечатайте `сумма: S, чисел: N`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "3",
-        "output": "1\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "1 2 INT 3\n",
+        "output": "остановка по сигналу\nсумма: 3, чисел: 2\n"
       },
       {
-        "input": "254",
-        "output": "0\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "10 20 30\n",
+        "output": "сумма: 60, чисел: 3\n"
       }
     ],
     "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+      "Слов не больше 100; числа — целые от −10⁹ до 10⁹; других слов, кроме чисел и INT, нет."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Каждое чтение — отдельное наблюдение прибора; снимок хранит результат одного наблюдения."
+        "text": "static volatile sig_atomic_t stop_requested = 0; и обработчик static void on_interrupt(int sig) { (void)sig; stop_requested = 1; }. Установка — signal(SIGINT, on_interrupt) в начале main.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "volatile не устраняет data race и не превращает read-modify-write в атомарную операцию."
+        "text": "Цикл: while (!stop_requested && scanf(\"%31s\", word) == 1) { … }. После цикла проверьте флаг и напечатайте сообщение об остановке.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Отличить число от INT поможет strcmp(word, \"INT\") == 0; число получите через sscanf(word, \"%lld\", &value).",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "3",
-        "expected": "1\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "1 2 INT 3\n",
+        "expected": "остановка по сигналу\nсумма: 3, чисел: 2\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "254",
-        "expected": "0\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "10 20 30\n",
+        "expected": "сумма: 60, чисел: 3\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "0",
-        "expected": "0\n"
+        "id": "hidden-1",
+        "name": "Пустой ввод",
+        "stdin": "",
+        "expected": "сумма: 0, чисел: 0\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Сигнал сразу",
+        "stdin": "INT 5\n",
+        "expected": "остановка по сигналу\nсумма: 0, чисел: 0\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Сигнал в конце",
+        "stdin": "1 2 3 INT\n",
+        "expected": "остановка по сигналу\nсумма: 6, чисел: 3\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Два сигнала",
+        "stdin": "-5 7 INT INT 9\n",
+        "expected": "остановка по сигналу\nсумма: 2, чисел: 2\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Большие числа",
+        "stdin": "1000000000 1000000000 1000000000\n",
+        "expected": "сумма: 3000000000, чисел: 3\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Слова на разных строках",
+        "stdin": "4\nINT\n8\n",
+        "expected": "остановка по сигналу\nсумма: 4, чисел: 1\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Нули",
+        "stdin": "0 0 0 0 INT 1\n",
+        "expected": "остановка по сигналу\nсумма: 0, чисел: 4\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Отрицательные",
+        "stdin": "-1 -2 -3\n",
+        "expected": "сумма: -6, чисел: 3\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    unsigned value;\n    if(scanf(\"%u\", &value)!=1 || value>255) return 1;\n    volatile unsigned status = value;\n    unsigned snapshot = status;\n    printf(\"%u\\n\", snapshot & 1u);\n    return 0;\n}\n",
-    "solutionExplanation": "Каждое чтение — отдельное наблюдение прибора; снимок хранит результат одного наблюдения.\n\nvolatile не устраняет data race и не превращает read-modify-write в атомарную операцию.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '3' → '1\\n'; '254' → '0\\n'; '0' → '0\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <signal.h>\n#include <stdio.h>\n#include <string.h>\n\nstatic volatile sig_atomic_t stop_requested = 0;\n\nstatic void on_interrupt(int sig) {\n    (void)sig;\n    stop_requested = 1;\n}\n\nint main(void) {\n    signal(SIGINT, on_interrupt);\n    long long sum = 0;\n    int count = 0;\n    char word[32];\n    while (!stop_requested && scanf(\"%31s\", word) == 1) {\n        if (strcmp(word, \"INT\") == 0) {\n            raise(SIGINT);\n            continue;\n        }\n        long long value;\n        if (sscanf(word, \"%lld\", &value) == 1) {\n            sum += value;\n            count++;\n        }\n    }\n    if (stop_requested) {\n        printf(\"остановка по сигналу\\n\");\n    }\n    printf(\"сумма: %lld, чисел: %d\\n\", sum, count);\n    return 0;\n}\n",
+    "solutionExplanation": "Обработчик сигнала может сработать посреди любой операции основной программы, поэтому он делает минимум — ставит флаг. Вся работа, включая вывод, остаётся в основном цикле: он проверяет флаг перед каждой итерацией и завершается аккуратно, напечатав итог. Так устроено корректное завершение серверов и утилит по Ctrl+C.\n\nТип `sig_atomic_t` гарантирует, что запись не прервётся на середине, а `volatile` — что цикл перечитывает флаг из памяти. Без `signal(...)` сработало бы действие по умолчанию: `SIGINT` завершил бы программу, и итог не был бы напечатан.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-volatile-task-2",
+      "title": "Опрос устройства с таймаутом",
+      "description": "В заготовке — модель устройства с двумя регистрами: `device_status` (бит 0 — данные готовы, бит 1 — ошибка) и `device_data`. Функция `device_tick()` продвигает время устройства на один такт. Функция `main` обрабатывает команды:\n- `start R E V` — устройство станет готовым через `R` тактов со значением `V`, а через `E` тактов сообщит об ошибке (`E = 0` — никогда);\n- `read T` — прочитать значение, ожидая не больше `T` тактов.\n\nНапишите функцию\n\n```c\nint read_value(const volatile uint32_t *status, const volatile uint32_t *data,\n               long timeout, uint32_t *out, long *waited);\n```\n\nОна в цикле читает регистр состояния: если установлен бит ошибки — возвращает −2; если бит готовности — записывает `*data` в `*out` и возвращает 0; если уже прошло `timeout` тактов — возвращает −1; иначе вызывает `device_tick()` и увеличивает `*waited`. Проверка выполняется до каждого такта, в том числе до первого.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdint.h>\n#include <stdio.h>\n#include <string.h>\n\n// ---- модель устройства (не меняйте) ----\n#define STATUS_READY 0x1u\n#define STATUS_ERROR 0x2u\n\nstatic volatile uint32_t device_status;      // регистр состояния\nstatic volatile uint32_t device_data;        // регистр данных\nstatic long ready_in, error_in;\nstatic uint32_t pending;\n\nstatic void device_start(long ready_after, long error_after, uint32_t value) {\n    device_status = 0;\n    device_data = 0;\n    ready_in = ready_after;\n    error_in = error_after;\n    pending = value;\n}\n\n// Один такт времени: устройство может стать готовым или сообщить об ошибке.\nstatic void device_tick(void) {\n    if (error_in > 0 && --error_in == 0) {\n        device_status |= STATUS_ERROR;\n    }\n    if (ready_in > 0 && --ready_in == 0 && !(device_status & STATUS_ERROR)) {\n        device_data = pending;\n        device_status |= STATUS_READY;\n    }\n}\n// ---- конец модели ----\n\n// Напишите функцию read_value.\n\nint main(void) {\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"start\") == 0) {\n            long ready_after, error_after;\n            uint32_t value;\n            if (scanf(\"%ld %ld %u\", &ready_after, &error_after, &value) != 3) {\n                break;\n            }\n            device_start(ready_after, error_after, value);\n        } else if (strcmp(command, \"read\") == 0) {\n            long timeout, waited = 0;\n            uint32_t value = 0;\n            if (scanf(\"%ld\", &timeout) != 1) {\n                break;\n            }\n            int status = read_value(&device_status, &device_data, timeout, &value, &waited);\n            if (status == 0) {\n                printf(\"значение %u за %ld тактов\\n\", value, waited);\n            } else if (status == -1) {\n                printf(\"таймаут после %ld тактов\\n\", waited);\n            } else {\n                printf(\"ошибка устройства после %ld тактов\\n\", waited);\n            }\n        }\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "start 3 0 42\nread 10\n",
+          "output": "значение 42 за 3 тактов\n"
+        },
+        {
+          "input": "start 5 2 7\nread 10\nstart 9 0 1\nread 4\n",
+          "output": "ошибка устройства после 2 тактов\nтаймаут после 4 тактов\n"
+        }
+      ],
+      "constraints": ["0 ≤ R, E, T ≤ 10⁶; команд не больше 20; перед каждым read есть start."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Каркас: for (;;) { uint32_t s = *status; if (s & STATUS_ERROR) return -2; if (s & STATUS_READY) { … return 0; } if (*waited == timeout) return -1; device_tick(); (*waited)++; }.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Регистр состояния читайте один раз за итерацию в локальную переменную: так оба бита проверяются в одном и том же состоянии устройства.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Параметры объявлены как const volatile: функция только читает регистры, а меняет их «устройство».",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "start 3 0 42\nread 10\n",
+          "expected": "значение 42 за 3 тактов\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "start 5 2 7\nread 10\nstart 9 0 1\nread 4\n",
+          "expected": "ошибка устройства после 2 тактов\nтаймаут после 4 тактов\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Готово через такт",
+          "stdin": "start 1 0 100\nread 1\n",
+          "expected": "значение 100 за 1 тактов\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Нулевой таймаут",
+          "stdin": "start 1 0 100\nread 0\n",
+          "expected": "таймаут после 0 тактов\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Никогда не готово",
+          "stdin": "start 0 0 5\nread 3\n",
+          "expected": "таймаут после 3 тактов\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Ошибка и готовность одновременно",
+          "stdin": "start 10 10 5\nread 20\n",
+          "expected": "ошибка устройства после 10 тактов\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Долгое ожидание",
+          "stdin": "start 1000000 0 4294967295\nread 1000000\n",
+          "expected": "значение 4294967295 за 1000000 тактов\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Повторное чтение после таймаута",
+          "stdin": "start 4 0 11\nread 3\nread 3\n",
+          "expected": "таймаут после 3 тактов\nзначение 11 за 1 тактов\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Повторное чтение готового",
+          "stdin": "start 2 0 9\nread 5\nread 5\n",
+          "expected": "значение 9 за 2 тактов\nзначение 9 за 0 тактов\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Ошибка во втором чтении",
+          "stdin": "start 6 3 1\nread 2\nread 2\n",
+          "expected": "таймаут после 2 тактов\nошибка устройства после 1 тактов\n"
+        }
+      ],
+      "referenceSolution": "#include <stdint.h>\n#include <stdio.h>\n#include <string.h>\n\n// ---- модель устройства (не меняйте) ----\n#define STATUS_READY 0x1u\n#define STATUS_ERROR 0x2u\n\nstatic volatile uint32_t device_status;      // регистр состояния\nstatic volatile uint32_t device_data;        // регистр данных\nstatic long ready_in, error_in;\nstatic uint32_t pending;\n\nstatic void device_start(long ready_after, long error_after, uint32_t value) {\n    device_status = 0;\n    device_data = 0;\n    ready_in = ready_after;\n    error_in = error_after;\n    pending = value;\n}\n\n// Один такт времени: устройство может стать готовым или сообщить об ошибке.\nstatic void device_tick(void) {\n    if (error_in > 0 && --error_in == 0) {\n        device_status |= STATUS_ERROR;\n    }\n    if (ready_in > 0 && --ready_in == 0 && !(device_status & STATUS_ERROR)) {\n        device_data = pending;\n        device_status |= STATUS_READY;\n    }\n}\n// ---- конец модели ----\n\nint read_value(const volatile uint32_t *status, const volatile uint32_t *data, long timeout,\n               uint32_t *out, long *waited) {\n    for (;;) {\n        uint32_t s = *status;                  // одно чтение регистра за итерацию\n        if (s & STATUS_ERROR) {\n            return -2;\n        }\n        if (s & STATUS_READY) {\n            *out = *data;\n            return 0;\n        }\n        if (*waited == timeout) {\n            return -1;\n        }\n        device_tick();\n        (*waited)++;\n    }\n}\n\nint main(void) {\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"start\") == 0) {\n            long ready_after, error_after;\n            uint32_t value;\n            if (scanf(\"%ld %ld %u\", &ready_after, &error_after, &value) != 3) {\n                break;\n            }\n            device_start(ready_after, error_after, value);\n        } else if (strcmp(command, \"read\") == 0) {\n            long timeout, waited = 0;\n            uint32_t value = 0;\n            if (scanf(\"%ld\", &timeout) != 1) {\n                break;\n            }\n            int status = read_value(&device_status, &device_data, timeout, &value, &waited);\n            if (status == 0) {\n                printf(\"значение %u за %ld тактов\\n\", value, waited);\n            } else if (status == -1) {\n                printf(\"таймаут после %ld тактов\\n\", waited);\n            } else {\n                printf(\"ошибка устройства после %ld тактов\\n\", waited);\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Опрос регистра — основной способ общения программы с простыми устройствами: программа раз за разом читает регистр состояния, пока устройство не сообщит о готовности. Регистры объявлены `volatile`, поэтому каждое чтение `*status` действительно обращается к «железу». Без `volatile` оптимизирующий компилятор вправе прочитать регистр один раз до цикла — и функция никогда не увидит готовности.\n\nКвалификатор `const` в параметрах означает, что функция регистры только читает. Значение регистра копируется в локальную `s` один раз за итерацию: регистр может измениться между двумя чтениями, и проверки ошибки и готовности должны относиться к одному состоянию.\n\nТаймаут обязателен в любом цикле ожидания устройства: если устройство сломалось или не подключено, программа должна сообщить об этом, а не зависнуть.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-volatile-task-3",
+      "title": "Разбор с восстановлением",
+      "description": "Каждая строка ввода — вложенный список из неотрицательных целых чисел, например `(1 2 (3 4) 5)`. Между элементами могут стоять пробелы. Для корректного списка напечатайте `сумма S, глубина D` — сумму всех чисел и наибольшую вложенность (у внешнего списка глубина 1; пустой список `()` корректен).\n\nПри ошибке напечатайте `ошибка в позиции P после K чисел`, где `P` — номер (с 1) первого символа, на котором стало ясно, что строка неверна (для неожиданного конца строки — её длина + 1), а `K` — сколько чисел успешно прочитано до ошибки. Ошибки: строка начинается не с `(`, внутри списка встретилось что-то кроме числа, `(`, `)` и пробела, список не закрыт до конца строки, после внешнего списка есть что-то кроме пробелов.\n\nРазбор напишите рекурсивно, а из глубины рекурсии при ошибке возвращайтесь через `longjmp` в функцию, вызвавшую `setjmp`. Счётчик чисел — локальная переменная этой функции, которая меняется после `setjmp`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "(1 2 (3 4) 5)\n(1 (2 x) 3)\n",
+          "output": "сумма 15, глубина 2\nошибка в позиции 7 после 2 чисел\n"
+        },
+        {
+          "input": "()\n(1 2\n",
+          "output": "сумма 0, глубина 1\nошибка в позиции 5 после 2 чисел\n"
+        }
+      ],
+      "constraints": ["Строки не длиннее 200 символов; числа до 10⁶; строк не больше 20."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Глобальные данные разбора: jmp_buf on_error, const char *text и позиция pos. Функция fail() запоминает позицию ошибки и вызывает longjmp(on_error, 1).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "parse_list(depth, numbers) — после ( в цикле пропускает пробелы и смотрит на символ: цифра — число, ( — рекурсивный вызов, ) — конец списка, конец строки или другое — fail().",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Счётчик объявите volatile int numbers в функции с setjmp и передавайте как volatile int *: без volatile его значение после longjmp не определено.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "(1 2 (3 4) 5)\n(1 (2 x) 3)\n",
+          "expected": "сумма 15, глубина 2\nошибка в позиции 7 после 2 чисел\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "()\n(1 2\n",
+          "expected": "сумма 0, глубина 1\nошибка в позиции 5 после 2 чисел\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Не скобка в начале",
+          "stdin": "x\n",
+          "expected": "ошибка в позиции 1 после 0 чисел\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Пустая строка",
+          "stdin": "\n",
+          "expected": "ошибка в позиции 1 после 0 чисел\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Глубина 3",
+          "stdin": "(((7)))\n",
+          "expected": "сумма 7, глубина 3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Хвост после списка",
+          "stdin": "(1 2) 3\n",
+          "expected": "ошибка в позиции 7 после 2 чисел\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Пробелы после списка",
+          "stdin": "(1 2)   \n",
+          "expected": "сумма 3, глубина 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Глубокая вложенность",
+          "stdin": "(10 (20 (30 (40))) 50)\n",
+          "expected": "сумма 150, глубина 4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Минус",
+          "stdin": "(1 -2)\n",
+          "expected": "ошибка в позиции 4 после 1 чисел\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Большие числа и пробелы",
+          "stdin": "( 1000000 1000000 ( ) )\n",
+          "expected": "сумма 2000000, глубина 2\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Не закрыто несколько списков",
+          "stdin": "(1 (2 (3 (4\n",
+          "expected": "ошибка в позиции 12 после 4 чисел\n"
+        },
+        {
+          "id": "hidden-10",
+          "name": "Лишняя скобка",
+          "stdin": "(1))\n",
+          "expected": "ошибка в позиции 4 после 1 чисел\n"
+        }
+      ],
+      "referenceSolution": "#include <ctype.h>\n#include <setjmp.h>\n#include <stdio.h>\n#include <string.h>\n\nstatic jmp_buf on_error;\nstatic const char *text;\nstatic size_t pos;\nstatic size_t error_pos;\nstatic long long sum;\nstatic int max_depth;\n\nstatic void fail(void) {\n    error_pos = pos + 1;\n    longjmp(on_error, 1);\n}\n\nstatic void skip_spaces(void) {\n    while (text[pos] == ' ') {\n        pos++;\n    }\n}\n\nstatic void parse_list(int depth, volatile int *numbers) {\n    if (depth > max_depth) {\n        max_depth = depth;\n    }\n    pos++;                                    // открывающая скобка\n    for (;;) {\n        skip_spaces();\n        char c = text[pos];\n        if (c == ')') {\n            pos++;\n            return;\n        }\n        if (c == '(') {\n            parse_list(depth + 1, numbers);\n        } else if (isdigit((unsigned char)c)) {\n            long long value = 0;\n            while (isdigit((unsigned char)text[pos])) {\n                value = value * 10 + (text[pos] - '0');\n                pos++;\n            }\n            sum += value;\n            (*numbers)++;\n        } else {\n            fail();\n        }\n    }\n}\n\nstatic void check_line(const char *line) {\n    volatile int numbers = 0;\n    text = line;\n    pos = 0;\n    sum = 0;\n    max_depth = 0;\n    if (setjmp(on_error) == 0) {\n        if (text[pos] != '(') {\n            fail();\n        }\n        parse_list(1, &numbers);\n        skip_spaces();\n        if (text[pos] != '\\0') {\n            fail();\n        }\n        printf(\"сумма %lld, глубина %d\\n\", sum, max_depth);\n    } else {\n        printf(\"ошибка в позиции %zu после %d чисел\\n\", error_pos, numbers);\n    }\n}\n\nint main(void) {\n    char line[256];\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        line[strcspn(line, \"\\r\\n\")] = '\\0';\n        check_line(line);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Ошибка может обнаружиться на любой глубине рекурсии. Возвращать код ошибки из каждой функции и проверять его в каждом вызове — громоздко; `longjmp` переносит управление сразу в `check_line`, минуя все промежуточные кадры. Так библиотеки на C реализуют подобие исключений.\n\nСчётчик `numbers` — локальная переменная функции, вызвавшей `setjmp`, и он меняется после `setjmp` (через указатель). По стандарту такая переменная после `longjmp` сохраняет значение только если она `volatile` — иначе компилятор мог держать её в регистре, и `longjmp` вернул бы старое значение. Глобальные переменные `sum` и `pos` этой проблемы не имеют: у них статическое время хранения.\n\n`longjmp` не выполняет никакой очистки. Здесь это не важно — разбор не выделяет память. В программе, которая выделяет ресурсы внутри рекурсии, перед `longjmp` их пришлось бы освобождать вручную — поэтому в обычном коде предпочитают коды возврата.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-volatile-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Достаточно ли volatile для обмена данными между потоками?",
+        "id": "q1",
+        "question": "Почему цикл while (!ready) { } может стать бесконечным при -O2, если ready меняет обработчик сигнала, а переменная объявлена как обычный int?",
+        "explanation": "По правилу «как если бы» компилятор вправе вынести чтение из цикла: для абстрактной машины значение не может измениться. volatile запрещает такую оптимизацию.",
         "options": [
-          "Нет, нужны соответствующие средства синхронизации",
-          "Да, любые обращения становятся атомарными"
+          "Компилятор видит, что в цикле ready не меняется, и читает её один раз",
+          "Обработчик сигнала не может менять глобальные переменные",
+          "При -O2 сигналы не доставляются",
+          "Цикл без тела всегда бесконечен"
         ],
-        "correct": 0,
-        "explanation": "volatile сообщает реализации, что доступы к объекту имеют наблюдаемое значение, например при работе с отображённым аппаратным регистром. Конкретные гарантии ширины и порядка доступа определяются компилятором и платформой. Этот квалификатор не заменяет атомики и не обеспечивает межпоточную синхронизацию."
+        "correct": 0
       },
       {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q2",
+        "question": "Что гарантирует квалификатор volatile?",
+        "explanation": "Обращения к volatile — часть наблюдаемого поведения. Атомарности и межпоточной синхронизации volatile не даёт.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "volatile не устраняет data race и не превращает read-modify-write в атомарную операцию."
+          "Каждое чтение и запись объекта выполняется так, как написано в коде",
+          "Операции с объектом атомарны",
+          "Объект виден всем потокам без синхронизации",
+          "Объект хранится в регистре процессора"
         ],
-        "correct": 1,
-        "explanation": "Каждое чтение — отдельное наблюдение прибора; снимок хранит результат одного наблюдения."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["2 4", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: volatile unsigned status=2;unsigned snapshot=status;status=4;printf(\"%u %u\\n\",snapshot,status); Ожидаемый результат: 2 4"
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <signal.h>\n#include <stdio.h>\n\nstatic volatile sig_atomic_t hits = 0;\n\nstatic void handler(int sig) {\n    signal(sig, handler);       // переустановить: реакция могла сброситься\n    hits = hits + 1;\n}\n\nint main(void) {\n    signal(SIGINT, handler);\n    raise(SIGINT);\n    raise(SIGINT);\n    printf(\"%d\\n\", (int)hits);\n    return 0;\n}",
+        "explanation": "Каждый raise синхронно вызывает обработчик, и он увеличивает счётчик. Строка signal(sig, handler) внутри обработчика важна: в строгом режиме C17 glibc перед вызовом обработчика возвращает действие по умолчанию, и без переустановки второй SIGINT завершил бы программу.",
+        "type": "text",
+        "answers": ["2"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Что можно делать в обработчике сигнала по стандарту C? Выберите все.",
+        "explanation": "printf и malloc не рассчитаны на повторный вход: сигнал мог прервать программу внутри них. Обработчик ставит флаг и возвращается, а работа выполняется в основном цикле.",
+        "type": "multiple",
+        "options": [
+          "Записать значение в переменную типа volatile sig_atomic_t",
+          "Вызвать printf",
+          "Вызвать malloc",
+          "Вернуться из обработчика"
+        ],
+        "correct": [0, 3]
+      },
+      {
+        "id": "q5",
+        "question": "Как объявить указатель status на регистр, который меняет устройство, а программа только читает?",
+        "explanation": "Квалификаторы перед типом относятся к объекту по указателю: volatile — меняется извне, const — программа не пишет. В варианте volatile uint32_t *const константен сам указатель, а писать в регистр можно; const uint32_t * без volatile позволит компилятору не перечитывать регистр.",
+        "options": [
+          "const volatile uint32_t *status;",
+          "volatile uint32_t *const status;",
+          "uint32_t *const volatile status;",
+          "const uint32_t *status;"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Локальная переменная функции, вызвавшей setjmp, изменена после setjmp и прочитана после longjmp. Что нужно, чтобы её значение было определено?",
+        "explanation": "Без volatile значение такой переменной после longjmp не определено: она могла жить в регистре, а longjmp восстанавливает регистры на момент setjmp.",
+        "type": "text",
+        "answers": ["volatile"],
+        "placeholder": "Квалификатор"
+      },
+      {
+        "id": "q7",
+        "question": "Два потока одновременно выполняют counter++ для volatile int counter. Что верно?",
+        "explanation": "counter++ — это чтение, сложение и запись. volatile лишь запрещает их убирать, но не делает неделимыми. Для потоков — atomic_int и atomic_fetch_add.",
+        "options": [
+          "Возможна гонка: часть увеличений потеряется; нужен _Atomic или мьютекс",
+          "volatile делает увеличение атомарным",
+          "Компилятор выдаст ошибку",
+          "Результат всегда будет верным, но медленным"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Почему компилятор вправе удалить memset(password, 0, sizeof password) перед выходом из функции?",
+        "explanation": "С точки зрения абстрактной машины такая запись бесполезна. Для гарантированной очистки — explicit_bzero, memset_s или запись через указатель на volatile.",
+        "options": [
+          "После записи массив больше не читается, и запись не влияет на наблюдаемое поведение",
+          "memset нельзя применять к локальным массивам",
+          "Компилятор всегда удаляет memset с нулём",
+          "Так требует стандарт для безопасности"
+        ],
+        "correct": 0
       }
     ]
   }

@@ -1,0 +1,303 @@
+## Значение, которого может не быть
+
+Функция поиска находит элемент — или не находит. Функция разбора превращает строку в число — или строка оказывается не числом. Как сообщить «результата нет»? В C для этого придумали несколько обходных путей, и у каждого есть изъян:
+
+- **особое значение**: `-1` вместо индекса. Работает, пока `-1` не становится допустимым ответом, — а для функции «найди минимальную температуру» такого числа нет;
+- **флаг и выходной параметр**: `bool parse(const char *s, int *out)`. Вызывающий код легко забывает проверить флаг и читает `out`, который никто не заполнил;
+- **нулевой указатель**: годится, только если результат и так живёт где-то в памяти.
+
+C++17 добавил тип, который говорит об этом прямо: `std::optional<T>` из `<optional>` — «значение типа `T` или ничего».
+
+## Основы
+
+```cpp
+#include <optional>
+#include <print>
+
+int main() {
+    std::optional<int> found = 42;
+    std::optional<int> missing;                  // пусто
+    std::optional<int> also_missing = std::nullopt;
+    std::println("{} {} {}", found.has_value(), missing.has_value(), also_missing.has_value());
+    if (found) {
+        std::println("найдено: {}", *found);
+    }
+    std::println("{} {}", found.value_or(0), missing.value_or(0));
+    missing = 7;
+    std::println("{}", *missing);
+    missing.reset();
+    std::println("{}", missing.has_value());
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+true false false
+найдено: 42
+42 0
+7
+false
+```
+
+| Запись                        | Что делает                                    |
+| ----------------------------- | --------------------------------------------- |
+| `std::optional<int> x;`       | пустой                                        |
+| `x = 5;`, `x = std::nullopt;` | положить значение / очистить                  |
+| `x.has_value()`, `if (x)`     | есть ли значение                              |
+| `*x`, `x->поле`               | значение **без проверки**                     |
+| `x.value()`                   | значение с проверкой: если пусто — исключение |
+| `x.value_or(запасное)`        | значение или запасное, если пусто             |
+| `x.reset()`                   | очистить                                      |
+
+`std::optional` хранит значение **внутри себя**, без кучи: `std::optional<int>` занимает 8 байт — 4 на число и ещё немного на признак «есть или нет».
+
+## Функция, которая может не найти
+
+Главное применение — возвращаемое значение. Тип результата сам говорит вызывающему коду: «ответа может не быть, проверь».
+
+```cpp
+#include <optional>
+#include <print>
+#include <span>
+
+std::optional<std::size_t> find_first_negative(std::span<const int> values) {
+    for (std::size_t i = 0; i < values.size(); i++) {
+        if (values[i] < 0) {
+            return i;
+        }
+    }
+    return std::nullopt;
+}
+
+int main() {
+    int temps[] = {3, 5, -2, 4, -7};
+    int warm[] = {10, 12};
+    if (auto pos = find_first_negative(temps)) {
+        std::println("первый мороз в день {}", *pos + 1);
+    }
+    auto none = find_first_negative(warm);
+    std::println("{}", none ? "мороз был" : "морозов не было");
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+первый мороз в день 3
+морозов не было
+```
+
+`return i;` неявно превращает число в непустой `optional`, `return std::nullopt;` — в пустой. Запись `if (auto pos = …)` объявляет переменную и сразу проверяет её: внутри `if` известно, что значение есть.
+
+## Разбор строки
+
+Разбор — классический случай «может не получиться». Вместе с `std::from_chars` из урока о `std::string_view`:
+
+```cpp
+#include <charconv>
+#include <optional>
+#include <print>
+#include <string_view>
+
+std::optional<int> parse_int(std::string_view text) {
+    int value = 0;
+    auto [end, error] = std::from_chars(text.data(), text.data() + text.size(), value);
+    if (error != std::errc{} || end != text.data() + text.size()) {
+        return std::nullopt;
+    }
+    return value;
+}
+
+int main() {
+    std::string_view inputs[] = {"42", "-5", "4x", "", "99999999999"};
+    for (std::string_view s : inputs) {
+        std::optional<int> n = parse_int(s);
+        std::println("[{}] -> {}", s, n ? std::to_string(*n) : "не число");
+    }
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+[42] -> 42
+[-5] -> -5
+[4x] -> не число
+[] -> не число
+[99999999999] -> не число
+```
+
+Сравните с C-подходом `bool parse_int(const char *s, int *out)`: там ничто не мешает прочитать `out` после неудачи. Здесь до числа нельзя добраться, не пройдя мимо проверки.
+
+## `*` без проверки, `value()` с проверкой
+
+`*x` у пустого `optional` — неопределённое поведение: вы получите то, что случайно лежит в памяти. `x.value()` проверяет и, если значения нет, бросает исключение `std::bad_optional_access`:
+
+```cpp
+#include <optional>
+#include <print>
+
+int main() {
+    std::optional<int> empty;
+    try {
+        int v = empty.value();
+        std::println("{}", v);
+    } catch (const std::bad_optional_access &error) {
+        std::println("ошибка: {}", error.what());
+    }
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+ошибка: bad optional access
+```
+
+Об исключениях — в уроке «Исключения». Правило: проверили `if (x)` — пользуйтесь `*x`; не проверяли — `value()` или `value_or()`.
+
+## Цепочки преобразований (C++23)
+
+Частая картина: получить необязательное значение, проверить его, преобразовать, — и на каждом шаге может не получиться. C++23 добавил методы, которые строят такие цепочки без вложенных `if`:
+
+| Метод            | Что делает, если значение есть                       | если пусто      |
+| ---------------- | ---------------------------------------------------- | --------------- |
+| `x.transform(f)` | возвращает `optional` с результатом `f(*x)`          | пустой          |
+| `x.and_then(f)`  | вызывает `f(*x)`, которая сама возвращает `optional` | пустой          |
+| `x.or_else(f)`   | возвращает `x`                                       | результат `f()` |
+
+```cpp
+#include <array>
+#include <charconv>
+#include <optional>
+#include <print>
+#include <string_view>
+
+std::optional<int> parse_int(std::string_view text) {
+    int value = 0;
+    auto [end, error] = std::from_chars(text.data(), text.data() + text.size(), value);
+    if (error != std::errc{} || end != text.data() + text.size()) {
+        return std::nullopt;
+    }
+    return value;
+}
+
+std::optional<int> valid_month(int m) {
+    if (m < 1 || m > 12) {
+        return std::nullopt;
+    }
+    return m;
+}
+
+int main() {
+    constexpr std::array<std::string_view, 12> names = {
+        "январь", "февраль", "март", "апрель", "май", "июнь",
+        "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"};
+    for (std::string_view input : {"10", "13", "abc"}) {
+        std::string_view name = parse_int(input)
+                                    .and_then(valid_month)
+                                    .transform([&names](int m) { return names[m - 1]; })
+                                    .value_or("неизвестно");
+        std::println("{} -> {}", input, name);
+    }
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+10 -> октябрь
+13 -> неизвестно
+abc -> неизвестно
+```
+
+Строку читают сверху вниз: разобрать число, **затем** проверить месяц, **затем** взять название, **иначе** — «неизвестно». Если любой шаг вернул пустоту, остальные пропускаются. `and_then` нужен для шагов, которые сами могут не удаться (`valid_month` возвращает `optional`), `transform` — для шагов, которые удаются всегда.
+
+## Необязательное поле
+
+`std::optional` годится и для полей структур, когда данные бывают неполными:
+
+```cpp
+#include <optional>
+#include <print>
+#include <string>
+
+struct Contact {
+    std::string name;
+    std::optional<std::string> phone;
+};
+
+void show(const Contact &c) {
+    std::println("{}: {}", c.name, c.phone.value_or("телефон не указан"));
+}
+
+int main() {
+    show({"Ада", "+7 900 000-00-00"});
+    show({"Алан", std::nullopt});
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+Ада: +7 900 000-00-00
+Алан: телефон не указан
+```
+
+Пустая строка `""` тоже могла бы означать «нет телефона», но тогда нельзя отличить «не указан» от «указан пустым», а читателю кода приходится догадываться о договорённости. Тип `std::optional<std::string>` говорит сам за себя.
+
+<Concept title="std::optional">
+
+`std::optional<T>` (C++17) — значение типа `T` или пустота (`std::nullopt`). Хранит значение внутри себя, без кучи. Проверка — `if (x)` или `has_value()`, доступ — `*x` (без проверки), `value()` (исключение, если пусто), `value_or(запасное)`. C++23 добавил цепочки `transform`, `and_then`, `or_else`. Используется для результатов, которых может не быть, и необязательных полей.
+
+</Concept>
+
+## Частые ошибки
+
+<CommonMistake title="Разыменование без проверки">
+
+`int n = *parse_int(s);` — если строка не число, это неопределённое поведение: никакой ошибки, просто мусор. Проверяйте `if (auto n = parse_int(s))` или используйте `value_or`.
+
+</CommonMistake>
+
+<CommonMistake title="optional<bool> в условии">
+
+`std::optional<bool> answer = false; if (answer) …` — условие **истинно**: `if` проверяет, есть ли значение, а не какое оно. Пишите `if (answer == true)`, `if (answer.value_or(false))` или проверяйте `has_value()` и `*answer` по отдельности.
+
+</CommonMistake>
+
+<CommonMistake title="Особое значение вместо optional">
+
+`int find(…)` с ответом `-1` «не найдено» заставляет каждого вызывающего помнить договорённость. Если ответа может не быть, пусть это будет видно в типе — `std::optional<std::size_t>`.
+
+</CommonMistake>
+
+## Попробуйте сами
+
+1. В первом примере напечатайте `*missing` до присваивания `missing = 7`. Соберите программу с санитайзерами — найдут ли они ошибку?
+2. Добавьте в цепочку с месяцами `.or_else([] { return std::optional<std::string_view>("ошибка"); })` перед `value_or`. Что изменится?
+3. Сравните `std::optional<int> x = 5; x == 5` и `std::optional<int> y; y == 5`. Что напечатает `std::println("{} {}", x == 5, y == 5)`?
+
+## Практика
+
+1. **Первое отрицательное** — функция, возвращающая `optional` индекса.
+2. **Контакты** — необязательные поля структуры.
+3. **Найди ошибку: `optional<bool>` в условии** — проверка наличия вместо значения.
+4. **Даты** — цепочка `and_then` и `transform`.
+
+<CodingExercise />
+
+## Итоги
+
+- `std::optional<T>` — «значение или ничего»; пустой создаётся без инициализатора или через `std::nullopt`.
+- `if (x)` и `has_value()` проверяют наличие; `*x` — доступ без проверки, `value()` бросает `std::bad_optional_access`, `value_or` даёт запасное значение.
+- Функция, которая может не найти или не разобрать, возвращает `std::optional`, а не особое значение или флаг с выходным параметром.
+- `transform`, `and_then` и `or_else` (C++23) выстраивают цепочку шагов, любой из которых может вернуть пустоту.
+- У `std::optional<bool>` условие `if (x)` проверяет наличие, а не значение.

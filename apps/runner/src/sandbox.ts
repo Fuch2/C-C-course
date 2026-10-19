@@ -142,7 +142,8 @@ async function control(args: string[]) {
 const activeContainers = new Set<string>();
 export async function removeContainer(name: string) {
   for (let attempt = 0; attempt < 3; attempt++) {
-    const removed = await docker(['rm', '--force', name], { timeoutMs: 5000 });
+    // A loaded Docker VM can need several seconds to stop a container; cleanup must not give up early.
+    const removed = await docker(['rm', '--force', name], { timeoutMs: 15_000 });
     if (removed.code === 0 || /No such container/i.test(removed.stderr.toString())) {
       activeContainers.delete(name);
       return;
@@ -186,7 +187,8 @@ async function resourceExceeded(name: string) {
   if (counters.code === 0)
     return /^(?:oom_kill|oom|max) [1-9][0-9]*$/m.test(counters.stdout.toString());
   // Saturating pids.max can prevent exec; top does not create an in-container process.
-  const processes = await docker(['top', name, '-eo', 'pid'], { timeoutMs: 1500, maxBytes: 8192 });
+  // Under host load docker top itself can take over a second; a short timeout misreports the limit.
+  const processes = await docker(['top', name, '-eo', 'pid'], { timeoutMs: 5000, maxBytes: 8192 });
   return processes.code === 0 && processes.stdout.toString().trim().split('\n').length - 1 >= 60;
 }
 function decode(buffer: Buffer) {

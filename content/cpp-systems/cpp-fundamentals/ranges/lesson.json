@@ -1,0 +1,545 @@
+{
+  "id": "cpp23-ranges",
+  "title": "Диапазоны и представления: std::ranges и std::views",
+  "description": "Алгоритмы std::ranges вместо пар итераторов: sort, find, count_if, minmax, contains и fold_left; проекции и сортировка по полю; ленивые представления filter, transform, take, drop, reverse; iota, enumerate, zip, adjacent; сбор результата через std::ranges::to; почему представление устаревает после изменения контейнера.",
+  "moduleId": "cpp-fundamentals",
+  "order": 18,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["cpp23-span"],
+  "objectives": [
+    "Применять алгоритмы std::ranges к контейнерам целиком",
+    "Сортировать и искать по полю с помощью проекций",
+    "Строить ленивые конвейеры из представлений std::views",
+    "Собирать результат в контейнер и не допускать устаревших представлений"
+  ],
+  "tags": ["C++20", "C++23", "ranges", "views", "Алгоритмы"],
+  "published": true,
+  "standard": "c++23",
+  "completion": "practice",
+  "exercise": {
+    "id": "cpp23-ranges-task-1",
+    "title": "Лучшие студенты",
+    "description": "Каждая строка ввода — имя студента (одно слово) и балл. Напечатайте трёх лучших по баллу в формате `место. имя балл`. При равных баллах выше тот, кто раньше встретился во вводе. Если студентов меньше трёх, напечатайте всех; если их нет — `нет студентов`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "cpp",
+    "standard": "c++23",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "Ада 90\nАлан 75\nГрейс 95\nДеннис 88\n",
+        "output": "1. Грейс 95\n2. Ада 90\n3. Деннис 88\n"
+      },
+      {
+        "input": "",
+        "output": "нет студентов\n"
+      }
+    ],
+    "constraints": ["Студентов не больше 50; баллы от 0 до 100."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "std::ranges::stable_sort(group, std::ranges::greater{}, &Student::score) — по убыванию балла с сохранением порядка равных.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Первые три элемента даёт group | std::views::take(3), а номер — std::views::enumerate.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "Ада 90\nАлан 75\nГрейс 95\nДеннис 88\n",
+        "expected": "1. Грейс 95\n2. Ада 90\n3. Деннис 88\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "",
+        "expected": "нет студентов\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Один студент",
+        "stdin": "Ann 50\n",
+        "expected": "1. Ann 50\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Два студента",
+        "stdin": "A 70\nB 80\n",
+        "expected": "1. B 80\n2. A 70\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Все равны",
+        "stdin": "A 90\nB 90\nC 90\nD 90\n",
+        "expected": "1. A 90\n2. B 90\n3. C 90\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Возрастание",
+        "stdin": "A 10\nB 20\nC 30\nD 40\nE 50\n",
+        "expected": "1. E 50\n2. D 40\n3. C 30\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Ничья за первое",
+        "stdin": "Иван 100\nПётр 0\nОльга 100\nАнна 99\n",
+        "expected": "1. Иван 100\n2. Ольга 100\n3. Анна 99\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Ничья за второе",
+        "stdin": "x 1\ny 2\nz 2\nw 2\n",
+        "expected": "1. y 2\n2. z 2\n3. w 2\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Нули",
+        "stdin": "A 0\nB 0\nC 0\n",
+        "expected": "1. A 0\n2. B 0\n3. C 0\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Пары равных",
+        "stdin": "a 55\nb 66\nc 77\nd 66\ne 77\n",
+        "expected": "1. c 77\n2. e 77\n3. b 66\n"
+      }
+    ],
+    "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <print>\n#include <ranges>\n#include <string>\n#include <vector>\n\nstruct Student {\n    std::string name;\n    int score;\n};\n\nint main() {\n    std::vector<Student> group;\n    Student s;\n    while (std::cin >> s.name >> s.score) {\n        group.push_back(s);\n    }\n    if (group.empty()) {\n        std::println(\"нет студентов\");\n        return 0;\n    }\n    std::ranges::stable_sort(group, std::ranges::greater{}, &Student::score);\n    for (auto [i, student] : std::views::enumerate(group | std::views::take(3))) {\n        std::println(\"{}. {} {}\", i + 1, student.name, student.score);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Проекция `&Student::score` избавляет от лямбды-компаратора, а `std::ranges::greater{}` задаёт убывание. Стабильная сортировка выполняет требование «при равенстве — кто раньше»: обычная `sort` порядок равных не сохраняет.\n\n`take(3)` сам справляется с короткими группами: если студентов двое, он вернёт двоих. `enumerate` даёт номер с нуля, поэтому место — `i + 1`.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "cpp23-ranges-task-2",
+      "title": "Чётные квадраты",
+      "description": "Прочитайте целые числа до конца ввода. Напечатайте в одной строке через пробел квадраты **чётных** чисел в порядке, **обратном** вводу, а во второй строке — `сумма S`, где S — сумма этих квадратов. Если чётных чисел нет, в первой строке напечатайте `нет`.\n\nРешите задачу конвейером представлений: `filter`, `transform`, `reverse`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "1 2 3 4 5 6\n",
+          "output": "36 16 4\nсумма 56\n"
+        },
+        {
+          "input": "1 3 5\n",
+          "output": "нет\nсумма 0\n"
+        }
+      ],
+      "constraints": ["Чисел не больше 1000, каждое по модулю до 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Квадрат до 10¹² не помещается в int: в transform возвращайте long long — [](int x) { return 1LL * x * x; }.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сумму элементов конвейера посчитает std::ranges::fold_left(pipeline, 0LL, std::plus{}). Чётность отрицательных: x % 2 == 0 работает и для них.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1 2 3 4 5 6\n",
+          "expected": "36 16 4\nсумма 56\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 3 5\n",
+          "expected": "нет\nсумма 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": "нет\nсумма 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Ноль",
+          "stdin": "0\n",
+          "expected": "0\nсумма 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Отрицательные",
+          "stdin": "-2 -4 7\n",
+          "expected": "16 4\nсумма 20\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Большие",
+          "stdin": "1000000 -1000000\n",
+          "expected": "1000000000000 1000000000000\nсумма 2000000000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Повторы",
+          "stdin": "2 2 2\n",
+          "expected": "4 4 4\nсумма 12\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Убывание",
+          "stdin": "10 9 8 7 6 5 4 3 2 1\n",
+          "expected": "4 16 36 64 100\nсумма 220\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Только нечётные",
+          "stdin": "-1 -3 -5 -7\n",
+          "expected": "нет\nсумма 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Почти граница",
+          "stdin": "999999 1000000 2\n",
+          "expected": "4 1000000000000\nсумма 1000000000004\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <functional>\n#include <iostream>\n#include <print>\n#include <ranges>\n#include <string>\n#include <vector>\n\nint main() {\n    std::vector<int> values;\n    int x;\n    while (std::cin >> x) {\n        values.push_back(x);\n    }\n    auto squares = values | std::views::filter([](int v) { return v % 2 == 0; })\n                          | std::views::transform([](int v) { return 1LL * v * v; })\n                          | std::views::reverse;\n    std::string line;\n    for (long long s : squares) {\n        line += line.empty() ? \"\" : \" \";\n        line += std::to_string(s);\n    }\n    std::println(\"{}\", line.empty() ? \"нет\" : line);\n    std::println(\"сумма {}\", std::ranges::fold_left(squares, 0LL, std::plus{}));\n    return 0;\n}\n",
+      "solutionExplanation": "Конвейер описывает всю обработку одной строкой и не создаёт промежуточных векторов: отбор, возведение в квадрат и разворот выполняются на лету, при обходе. Обходится он дважды — для печати и для суммы, — и каждый раз вычисляется заново; для простых функций это дёшево.\n\n`1LL * v * v` переводит вычисление в `long long` до умножения: `v * v` в `int` переполнился бы уже при `v = 50 000`. Начальное значение свёртки `0LL` задаёт тип суммы — с `0` она считалась бы в `int`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp23-ranges-task-3",
+      "title": "Найди ошибку: запомненное начало",
+      "description": "Программа читает число `n` и `n` целых чисел и печатает, сколько среди них положительных. Затем читает число `m` и `m` изменений `i v` — «записать v в элемент с номером i (с нуля)» — и печатает число положительных после всех изменений:\n\n```text\nположительных: 1\nпосле изменений: 2\n```\n\nИногда второе число оказывается неверным. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <ranges>\n#include <vector>\n\nint main() {\n    std::vector<int> values;\n    int n, m, x;\n    std::cin >> n;\n    for (int i = 0; i < n; i++) {\n        std::cin >> x;\n        values.push_back(x);\n    }\n    auto is_positive = [](int v) { return v > 0; };\n    auto positive = values | std::views::filter(is_positive);\n    std::println(\"положительных: {}\", std::ranges::distance(positive));\n    std::cin >> m;\n    for (int i = 0; i < m; i++) {\n        int index;\n        std::cin >> index >> x;\n        values[index] = x;\n    }\n    std::println(\"после изменений: {}\", std::ranges::distance(positive));\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\n-5 -1 2\n1\n0 7\n",
+          "output": "положительных: 1\nпосле изменений: 2\n"
+        },
+        {
+          "input": "3\n4 -1 2\n1\n0 -3\n",
+          "output": "положительных: 2\nпосле изменений: 1\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 50; 0 ≤ m ≤ 100; 0 ≤ i < n; числа по модулю до 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "filter_view при первом обходе запоминает, где находится первый подходящий элемент, и при следующих обходах начинает оттуда. Что будет, если положительным стал более ранний элемент?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Создайте новое представление после добавления элементов — или посчитайте через std::ranges::count_if, который ничего не запоминает.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\n-5 -1 2\n1\n0 7\n",
+          "expected": "положительных: 1\nпосле изменений: 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3\n4 -1 2\n1\n0 -3\n",
+          "expected": "положительных: 2\nпосле изменений: 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "2\n-1 -2\n2\n0 5\n1 6\n",
+          "expected": "положительных: 0\nпосле изменений: 2\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "4\n1 -1 1 -1\n2\n1 1\n3 1\n",
+          "expected": "положительных: 2\nпосле изменений: 4\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "3\n0 0 5\n1\n1 3\n",
+          "expected": "положительных: 1\nпосле изменений: 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1\n-7\n0\n",
+          "expected": "положительных: 0\nпосле изменений: 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "5\n-1 -2 -3 -4 10\n3\n0 1\n1 1\n4 -10\n",
+          "expected": "положительных: 1\nпосле изменений: 2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "3\n1000000 -1000000 0\n2\n1 1000000\n2 1\n",
+          "expected": "положительных: 1\nпосле изменений: 3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "2\n5 5\n2\n0 -5\n1 -5\n",
+          "expected": "положительных: 2\nпосле изменений: 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "6\n-1 -1 -1 -1 -1 1\n1\n0 1\n",
+          "expected": "положительных: 1\nпосле изменений: 2\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <ranges>\n#include <vector>\n\nint main() {\n    std::vector<int> values;\n    int n, m, x;\n    std::cin >> n;\n    for (int i = 0; i < n; i++) {\n        std::cin >> x;\n        values.push_back(x);\n    }\n    auto is_positive = [](int v) { return v > 0; };\n    auto positive = values | std::views::filter(is_positive);\n    std::println(\"положительных: {}\", std::ranges::distance(positive));\n    std::cin >> m;\n    for (int i = 0; i < m; i++) {\n        int index;\n        std::cin >> index >> x;\n        values[index] = x;\n    }\n    auto updated = values | std::views::filter(is_positive);\n    std::println(\"после изменений: {}\", std::ranges::distance(updated));\n    return 0;\n}\n",
+      "solutionExplanation": "`std::views::filter` ищет первый подходящий элемент при первом обращении к `begin()` и **запоминает** найденную позицию, чтобы следующие обходы были быстрыми: так требует стандарт, ведь `begin()` должен работать за амортизированное O(1). Второй `distance` начинает обход с запомненной позиции. Если положительным стал более ранний элемент, он пропускается; если запомненный элемент перестал быть положительным, он всё равно посчитается.\n\nПредставление — это описание вычисления над конкретным состоянием данных. Изменили данные — создайте представление заново. Для одноразового подсчёта проще и надёжнее алгоритм: `std::ranges::count_if(values, is_positive)` ничего не хранит между вызовами.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp23-ranges-task-4",
+      "title": "Изменения цены",
+      "description": "Ввод: число `n` и цены за `n` дней. Для каждого дня, начиная со второго, напечатайте изменение цены по сравнению с предыдущим днём со знаком: `день 2: +3`, `день 3: -1`, `день 4: +0`. В конце напечатайте `наибольший рост: d (день i)` — самое большое положительное изменение и день, когда оно произошло (при равенстве — более ранний), или `роста не было`.\n\nРешите задачу через `std::views::adjacent<2>` (пары соседних цен) и `std::views::enumerate`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "4\n10 13 12 12\n",
+          "output": "день 2: +3\nдень 3: -1\nдень 4: +0\nнаибольший рост: 3 (день 2)\n"
+        },
+        {
+          "input": "1\n100\n",
+          "output": "роста не было\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 100; цены от 0 до 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "std::views::enumerate(std::views::adjacent<2>(prices)) даёт пары (номер, пара соседей). Пару соседей разложите: auto [before, after] = pair;.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Номер пары с нуля соответствует дню номер + 2. Изменение со знаком печатается спецификацией {:+}.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\n10 13 12 12\n",
+          "expected": "день 2: +3\nдень 3: -1\nдень 4: +0\nнаибольший рост: 3 (день 2)\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n100\n",
+          "expected": "роста не было\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Только падение",
+          "stdin": "3\n5 4 3\n",
+          "expected": "день 2: -1\nдень 3: -1\nроста не было\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Большой рост",
+          "stdin": "2\n0 1000000\n",
+          "expected": "день 2: +1000000\nнаибольший рост: 1000000 (день 2)\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Равный рост",
+          "stdin": "5\n1 3 1 3 1\n",
+          "expected": "день 2: +2\nдень 3: -2\nдень 4: +2\nдень 5: -2\nнаибольший рост: 2 (день 2)\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Без изменений",
+          "stdin": "4\n7 7 7 7\n",
+          "expected": "день 2: +0\nдень 3: +0\nдень 4: +0\nроста не было\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Удвоение",
+          "stdin": "6\n1 2 4 8 16 32\n",
+          "expected": "день 2: +1\nдень 3: +2\nдень 4: +4\nдень 5: +8\nдень 6: +16\nнаибольший рост: 16 (день 6)\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скачки",
+          "stdin": "5\n10 5 20 1 15\n",
+          "expected": "день 2: -5\nдень 3: +15\nдень 4: -19\nдень 5: +14\nнаибольший рост: 15 (день 3)\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Обвал и восстановление",
+          "stdin": "3\n1000000 0 1000000\n",
+          "expected": "день 2: -1000000\nдень 3: +1000000\nнаибольший рост: 1000000 (день 3)\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пи",
+          "stdin": "7\n3 1 4 1 5 9 2\n",
+          "expected": "день 2: -2\nдень 3: +3\nдень 4: -3\nдень 5: +4\nдень 6: +4\nдень 7: -7\nнаибольший рост: 4 (день 5)\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <ranges>\n#include <vector>\n\nint main() {\n    int n;\n    std::cin >> n;\n    std::vector<int> prices(static_cast<std::size_t>(n));\n    for (int &p : prices) {\n        std::cin >> p;\n    }\n    int best = 0;\n    long long best_day = 0;\n    for (auto [i, pair] : std::views::enumerate(std::views::adjacent<2>(prices))) {\n        auto [before, after] = pair;\n        int change = after - before;\n        std::println(\"день {}: {:+}\", i + 2, change);\n        if (change > best) {\n            best = change;\n            best_day = i + 2;\n        }\n    }\n    if (best > 0) {\n        std::println(\"наибольший рост: {} (день {})\", best, best_day);\n    } else {\n        std::println(\"роста не было\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`adjacent<2>` превращает последовательность цен в последовательность пар соседей: `(p₁, p₂), (p₂, p₃), …` — без индексов и без риска выйти за границу на последнем элементе. `enumerate` нумерует эти пары с нуля, поэтому пара номер `i` описывает переход ко дню `i + 2`.\n\nПри одной цене пар нет, цикл не выполняется ни разу, и программа сразу сообщает, что роста не было. Наибольший рост обновляется только при строго большем изменении, поэтому при равенстве остаётся более ранний день. Спецификация `{:+}` ставит знак и у нуля: `+0`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "cpp23-ranges-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <ranges>\n#include <vector>\n\nint main() {\n    std::vector<int> v = {1, 2, 3, 4, 5, 6};\n    for (int x : v | std::views::filter([](int x) { return x % 3 != 0; })\n                   | std::views::transform([](int x) { return x * 10; })) {\n        std::print(\"{} \", x);\n    }\n    std::println();\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "filter убирает 3 и 6, transform умножает оставшиеся на 10.",
+        "type": "text",
+        "answers": ["10 20 40 50"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <ranges>\n\nint main() {\n    for (int x : std::views::iota(1, 10) | std::views::drop(2) | std::views::take(3)) {\n        std::print(\"{}\", x);\n    }\n    std::println();\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "iota(1, 10) — числа 1…9. drop(2) отбрасывает 1 и 2, take(3) берёт 3, 4, 5.",
+        "type": "text",
+        "answers": ["345"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Что означает третий аргумент в вызове std::ranges::sort(people, {}, &Person::age)?",
+        "explanation": "Второй аргумент — способ сравнения ({} — по возрастанию), третий — что взять у элемента перед сравнением.",
+        "options": [
+          "Проекция: сравнивать людей по полю age",
+          "Компаратор: сортировать по убыванию",
+          "Количество сортируемых элементов",
+          "Поле, которое нужно обнулить после сортировки"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Когда выполняется работа в строке auto r = v | std::views::transform(f);?",
+        "explanation": "Представления ленивы: они описывают вычисление, а выполняется оно при обходе.",
+        "options": [
+          "Ни при создании r: f вызывается, когда цикл обращается к очередному элементу",
+          "Сразу для всех элементов, результат хранится в r",
+          "При компиляции",
+          "Только при вызове r.size()"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Почему v | std::views::filter(f) нельзя индексировать через [i]?",
+        "explanation": "Нужен доступ по индексу — соберите результат в вектор через std::ranges::to<std::vector>().",
+        "options": [
+          "Чтобы найти i-й подходящий элемент, нужно пройти все предыдущие — произвольного доступа нет",
+          "Потому что filter копирует элементы",
+          "Индексация запрещена у всех представлений",
+          "Можно, но только с i = 0"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <algorithm>\n#include <functional>\n#include <print>\n#include <vector>\n\nint main() {\n    std::vector<int> v = {4, 1, 7};\n    std::println(\"{} {}\", std::ranges::fold_left(v, 100, std::plus{}), std::ranges::contains(v, 7));\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "fold_left начинает со 100 и прибавляет каждый элемент: 112. contains проверяет наличие 7.",
+        "type": "text",
+        "answers": ["112 true"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <ranges>\n#include <string>\n#include <vector>\n\nint main() {\n    std::vector<std::string> a = {\"x\", \"y\", \"z\"};\n    std::vector<int> b = {1, 2};\n    for (auto [s, n] : std::views::zip(a, b)) {\n        std::print(\"{}{} \", s, n);\n    }\n    std::println();\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "zip останавливается на более коротком диапазоне — у b два элемента.",
+        "type": "text",
+        "answers": ["x1 y2"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q8",
+        "question": "Какой вызов собирает отфильтрованные элементы в новый вектор (C++23)?",
+        "explanation": "v | std::views::filter(f) | std::ranges::to<std::vector>() создаёт вектор из элементов конвейера.",
+        "type": "text",
+        "answers": [
+          "std::ranges::to<std::vector>()",
+          "std::ranges::to<std::vector>",
+          "ranges::to<std::vector>()",
+          "std::ranges::to<std::vector<int>>()"
+        ],
+        "placeholder": "Выражение после |"
+      },
+      {
+        "id": "q9",
+        "question": "Чем stable_sort отличается от sort при сортировке студентов по баллу?",
+        "explanation": "Порядок равных после sort не гарантирован. Если он важен, нужна стабильная сортировка.",
+        "options": [
+          "stable_sort сохраняет исходный порядок студентов с равными баллами",
+          "stable_sort сортирует по убыванию",
+          "sort не принимает проекцию",
+          "Ничем"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

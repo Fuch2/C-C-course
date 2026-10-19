@@ -13,9 +13,9 @@
     "Использовать static-переменные для данных, сохраняющихся между вызовами",
     "Объяснять, почему нельзя изменять строковый литерал"
   ],
-  "tags": ["C17", "Память", "static", "Стек", "Куча"],
+  "tags": ["C23", "Память", "static", "Стек", "Куча"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-process-memory-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\n// Объявите здесь static-переменные уровня файла.\n\nvoid record(int x) {\n    // Учтите x в накопленной статистике.\n}\n\nvoid report(void) {\n    // Напечатайте результат.\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        int x;\n        scanf(\"%d\", &x);\n        record(x);\n    }\n    report();\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -135,7 +135,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\ndouble moving_average(int x) {\n    // Храните последние три значения в static-массиве.\n    return 0.0;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        int x;\n        scanf(\"%d\", &x);\n        printf(\"%.2f\\n\", moving_average(x));\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -244,7 +244,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint seen_before(int id) {\n    // Используйте static-массив отметок.\n    return 0;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        int id;\n        scanf(\"%d\", &id);\n        printf(\"%s\\n\", seen_before(id) ? \"repeat\" : \"new\");\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

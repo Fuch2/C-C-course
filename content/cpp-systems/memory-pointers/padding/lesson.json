@@ -13,9 +13,9 @@
     "Объяснять, почему заполнители содержат мусор и чем это опасно",
     "Сравнивать структуры по полям и обнулять их перед выводом байтами"
   ],
-  "tags": ["C17", "Память", "Padding", "Структуры", "offsetof"],
+  "tags": ["C23", "Память", "Padding", "Структуры", "offsetof"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-padding-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n#include <string.h>\n\nstruct Type {\n    const char *name;\n    size_t size;\n    size_t align;\n};\n\nstatic const struct Type TYPES[] = {\n    {\"char\", 1, 1}, {\"short\", 2, 2}, {\"int\", 4, 4}, {\"float\", 4, 4},\n    {\"long\", 8, 8}, {\"double\", 8, 8}, {\"ptr\", 8, 8},\n};\n\nconst struct Type *find_type(const char *name) {\n    for (size_t i = 0; i < sizeof TYPES / sizeof TYPES[0]; i++) {\n        if (strcmp(TYPES[i].name, name) == 0) {\n            return &TYPES[i];\n        }\n    }\n    return NULL;\n}\n\nsize_t align_up(size_t x, size_t a) {\n    return (x + a - 1) / a * a;\n}\n\nint main(void) {\n    // Прочитайте поля и вычислите раскладку.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -129,7 +129,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <string.h>\n\nstruct Type {\n    const char *name;\n    size_t size;\n    size_t align;\n};\n\nstatic const struct Type TYPES[] = {\n    {\"char\", 1, 1}, {\"short\", 2, 2}, {\"int\", 4, 4}, {\"float\", 4, 4},\n    {\"long\", 8, 8}, {\"double\", 8, 8}, {\"ptr\", 8, 8},\n};\n\nconst struct Type *find_type(const char *name) {\n    for (size_t i = 0; i < sizeof TYPES / sizeof TYPES[0]; i++) {\n        if (strcmp(TYPES[i].name, name) == 0) {\n            return &TYPES[i];\n        }\n    }\n    return NULL;\n}\n\nsize_t align_up(size_t x, size_t a) {\n    return (x + a - 1) / a * a;\n}\n\nint main(void) {\n    // Посчитайте исходный и наименьший размеры.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -238,7 +238,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <string.h>\n\nstruct Reading {\n    char sensor;\n    int value;\n    short flags;\n};\n\nvoid dump(const void *data, size_t size) {\n    const unsigned char *bytes = data;\n    for (size_t i = 0; i < size; i++) {\n        printf(i + 1 < size ? \"%02x \" : \"%02x\\n\", bytes[i]);\n    }\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        char sensor;\n        int value, flags;\n        scanf(\" %c %d %d\", &sensor, &value, &flags);\n        struct Reading r;\n        r.sensor = sensor;\n        r.value = value;\n        r.flags = (short)flags;\n        dump(&r, sizeof r);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "valgrind",
       "examples": [
@@ -342,7 +342,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n\nstruct Point {\n    char tag;\n    double x;\n    short id;\n};\n\nint same_point(const struct Point *a, const struct Point *b) {\n    return 0;\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        struct Point a, b;\n        scanf(\" %c %lf %hd\", &a.tag, &a.x, &a.id);\n        scanf(\" %c %lf %hd\", &b.tag, &b.x, &b.id);\n        printf(\"%s\\n\", same_point(&a, &b) ? \"equal\" : \"different\");\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

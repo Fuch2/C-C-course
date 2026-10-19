@@ -15,7 +15,7 @@ export default {
     'Защищать выпускную сборку и пользоваться статическим анализом',
   ],
   tags: ['Санитайзеры', 'ASan', 'UBSan', 'Сборка', 'Статический анализ'],
-  standard: 'c17',
+  standard: 'c23',
   diagnostics: 'sanitizers',
   quiz: [
     {

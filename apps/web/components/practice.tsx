@@ -310,7 +310,7 @@ export function Practice({
                 aria-label="Язык программирования"
                 value={language}
                 disabled={!!busy}
-                onChange={(e) => setStandard(e.target.value === 'cpp' ? 'c++20' : 'c17')}
+                onChange={(e) => setStandard(e.target.value === 'cpp' ? 'c++23' : 'c23')}
               >
                 <option value="c">C</option>
                 <option value="cpp">C++</option>
@@ -336,11 +336,13 @@ export function Practice({
                 value={standard}
                 onChange={(e) => setStandard(standardSchema.parse(e.target.value))}
               >
-                {(language === 'c' ? ['c11', 'c17'] : ['c++17', 'c++20']).map((value) => (
-                  <option key={value} value={value}>
-                    {value.toUpperCase()}
-                  </option>
-                ))}
+                {(language === 'c' ? ['c11', 'c17', 'c23'] : ['c++17', 'c++20', 'c++23']).map(
+                  (value) => (
+                    <option key={value} value={value}>
+                      {value.toUpperCase()}
+                    </option>
+                  ),
+                )}
               </select>
             </label>
             {playground && (

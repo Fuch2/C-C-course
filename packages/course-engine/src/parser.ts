@@ -70,8 +70,26 @@ function attachExampleInput(tree: MarkdownRoot) {
       input?.type === 'code' &&
       input.lang === 'text'
     )
-      node.data = { ...node.data, hProperties: { dataStdin: input.value } };
+      node.data = {
+        ...node.data,
+        hProperties: { ...node.data?.hProperties, dataStdin: input.value },
+      };
   });
+}
+/**
+ * Имя файла после языка блока (```c geometry.h) показывается в подписи вместо main.c.
+ * Такой блок — часть многофайловой программы, поэтому кнопки «Запустить» у него нет.
+ */
+const fileNamePattern = /^[\p{L}\p{N}_.+-]+(\/[\p{L}\p{N}_.+-]+)*$/u;
+function attachFileName(node: Extract<RootContent, { type: 'code' }>, file: string) {
+  const name = node.meta?.trim();
+  if (!name) return;
+  if (!fileNamePattern.test(name))
+    throw new ContentError(
+      file,
+      `строка ${node.position?.start.line ?? 1}: после языка блока кода допускается только имя файла, получено «${name}»`,
+    );
+  node.data = { ...node.data, hProperties: { ...node.data?.hProperties, dataFile: name } };
 }
 /** Декларативный MDX: компоненты и строковые props, без выполнения JavaScript. */
 export function parseLessonBody(body: string, format: 'md' | 'mdx' = 'md', file = 'lesson.md') {
@@ -115,6 +133,7 @@ export function parseLessonBody(body: string, format: 'md' | 'mdx' = 'md', file 
         }),
       );
     }
+    if (node.type === 'code') attachFileName(node as Extract<RootContent, { type: 'code' }>, file);
     if (node.type === 'html')
       fail(node, 'HTML не поддерживается. Используйте Markdown или учебный компонент в .mdx.');
     if (['mdxjsEsm', 'mdxFlowExpression', 'mdxTextExpression'].includes(node.type))

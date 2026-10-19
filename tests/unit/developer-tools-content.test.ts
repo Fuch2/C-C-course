@@ -13,9 +13,9 @@ const sourceDirs = readdirSync(moduleDir, { withFileTypes: true })
   .map((entry) => `${moduleDir}/${entry.name}`);
 
 describe('Модуль «Инструменты разработчика»', () => {
-  it('содержит 12 последовательных уроков от терминала до Git', () => {
-    expect(lessons).toHaveLength(12);
-    expect(sourceDirs).toHaveLength(12);
+  it('содержит 13 последовательных уроков от терминала до экосистемы инструментов', () => {
+    expect(lessons).toHaveLength(13);
+    expect(sourceDirs).toHaveLength(13);
     for (const dir of sourceDirs) expect(existsSync(`${dir}/lesson.src.mjs`), dir).toBe(true);
     expect(lessons.map((l) => l.id)).toEqual([
       'terminal-basics',
@@ -30,10 +30,11 @@ describe('Модуль «Инструменты разработчика»', () 
       'advanced-lldb',
       'advanced-sanitizers',
       'git-basic-workflow',
+      'tooling-ecosystem',
     ]);
     for (const [i, l] of lessons.entries()) {
       expect(l.order).toBe(i + 1);
-      expect(l.standard).toBe('c17');
+      expect(l.standard).toBe('c23');
       if (i) {
         expect(l.previousLessonId).toBe(lessons[i - 1]!.id);
         expect(l.prerequisites).toEqual([lessons[i - 1]!.id]);

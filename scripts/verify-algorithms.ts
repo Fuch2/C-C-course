@@ -1,5 +1,20 @@
+/**
+ * Полная проверка модуля «Алгоритмы и структуры данных» в Docker sandbox.
+ *
+ * 1. Каждое эталонное решение проходит все тесты на GCC и Clang с ASan/UBSan.
+ * 2. Отрицательный контроль: дефектная заготовка каждого задания «Найди ошибку» отклоняется
+ *    проверкой в доверенном режиме ASan/UBSan.
+ * 3. Примеры из текста уроков (C17 и C++20): обычные выполняются на Clang с ASan/UBSan и печатают
+ *    записанный вывод; «// Ошибка памяти» обязан дать отчёт ASan/UBSan.
+ * 4. Benchmark-задачи проверяются так же, как остальные: они считают операции, а не время.
+ *
+ * Режим диагностики задаёт этот доверенный скрипт, а не публичный запрос. Отчёт:
+ * docs/verification/algorithms.json (только при полном прогоне; аргументы — подстроки ID уроков
+ * для частичной проверки). Параллелизм — ALGORITHMS_JOBS (по умолчанию 2).
+ */
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
 import { loadCourse } from '@course/course-engine';
 import {
   allExerciseTests,
@@ -8,86 +23,212 @@ import {
   testInput,
   type CodingExercise,
   type Compiler,
+  type SandboxResult,
+  type Standard,
 } from '@course/shared';
-import { executeSandbox } from '../apps/runner/src/sandbox';
+import { executeSandbox, JobQueue, type DiagnosticMode } from '../apps/runner/src/sandbox';
+import { displayed, extractExamples, isSanitizerReport } from './lessons/examples';
 
-const lessons = loadCourse().lessons.filter((l) => l.moduleId === 'algorithms-structures');
-const examples = JSON.parse(
-  readFileSync('content/cpp-systems/algorithms-structures/examples.json', 'utf8'),
-) as { id: string; source: string; stdout: string; standard: 'c17' | 'c++20' }[];
-if (lessons.length !== 28 || examples.length !== 40)
-  throw new Error('Ожидаются 28 уроков и 40 примеров.');
-const tasks: {
+const moduleDir = 'content/cpp-systems/algorithms-structures';
+const allLessons = loadCourse().lessons.filter(
+  (lesson) => lesson.moduleId === 'algorithms-structures',
+);
+if (allLessons.length !== 28)
+  throw new Error('Модуль «Алгоритмы и структуры данных» должен содержать 28 уроков.');
+// Необязательные аргументы — подстроки ID уроков: проверяется только часть модуля, отчёт не пишется.
+const filters = process.argv.slice(2);
+const lessons = filters.length
+  ? allLessons.filter((lesson) => filters.some((filter) => lesson.id.includes(filter)))
+  : allLessons;
+const mdxById = new Map(
+  readdirSync(moduleDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => {
+      const dir = path.join(moduleDir, entry.name);
+      const { id } = JSON.parse(readFileSync(path.join(dir, 'lesson.json'), 'utf8')) as {
+        id: string;
+      };
+      return [id, path.join(dir, 'lesson.mdx')] as const;
+    }),
+);
+
+type Task = {
   id: string;
-  source: string;
-  standard: 'c17' | 'c++20';
+  kind:
+    | 'solution'
+    | 'negative-control'
+    | 'example'
+    | 'memory-example'
+    | 'compile-error'
+    | 'runtime-error';
   compiler: Compiler;
-  exercise?: CodingExercise;
+  standard: Standard;
+  mode: DiagnosticMode;
+  source: string;
   cases: { stdin: string }[];
-  expected?: string;
-}[] = [];
-for (const lesson of lessons)
-  for (const exercise of [lesson.exercise, ...lesson.additionalExercises])
+  check: (result: SandboxResult) => boolean;
+};
+const tasks: Task[] = [];
+const graded = (exercise: CodingExercise) => (result: SandboxResult) =>
+  result.compilation.status === 'ok' && gradeResults(exercise, result).every((test) => test.passed);
+
+for (const lesson of lessons) {
+  for (const exercise of [lesson.exercise, ...lesson.additionalExercises]) {
+    const cases = allExerciseTests(exercise).map((test) => ({ stdin: testInput(test) }));
     for (const compiler of ['gcc', 'clang'] as const)
       tasks.push({
         id: exercise.id,
-        source: buildSubmissionSource(exercise, exercise.referenceSolution),
-        standard: 'c17',
+        kind: 'solution',
         compiler,
-        exercise,
-        cases: allExerciseTests(exercise).map((test) => ({ stdin: testInput(test) })),
+        standard: 'c23',
+        mode: 'sanitizers',
+        source: buildSubmissionSource(exercise, exercise.referenceSolution),
+        cases,
+        check: graded(exercise),
       });
-for (const example of examples)
-  tasks.push({ ...example, compiler: 'clang', cases: [{ stdin: '' }], expected: example.stdout });
-const checks = [];
-for (const task of tasks) {
-  const fingerprint = createHash('sha256').update(JSON.stringify(task)).digest('hex');
-  let ok = false;
-  try {
-    const result = await executeSandbox(
-      {
-        source: task.source,
-        standard: task.standard,
-        compiler: task.compiler,
-        stdin: '',
-        cases: task.cases,
-        timeoutMs: 10000,
-      },
-      'sanitizers',
-    );
-    ok =
-      result.compilation.status === 'ok' &&
-      (task.exercise
-        ? gradeResults(task.exercise, result).every((test) => test.passed)
-        : result.runs.length === 1 &&
-          result.runs[0]?.status === 'ok' &&
-          result.runs[0]?.stdout === task.expected);
-    if (!ok) console.error(JSON.stringify(result));
-  } catch (error) {
-    console.error(String(error));
+    if (exercise.title.startsWith('Найди ошибку'))
+      tasks.push({
+        id: exercise.id,
+        kind: 'negative-control',
+        compiler: 'clang',
+        standard: 'c23',
+        mode: exercise.diagnostics ?? 'sanitizers',
+        source: buildSubmissionSource(exercise, exercise.starterCode),
+        cases,
+        check: (result) => !graded(exercise)(result),
+      });
   }
-  console.log(`${ok ? 'OK' : 'FAIL'} ${task.compiler} ${task.id}`);
-  checks.push({
-    id: task.id,
-    compiler: task.compiler,
-    standard: task.standard,
-    fingerprint,
-    ok,
-    tests: task.cases.length,
+  const mdx = mdxById.get(lesson.id);
+  if (!mdx) throw new Error(`Нет lesson.mdx для ${lesson.id}`);
+  extractExamples(readFileSync(mdx, 'utf8')).forEach((example, index) => {
+    const id = `${lesson.id}#${index + 1}`;
+    const cases = [{ stdin: example.stdin }];
+    const standard: Standard = example.lang === 'cpp' ? 'c++23' : 'c23';
+    if (example.marker === 'compile')
+      tasks.push({
+        id,
+        kind: 'compile-error',
+        standard,
+        compiler: 'gcc',
+        mode: 'none',
+        source: example.source,
+        cases,
+        check: (result) => result.compilation.status !== 'ok',
+      });
+    else if (example.marker === 'memory')
+      tasks.push({
+        id,
+        kind: 'memory-example',
+        standard,
+        compiler: 'clang',
+        mode: 'sanitizers',
+        source: example.source,
+        cases,
+        check: (result) => isSanitizerReport(result.runs[0]?.stderr ?? ''),
+      });
+    else if (example.marker === 'runtime')
+      tasks.push({
+        id,
+        kind: 'runtime-error',
+        standard,
+        compiler: 'clang',
+        mode: 'sanitizers',
+        source: example.source,
+        cases,
+        check: (result) =>
+          result.compilation.status === 'ok' &&
+          (result.runs[0]?.status !== 'ok' || result.runs[0]?.exitCode !== 0),
+      });
+    else
+      tasks.push({
+        id,
+        kind: 'example',
+        standard,
+        compiler: 'clang',
+        mode: 'sanitizers',
+        source: example.source,
+        cases,
+        check: (result) => {
+          const run = result.runs[0];
+          return (
+            result.compilation.status === 'ok' &&
+            run?.status === 'ok' &&
+            run.exitCode === 0 &&
+            (example.stdout === undefined || displayed(run.stdout) === displayed(example.stdout))
+          );
+        },
+      });
   });
+}
+
+// Каждый тест — новый контейнер; умеренный параллелизм оставляет cleanup предсказуемым.
+const queue = new JobQueue(Number(process.env.ALGORITHMS_JOBS ?? 2), 4000, 86_400_000);
+const checks = await Promise.all(
+  tasks.map((task) =>
+    queue.run(async () => {
+      const fingerprint = createHash('sha256')
+        .update(
+          JSON.stringify({
+            source: task.source,
+            cases: task.cases,
+            mode: task.mode,
+            compiler: task.compiler,
+            standard: task.standard,
+          }),
+        )
+        .digest('hex');
+      let ok = false;
+      try {
+        const result = await executeSandbox(
+          {
+            source: task.source,
+            compiler: task.compiler,
+            standard: task.standard,
+            stdin: '',
+            cases: task.cases,
+            timeoutMs: 10_000,
+          },
+          task.mode,
+        );
+        ok = task.check(result);
+        if (!ok) console.error(JSON.stringify({ id: task.id, kind: task.kind, result }));
+      } catch (error) {
+        console.error(`${task.id}: ${String(error)}`);
+      }
+      console.log(`${ok ? 'OK' : 'FAIL'} ${task.kind} ${task.compiler} ${task.id}`);
+      return {
+        id: task.id,
+        kind: task.kind,
+        compiler: task.compiler,
+        mode: task.mode,
+        fingerprint,
+        ok,
+        tests: task.cases.length,
+      };
+    }),
+  ),
+);
+const count = (kind: Task['kind']) => checks.filter((check) => check.kind === kind).length;
+const summary = {
+  solutions: count('solution'),
+  negativeControls: count('negative-control'),
+  examples: count('example'),
+  memoryExamples: count('memory-example'),
+  compileErrors: count('compile-error'),
+  runtimeErrors: count('runtime-error'),
+  runs: checks.reduce((sum, check) => sum + check.tests, 0),
+  failed: checks.filter((check) => !check.ok).length,
+};
+if (!filters.length) {
   mkdirSync('docs/verification', { recursive: true });
   writeFileSync(
     'docs/verification/algorithms.json',
     JSON.stringify(
-      {
-        verifiedAt: new Date().toISOString(),
-        complete: checks.length === tasks.length,
-        diagnostics: 'ASan/UBSan',
-        checks,
-      },
+      { verifiedAt: new Date().toISOString(), diagnostics: 'ASan/UBSan', summary, checks },
       null,
       2,
     ) + '\n',
   );
 }
-if (checks.some((check) => !check.ok)) process.exitCode = 1;
+console.log(JSON.stringify(summary));
+if (summary.failed) process.exitCode = 1;

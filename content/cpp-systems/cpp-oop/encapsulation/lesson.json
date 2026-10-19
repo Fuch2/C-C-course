@@ -1,131 +1,546 @@
 {
   "id": "oop-encapsulation",
-  "title": "Инкапсуляция: сохраняем инвариант операции",
-  "description": "Инкапсуляция — контроль допустимых изменений, а не количество private строк. Для диапазона low <= high изменение обеих границ является одной операцией. Два независимых setter создают промежуточные ошибочные состояния. Метод try_configure проверяет весь запрос и фиксирует его целиком либо сохраняет старый диапазон.",
+  "title": "Инкапсуляция: договор класса",
+  "description": "Договор операции: предусловие, постусловие и инвариант класса; кто и как проверяет предусловие — отказ результатом для ожидаемых ситуаций, assert для ошибок в программе; строгая гарантия «всё или ничего» и двухфазные операции; проверка инварианта закрытым методом; контракты pre и post в C++26.",
   "moduleId": "cpp-oop",
-  "order": 9,
-  "difficulty": "advanced",
+  "order": 8,
+  "difficulty": "intermediate",
   "estimatedMinutes": 45,
   "prerequisites": ["oop-this"],
   "objectives": [
-    "Применить Инкапсуляция: сохраняем инвариант операции в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Формулировать предусловия, постусловия и инвариант класса",
+    "Выбирать реакцию на нарушение предусловия",
+    "Писать операции со строгой гарантией",
+    "Проверять инвариант закрытым методом"
   ],
-  "tags": ["C++20", "ООП", "Инкапсуляция: сохраняем инвариант операции"],
+  "tags": ["C++23", "ООП", "Инкапсуляция", "Инвариант", "Контракты"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-encapsulation-exercise",
-    "title": "Практика: Инкапсуляция: сохраняем инвариант операции",
-    "description": "Range начинается с [0,10]. Реализуйте bool configure(int low,int high), отклоняющий low>high без изменений, и int width() const. solve(a,b) вызывает configure(a,b) и возвращает ширину итогового состояния. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Ограниченный стек",
+    "description": "Первое число — ёмкость стека. Опишите класс `BoundedStack` с методами `bool push(int)` (отказ, если стек полон), `std::optional<int> pop()` (пусто, если стек пуст), `int top() const` (предусловие: стек не пуст — проверяйте `assert`) и `std::size_t size() const`.\n\nКоманды: `push x` (`ок` или `полон`), `pop` (значение или `пусто`), `top` (значение или `пусто` — проверяйте размер в `main` перед вызовом), `size`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(2, 8)",
-        "output": "6\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "2\npush 1\npush 2\npush 3\ntop\npop\npop\npop\n",
+        "output": "ок\nок\nполон\n2\n2\n1\nпусто\n"
       },
       {
-        "input": "solve(9, 2)",
-        "output": "10\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "1\ntop\nsize\n",
+        "output": "пусто\n0\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Ёмкость от 1 до 100; команд не больше 100; значения по модулю до 10⁹."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "Внутри — std::vector<int> и поле ёмкости. push: if (items_.size() == capacity_) return false;.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "top — предусловие: assert(!items_.empty()). В main перед вызовом top проверьте size() — это обязанность клиента.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [2, 8],
-        "expected": "6\n"
+        "stdin": "2\npush 1\npush 2\npush 3\ntop\npop\npop\npop\n",
+        "expected": "ок\nок\nполон\n2\n2\n1\nпусто\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [9, 2],
-        "expected": "10\n"
+        "stdin": "1\ntop\nsize\n",
+        "expected": "пусто\n0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [-5, -5],
+        "id": "hidden-1",
+        "name": "Ёмкость 1",
+        "stdin": "1\npush 5\npush 6\nsize\n",
+        "expected": "ок\nполон\n1\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Отрицательные",
+        "stdin": "3\npush -1\npush -2\ntop\nsize\n",
+        "expected": "ок\nок\n-2\n2\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Большое значение",
+        "stdin": "100\npush 1000000000\ntop\n",
+        "expected": "ок\n1000000000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Пустой стек",
+        "stdin": "2\npop\npush 1\npop\npop\n",
+        "expected": "пусто\nок\n1\nпусто\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Освобождение места",
+        "stdin": "2\npush 1\npop\npush 2\npush 3\npush 4\nsize\n",
+        "expected": "ок\n1\nок\nок\nполон\n2\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Только размер",
+        "stdin": "5\nsize\n",
         "expected": "0\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [-1000, 1000],
-        "expected": "2000\n"
+        "id": "hidden-7",
+        "name": "Вершина меняется",
+        "stdin": "3\npush 1\npush 2\npush 3\ntop\npop\ntop\n",
+        "expected": "ок\nок\nок\n3\n3\n2\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Повторы",
+        "stdin": "2\npush 7\npush 7\npush 7\npop\npop\npop\n",
+        "expected": "ок\nок\nполон\n7\n7\nпусто\n"
       }
     ],
-    "referenceSolution": "class Range { int low_{0}, high_{10}; public: bool configure(int l,int h) { if(l>h) return false; low_=l; high_=h; return true; } int width() const { return high_-low_; } };\nint solve(int a,int b) { Range r; r.configure(a,b); return r.width(); }",
-    "solutionExplanation": "Range начинается с [0,10]. Реализуйте bool configure(int low,int high), отклоняющий low>high без изменений, и int width() const. solve(a,b) вызывает configure(a,b) и возвращает ширину итогового состояния. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Автоматические getter/setter для каждого поля разрывают атомарный смысл настройки. При ошибке нельзя менять хотя бы одну границу. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <cassert>\n#include <iostream>\n#include <optional>\n#include <print>\n#include <string>\n#include <vector>\n\nclass BoundedStack {\npublic:\n    explicit BoundedStack(std::size_t capacity) : capacity_(capacity) {}\n\n    bool push(int value) {\n        if (items_.size() == capacity_) {\n            return false;\n        }\n        items_.push_back(value);\n        return true;\n    }\n\n    std::optional<int> pop() {\n        if (items_.empty()) {\n            return std::nullopt;\n        }\n        int value = items_.back();\n        items_.pop_back();\n        return value;\n    }\n\n    int top() const {\n        assert(!items_.empty());\n        return items_.back();\n    }\n\n    std::size_t size() const {\n        return items_.size();\n    }\n\nprivate:\n    std::size_t capacity_;\n    std::vector<int> items_;\n};\n\nint main() {\n    std::size_t capacity;\n    std::cin >> capacity;\n    BoundedStack stack(capacity);\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"push\") {\n            int x;\n            std::cin >> x;\n            std::println(\"{}\", stack.push(x) ? \"ок\" : \"полон\");\n        } else if (command == \"pop\") {\n            if (auto value = stack.pop()) {\n                std::println(\"{}\", *value);\n            } else {\n                std::println(\"пусто\");\n            }\n        } else if (command == \"top\") {\n            if (stack.size() == 0) {\n                std::println(\"пусто\");\n            } else {\n                std::println(\"{}\", stack.top());\n            }\n        } else {\n            std::println(\"{}\", stack.size());\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "У трёх операций три разных договора. Переполнение и снятие с пустого стека — обычные ситуации, и `push` и `pop` сообщают о них результатом. У `top` предусловие «стек не пуст» возложено на клиента: `main` проверяет `size()` до вызова, а `assert` внутри ловит ошибку программиста, если проверку забудут.\n\nИнвариант «размер не больше ёмкости» поддерживается единственным местом, где стек растёт, — `push`.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-encapsulation-task-2",
+      "title": "Бронирование",
+      "description": "Переговорная комната бронируется на интервалы `[начало, конец)` в минутах от начала дня. Опишите класс `Booking`, который хранит интервалы без пересечений, упорядоченными по началу. Интерфейс:\n\n- `std::string add(int start, int end)` — `ок`, `ошибка` (если `start >= end`) или `занято` (если пересекается с существующей бронью; касание концами — не пересечение);\n- `bool cancel(int start)` — снять бронь, которая начинается в `start`;\n- `void print() const` — брони через пробел в виде `начало-конец` или `пусто`.\n\nКоманды: `add s e`, `cancel s` (`отменено` или `нет брони`), `list`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "add 60 120\nadd 120 180\nadd 90 150\nlist\n",
+          "output": "ок\nок\nзанято\n60-120 120-180\n"
+        },
+        {
+          "input": "add 10 10\ncancel 5\nlist\n",
+          "output": "ошибка\nнет брони\nпусто\n"
+        }
+      ],
+      "constraints": ["Числа от 0 до 1440; команд не больше 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Интервалы [a, b) и [c, d) пересекаются, если a < d && c < b.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Храните std::vector<std::pair<int, int>>. Вставка на место: std::ranges::lower_bound по паре {start, end} — или просто push_back и std::ranges::sort.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add 60 120\nadd 120 180\nadd 90 150\nlist\n",
+          "expected": "ок\nок\nзанято\n60-120 120-180\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "add 10 10\ncancel 5\nlist\n",
+          "expected": "ошибка\nнет брони\nпусто\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Порядок",
+          "stdin": "add 300 400\nadd 100 200\nlist\n",
+          "expected": "ок\nок\n100-200 300-400\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Весь день",
+          "stdin": "add 0 1440\nadd 500 501\n",
+          "expected": "ок\nзанято\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Отмена освобождает",
+          "stdin": "add 100 200\ncancel 100\nadd 150 160\nlist\n",
+          "expected": "ок\nотменено\nок\n150-160\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Касание",
+          "stdin": "add 100 200\nadd 50 100\nadd 200 250\nlist\n",
+          "expected": "ок\nок\nок\n50-100 100-200 200-250\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Перекрытие краёв",
+          "stdin": "add 100 200\nadd 99 101\nadd 199 300\n",
+          "expected": "ок\nзанято\nзанято\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Вложенный",
+          "stdin": "add 100 200\nadd 120 130\n",
+          "expected": "ок\nзанято\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Обратный",
+          "stdin": "add 200 100\nlist\n",
+          "expected": "ошибка\nпусто\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Несколько броней",
+          "stdin": "add 1 2\nadd 3 4\nadd 5 6\ncancel 3\nlist\ncancel 3\n",
+          "expected": "ок\nок\nок\nотменено\n1-2 5-6\nнет брони\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <format>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Booking {\npublic:\n    std::string add(int start, int end) {\n        if (start >= end) {\n            return \"ошибка\";\n        }\n        for (const auto &[s, e] : slots_) {\n            if (start < e && s < end) {\n                return \"занято\";\n            }\n        }\n        slots_.insert(std::ranges::lower_bound(slots_, std::pair{start, end}), {start, end});\n        return \"ок\";\n    }\n\n    bool cancel(int start) {\n        auto it = std::ranges::find(slots_, start, &std::pair<int, int>::first);\n        if (it == slots_.end()) {\n            return false;\n        }\n        slots_.erase(it);\n        return true;\n    }\n\n    void print() const {\n        if (slots_.empty()) {\n            std::println(\"пусто\");\n            return;\n        }\n        std::string line;\n        for (const auto &[s, e] : slots_) {\n            line += std::format(\"{}{}-{}\", line.empty() ? \"\" : \" \", s, e);\n        }\n        std::println(\"{}\", line);\n    }\n\nprivate:\n    std::vector<std::pair<int, int>> slots_;\n};\n\nint main() {\n    Booking room;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"add\") {\n            int s, e;\n            std::cin >> s >> e;\n            std::println(\"{}\", room.add(s, e));\n        } else if (command == \"cancel\") {\n            int s;\n            std::cin >> s;\n            std::println(\"{}\", room.cancel(s) ? \"отменено\" : \"нет брони\");\n        } else {\n            room.print();\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Инвариант класса — «интервалы не пересекаются и упорядочены по началу». `add` сначала проверяет все условия и только потом вставляет — неудачная попытка ничего не меняет. Вставка через `lower_bound` ставит интервал на его место, поэтому `print` не сортирует ничего.\n\nДля полуоткрытых интервалов условие пересечения симметрично и короткое: `a < d && c < b`. Брони `[60, 120)` и `[120, 180)` лишь касаются и не пересекаются — так удобно бронировать встречи «встык».",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-encapsulation-task-3",
+      "title": "Найди ошибку: заказ наполовину",
+      "description": "Склад выдаёт заказ **целиком или никак**: если хотя бы одного товара не хватает, ничего не списывается. Команды:\n\n- `add товар n` — приход;\n- `order k товар₁ n₁ … товарₖ nₖ` — заказ (`выдано` или `отказ`);\n- `count товар` — остаток.\n\nПосле отклонённых заказов остатки оказываются неверными. Найдите и исправьте ошибку в `take_all`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <vector>\n\nstruct Request {\n    std::string item;\n    int quantity;\n};\n\nclass Warehouse {\npublic:\n    void add(const std::string &item, int quantity) {\n        stock_[item] += quantity;\n    }\n\n    // Выдаёт весь заказ или не выдаёт ничего.\n    bool take_all(const std::vector<Request> &order) {\n        for (const Request &r : order) {\n            if (count(r.item) < r.quantity) {\n                return false;\n            }\n            stock_[r.item] -= r.quantity;\n        }\n        return true;\n    }\n\n    int count(const std::string &item) const {\n        auto it = stock_.find(item);\n        return it == stock_.end() ? 0 : it->second;\n    }\n\nprivate:\n    std::map<std::string, int> stock_;\n};\n\nint main() {\n    Warehouse w;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"add\") {\n            std::string item;\n            int n;\n            std::cin >> item >> n;\n            w.add(item, n);\n        } else if (command == \"order\") {\n            int k;\n            std::cin >> k;\n            std::vector<Request> order(static_cast<std::size_t>(k));\n            for (Request &r : order) {\n                std::cin >> r.item >> r.quantity;\n            }\n            std::println(\"{}\", w.take_all(order) ? \"выдано\" : \"отказ\");\n        } else {\n            std::string item;\n            std::cin >> item;\n            std::println(\"{}: {}\", item, w.count(item));\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "add болт 10\nadd гайка 3\norder 2 болт 4 гайка 5\ncount болт\n",
+          "output": "отказ\nболт: 10\n"
+        },
+        {
+          "input": "add a 5\norder 1 a 5\ncount a\n",
+          "output": "выдано\na: 0\n"
+        }
+      ],
+      "constraints": ["Команд не больше 50; количества от 1 до 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что происходит с товарами, которые идут в заказе раньше того, которого не хватило?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Проверка и списание в одном цикле нарушают строгую гарантию. Разделите их: первый цикл только проверяет, второй только списывает.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add болт 10\nadd гайка 3\norder 2 болт 4 гайка 5\ncount болт\n",
+          "expected": "отказ\nболт: 10\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "add a 5\norder 1 a 5\ncount a\n",
+          "expected": "выдано\na: 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "add a 1\nadd b 1\norder 2 a 1 c 1\ncount a\n",
+          "expected": "отказ\na: 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "add x 10\nadd y 10\norder 3 x 5 y 5 x 6\ncount x\ncount y\n",
+          "expected": "выдано\nx: -1\ny: 5\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "add a 3\norder 2 a 2 b 1\norder 1 a 3\ncount a\n",
+          "expected": "отказ\nвыдано\na: 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "add p 100\nadd q 1\norder 2 p 50 q 2\norder 2 p 50 q 1\ncount p\ncount q\n",
+          "expected": "отказ\nвыдано\np: 50\nq: 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "add a 1\norder 1 a 2\ncount a\n",
+          "expected": "отказ\na: 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "add m 7\nadd n 7\norder 2 m 7 n 8\ncount m\n",
+          "expected": "отказ\nm: 7\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "add k 1000000\norder 2 k 500000 z 1\ncount k\n",
+          "expected": "отказ\nk: 1000000\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "add a 2\nadd b 2\nadd c 2\norder 3 a 1 b 1 c 3\ncount a\ncount b\n",
+          "expected": "отказ\na: 2\nb: 2\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <vector>\n\nstruct Request {\n    std::string item;\n    int quantity;\n};\n\nclass Warehouse {\npublic:\n    void add(const std::string &item, int quantity) {\n        stock_[item] += quantity;\n    }\n\n    // Выдаёт весь заказ или не выдаёт ничего.\n    bool take_all(const std::vector<Request> &order) {\n        for (const Request &r : order) {\n            if (count(r.item) < r.quantity) {\n                return false;\n            }\n        }\n        for (const Request &r : order) {\n            stock_[r.item] -= r.quantity;\n        }\n        return true;\n    }\n\n    int count(const std::string &item) const {\n        auto it = stock_.find(item);\n        return it == stock_.end() ? 0 : it->second;\n    }\n\nprivate:\n    std::map<std::string, int> stock_;\n};\n\nint main() {\n    Warehouse w;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"add\") {\n            std::string item;\n            int n;\n            std::cin >> item >> n;\n            w.add(item, n);\n        } else if (command == \"order\") {\n            int k;\n            std::cin >> k;\n            std::vector<Request> order(static_cast<std::size_t>(k));\n            for (Request &r : order) {\n                std::cin >> r.item >> r.quantity;\n            }\n            std::println(\"{}\", w.take_all(order) ? \"выдано\" : \"отказ\");\n        } else {\n            std::string item;\n            std::cin >> item;\n            std::println(\"{}: {}\", item, w.count(item));\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Цикл проверял и списывал товары по очереди. Когда очередь доходила до недостающего товара, метод возвращал отказ — но товары, стоявшие в заказе раньше, уже были списаны. Клиент слышал «отказ» и считал, что склад не изменился, а остатки уменьшились.\n\nДвухфазная операция даёт строгую гарантию: фаза проверки ничего не меняет и может отказать, фаза применения не может отказать, потому что всё уже проверено. Этот приём — основа транзакций в базах данных и надёжных операций над несколькими объектами.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-encapsulation-task-4",
+      "title": "Касса",
+      "description": "Первое число — наличные в кассе на начало смены. Опишите класс `CashRegister` с инвариантом **«наличные = начальная сумма + продажи − возвраты»** и операциями, которые возвращают `std::expected<void, std::string>`:\n\n- `sell(amount)` — продажа;\n- `refund(amount)` — возврат.\n\nОшибки (проверяйте по порядку): `сумма должна быть положительной`; для возврата — `возврат больше продаж` (возвраты за смену не могут превысить продажи) и `в кассе недостаточно денег`.\n\nПроверяйте инвариант закрытым методом через `assert` в конце каждой операции. Команды: `sell n`, `refund n` (`ок` или `ошибка: текст`), `report` — `в кассе C, продаж S, возвратов R`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "100\nsell 50\nrefund 70\nrefund 30\nreport\n",
+          "output": "ок\nошибка: возврат больше продаж\nок\nв кассе 120, продаж 50, возвратов 30\n"
+        },
+        {
+          "input": "0\nsell 0\nreport\n",
+          "output": "ошибка: сумма должна быть положительной\nв кассе 0, продаж 0, возвратов 0\n"
+        }
+      ],
+      "constraints": ["Суммы по модулю до 10⁹; команд не больше 50."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Поля: initial_, cash_, sold_, refunded_. Инвариант: cash_ == initial_ + sold_ - refunded_.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "В каждой операции сначала все проверки с return std::unexpected(\"…\"), затем изменения, затем assert(invariant()) и return {};.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "100\nsell 50\nrefund 70\nrefund 30\nreport\n",
+          "expected": "ок\nошибка: возврат больше продаж\nок\nв кассе 120, продаж 50, возвратов 30\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0\nsell 0\nreport\n",
+          "expected": "ошибка: сумма должна быть положительной\nв кассе 0, продаж 0, возвратов 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ровно продажи",
+          "stdin": "0\nsell 100\nrefund 100\nrefund 1\nreport\n",
+          "expected": "ок\nок\nошибка: возврат больше продаж\nв кассе 0, продаж 100, возвратов 100\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Отрицательная начальная сумма",
+          "stdin": "-50\nsell 30\nrefund 30\n",
+          "expected": "ок\nошибка: в кассе недостаточно денег\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Возврат без продаж",
+          "stdin": "10\nrefund 5\n",
+          "expected": "ошибка: возврат больше продаж\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Большие суммы",
+          "stdin": "1000000000\nsell 1000000000\nsell 1000000000\nreport\n",
+          "expected": "ок\nок\nв кассе 3000000000, продаж 2000000000, возвратов 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Неположительные возвраты",
+          "stdin": "0\nsell 10\nrefund -1\nrefund 0\nreport\n",
+          "expected": "ок\nошибка: сумма должна быть положительной\nошибка: сумма должна быть положительной\nв кассе 10, продаж 10, возвратов 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Несколько продаж",
+          "stdin": "5\nsell 1\nsell 2\nsell 3\nrefund 6\nreport\n",
+          "expected": "ок\nок\nок\nок\nв кассе 5, продаж 6, возвратов 6\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Мало наличных",
+          "stdin": "-100\nsell 20\nrefund 10\nreport\n",
+          "expected": "ок\nошибка: в кассе недостаточно денег\nв кассе -80, продаж 20, возвратов 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Только отчёт",
+          "stdin": "100\nreport\n",
+          "expected": "в кассе 100, продаж 0, возвратов 0\n"
+        }
+      ],
+      "referenceSolution": "#include <cassert>\n#include <expected>\n#include <iostream>\n#include <print>\n#include <string>\n\nclass CashRegister {\npublic:\n    explicit CashRegister(long long initial) : initial_(initial), cash_(initial) {}\n\n    std::expected<void, std::string> sell(long long amount) {\n        if (amount <= 0) {\n            return std::unexpected(\"сумма должна быть положительной\");\n        }\n        cash_ += amount;\n        sold_ += amount;\n        assert(invariant());\n        return {};\n    }\n\n    std::expected<void, std::string> refund(long long amount) {\n        if (amount <= 0) {\n            return std::unexpected(\"сумма должна быть положительной\");\n        }\n        if (refunded_ + amount > sold_) {\n            return std::unexpected(\"возврат больше продаж\");\n        }\n        if (amount > cash_) {\n            return std::unexpected(\"в кассе недостаточно денег\");\n        }\n        cash_ -= amount;\n        refunded_ += amount;\n        assert(invariant());\n        return {};\n    }\n\n    void report() const {\n        std::println(\"в кассе {}, продаж {}, возвратов {}\", cash_, sold_, refunded_);\n    }\n\nprivate:\n    bool invariant() const {\n        return cash_ == initial_ + sold_ - refunded_;\n    }\n\n    long long initial_;\n    long long cash_;\n    long long sold_ = 0;\n    long long refunded_ = 0;\n};\n\nint main() {\n    long long initial;\n    std::cin >> initial;\n    CashRegister register_(initial);\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"report\") {\n            register_.report();\n            continue;\n        }\n        long long amount;\n        std::cin >> amount;\n        auto result = command == \"sell\" ? register_.sell(amount) : register_.refund(amount);\n        if (result) {\n            std::println(\"ок\");\n        } else {\n            std::println(\"ошибка: {}\", result.error());\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Инвариант кассы связывает четыре поля, и его невозможно нарушить снаружи: поля закрыты, а обе операции проверяют всё до изменений. `assert(invariant())` в конце операций — страховка от ошибок в самом классе: если когда-нибудь новый метод забудет обновить `sold_`, программа остановится в этом методе, а не напечатает неверный отчёт через неделю.\n\nОшибки возврата — ожидаемые ситуации, а не ошибки программы, поэтому они возвращаются как `std::expected` с причиной. Порядок проверок задаёт, какую причину увидит пользователь, если нарушены сразу несколько условий.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-encapsulation-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Как обновить две связанные границы безопасно?",
-        "options": [
-          "Одной операцией после проверки обеих",
-          "Двумя независимыми присваиваниями с поздней проверкой"
-        ],
-        "correct": 0,
-        "explanation": "Сформулируйте предусловия, результат и состояние при отказе. Так тесты могут проверять не только счастливый путь. Не отдавайте изменяемые ссылки на границы: это обходит проверку. Значение состояния можно вернуть копией небольшого struct. Класс не обязан скрывать каждый факт; он скрывает способ представления и защищает отношения между данными. В проекте фильтр будет хранить согласованные границы и единую политику включения крайних значений."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <optional>\n#include <print>\n#include <vector>\n\nclass Queue {\npublic:\n    void push(int x) { items_.push_back(x); }\n    std::optional<int> pop() {\n        if (head_ == items_.size()) return std::nullopt;\n        return items_[head_++];\n    }\n\nprivate:\n    std::vector<int> items_;\n    std::size_t head_ = 0;\n};\n\nint main() {\n    Queue q;\n    q.push(7);\n    q.push(8);\n    int a = q.pop().value_or(0);\n    int b = q.pop().value_or(0);\n    int c = q.pop().value_or(0);\n    std::println(\"{} {} {}\", a, b, c);\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Очередь отдаёт элементы в порядке добавления; третий pop возвращает пустой optional.",
+        "type": "text",
+        "answers": ["7 8 0"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "0 1", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 0 1. Инкапсуляция — контроль допустимых изменений, а не количество private строк. Для диапазона low <= high изменение обеих границ является одной операцией. Два независимых setter создают промежуточные ошибочные состояния. Метод try_configure проверяет весь запрос и фиксирует его целиком либо сохраняет старый диапазон."
+        "id": "q2",
+        "question": "Что такое предусловие операции?",
+        "explanation": "Постусловие — гарантия после вызова, инвариант — правило до и после любого открытого метода.",
+        "options": [
+          "Условие, которое должно быть верно до вызова, — например, «стек не пуст» для pop",
+          "Условие, которое метод гарантирует после вызова",
+          "Правило, верное для объекта всегда",
+          "Проверка в конструкторе"
+        ],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q3",
+        "question": "Почему порядок вывода у std::println(\"{} {}\", s.pop(), s.pop()) может оказаться неожиданным?",
+        "explanation": "Вызовы с побочными эффектами выносят в отдельные инструкции.",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Автоматические getter/setter для каждого поля разрывают атомарный смысл настройки. При ошибке нельзя менять хотя бы одну границу."
+          "Порядок вычисления аргументов функции в C++ не определён",
+          "println вызывает pop дважды для каждого аргумента",
+          "Аргументы всегда вычисляются справа налево",
+          "Такой вызов не скомпилируется"
         ],
-        "correct": 1,
-        "explanation": "Предложите тест, который сначала устанавливает новый корректный диапазон, затем отправляет обратные границы. Старый диапазон должен сохраниться целиком. Условие low<=high не гарантирует корректность единиц: это отдельная часть контракта, которую нельзя вывести из int."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Как правильно реагировать на ввод пользователя, нарушающий предусловие (например, отрицательный возраст)?",
+        "explanation": "assert исчезает в выпускной сборке и предназначен для ошибок в программе, а не в данных.",
+        "options": [
+          "Проверить явно и сообщить об ошибке результатом или исключением",
+          "assert(age >= 0)",
+          "Ничего: такое значение невозможно",
+          "Привести к нулю молча"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что означает строгая гарантия операции?",
+        "explanation": "Как транзакция: сначала все проверки, потом все изменения.",
+        "options": [
+          "Операция либо выполняется целиком, либо не меняет объект вовсе",
+          "Операция никогда не бросает исключений",
+          "Операция выполняется за постоянное время",
+          "Операция может изменить объект частично, но сообщит об этом"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Склад: болтов 10, гаек 3. Метод проверяет и списывает в одном цикле. Заказ: 4 болта и 5 гаек. Сколько болтов останется после отказа?",
+        "explanation": "Болты списаны до того, как обнаружилась нехватка гаек. Строгая гарантия оставила бы 10.",
+        "type": "text",
+        "answers": ["6"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q7",
+        "question": "Зачем вызывать assert(invariant()) в конце каждой изменяющей операции?",
+        "explanation": "С -DNDEBUG проверки исчезают и ничего не стоят; при разработке они указывают на виновника.",
+        "options": [
+          "Чтобы ошибка проявилась в том методе, который её внёс, а не позже",
+          "Чтобы исправить нарушенный инвариант",
+          "Это обязательно для компиляции",
+          "Чтобы проверки работали в выпускной сборке"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Что даёт синтаксис int top() const pre(!empty()); из C++26?",
+        "explanation": "Контракты C++26 — договор операции в синтаксисе языка. В GCC 14 и Clang 19 их ещё нет.",
+        "options": [
+          "Записывает предусловие в объявлении функции — его видят читатель, инструменты и компилятор",
+          "Делает функцию constexpr",
+          "Запрещает вызывать функцию у константы",
+          "Ничего: это комментарий"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q9",
+        "question": "Какие ситуации разумно сообщать результатом (bool, optional, expected), а не assert? Выберите все.",
+        "explanation": "Ожидаемые ситуации обрабатывает клиент. Ошибка в самом классе — дело assert.",
+        "type": "multiple",
+        "options": [
+          "Нет места в ограниченном буфере",
+          "Пользователь ввёл несуществующий номер",
+          "Файл не найден",
+          "Метод класса забыл обновить счётчик"
+        ],
+        "correct": [0, 1, 2]
       }
     ]
   }

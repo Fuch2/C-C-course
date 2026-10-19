@@ -1,135 +1,533 @@
 {
   "id": "algo-quick",
-  "title": "Быстрая сортировка — Quick sort",
-  "description": "Выбираем опорное значение и делим диапазон на элементы меньше, равные и больше него.",
+  "title": "Быстрая сортировка",
+  "description": "Разбиение относительно опорного элемента и схема Ломуто; рекурсивная быстрая сортировка; хороший и плохой опорный, O(n log n) в среднем и O(n²) в худшем случае; выбор опорного; глубина рекурсии и равные элементы; qsort и std::sort.",
   "moduleId": "algorithms-structures",
-  "order": 14,
-  "difficulty": "intermediate",
-  "estimatedMinutes": 40,
+  "order": 15,
+  "difficulty": "advanced",
+  "estimatedMinutes": 55,
   "prerequisites": ["algo-merge"],
   "objectives": [
-    "Объяснить инвариант: Раскладываем карточки по трём коробкам, а затем разбираем только две крайние.",
-    "Обосновать время: В среднем O(n log n) при подходящей модели входов; худший O(n²).",
-    "Оценить память и компромиссы: Малая дополнительная память против отсутствия стабильности и риска плохих разбиений."
+    "Реализовывать разбиение Ломуто и объяснять его инвариант",
+    "Писать быструю сортировку с корректными границами рекурсии",
+    "Объяснять, от чего зависит худший случай, и выбирать опорный элемент",
+    "Находить k-ю порядковую статистику быстрым выбором"
   ],
-  "tags": ["алгоритмы", "C17", "Быстрая сортировка — Quick sort"],
+  "tags": ["Сортировка", "Быстрая сортировка", "Разбиение", "Опорный элемент"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "algo-quick-exercise",
-    "title": "Сортировка измерений: quick",
-    "description": "Ввод n (0…256) и n int −1000…1000. Отсортируйте по неубыванию алгоритмом урока и выведите числа через пробел, затем перевод строки. Пустой массив даёт пустую строку. Не вызывайте qsort. Тесты проверяют результат; выбор алгоритма обоснуйте его инвариантом.",
-    "difficulty": "intermediate",
+    "id": "algo-quick-task-1",
+    "title": "Разбиение",
+    "description": "Прочитайте `n` и `n` целых чисел. Выполните **одно** разбиение Ломуто всего массива с опорным — последним элементом:\n\n```c\npivot = values[n - 1]; store = 0;\nfor (i = 0; i < n - 1; i++)\n    if (values[i] < pivot) обменять values[i] и values[store], store++;\nобменять values[store] и values[n - 1];\n```\n\nНапечатайте итоговую позицию опорного (с нуля) и на следующей строке — массив после разбиения.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "5 3 -1 3 0 2",
-        "output": "-1 0 2 3 3\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "8\n7 2 1 8 6 3 5 4\n",
+        "output": "3\n2 1 3 4 6 7 5 8\n"
       },
       {
-        "input": "0",
-        "output": "\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "3\n1 2 3\n",
+        "output": "2\n1 2 3\n"
       }
     ],
-    "constraints": [
-      "Используйте C17 и диапазоны входа из условия.",
-      "Выводите только требуемый результат.",
-      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
-    ],
+    "constraints": ["1 ≤ n ≤ 1000; числа int."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Раскладываем карточки по трём коробкам, а затем разбираем только две крайние."
+        "text": "store — граница: всё левее store меньше опорного. Обмен values[i] с values[store] переносит очередной меньший элемент на эту границу.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "После обмена a[i] с ещё не изученным правым элементом нельзя без проверки увеличивать i."
-      },
-      {
-        "id": "hint-3",
-        "order": 3,
-        "text": "Для [3,1,3,2,3] при pivot=3 средняя область собирает три тройки, рекурсия нужна только для [1,2]."
+        "text": "Когда i == store, обмен ничего не меняет, но store всё равно нужно увеличить.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "5 3 -1 3 0 2",
-        "expected": "-1 0 2 3 3\n"
+        "stdin": "8\n7 2 1 8 6 3 5 4\n",
+        "expected": "3\n2 1 3 4 6 7 5 8\n"
       },
-      { "id": "case-2", "name": "Пример 2", "stdin": "0", "expected": "\n" }
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "3\n1 2 3\n",
+        "expected": "2\n1 2 3\n"
+      }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "1 -8",
-        "expected": "-8\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "1\n5\n",
+        "expected": "0\n5\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "5 5 4 3 2 1",
-        "expected": "1 2 3 4 5\n"
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "3\n3 2 1\n",
+        "expected": "0\n1 2 3\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный сценарий 3",
-        "stdin": "4 2 2 2 2",
-        "expected": "2 2 2 2\n"
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "4\n5 5 5 5\n",
+        "expected": "0\n5 5 5 5\n"
       },
       {
-        "id": "case-6",
-        "name": "Граничный сценарий 4",
-        "stdin": "5 -3 -1 0 1 2",
-        "expected": "-3 -1 0 1 2\n"
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "5\n9 1 8 2 5\n",
+        "expected": "2\n1 2 5 9 8\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "6\n1 6 2 5 3 4\n",
+        "expected": "3\n1 2 3 4 6 5\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "5\n-1 3 -2 4 0\n",
+        "expected": "2\n-1 -2 0 4 3\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "4\n2147483647 -2147483648 0 1\n",
+        "expected": "2\n-2147483648 0 1 2147483647\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "7\n4 4 1 4 9 4 4\n",
+        "expected": "1\n1 4 4 4 9 4 4\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\nstatic void swap(int *a,int *b){int temp=*a;*a=*b;*b=temp;}\nstatic void quick(int *a,int left,int right){\n    /* Три области: меньше опорного, равно, больше. Интервал [left,right). */\n    while(right-left>1){\n        int pivot=a[left+(right-left)/2],lt=left,i=left,gt=right;\n        while(i<gt){\n            if(a[i]<pivot)swap(&a[lt++],&a[i++]);\n            else if(a[i]>pivot)swap(&a[i],&a[--gt]);\n            else ++i;\n        }\n        /* Рекурсия только в меньшую часть ограничивает глубину стека. */\n        if(lt-left<right-gt){quick(a,left,lt);left=gt;}\n        else {quick(a,gt,right);right=lt;}\n    }\n}\nint main(void) {\nint a[256]; int n;\nif (scanf(\"%d\", &n)!=1 || n<0 || n>256) return 1;\nfor(int i=0;i<n;++i) if(scanf(\"%d\", &a[i])!=1) return 1;\nquick(a,0,n);\nfor(int i=0;i<n;++i) printf(\"%s%d\", i?\" \":\"\",a[i]); puts(\"\");\nreturn 0;\n}\n",
-    "solutionExplanation": "Инвариант: Раскладываем карточки по трём коробкам, а затем разбираем только две крайние.\n\nДля [3,1,3,2,3] при pivot=3 средняя область собирает три тройки, рекурсия нужна только для [1,2].\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. После обмена a[i] с ещё не изученным правым элементом нельзя без проверки увеличивать i.\n\nВремя: В среднем O(n log n) при подходящей модели входов; худший O(n²).\nПамять: O(log n) стек в данной версии с рекурсией меньшей части; отдельного массива нет.\nКомпромисс: Малая дополнительная память против отсутствия стабильности и риска плохих разбиений.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return 0;\n    }\n    int values[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    int pivot = values[n - 1];\n    int store = 0;\n    for (int i = 0; i < n - 1; i++) {\n        if (values[i] < pivot) {\n            int t = values[i];\n            values[i] = values[store];\n            values[store] = t;\n            store++;\n        }\n    }\n    values[n - 1] = values[store];\n    values[store] = pivot;\n    printf(\"%d\\n\", store);\n    for (int i = 0; i < n; i++) {\n        printf(i + 1 < n ? \"%d \" : \"%d\\n\", values[i]);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Инвариант: перед итерацией `i` элементы `values[0…store − 1]` меньше опорного, а `values[store…i − 1]` — не меньше. Меньший опорного элемент меняется местами с первым «не меньшим» и расширяет левую группу. В конце опорный ставится между группами: на его месте `n − 1` оказывается первый «не меньший» элемент.\n\nПозиция опорного равна числу элементов меньше него — именно столько элементов будет перед ним и в отсортированном массиве. Поэтому одно разбиение уже отвечает на вопрос «какое место по величине занимает опорный».",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "algo-quick-task-2",
+      "title": "Быстрая сортировка",
+      "description": "Прочитайте `n` и `n` целых чисел и отсортируйте их по неубыванию быстрой сортировкой. Опорный — **средний** элемент отрезка: перед разбиением Ломуто обменяйте его с последним. Напечатайте результат через пробел.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "8\n7 2 1 8 6 3 5 4\n",
+          "output": "1 2 3 4 5 6 7 8\n"
+        },
+        {
+          "input": "1\n-3\n",
+          "output": "-3\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 10⁵; числа int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "partition(lo, hi): обменяйте values[lo + (hi − lo) / 2] и values[hi], затем обычное разбиение Ломуто с опорным values[hi].",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "quick_sort(lo, hi): если lo >= hi — выход; иначе p = partition(lo, hi), затем quick_sort(lo, p − 1) и quick_sort(p + 1, hi).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "8\n7 2 1 8 6 3 5 4\n",
+          "expected": "1 2 3 4 5 6 7 8\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n-3\n",
+          "expected": "-3\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "2\n2 1\n",
+          "expected": "1 2\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "5\n1 2 3 4 5\n",
+          "expected": "1 2 3 4 5\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "5\n5 4 3 2 1\n",
+          "expected": "1 2 3 4 5\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "6\n4 4 4 4 4 4\n",
+          "expected": "4 4 4 4 4 4\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "9\n3 1 4 1 5 9 2 6 5\n",
+          "expected": "1 1 2 3 4 5 5 6 9\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "5\n2147483647 -2147483648 0 2147483647 -2147483648\n",
+          "expected": "-2147483648 -2147483648 0 2147483647 2147483647\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "10\n10 1 9 2 8 3 7 4 6 5\n",
+          "expected": "1 2 3 4 5 6 7 8 9 10\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "12\n0 0 1 1 0 0 1 1 0 0 1 1\n",
+          "expected": "0 0 0 0 0 0 1 1 1 1 1 1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic int values[100000];\n\nstatic void swap(int *a, int *b) {\n    int t = *a;\n    *a = *b;\n    *b = t;\n}\n\nstatic int partition(int lo, int hi) {\n    swap(&values[lo + (hi - lo) / 2], &values[hi]);\n    int pivot = values[hi];\n    int store = lo;\n    for (int i = lo; i < hi; i++) {\n        if (values[i] < pivot) {\n            swap(&values[i], &values[store++]);\n        }\n    }\n    swap(&values[store], &values[hi]);\n    return store;\n}\n\nstatic void quick_sort(int lo, int hi) {\n    if (lo >= hi) {\n        return;\n    }\n    int p = partition(lo, hi);\n    quick_sort(lo, p - 1);\n    quick_sort(p + 1, hi);\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 100000) {\n        return 0;\n    }\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    quick_sort(0, n - 1);\n    for (int i = 0; i < n; i++) {\n        printf(i + 1 < n ? \"%d \" : \"%d\\n\", values[i]);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Корректность — индукцией по длине отрезка: после разбиения опорный на месте, а части короче отрезка и по предположению сортируются правильно. Средний опорный делает отсортированный и обратный порядок хорошими входами: на них он — медиана.\n\nПлохие входы для среднего опорного всё же существуют, а массив из одинаковых чисел с разбиением Ломуто остаётся квадратичным. Поэтому библиотечные сортировки выбирают опорный медианой нескольких элементов, применяют трёхчастное разбиение и переключаются на сортировку кучей, если рекурсия стала слишком глубокой.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-quick-task-3",
+      "title": "Найди ошибку: границы рекурсии",
+      "description": "Программа читает `n` и `n` целых чисел и сортирует их быстрой сортировкой с опорным — последним элементом отрезка.\n\nНа некоторых входах программа аварийно завершается. Найдите и исправьте ошибку.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nstatic void swap(int *a, int *b) {\n    int t = *a;\n    *a = *b;\n    *b = t;\n}\n\nstatic int partition(int *values, int lo, int hi) {\n    int pivot = values[hi];\n    int store = lo;\n    for (int i = lo; i < hi; i++) {\n        if (values[i] < pivot) {\n            swap(&values[i], &values[store++]);\n        }\n    }\n    swap(&values[store], &values[hi]);\n    return store;\n}\n\nstatic void quick_sort(int *values, int lo, int hi) {\n    if (lo >= hi) {\n        return;\n    }\n    int p = partition(values, lo, hi);\n    quick_sort(values, lo, p);\n    quick_sort(values, p + 1, hi);\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return 0;\n    }\n    int values[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    quick_sort(values, 0, n - 1);\n    for (int i = 0; i < n; i++) {\n        printf(i + 1 < n ? \"%d \" : \"%d\\n\", values[i]);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\n1 3 2\n",
+          "output": "1 2 3\n"
+        },
+        {
+          "input": "5\n5 1 4 2 3\n",
+          "output": "1 2 3 4 5\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; числа int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что получит первый рекурсивный вызов, если опорный оказался наибольшим элементом отрезка и встал на позицию hi?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Опорный после разбиения на окончательном месте — в рекурсию он не входит. Левая часть — [lo, p − 1].",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\n1 3 2\n",
+          "expected": "1 2 3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5\n5 1 4 2 3\n",
+          "expected": "1 2 3 4 5\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1\n9\n",
+          "expected": "9\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "2\n1 2\n",
+          "expected": "1 2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "2\n2 1\n",
+          "expected": "1 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "4\n7 7 7 7\n",
+          "expected": "7 7 7 7\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "5\n1 2 9 3 4\n",
+          "expected": "1 2 3 4 9\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "6\n6 5 4 3 2 1\n",
+          "expected": "1 2 3 4 5 6\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "7\n3 -1 4 -1 5 -9 2\n",
+          "expected": "-9 -1 -1 2 3 4 5\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "8\n8 1 7 2 6 3 5 4\n",
+          "expected": "1 2 3 4 5 6 7 8\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic void swap(int *a, int *b) {\n    int t = *a;\n    *a = *b;\n    *b = t;\n}\n\nstatic int partition(int *values, int lo, int hi) {\n    int pivot = values[hi];\n    int store = lo;\n    for (int i = lo; i < hi; i++) {\n        if (values[i] < pivot) {\n            swap(&values[i], &values[store++]);\n        }\n    }\n    swap(&values[store], &values[hi]);\n    return store;\n}\n\nstatic void quick_sort(int *values, int lo, int hi) {\n    if (lo >= hi) {\n        return;\n    }\n    int p = partition(values, lo, hi);\n    quick_sort(values, lo, p - 1);\n    quick_sort(values, p + 1, hi);\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return 0;\n    }\n    int values[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    quick_sort(values, 0, n - 1);\n    for (int i = 0; i < n; i++) {\n        printf(i + 1 < n ? \"%d \" : \"%d\\n\", values[i]);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "После разбиения опорный стоит на позиции `p` на своём окончательном месте. Заготовка передаёт в левый вызов отрезок `[lo, p]` — вместе с опорным. Пока опорный не наибольший, этот отрезок всё равно короче исходного, и ошибка не видна. Но если `p == hi`, левый вызов получает **тот же** отрезок `[lo, hi]`, разбивает его так же — и рекурсия никогда не заканчивается. Стек переполняется, AddressSanitizer сообщает `stack-overflow`.\n\nПоследний элемент оказывается наибольшим, например, на любом отсортированном отрезке — поэтому программа падает уже на `1 2`. Исключение опорного из обеих частей гарантирует, что каждый вызов получает строго меньший отрезок при любом выборе опорного.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-quick-task-4",
+      "title": "k-я порядковая статистика",
+      "description": "Первая строка — `n` и `k`, вторая — `n` целых чисел. Напечатайте число, которое стояло бы на `k`-м месте (нумерация с 1), если отсортировать массив по неубыванию. Например, при `k = 1` — минимум, при `k = n` — максимум.\n\nРешите задачу **быстрым выбором** — без полной сортировки, в среднем за `O(n)`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5 2\n7 1 5 3 9\n",
+          "output": "3\n"
+        },
+        {
+          "input": "4 4\n2 8 6 4\n",
+          "output": "8\n"
+        }
+      ],
+      "constraints": ["1 ≤ k ≤ n ≤ 10⁵; числа int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "После разбиения опорный стоит на позиции p — на своём месте в отсортированном порядке. Если p == k − 1, ответ найден. Если k − 1 < p, ответ в левой части, иначе — в правой.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "В отличие от быстрой сортировки, продолжать нужно только в одной части — это можно сделать циклом: while (lo < hi) { p = partition(lo, hi); сузить [lo, hi] }.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Цикл заканчивается, когда p совпало с k − 1 или отрезок сжался до одного элемента (lo == hi) — тогда этот элемент и есть ответ.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5 2\n7 1 5 3 9\n",
+          "expected": "3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "4 4\n2 8 6 4\n",
+          "expected": "8\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Один элемент",
+          "stdin": "1 1\n42\n",
+          "expected": "42\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Минимум",
+          "stdin": "5 1\n5 4 3 2 1\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Максимум",
+          "stdin": "5 5\n5 4 3 2 1\n",
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Все равны",
+          "stdin": "6 3\n4 4 4 4 4 4\n",
+          "expected": "4\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Медиана",
+          "stdin": "7 4\n3 1 4 1 5 9 2\n",
+          "expected": "3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Крайние значения",
+          "stdin": "6 2\n2147483647 -2147483648 0 -1 1 2147483647\n",
+          "expected": "-1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Повторы",
+          "stdin": "8 5\n1 1 2 2 3 3 4 4\n",
+          "expected": "3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Обратный порядок",
+          "stdin": "10 7\n10 9 8 7 6 5 4 3 2 1\n",
+          "expected": "7\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic int values[100000];\n\nstatic void swap(int *a, int *b) {\n    int t = *a;\n    *a = *b;\n    *b = t;\n}\n\nstatic int partition(int lo, int hi) {\n    swap(&values[lo + (hi - lo) / 2], &values[hi]);\n    int pivot = values[hi];\n    int store = lo;\n    for (int i = lo; i < hi; i++) {\n        if (values[i] < pivot) {\n            swap(&values[i], &values[store++]);\n        }\n    }\n    swap(&values[store], &values[hi]);\n    return store;\n}\n\nint main(void) {\n    int n, k;\n    if (scanf(\"%d %d\", &n, &k) != 2 || n < 1 || n > 100000 || k < 1 || k > n) {\n        return 0;\n    }\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    int target = k - 1;\n    int lo = 0, hi = n - 1;\n    while (lo < hi) {\n        int p = partition(lo, hi);\n        if (p == target) {\n            break;\n        }\n        if (target < p) {\n            hi = p - 1;\n        } else {\n            lo = p + 1;\n        }\n    }\n    printf(\"%d\\n\", values[target]);\n    return 0;\n}\n",
+      "solutionExplanation": "Разбиение ставит опорный на позицию `p` — ровно туда, где он был бы в отсортированном массиве; меньшие — левее, остальные — правее. Если `p` совпало с искомой позицией, ответ найден. Иначе ответ лежит в той части, где находится позиция `k − 1`, и вторую часть можно забыть.\n\nЕсли опорный делит отрезки примерно пополам, работа — `n + n/2 + n/4 + … ≈ 2n`, то есть `O(n)` в среднем. Полная сортировка ради одного элемента стоила бы `O(n log n)`. Худший случай, как у быстрой сортировки, — `O(n²)`. Цикл вместо рекурсии возможен потому, что продолжать нужно только в одной части. Так в C++ работает `std::nth_element`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "algo-quick-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "invariant",
-        "question": "Гарантирует ли средний индекс опорного O(n log n) на всех входах?",
-        "options": ["Нет", "Да"],
-        "correct": 0,
-        "explanation": "Раскладываем карточки по трём коробкам, а затем разбираем только две крайние. Для [3,1,3,2,3] при pivot=3 средняя область собирает три тройки, рекурсия нужна только для [1,2]."
+        "id": "q1",
+        "question": "Что гарантирует разбиение относительно опорного элемента?",
+        "explanation": "Части после разбиения не отсортированы — их сортируют рекурсивно. Но опорный уже на своём месте, поэтому в рекурсию он не входит.",
+        "options": [
+          "Опорный стоит на окончательном месте: левее — меньшие, правее — не меньшие",
+          "Обе части отсортированы",
+          "Части имеют одинаковую длину",
+          "Массив отсортирован"
+        ],
+        "correct": 0
       },
       {
-        "id": "complexity",
-        "question": "Какая оценка соответствует рассмотренной реализации?",
-        "options": [
-          "Всегда O(1), потому что все тесты ограничены по размеру.",
-          "В среднем O(n log n) при подходящей модели входов; худший O(n²)."
-        ],
-        "correct": 1,
-        "explanation": "Малая дополнительная память против отсутствия стабильности и риска плохих разбиений."
+        "id": "q2",
+        "question": "Чему будет равен массив 3 8 2 5 после разбиения Ломуто с опорным — последним элементом 5?",
+        "explanation": "3 < 5 — на место store = 0 (без изменений), 8 — нет, 2 < 5 — обмен с 8: 3 2 8 5. Затем опорный встаёт на store = 2: 3 2 5 8.",
+        "type": "text",
+        "answers": ["3 2 5 8"],
+        "placeholder": "Элементы через пробел"
       },
       {
-        "id": "engineering",
-        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "id": "q3",
+        "question": "Сколько сравнений с опорным сделает быстрая сортировка с опорным «последний элемент» на отсортированном массиве из 100 элементов?",
+        "explanation": "Опорный каждый раз наибольший: части 99 и 0, затем 98 и 0… Сравнений 99 + 98 + … + 1 = 4950 — квадратичный случай.",
+        "type": "text",
+        "answers": ["4950"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q4",
+        "question": "Почему в рекурсивные вызовы передаются отрезки [lo, p − 1] и [p + 1, hi], а не [lo, p] и [p + 1, hi]?",
+        "explanation": "Каждый рекурсивный вызов должен получать строго меньший отрезок. Исключение опорного гарантирует это при любом разбиении.",
         "options": [
-          "После обмена a[i] с ещё не изученным правым элементом нельзя без проверки увеличивать i.",
-          "Совпадение Big O гарантирует одинаковое время на любой машине."
+          "Опорный уже на месте, а при p == hi вызов [lo, p] получил бы тот же отрезок и рекурсия не закончилась бы",
+          "Так быстрее на один элемент, но [lo, p] тоже работает",
+          "Чтобы сортировка была устойчивой",
+          "Чтобы не выйти за границу массива"
         ],
-        "correct": 0,
-        "explanation": "Разбиение работает внутри массива, но обмены и ветвления влияют на фактическую скорость. O(log n) стек в данной версии с рекурсией меньшей части; отдельного массива нет."
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какие опорные элементы защищают от квадратичного времени на уже отсортированном массиве?",
+        "explanation": "На отсортированном массиве последний элемент — наибольший, худший выбор. Средний, медиана трёх и случайный делят его хорошо.",
+        "type": "multiple",
+        "options": [
+          "Средний элемент",
+          "Случайный элемент",
+          "Медиана первого, среднего и последнего",
+          "Последний элемент"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q6",
+        "question": "Какая глубина рекурсии у быстрой сортировки, если рекурсивно сортировать меньшую часть, а большую — в цикле?",
+        "explanation": "Каждый рекурсивный вызов получает не больше половины отрезка, поэтому вложенных вызовов не больше log₂ n — даже при плохом опорном.",
+        "options": ["Не больше log₂ n", "n", "n / 2", "√n"],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что произойдёт с разбиением Ломуто (условие values[i] < pivot) на массиве из 1000 одинаковых чисел?",
+        "explanation": "Ни один элемент не меньше опорного, store остаётся lo. Опорный встаёт в начало, а остальные 999 — в одну часть. Против этого применяют трёхчастное разбиение.",
+        "options": [
+          "Все элементы попадут в правую часть, части будут 0 и 999 — квадратичное время",
+          "Массив разделится пополам",
+          "Сортировка закончится за один проход",
+          "Возникнет бесконечная рекурсия"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какие утверждения о быстрой сортировке верны?",
+        "explanation": "Худший случай — O(n²). Но без буфера и с простым внутренним циклом на практике быстрая сортировка обычно выигрывает.",
+        "type": "multiple",
+        "options": [
+          "Она сортирует на месте",
+          "Она неустойчива",
+          "Её худший случай — O(n log n)",
+          "В среднем она обычно быстрее сортировки слиянием"
+        ],
+        "correct": [0, 1, 3]
       }
     ]
   }

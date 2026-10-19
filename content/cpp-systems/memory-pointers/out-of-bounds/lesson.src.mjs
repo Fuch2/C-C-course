@@ -28,8 +28,8 @@ export default {
     'Читать отчёты heap-buffer-overflow, global-buffer-overflow и index out of bounds',
     'Отличать выход за границу объекта от выхода за логическую длину контейнера',
   ],
-  tags: ['C17', 'Память', 'Выход за границы', 'Массивы', 'Найди ошибку'],
-  standard: 'c17',
+  tags: ['C23', 'Память', 'Выход за границы', 'Массивы', 'Найди ошибку'],
+  standard: 'c23',
   diagnostics: 'sanitizers',
   quiz: [
     {

@@ -1,115 +1,534 @@
 {
   "id": "cpp20-set",
-  "title": "std::set",
-  "description": "set хранит уникальные значения в порядке. Он удобен для lower_bound, но плотный отсортированный vector часто экономнее для неизменяемых данных.",
+  "title": "Множества std::set и std::unordered_set",
+  "description": "Упорядоченное множество std::set: уникальность, insert с признаком вставки, contains, erase, минимум и максимум; ближайшие значения через lower_bound; std::multiset и ловушка erase; хеш-множество std::unordered_set; операции над множествами.",
   "moduleId": "cpp-fundamentals",
-  "order": 17,
-  "difficulty": "advanced",
-  "estimatedMinutes": 50,
+  "order": 25,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
   "prerequisites": ["cpp20-unordered-map"],
   "objectives": [
-    "Объяснить, зачем появился std::set и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Хранить уникальные значения в std::set и std::unordered_set",
+    "Находить ближайшие значения в меняющемся множестве",
+    "Правильно удалять элементы из std::multiset",
+    "Вычислять пересечение и разность упорядоченных наборов"
   ],
-  "tags": ["C++20", "основы C++", "std::set"],
+  "tags": ["C++", "set", "multiset", "unordered_set"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-set-exercise",
-    "title": "Уникальные коды",
-    "description": "Ввод n кодов, затем low high. Выведите уникальные значения std::set в диапазоне [low,high].",
-    "difficulty": "advanced",
+    "id": "cpp20-set-task-1",
+    "title": "Различные числа",
+    "description": "До конца ввода идут целые числа. Напечатайте строку `различных: K`, а на следующей — различные числа по возрастанию через пробел (пустая строка, если чисел нет).",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "5 3 1 3 5 2 2 5",
-        "output": "2 3 5\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "3 1 4 1 5 9 2 6 5\n",
+        "output": "различных: 7\n1 2 3 4 5 6 9\n"
       },
       {
-        "input": "0 0 9",
-        "output": "\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "",
+        "output": "различных: 0\n\n"
       }
     ],
-    "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
-    ],
+    "constraints": ["Чисел не больше 10⁴; |числа| ≤ 10⁹."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "Вставляйте числа в std::set<long long> — повторы отбросятся сами.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "Обход множества уже идёт по возрастанию.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "5 3 1 3 5 2 2 5",
-        "expected": "2 3 5\n"
+        "stdin": "3 1 4 1 5 9 2 6 5\n",
+        "expected": "различных: 7\n1 2 3 4 5 6 9\n"
       },
-      { "id": "case-2", "name": "Пример 2", "stdin": "0 0 9", "expected": "\n" }
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "",
+        "expected": "различных: 0\n\n"
+      }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "3 1 2 3 5 1",
-        "expected": "\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "7\n",
+        "expected": "различных: 1\n7\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "2 2 2 2\n",
+        "expected": "различных: 1\n2\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "-1 1 -1 1\n",
+        "expected": "различных: 2\n-1 1\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "1000000000 -1000000000 0\n",
+        "expected": "различных: 3\n-1000000000 0 1000000000\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "5 4 3 2 1\n",
+        "expected": "различных: 5\n1 2 3 4 5\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "1 2 3 4 5\n",
+        "expected": "различных: 5\n1 2 3 4 5\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "0 0 0 1\n",
+        "expected": "различных: 2\n0 1\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "10 9 10 8 9 7\n",
+        "expected": "различных: 4\n7 8 9 10\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <set>\n\n\nint main() {\n    int n{};if(!(std::cin>>n)||n<0||n>100)return 1;std::set<int>s;for(int i=0,x;i<n;++i){std::cin>>x;s.insert(x);}int lo{},hi{};std::cin>>lo>>hi;bool first=true;for(auto it=s.lower_bound(lo);it!=s.end()&&*it<=hi;++it){if(!first)std::cout<<' ';std::cout<<*it;first=false;}std::cout<<'\\n';\n}\n",
-    "solutionExplanation": "set удаляет дубликаты и хранит сортировку. lower_bound сразу пропускает меньшие элементы. Поиск O(log n), обход диапазона O(k), память O(n).",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <iostream>\n#include <set>\n\nint main() {\n    std::set<long long> values;\n    long long x;\n    while (std::cin >> x) {\n        values.insert(x);\n    }\n    std::cout << \"различных: \" << values.size() << '\\n';\n    bool first = true;\n    for (long long v : values) {\n        std::cout << (first ? \"\" : \" \") << v;\n        first = false;\n    }\n    std::cout << '\\n';\n    return 0;\n}\n",
+    "solutionExplanation": "Множество само поддерживает два инварианта: каждое значение хранится один раз, и значения упорядочены. Поэтому задача сводится к вставкам и обходу — `O(n log n)`. Та же задача на векторе потребовала бы сортировки и `std::unique` (урок о цикле по диапазону).",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-set-task-2",
+      "title": "Ближайшее значение",
+      "description": "Выполните команды над множеством целых чисел:\n\n- `add x` — добавить `x`;\n- `del x` — удалить `x`, если есть;\n- `near x` — напечатать значение из множества, ближайшее к `x` (при равном расстоянии — меньшее), или `пусто`.\n\nКаждая команда — `O(log n)`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "add 3\nadd 8\nnear 5\nnear 6\nnear 100\n",
+          "output": "3\n8\n8\n"
+        },
+        {
+          "input": "near 1\nadd 1\ndel 1\nnear 1\n",
+          "output": "пусто\nпусто\n"
+        }
+      ],
+      "constraints": ["Команд не больше 10⁴; |x| ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "auto it = s.lower_bound(x) — первое значение ≥ x. Кандидаты на ответ — *it (если it != end()) и предыдущее значение std::prev(it) (если it != begin()).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сравните расстояния; при равенстве выберите меньшее значение, то есть левого кандидата.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add 3\nadd 8\nnear 5\nnear 6\nnear 100\n",
+          "expected": "3\n8\n8\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "near 1\nadd 1\ndel 1\nnear 1\n",
+          "expected": "пусто\nпусто\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одно значение",
+          "stdin": "add 10\nnear 10\nnear -5\n",
+          "expected": "10\n10\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Равное расстояние",
+          "stdin": "add 1\nadd 5\nnear 3\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Крайние значения",
+          "stdin": "add -1000000000\nadd 1000000000\nnear 0\n",
+          "expected": "-1000000000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "После удаления",
+          "stdin": "add 2\nadd 4\nadd 6\ndel 4\nnear 4\nnear 5\n",
+          "expected": "2\n6\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Повторная вставка",
+          "stdin": "add 7\nadd 7\ndel 7\nnear 7\n",
+          "expected": "пусто\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Совпадение",
+          "stdin": "add 1\nadd 2\nadd 3\nnear 2\nnear 0\nnear 4\n",
+          "expected": "2\n1\n3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Удаление отсутствующего",
+          "stdin": "del 5\nadd 5\nnear 9\n",
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Около середины",
+          "stdin": "add 100\nadd 200\nadd 300\nnear 249\nnear 251\nnear 250\n",
+          "expected": "200\n300\n200\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <iterator>\n#include <set>\n#include <string>\n\nint main() {\n    std::set<long long> s;\n    std::string command;\n    long long x;\n    while (std::cin >> command >> x) {\n        if (command == \"add\") {\n            s.insert(x);\n        } else if (command == \"del\") {\n            s.erase(x);\n        } else if (command == \"near\") {\n            if (s.empty()) {\n                std::cout << \"пусто\\n\";\n                continue;\n            }\n            auto right = s.lower_bound(x);\n            if (right == s.end()) {\n                std::cout << *std::prev(right) << '\\n';\n            } else if (right == s.begin()) {\n                std::cout << *right << '\\n';\n            } else {\n                long long a = *std::prev(right), b = *right;\n                std::cout << (x - a <= b - x ? a : b) << '\\n';\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Ближайшее к `x` значение — либо наименьшее не меньше `x` (`lower_bound`), либо наибольшее меньше `x` (предыдущий элемент). Оба находятся за `O(log n)`, и между запросами множество может меняться — в этом преимущество перед отсортированным вектором, где вставка стоит `O(n)`.\n\nКрайние случаи: если все значения меньше `x`, `lower_bound` вернёт `end()` и ответ — последний элемент; если все не меньше — `begin()` и ответ — первый. Разыменовывать `end()` и брать `prev(begin())` нельзя, поэтому эти случаи разобраны явно.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-set-task-3",
+      "title": "Найди ошибку: биржевой стакан",
+      "description": "Программа хранит цены заявок в `std::multiset<int>` (одинаковых заявок может быть несколько) и выполняет команды:\n\n- `add p` — добавить заявку с ценой `p`;\n- `remove p` — снять **одну** заявку с ценой `p` или напечатать `нет такой`;\n- `best` — напечатать наименьшую цену и число заявок по ней: `p xK`, или `пусто`.\n\nПосле снятия одной заявки исчезают и другие с той же ценой. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <set>\n#include <string>\n\nint main() {\n    std::multiset<int> orders;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"add\") {\n            int price;\n            std::cin >> price;\n            orders.insert(price);\n        } else if (command == \"remove\") {\n            int price;\n            std::cin >> price;\n            auto it = orders.find(price);\n            if (it == orders.end()) {\n                std::cout << \"нет такой\\n\";\n            } else {\n                orders.erase(price);\n            }\n        } else if (command == \"best\") {\n            if (orders.empty()) {\n                std::cout << \"пусто\\n\";\n            } else {\n                int best = *orders.begin();\n                std::cout << best << \" x\" << orders.count(best) << '\\n';\n            }\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "add 100\nadd 100\nadd 120\nremove 100\nbest\n",
+          "output": "100 x1\n"
+        },
+        {
+          "input": "remove 5\nbest\n",
+          "output": "нет такой\nпусто\n"
+        }
+      ],
+      "constraints": ["Команд не больше 1000; 1 ≤ p ≤ 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сколько элементов удаляет multiset::erase, если передать ему значение?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "erase(значение) удаляет все копии. Чтобы удалить одну, передайте итератор, который уже нашёл find: orders.erase(it).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add 100\nadd 100\nadd 120\nremove 100\nbest\n",
+          "expected": "100 x1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "remove 5\nbest\n",
+          "expected": "нет такой\nпусто\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "add 1\nadd 1\nadd 1\nremove 1\nremove 1\nbest\n",
+          "expected": "1 x1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "add 50\nremove 50\nbest\n",
+          "expected": "пусто\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "add 10\nadd 20\nadd 10\nremove 10\nbest\nremove 10\nbest\n",
+          "expected": "10 x1\n20 x1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "add 7\nadd 7\nbest\n",
+          "expected": "7 x2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "add 3\nadd 3\nadd 2\nremove 3\nremove 2\nbest\n",
+          "expected": "3 x1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "add 1000000\nadd 1000000\nremove 1000000\nbest\n",
+          "expected": "1000000 x1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "remove 1\nadd 1\nadd 1\nremove 1\nbest\n",
+          "expected": "нет такой\n1 x1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "add 9\nadd 8\nadd 8\nadd 8\nremove 8\nbest\n",
+          "expected": "8 x2\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <set>\n#include <string>\n\nint main() {\n    std::multiset<int> orders;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"add\") {\n            int price;\n            std::cin >> price;\n            orders.insert(price);\n        } else if (command == \"remove\") {\n            int price;\n            std::cin >> price;\n            auto it = orders.find(price);\n            if (it == orders.end()) {\n                std::cout << \"нет такой\\n\";\n            } else {\n                orders.erase(it);\n            }\n        } else if (command == \"best\") {\n            if (orders.empty()) {\n                std::cout << \"пусто\\n\";\n            } else {\n                int best = *orders.begin();\n                std::cout << best << \" x\" << orders.count(best) << '\\n';\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "У `std::multiset` два вида `erase`: по значению — удаляет **все** элементы с этим значением и возвращает их число; по итератору — удаляет ровно один элемент. Заготовка нашла заявку через `find`, но удалила по значению и сняла все заявки с этой ценой.\n\nИсправление — передать в `erase` найденный итератор. Проверка `it == end()` перед удалением обязательна: `erase(end())` — неопределённое поведение. В `std::set` эта разница незаметна — там значение встречается один раз, — поэтому ловушка проявляется именно при переходе на `multiset`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-set-task-4",
+      "title": "Сравнение списков",
+      "description": "Ввод — две строки целых чисел (в каждой могут быть повторы; строка может быть пустой). Напечатайте три строки:\n\n- `общие: …` — различные числа, которые есть в обоих списках;\n- `только в первом: …` — различные числа только первого списка;\n- `только во втором: …` — различные числа только второго.\n\nЧисла — по возрастанию через пробел; если их нет — `нет`. Используйте `std::set_intersection` и `std::set_difference`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "1 2 3 4 5\n4 5 6 7\n",
+          "output": "общие: 4 5\nтолько в первом: 1 2 3\nтолько во втором: 6 7\n"
+        },
+        {
+          "input": "1 1 1\n1\n",
+          "output": "общие: 1\nтолько в первом: нет\nтолько во втором: нет\n"
+        }
+      ],
+      "constraints": ["В каждой строке не больше 1000 чисел; |числа| ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Прочитайте каждую строку через std::getline и std::istringstream в std::set<long long> — повторы исчезнут, а порядок станет возрастающим.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "std::set_intersection(a.begin(), a.end(), b.begin(), b.end(), std::back_inserter(result)) записывает общие элементы в вектор. set_difference(a, b) — элементы a, которых нет в b.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1 2 3 4 5\n4 5 6 7\n",
+          "expected": "общие: 4 5\nтолько в первом: 1 2 3\nтолько во втором: 6 7\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 1 1\n1\n",
+          "expected": "общие: 1\nтолько в первом: нет\nтолько во втором: нет\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Обе пустые",
+          "stdin": "\n\n",
+          "expected": "общие: нет\nтолько в первом: нет\nтолько во втором: нет\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Вторая пустая",
+          "stdin": "1 2 3\n\n",
+          "expected": "общие: нет\nтолько в первом: 1 2 3\nтолько во втором: нет\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Первая пустая",
+          "stdin": "\n4 5\n",
+          "expected": "общие: нет\nтолько в первом: нет\nтолько во втором: 4 5\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Без общих",
+          "stdin": "1 2\n3 4\n",
+          "expected": "общие: нет\nтолько в первом: 1 2\nтолько во втором: 3 4\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Одинаковые наборы",
+          "stdin": "5 4 3 2 1\n1 2 3 4 5\n",
+          "expected": "общие: 1 2 3 4 5\nтолько в первом: нет\nтолько во втором: нет\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Отрицательные и повторы",
+          "stdin": "-1 0 1\n0 0 0\n",
+          "expected": "общие: 0\nтолько в первом: -1 1\nтолько во втором: нет\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Крайние значения",
+          "stdin": "1000000000 -1000000000\n-1000000000\n",
+          "expected": "общие: -1000000000\nтолько в первом: 1000000000\nтолько во втором: нет\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Кратные",
+          "stdin": "2 4 6 8 10\n3 6 9\n",
+          "expected": "общие: 6\nтолько в первом: 2 4 8 10\nтолько во втором: 3 9\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <iterator>\n#include <set>\n#include <sstream>\n#include <string>\n#include <vector>\n\nstd::set<long long> read_line() {\n    std::string line;\n    std::getline(std::cin, line);\n    std::istringstream in(line);\n    std::set<long long> result;\n    long long x;\n    while (in >> x) {\n        result.insert(x);\n    }\n    return result;\n}\n\nvoid print(const std::string &title, const std::vector<long long> &values) {\n    std::cout << title << ':';\n    if (values.empty()) {\n        std::cout << \" нет\";\n    }\n    for (long long v : values) {\n        std::cout << ' ' << v;\n    }\n    std::cout << '\\n';\n}\n\nint main() {\n    std::set<long long> a = read_line();\n    std::set<long long> b = read_line();\n    std::vector<long long> both, only_a, only_b;\n    std::set_intersection(a.begin(), a.end(), b.begin(), b.end(), std::back_inserter(both));\n    std::set_difference(a.begin(), a.end(), b.begin(), b.end(), std::back_inserter(only_a));\n    std::set_difference(b.begin(), b.end(), a.begin(), a.end(), std::back_inserter(only_b));\n    print(\"общие\", both);\n    print(\"только в первом\", only_a);\n    print(\"только во втором\", only_b);\n    return 0;\n}\n",
+      "solutionExplanation": "Множества убирают повторы и упорядочивают значения — именно это требуется алгоритмам `std::set_intersection` и `std::set_difference`: они сливают два отсортированных диапазона за один проход, как слияние в сортировке слиянием, — `O(n + m)`. Результат пишется через `std::back_inserter`: итератор, который превращает каждую запись в `push_back`.\n\nПорядок аргументов `set_difference` важен: `(a, b)` — элементы `a` без элементов `b`, `(b, a)` — наоборот. Функция `read_line` возвращает множество по значению — без копирования, как и векторы.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-set-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «std::set»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "set хранит уникальные значения в порядке. Он удобен для lower_bound, но плотный отсортированный vector часто экономнее для неизменяемых данных."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <set>\n\nint main() {\n    std::set<int> s = {3, 1, 3, 2, 1};\n    s.insert(5);\n    s.insert(2);\n    for (int x : s) {\n        std::cout << x;\n    }\n    std::cout << ' ' << s.size() << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Повторы не хранятся: {1, 2, 3}, затем добавляется 5, а 2 уже есть. Обход — по возрастанию.",
+        "type": "text",
+        "answers": ["1235 4"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
+        "id": "q2",
+        "question": "Что возвращает s.insert(x).second?",
+        "explanation": "insert возвращает пару: итератор на элемент и признак, произошла ли вставка.",
         "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
+          "true, если x был добавлен, и false, если он уже был в множестве",
+          "Количество элементов после вставки",
+          "Итератор на вставленный элемент",
+          "Всегда true"
         ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "correct": 0
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <set>\n\nint main() {\n    std::multiset<int> m = {7, 7, 7, 3};\n    m.erase(m.find(7));\n    std::cout << m.size() << ' ';\n    m.erase(7);\n    std::cout << m.size() << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "erase по итератору удаляет одну семёрку, erase по значению — все оставшиеся.",
+        "type": "text",
+        "answers": ["3 1"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <set>\n\nint main() {\n    std::set<int> s = {10, 20, 30};\n    std::cout << *s.lower_bound(15) << ' ' << *s.upper_bound(20) << ' ' << *s.rbegin() << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "lower_bound(15) — первое не меньше 15, upper_bound(20) — первое больше 20, rbegin — наибольший элемент.",
+        "type": "text",
+        "answers": ["20 30 30"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Почему нельзя написать *s.begin() = 0; для std::set<int> s?",
+        "explanation": "Чтобы изменить значение, удалите старое и вставьте новое.",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "Элементы множества константные: изменение нарушило бы порядок дерева",
+          "begin() у множества не существует",
+          "Множество нельзя изменять вовсе",
+          "Можно"
         ],
-        "correct": 0,
-        "explanation": "Используйте std::set как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Какое множество выбрать, чтобы просто проверять «встречалось ли значение» среди миллиона чисел без требований к порядку?",
+        "explanation": "Хеш-множество проверяет и добавляет за O(1) в среднем. set — O(log n), вектор с поиском — O(n) на запрос.",
+        "options": [
+          "std::unordered_set",
+          "std::set",
+          "std::multiset",
+          "std::vector с линейным поиском"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Какое условие обязательно для std::set_intersection(a.begin(), a.end(), b.begin(), b.end(), out)?",
+        "explanation": "Алгоритм сливает два отсортированных диапазона за один проход. Подойдут и отсортированные векторы.",
+        "options": [
+          "Оба диапазона отсортированы",
+          "Оба диапазона одной длины",
+          "В диапазонах нет отрицательных чисел",
+          "Диапазоны — обязательно std::set"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какие утверждения о std::set верны?",
+        "explanation": "Повторы разрешены только в std::multiset.",
+        "type": "multiple",
+        "options": [
+          "Вставка и поиск выполняются за O(log n)",
+          "Обход выдаёт элементы по возрастанию",
+          "Элемент можно хранить дважды",
+          "*s.begin() — наименьший элемент"
+        ],
+        "correct": [0, 1, 3]
       }
     ]
   }

@@ -106,7 +106,7 @@ export function Dashboard({ course, lessons }: { course: Course; lessons: Lesson
           </pre>
           <div className="code-preview-footer">
             <span className="green-dot" />
-            Практика начинается здесь<span>C17</span>
+            Практика начинается здесь<span>C23</span>
           </div>
         </div>
       </section>

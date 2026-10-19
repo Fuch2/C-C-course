@@ -1,0 +1,300 @@
+## Ошибка с объяснением
+
+В двух прошлых уроках вы видели два способа сообщить о неудаче. `std::optional` говорит «результата нет», но не говорит **почему**: строка не число, число слишком большое или строка пустая — для вызывающего кода всё одно. Исключения передают подробное описание, но невидимы в сигнатуре функции, стоят дорого, когда срабатывают, и во многих проектах (игры, встроенные системы, ядро ОС) запрещены вовсе.
+
+C++23 добавил третий вариант — `std::expected<T, E>` из `<expected>`: **либо значение типа `T`, либо ошибка типа `E`**. Как `optional`, но пустота заменена описанием ошибки. Такой подход давно принят в других языках — `Result` в Rust, `Either` в Haskell, — а в C++ до 2023 года его приходилось писать самим или брать из библиотек.
+
+## Основы
+
+```cpp
+#include <expected>
+#include <print>
+#include <string>
+
+std::expected<int, std::string> divide(int a, int b) {
+    if (b == 0) {
+        return std::unexpected("деление на ноль");
+    }
+    return a / b;
+}
+
+int main() {
+    std::expected<int, std::string> ok = divide(17, 5);
+    std::expected<int, std::string> bad = divide(1, 0);
+    std::println("{} {}", ok.has_value(), *ok);
+    if (!bad) {
+        std::println("ошибка: {}", bad.error());
+    }
+    std::println("{} {}", ok.value_or(-1), bad.value_or(-1));
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+true 3
+ошибка: деление на ноль
+3 -1
+```
+
+`return a / b;` неявно создаёт `expected` со значением. Ошибку нужно обернуть явно — в `std::unexpected(…)`: иначе для `expected<int, int>` компилятор не отличил бы ошибку от результата. Интерфейс почти как у `optional`:
+
+| Запись                    | Что делает                                                      |
+| ------------------------- | --------------------------------------------------------------- |
+| `if (r)`, `r.has_value()` | успех или ошибка                                                |
+| `*r`, `r->поле`           | значение **без проверки**                                       |
+| `r.value()`               | значение или исключение `std::bad_expected_access`, если ошибка |
+| `r.error()`               | ошибка **без проверки** — только когда `!r`                     |
+| `r.value_or(x)`           | значение или запасное                                           |
+
+## Тип ошибки
+
+Строка с описанием удобна для печати, но код, который получил ошибку, не может на неё **реагировать**: сравнивать тексты хрупко. Обычно ошибки описывают перечислением, а текст получают отдельной функцией:
+
+```cpp
+#include <charconv>
+#include <expected>
+#include <print>
+#include <string_view>
+
+enum class ParseError { empty, not_number, out_of_range };
+
+std::string_view describe(ParseError e) {
+    switch (e) {
+    case ParseError::empty:
+        return "пустая строка";
+    case ParseError::not_number:
+        return "не число";
+    case ParseError::out_of_range:
+        return "слишком большое число";
+    }
+    return "?";
+}
+
+std::expected<int, ParseError> parse_int(std::string_view text) {
+    if (text.empty()) {
+        return std::unexpected(ParseError::empty);
+    }
+    int value = 0;
+    auto [end, error] = std::from_chars(text.data(), text.data() + text.size(), value);
+    if (error == std::errc::result_out_of_range) {
+        return std::unexpected(ParseError::out_of_range);
+    }
+    if (error != std::errc{} || end != text.data() + text.size()) {
+        return std::unexpected(ParseError::not_number);
+    }
+    return value;
+}
+
+int main() {
+    for (std::string_view s : {"42", "", "4x", "99999999999"}) {
+        auto r = parse_int(s);
+        if (r) {
+            std::println("[{}] -> {}", s, *r);
+        } else {
+            std::println("[{}] -> {}", s, describe(r.error()));
+        }
+    }
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+[42] -> 42
+[] -> пустая строка
+[4x] -> не число
+[99999999999] -> слишком большое число
+```
+
+Теперь вызывающий код может, например, повторить ввод при `not_number` и сразу завершиться при `out_of_range`. `switch` по `enum class` без `default` даёт ещё одну проверку: добавите новый вид ошибки — компилятор предупредит о необработанном варианте.
+
+## Передача ошибки наверх
+
+Функция, которая вызвала другую и получила ошибку, обычно не может её исправить. Она передаёт ошибку дальше — тем же типом:
+
+```cpp
+#include <expected>
+#include <print>
+#include <string>
+
+std::expected<int, std::string> divide(int a, int b) {
+    if (b == 0) {
+        return std::unexpected("деление на ноль");
+    }
+    return a / b;
+}
+
+std::expected<int, std::string> average_speed(int km, int hours, int stops) {
+    auto speed = divide(km, hours);
+    if (!speed) {
+        return std::unexpected("скорость: " + speed.error());
+    }
+    auto per_leg = divide(km, stops + 1);
+    if (!per_leg) {
+        return std::unexpected(per_leg.error());
+    }
+    return *speed + *per_leg;
+}
+
+int main() {
+    for (auto r : {average_speed(120, 2, 1), average_speed(100, 0, 3)}) {
+        if (r) {
+            std::println("результат {}", *r);
+        } else {
+            std::println("ошибка: {}", r.error());
+        }
+    }
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+результат 120
+ошибка: скорость: деление на ноль
+```
+
+Ошибка путешествует по стеку вызовов явно, обрастая контекстом («скорость: …»). В отличие от исключения, путь ошибки виден в каждой сигнатуре: тип `std::expected` в объявлении функции предупреждает читателя, что вызов может не удаться.
+
+## Цепочки
+
+Как и у `optional`, в C++23 у `expected` есть методы для цепочек: `and_then` (следующий шаг, который сам возвращает `expected`), `transform` (преобразовать значение), `or_else` (обработать ошибку) и `transform_error` (преобразовать ошибку). Ошибка на любом шаге проходит по цепочке до конца:
+
+```cpp
+#include <expected>
+#include <print>
+#include <string>
+
+std::expected<int, std::string> half(int x) {
+    if (x % 2 != 0) {
+        return std::unexpected(std::to_string(x) + " нечётное");
+    }
+    return x / 2;
+}
+
+int main() {
+    for (int start : {40, 12, 9}) {
+        auto r = half(start).and_then(half).and_then(half).transform([](int x) { return x * 100; });
+        std::println("{}: {}", start, r ? std::to_string(*r) : "ошибка: " + r.error());
+    }
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+40: 500
+12: ошибка: 3 нечётное
+9: ошибка: 9 нечётное
+```
+
+Для 12 первые два шага удались (12 → 6 → 3), третий — нет, и сообщение говорит, на каком числе всё остановилось.
+
+## Операция без результата
+
+Бывает, что результата нет, а ошибка — есть: сохранить файл, отправить сообщение. Для этого `std::expected<void, E>`: при успехе возвращают `{}`.
+
+```cpp
+#include <expected>
+#include <print>
+#include <string>
+
+std::expected<void, std::string> check_password(const std::string &p) {
+    if (p.size() < 8) {
+        return std::unexpected("короче 8 символов");
+    }
+    if (p.find_first_of("0123456789") == std::string::npos) {
+        return std::unexpected("нет цифр");
+    }
+    return {};
+}
+
+int main() {
+    for (std::string p : {"secret", "longpassword", "longpassw0rd"}) {
+        auto r = check_password(p);
+        std::println("{}: {}", p, r ? "подходит" : r.error());
+    }
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+secret: короче 8 символов
+longpassword: нет цифр
+longpassw0rd: подходит
+```
+
+## Исключение или `expected`
+
+| Ситуация                                                      | Инструмент            |
+| ------------------------------------------------------------- | --------------------- |
+| ошибка — частый, ожидаемый исход: неверный ввод, нет файла    | `std::expected<T, E>` |
+| нужно лишь «есть или нет», причина не важна                   | `std::optional<T>`    |
+| редкий сбой, который обрабатывают далеко от места: нет памяти | исключение            |
+| ошибка в самой программе: нарушен инвариант                   | `assert`              |
+| проект собирается без исключений (`-fno-exceptions`)          | `std::expected<T, E>` |
+
+Оба подхода нормальны и встречаются в одном проекте: стандартная библиотека бросает исключения (`at`, `stoi`, `new`), а код разбора и проверки данных всё чаще возвращает `expected`.
+
+<Concept title="std::expected">
+
+`std::expected<T, E>` (C++23) — значение типа `T` или ошибка типа `E`. Значение возвращают как есть, ошибку — через `std::unexpected(e)`. Проверка `if (r)`, доступ `*r`, `value()` (исключение при ошибке), `error()`, `value_or`. Цепочки — `and_then`, `transform`, `or_else`, `transform_error`. `std::expected<void, E>` — для операций без результата. Ошибка видна в сигнатуре функции и не теряется по дороге.
+
+</Concept>
+
+## Частые ошибки
+
+<CommonMistake title="Проглоченная ошибка">
+
+`int total = parse_int(s).value_or(0);` — неверная строка молча превращается в ноль, и пользователь получает неправильный результат без объяснения. `value_or` уместен, только когда запасное значение действительно правильный ответ.
+
+</CommonMistake>
+
+<CommonMistake title="error() у успешного результата">
+
+`r.error()` без проверки `!r` — неопределённое поведение, как `*r` у ошибки. Сначала проверка, потом доступ.
+
+</CommonMistake>
+
+<CommonMistake title="Ошибка без std::unexpected">
+
+`return "деление на ноль";` в функции, возвращающей `std::expected<std::string, std::string>`, вернёт **значение**, а не ошибку. Ошибка всегда оборачивается в `std::unexpected`.
+
+</CommonMistake>
+
+<CommonMistake title="Проигнорированный результат">
+
+Вызов `check_password(p);` без проверки тихо теряет ошибку. Помечайте такие функции атрибутом `[[nodiscard]]`, и компилятор предупредит.
+
+</CommonMistake>
+
+## Попробуйте сами
+
+1. Добавьте в `ParseError` новый вариант `negative` и не меняйте `describe`. Какое предупреждение выдаст компилятор?
+2. В примере с цепочкой замените `transform` на `and_then` с той же лямбдой. Почему программа перестала компилироваться?
+3. Вызовите `divide(1, 0).value()` внутри `try` и поймайте `std::bad_expected_access<std::string>`. Что вернёт `error()` у пойманного исключения?
+
+## Практика
+
+1. **Деление** — две причины ошибки и `std::unexpected`.
+2. **Разбор настроек** — перечисление ошибок с номером строки.
+3. **Найди ошибку: проглоченная ошибка** — `value_or` вместо передачи ошибки.
+4. **Калькулятор** — цепочка разбора и вычисления.
+
+<CodingExercise />
+
+## Итоги
+
+- `std::expected<T, E>` (C++23) — результат или ошибка с причиной; ошибку возвращают через `std::unexpected(e)`.
+- Проверка `if (r)`, доступ `*r` и `r.error()` — только после проверки; `value()` бросает `std::bad_expected_access`.
+- Тип ошибки — обычно `enum class` с функцией описания: код может реагировать на вид ошибки.
+- Функция, получившая ошибку, передаёт её наверх, добавляя контекст; цепочки строят `and_then`, `transform`, `or_else`, `transform_error`.
+- `std::expected<void, E>` — для операций без результата.
+- `expected` — для ожидаемых ошибок, исключения — для редких сбоев, `assert` — для ошибок в программе.

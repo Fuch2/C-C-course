@@ -1,117 +1,449 @@
 {
   "id": "advanced-define",
-  "title": "#define",
-  "description": "Объектоподобный макрос заменяет имя последовательностью токенов.",
+  "title": "#define: как раскрываются макросы",
+  "description": "Макрос как последовательность токенов; повторный просмотр подстановки и порядок определений; защита от самоподстановки; время жизни макроса и #undef; переопределение; макросы игнорируют области видимости; пустые макросы-флаги и пометки; -D и значения по умолчанию; склейка строковых макросов; когда #define нужен.",
   "moduleId": "advanced-c",
-  "order": 5,
-  "difficulty": "advanced",
-  "estimatedMinutes": 40,
+  "order": 8,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
   "prerequisites": ["advanced-preprocessor"],
   "objectives": [
-    "Объяснить: #define",
-    "Различать корректный контракт и ошибку: #define SCALE 2 + 3 превращает x * SCALE в x * 2 + 3.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Предсказывать результат раскрытия макросов с учётом повторного просмотра и самоподстановки",
+    "Управлять временем жизни макроса с помощью #undef и избегать переопределений",
+    "Объяснять, почему имена макросов пишут заглавными буквами",
+    "Выбирать между #define, enum и const"
   ],
-  "tags": ["C17", "углублённый C", "#define"],
+  "tags": ["#define", "#undef", "Макрос", "Препроцессор", "-D"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-define-exercise",
-    "title": "Практика: #define",
-    "description": "Исправьте константу SENSOR_SCALE как (2 + 3). Прочитайте x от −100 до 100, выведите произведение.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-define-task-1",
+    "title": "Таблица макросов",
+    "description": "Смоделируйте таблицу макросов препроцессора. Каждая строка ввода — одна из команд:\n- `#define ИМЯ замена` — определить макрос; замена может быть пустой. Если макрос уже определён с **другой** заменой, напечатайте `предупреждение: ИМЯ переопределён` и замените значение; если с такой же — ничего не делайте;\n- `#undef ИМЯ` — удалить макрос (удаление неопределённого — не ошибка);\n- `? ИМЯ` — напечатать `ИМЯ = замена`, `ИМЯ = (пусто)` для пустой замены или `ИМЯ не определён`;\n- `list` — напечатать имена всех определённых макросов через пробел в порядке `strcmp` или `(нет макросов)`.\n\nЗамены сравниваются и печатаются нормализованными: без пробелов в начале и в конце, каждая группа пробелов внутри — один пробел.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "4",
-        "output": "20\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "#define N 10\n? N\n#define N  10\n#define N 20\n? N\n",
+        "output": "N = 10\nпредупреждение: N переопределён\nN = 20\n",
+        "explanation": "Второе определение совпадает с первым после нормализации пробелов."
       },
       {
-        "input": "-2",
-        "output": "-10\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "#define DEBUG\n? DEBUG\n#undef DEBUG\n? DEBUG\nlist\n",
+        "output": "DEBUG = (пусто)\nDEBUG не определён\n(нет макросов)\n"
       }
     ],
     "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+      "Строк не больше 100; имена — до 31 символа; замены — до 100 символов.",
+      "Одновременно определено не больше 50 макросов."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Макрос — текстовая подстановка, а не ячейка памяти с постоянным значением."
+        "text": "Храните макросы в массиве структур { char name[32]; char value[128]; int used; } и ищите по имени линейно.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "#define SCALE 2 + 3 превращает x * SCALE в x * 2 + 3."
+        "text": "Нормализацию сделайте отдельной функцией squeeze(src, dst): копирует символы, сжимая группы пробелов и отбрасывая их по краям.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Для list скопируйте указатели на имена в массив, отсортируйте qsort со strcmp и напечатайте.",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "4",
-        "expected": "20\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "#define N 10\n? N\n#define N  10\n#define N 20\n? N\n",
+        "expected": "N = 10\nпредупреждение: N переопределён\nN = 20\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "-2",
-        "expected": "-10\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "#define DEBUG\n? DEBUG\n#undef DEBUG\n? DEBUG\nlist\n",
+        "expected": "DEBUG = (пусто)\nDEBUG не определён\n(нет макросов)\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "0",
-        "expected": "0\n"
+        "id": "hidden-1",
+        "name": "Сортировка",
+        "stdin": "#define B 2\n#define A 1\n#define C 3\nlist\n",
+        "expected": "A B C\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Удаление неопределённого",
+        "stdin": "#undef GHOST\n? GHOST\n",
+        "expected": "GHOST не определён\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Пробелы между токенами важны",
+        "stdin": "#define X (1 + 2)\n#define X (1+2)\n? X\n",
+        "expected": "предупреждение: X переопределён\nX = (1+2)\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Нормализация",
+        "stdin": "#define AREA   (W  *   H)   \n? AREA\n",
+        "expected": "AREA = (W * H)\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Переопределение после undef",
+        "stdin": "#define V 1\n#undef V\n#define V 2\n? V\n",
+        "expected": "V = 2\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Пустое и непустое",
+        "stdin": "#define F\n#define F 1\n? F\n",
+        "expected": "предупреждение: F переопределён\nF = 1\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Регистр и подчёркивание",
+        "stdin": "#define a 1\n#define B 2\n#define _c 3\nlist\n#undef B\nlist\n",
+        "expected": "B _c a\n_c a\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Пробелы в строке",
+        "stdin": "#define MSG \"hello   world\"\n? MSG\n",
+        "expected": "MSG = \"hello world\"\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n#define SENSOR_SCALE (2 + 3)\nint main(void) {\n    int x;\n    if (scanf(\"%d\", &x) != 1) return 1;\n    printf(\"%d\\n\", x * SENSOR_SCALE);\n    return 0;\n}\n",
-    "solutionExplanation": "Макрос — текстовая подстановка, а не ячейка памяти с постоянным значением.\n\n#define SCALE 2 + 3 превращает x * SCALE в x * 2 + 3.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '4' → '20\\n'; '-2' → '-10\\n'; '0' → '0\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct {\n    char name[32];\n    char value[128];\n    int used;\n} Macro;\n\nstatic Macro macros[50];\n\nstatic void squeeze(const char *src, char *dst) {\n    int n = 0, gap = 0;\n    for (; *src != '\\0' && *src != '\\n'; src++) {\n        if (*src == ' ' || *src == '\\t') {\n            gap = n > 0;\n            continue;\n        }\n        if (gap) {\n            dst[n++] = ' ';\n            gap = 0;\n        }\n        dst[n++] = *src;\n    }\n    dst[n] = '\\0';\n}\n\nstatic Macro *find(const char *name) {\n    for (int i = 0; i < 50; i++) {\n        if (macros[i].used && strcmp(macros[i].name, name) == 0) {\n            return &macros[i];\n        }\n    }\n    return NULL;\n}\n\nstatic int by_name(const void *a, const void *b) {\n    return strcmp(*(const char *const *)a, *(const char *const *)b);\n}\n\nint main(void) {\n    char line[256];\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        char command[16], name[32];\n        int offset = 0;\n        if (sscanf(line, \"%15s %31s%n\", command, name, &offset) < 1) {\n            continue;\n        }\n        if (strcmp(command, \"#define\") == 0) {\n            char value[128];\n            squeeze(line + offset, value);\n            Macro *m = find(name);\n            if (m != NULL) {\n                if (strcmp(m->value, value) != 0) {\n                    printf(\"предупреждение: %s переопределён\\n\", name);\n                    strcpy(m->value, value);\n                }\n                continue;\n            }\n            for (int i = 0; i < 50; i++) {\n                if (!macros[i].used) {\n                    macros[i].used = 1;\n                    strcpy(macros[i].name, name);\n                    strcpy(macros[i].value, value);\n                    break;\n                }\n            }\n        } else if (strcmp(command, \"#undef\") == 0) {\n            Macro *m = find(name);\n            if (m != NULL) {\n                m->used = 0;\n            }\n        } else if (strcmp(command, \"?\") == 0) {\n            Macro *m = find(name);\n            if (m == NULL) {\n                printf(\"%s не определён\\n\", name);\n            } else {\n                printf(\"%s = %s\\n\", name, m->value[0] ? m->value : \"(пусто)\");\n            }\n        } else if (strcmp(command, \"list\") == 0) {\n            const char *names[50];\n            int count = 0;\n            for (int i = 0; i < 50; i++) {\n                if (macros[i].used) {\n                    names[count++] = macros[i].name;\n                }\n            }\n            if (count == 0) {\n                printf(\"(нет макросов)\\n\");\n                continue;\n            }\n            qsort(names, (size_t)count, sizeof names[0], by_name);\n            for (int i = 0; i < count; i++) {\n                printf(i + 1 < count ? \"%s \" : \"%s\\n\", names[i]);\n            }\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Таблица моделирует то, что препроцессор хранит во время обработки файла: имя и последовательность токенов замены. Сравнение после нормализации пробелов повторяет правило стандарта: определения считаются одинаковыми, если совпадают токены и наличие пробелов между ними, а количество пробелов значения не имеет. Поэтому `#define N  10` после `#define N 10` — не переопределение.\n\nФормат `%n` в `sscanf` записывает, сколько символов уже прочитано: всё после имени — это замена, её не нужно разбирать на слова. После `#undef` ячейка освобождается и может быть занята следующим макросом — порядок в таблице не важен, потому что `list` сортирует имена.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-define-task-2",
+      "title": "Найди ошибку: макрос и поле структуры",
+      "description": "Программа читает слова до конца ввода и собирает их в буфер на 32 байта через одиночные пробелы. Слово, которое не помещается (вместе с пробелом и завершающим нулём), пропускается. В конце программа печатает содержимое буфера в кавычках, длину и число пропущенных слов.\n\nПрограмма не компилируется, а сообщения компилятора указывают на поле структуры и на обращения к нему. Найдите настоящую причину и исправьте её так, как требует соглашение об именах.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <string.h>\n\n#define size 32\n\nstruct Buffer {\n    char data[size];\n    int size;                   // сколько символов занято\n};\n\nint buffer_append(struct Buffer *b, const char *word) {\n    int len = (int)strlen(word);\n    int extra = b->size > 0 ? 1 : 0;        // пробел перед словом\n    if (b->size + extra + len >= size) {\n        return 0;\n    }\n    if (extra) {\n        b->data[b->size++] = ' ';\n    }\n    memcpy(b->data + b->size, word, (size_t)len + 1);\n    b->size += len;\n    return 1;\n}\n\nint main(void) {\n    struct Buffer b = {\"\", 0};\n    char word[64];\n    int skipped = 0;\n    while (scanf(\"%63s\", word) == 1) {\n        if (!buffer_append(&b, word)) {\n            skipped++;\n        }\n    }\n    printf(\"буфер: \\\"%s\\\"\\n\", b.data);\n    printf(\"длина: %d\\n\", b.size);\n    printf(\"не поместилось: %d\\n\", skipped);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "мама мыла раму\n",
+          "output": "буфер: \"мама мыла раму\"\nдлина: 26\nне поместилось: 0\n",
+          "explanation": "Русская буква в UTF-8 занимает два байта."
+        },
+        {
+          "input": "alpha beta gamma delta epsilon zeta\n",
+          "output": "буфер: \"alpha beta gamma delta epsilon\"\nдлина: 30\nне поместилось: 1\n"
+        }
+      ],
+      "constraints": ["Слова — до 63 символов без пробелов, слов не больше 30."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Посмотрите, во что препроцессор превращает строку int size; внутри структуры.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Макрос с именем обычного идентификатора заменяет и поле size, и все обращения b->size. Переименуйте макрос заглавными буквами, например BUFFER_CAPACITY.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "мама мыла раму\n",
+          "expected": "буфер: \"мама мыла раму\"\nдлина: 26\nне поместилось: 0\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "alpha beta gamma delta epsilon zeta\n",
+          "expected": "буфер: \"alpha beta gamma delta epsilon\"\nдлина: 30\nне поместилось: 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "one\n",
+          "expected": "буфер: \"one\"\nдлина: 3\nне поместилось: 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "abcdefghijklmnopqrstuvwxyz01234\n",
+          "expected": "буфер: \"abcdefghijklmnopqrstuvwxyz01234\"\nдлина: 31\nне поместилось: 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "abcdefghijklmnopqrstuvwxyz012345\nok\n",
+          "expected": "буфер: \"ok\"\nдлина: 2\nне поместилось: 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "a b c d e f g h i j k l m n o p q\n",
+          "expected": "буфер: \"a b c d e f g h i j k l m n o p\"\nдлина: 31\nне поместилось: 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "longwordlongwordlongwordlongword x\n",
+          "expected": "буфер: \"x\"\nдлина: 1\nне поместилось: 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "hello world\n",
+          "expected": "буфер: \"hello world\"\nдлина: 11\nне поместилось: 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "aaaaaaaaaa bbbbbbbbbb cccccccccc d\n",
+          "expected": "буфер: \"aaaaaaaaaa bbbbbbbbbb d\"\nдлина: 23\nне поместилось: 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "x\n",
+          "expected": "буфер: \"x\"\nдлина: 1\nне поместилось: 0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define BUFFER_CAPACITY 32\n\nstruct Buffer {\n    char data[BUFFER_CAPACITY];\n    int size;                   // сколько символов занято\n};\n\nint buffer_append(struct Buffer *b, const char *word) {\n    int len = (int)strlen(word);\n    int extra = b->size > 0 ? 1 : 0;        // пробел перед словом\n    if (b->size + extra + len >= BUFFER_CAPACITY) {\n        return 0;\n    }\n    if (extra) {\n        b->data[b->size++] = ' ';\n    }\n    memcpy(b->data + b->size, word, (size_t)len + 1);\n    b->size += len;\n    return 1;\n}\n\nint main(void) {\n    struct Buffer b = {\"\", 0};\n    char word[64];\n    int skipped = 0;\n    while (scanf(\"%63s\", word) == 1) {\n        if (!buffer_append(&b, word)) {\n            skipped++;\n        }\n    }\n    printf(\"буфер: \\\"%s\\\"\\n\", b.data);\n    printf(\"длина: %d\\n\", b.size);\n    printf(\"не поместилось: %d\\n\", skipped);\n    return 0;\n}\n",
+      "solutionExplanation": "Макрос `size` заменяет **каждый** идентификатор `size` в файле: поле структуры превращается в `int 32;`, а обращения `b->size` — в `b->32`. Компилятор видит уже результат подстановки и сообщает об ошибках там, где стоят эти строки, хотя причина — в директиве `#define` выше.\n\nИсправление по соглашению — дать макросу заглавное имя `BUFFER_CAPACITY`. Переименовать поле тоже можно, но тогда ловушка останется для следующего, кто назовёт что-нибудь `size`. Заглавные имена только для макросов исключают такие столкновения целиком.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-define-task-3",
+      "title": "Подстановка и приоритет",
+      "description": "Покажите, чем опасен макрос без скобок. В первой строке — число макросов `m`, далее `m` строк `ИМЯ выражение`. Затем число запросов `q` и `q` строк-выражений.\n\nВыражения состоят из неотрицательных целых чисел, имён макросов, знаков `+ - * /` и круглых скобок; пробелы между токенами могут быть или отсутствовать. Каждое имя в выражениях — один из макросов; макросы не ссылаются сами на себя ни прямо, ни через другие.\n\nДля каждого запроса вычислите значение двумя способами и напечатайте `без скобок: A, со скобками: B`:\n- **A** — как препроцессор и компилятор: каждое имя заменяется токенами его выражения (с повторной подстановкой), затем результат вычисляется по обычным приоритетам;\n- **B** — как если бы замена каждого макроса была взята в скобки.\n\nДеление целочисленное, с отбрасыванием дробной части, как в C. Если при вычислении встретилось деление на ноль, вместо числа напечатайте `деление на ноль`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\nWIDTH 10 + 2\nAREA WIDTH * WIDTH\n2\nAREA\nAREA / 2\n",
+          "output": "без скобок: 32, со скобками: 144\nбез скобок: 31, со скобками: 72\n"
+        },
+        {
+          "input": "1\nZERO 1 - 1\n1\n10 / ZERO\n",
+          "output": "без скобок: 9, со скобками: деление на ноль\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ m ≤ 20, 1 ≤ q ≤ 20; выражения — до 100 символов.",
+        "После полной подстановки не больше 5000 токенов; все промежуточные значения по модулю не больше 10¹⁵."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Разбейте каждое выражение на токены (число, имя, знак, скобка) и храните токены макросов. Подстановку сделайте рекурсивной функцией expand(токены, со_скобками, результат).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Для способа B перед подстановкой токенов макроса добавьте \"(\", а после — \")\". После подстановки в результате остаются только числа, знаки и скобки.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Вычисляйте результат рекурсивным спуском, как в калькуляторе из первого урока раздела, но по массиву токенов. Деление на ноль отметьте флагом.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\nWIDTH 10 + 2\nAREA WIDTH * WIDTH\n2\nAREA\nAREA / 2\n",
+          "expected": "без скобок: 32, со скобками: 144\nбез скобок: 31, со скобками: 72\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nZERO 1 - 1\n1\n10 / ZERO\n",
+          "expected": "без скобок: 9, со скобками: деление на ноль\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одно число",
+          "stdin": "1\nN 5\n1\nN * N\n",
+          "expected": "без скобок: 25, со скобками: 25\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скобки уже есть",
+          "stdin": "1\nK (2 + 3)\n1\nK * 4\n",
+          "expected": "без скобок: 20, со скобками: 20\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Двойная подстановка",
+          "stdin": "2\nA 1 + 1\nB A * A\n1\nB * B\n",
+          "expected": "без скобок: 5, со скобками: 16\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Деление",
+          "stdin": "1\nH 100 / 4\n1\n200 / H\n",
+          "expected": "без скобок: 0, со скобками: 8\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Вычитание",
+          "stdin": "1\nD 8 - 3\n1\n20 - D\n",
+          "expected": "без скобок: 9, со скобками: 15\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Без пробелов и без макросов",
+          "stdin": "1\nX 2\n2\n(X+3)*X\n1+2*3\n",
+          "expected": "без скобок: 10, со скобками: 10\nбез скобок: 7, со скобками: 7\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Цепочка макросов",
+          "stdin": "3\nA 1+2\nB A*3\nC B-A\n1\nC*2\n",
+          "expected": "без скобок: 10, со скобками: 12\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Деление на ноль в обоих",
+          "stdin": "1\nZ 0\n1\n5 / Z\n",
+          "expected": "без скобок: деление на ноль, со скобками: деление на ноль\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Большие числа",
+          "stdin": "1\nBIG 1000000 * 1000\n1\nBIG / 1000 + 1\n",
+          "expected": "без скобок: 1000001, со скобками: 1000001\n"
+        }
+      ],
+      "referenceSolution": "#include <ctype.h>\n#include <stdio.h>\n#include <string.h>\n\n#define MAX_TOKENS 6000\n\ntypedef struct {\n    char kind;            // 'n' — число, 'i' — имя, иначе символ знака или скобки\n    long long value;\n    char name[32];\n} Token;\n\ntypedef struct {\n    char name[32];\n    Token tokens[100];\n    int count;\n} Macro;\n\nstatic Macro macros[20];\nstatic int macro_count;\nstatic Token expanded[MAX_TOKENS];\nstatic int expanded_count;\nstatic int pos;\nstatic int division_by_zero;\n\nstatic int tokenize(const char *s, Token *out) {\n    int n = 0;\n    while (*s != '\\0') {\n        if (isspace((unsigned char)*s)) {\n            s++;\n        } else if (isdigit((unsigned char)*s)) {\n            out[n].kind = 'n';\n            out[n].value = 0;\n            while (isdigit((unsigned char)*s)) {\n                out[n].value = out[n].value * 10 + (*s++ - '0');\n            }\n            n++;\n        } else if (isalpha((unsigned char)*s) || *s == '_') {\n            int len = 0;\n            out[n].kind = 'i';\n            while ((isalnum((unsigned char)*s) || *s == '_') && len < 31) {\n                out[n].name[len++] = *s++;\n            }\n            out[n].name[len] = '\\0';\n            n++;\n        } else {\n            out[n++].kind = *s++;\n        }\n    }\n    return n;\n}\n\nstatic void push(Token t) {\n    if (expanded_count < MAX_TOKENS) {\n        expanded[expanded_count++] = t;\n    }\n}\n\nstatic void expand(const Token *tokens, int count, int parens) {\n    for (int i = 0; i < count; i++) {\n        if (tokens[i].kind != 'i') {\n            push(tokens[i]);\n            continue;\n        }\n        for (int m = 0; m < macro_count; m++) {\n            if (strcmp(macros[m].name, tokens[i].name) == 0) {\n                Token bracket = {'(', 0, \"\"};\n                if (parens) {\n                    push(bracket);\n                }\n                expand(macros[m].tokens, macros[m].count, parens);\n                bracket.kind = ')';\n                if (parens) {\n                    push(bracket);\n                }\n                break;\n            }\n        }\n    }\n}\n\nstatic long long parse_expr(void);\n\nstatic long long parse_factor(void) {\n    if (pos < expanded_count && expanded[pos].kind == '(') {\n        pos++;\n        long long value = parse_expr();\n        pos++;                                    // ')'\n        return value;\n    }\n    return pos < expanded_count ? expanded[pos++].value : 0;\n}\n\nstatic long long parse_term(void) {\n    long long value = parse_factor();\n    while (pos < expanded_count && (expanded[pos].kind == '*' || expanded[pos].kind == '/')) {\n        char op = expanded[pos++].kind;\n        long long right = parse_factor();\n        if (op == '*') {\n            value *= right;\n        } else if (right == 0) {\n            division_by_zero = 1;\n        } else {\n            value /= right;\n        }\n    }\n    return value;\n}\n\nstatic long long parse_expr(void) {\n    long long value = parse_term();\n    while (pos < expanded_count && (expanded[pos].kind == '+' || expanded[pos].kind == '-')) {\n        char op = expanded[pos++].kind;\n        long long right = parse_term();\n        value = op == '+' ? value + right : value - right;\n    }\n    return value;\n}\n\nstatic void evaluate(const Token *tokens, int count, int parens) {\n    expanded_count = 0;\n    pos = 0;\n    division_by_zero = 0;\n    expand(tokens, count, parens);\n    long long value = parse_expr();\n    if (division_by_zero) {\n        printf(\"деление на ноль\");\n    } else {\n        printf(\"%lld\", value);\n    }\n}\n\nint main(void) {\n    char line[256];\n    if (fgets(line, sizeof line, stdin) == NULL || sscanf(line, \"%d\", &macro_count) != 1) {\n        return 0;\n    }\n    for (int m = 0; m < macro_count; m++) {\n        int offset = 0;\n        if (fgets(line, sizeof line, stdin) == NULL ||\n            sscanf(line, \"%31s%n\", macros[m].name, &offset) != 1) {\n            return 0;\n        }\n        macros[m].count = tokenize(line + offset, macros[m].tokens);\n    }\n    int q;\n    if (fgets(line, sizeof line, stdin) == NULL || sscanf(line, \"%d\", &q) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < q && fgets(line, sizeof line, stdin) != NULL; i++) {\n        Token tokens[100];\n        int count = tokenize(line, tokens);\n        printf(\"без скобок: \");\n        evaluate(tokens, count, 0);\n        printf(\", со скобками: \");\n        evaluate(tokens, count, 1);\n        printf(\"\\n\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Способ A повторяет работу препроцессора: имя заменяется токенами замены, и они смешиваются с окружающими операциями. `WIDTH * WIDTH` при `WIDTH = 10 + 2` превращается в `10 + 2 * 10 + 2`, и умножение «захватывает» соседние числа. Способ B — то, что программист имел в виду: `(10 + 2) * (10 + 2)`. Разница между двумя ответами и есть ошибка, которую предотвращают скобки вокруг замены.\n\nПодстановка рекурсивна: замена `AREA` содержит `WIDTH`, которая тоже раскрывается. Повторный просмотр в препроцессоре устроен так же, а защита от самоподстановки здесь не нужна — условие гарантирует отсутствие циклов.\n\nВычисление — рекурсивный спуск по массиву токенов. Деление на ноль может появиться только в одном из способов: в примере `10 / ZERO` при `ZERO = 1 - 1` без скобок получается `10 / 1 - 1 = 9`, а со скобками — `10 / (1 - 1)`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-define-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Чего нет у макроса-константы?",
-        "options": ["Собственного адреса объекта", "Последовательности заменяющих токенов"],
-        "correct": 0,
-        "explanation": "Объектоподобный макрос заменяет имя последовательностью токенов. Типизированного объекта и адреса у него нет. Скобки вокруг выражения сохраняют ожидаемый приоритет при подстановке. Не ставьте точку с запятой в значение: это внедряет лишнюю границу оператора в чужое выражение."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\n#define TOTAL (PRICE * COUNT)\n#define PRICE 25\n#define COUNT 4\n\nint main(void) {\n    printf(\"%d\\n\", TOTAL);\n    return 0;\n}",
+        "explanation": "TOTAL раскрывается в момент использования, когда PRICE и COUNT уже определены. При определении TOTAL препроцессор лишь запомнил токены.",
+        "type": "text",
+        "answers": ["100"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint n = 3;\n#define n (n + 1)\n\nint main(void) {\n    printf(\"%d\\n\", n * 2);\n    return 0;\n}",
+        "explanation": "n раскрывается в (n + 1), а внутри собственной подстановки макрос не раскрывается — там остаётся переменная со значением 3. Получается (3 + 1) * 2 = 8.",
+        "type": "text",
+        "answers": ["8"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q3",
+        "question": "Какое значение получит LIMIT в строках после этих директив?",
+        "code": "#define LIMIT 10\n#define LIMIT 20",
+        "codeLanguage": "c",
+        "explanation": "Переопределение с другой заменой — нарушение правил, о котором компилятор обязан сообщить. GCC сообщает предупреждением и дальше использует последнее определение.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "#define SCALE 2 + 3 превращает x * SCALE в x * 2 + 3."
+          "20, а GCC выдаст предупреждение \"LIMIT\" redefined",
+          "10: первое определение побеждает",
+          "Ошибка компиляции, сборка остановится",
+          "30: определения складываются"
         ],
-        "correct": 1,
-        "explanation": "Макрос — текстовая подстановка, а не ячейка памяти с постоянным значением."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["6", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: printf(\"%d\\n\",2*STEP); Ожидаемый результат: 6"
+        "id": "q4",
+        "question": "Что делает директива #undef DEBUG?",
+        "explanation": "После #undef имя перестаёт быть макросом; его можно определить заново. Удаление неопределённого макроса — не ошибка.",
+        "options": [
+          "Удаляет макрос DEBUG: ниже он не определён",
+          "Определяет DEBUG со значением 0",
+          "Запрещает определять DEBUG до конца файла",
+          "Удаляет все строки, где встречается DEBUG"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какой директиве равносилен флаг компилятора -DSIZE=64?",
+        "explanation": "-D определяет макрос так, будто директива стоит в самом начале файла. -DNAME без значения равносилен #define NAME 1.",
+        "type": "text",
+        "answers": ["#define SIZE 64"],
+        "placeholder": "Директива"
+      },
+      {
+        "id": "q6",
+        "question": "В файле определён макрос #define count 0, а ниже объявлена структура с полем int count;. Что произойдёт?",
+        "explanation": "Препроцессор не знает о структурах и заменяет идентификатор count везде. Поэтому имена макросов пишут заглавными буквами.",
+        "options": [
+          "Ошибка компиляции: поле превратится в int 0;",
+          "Ничего: макросы не действуют внутри структур",
+          "Поле получит начальное значение 0",
+          "Предупреждение о затенении имени"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "В каких случаях нельзя заменить #define на enum или const? Выберите все.",
+        "explanation": "Препроцессор не знает enum и const, а склеиваются только литералы. Проверку типа, наоборот, дают enum и const, а не макрос.",
+        "type": "multiple",
+        "options": [
+          "Значение проверяется в директиве #if",
+          "Значение задаётся при сборке флагом -D",
+          "Строку нужно склеить с другими литералами: \"v\" VERSION",
+          "Нужна проверка типа значения компилятором"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q8",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\n#define EMPTY\n\nint main(void) {\n    EMPTY int x = EMPTY 5 EMPTY;\n    printf(\"%d\\n\", x EMPTY);\n    return 0;\n}",
+        "explanation": "Пустой макрос раскрывается в ничто: после препроцессора остаются int x = 5; и printf(\"%d\\n\", x);.",
+        "type": "text",
+        "answers": ["5"],
+        "placeholder": "Вывод программы"
       }
     ]
   }

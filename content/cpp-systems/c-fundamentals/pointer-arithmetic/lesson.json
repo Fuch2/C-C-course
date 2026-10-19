@@ -14,9 +14,9 @@
     "Вычислять индекс как разность указателей и печатать её через %td",
     "Применять «читающий» и «пишущий» указатели и два указателя навстречу"
   ],
-  "tags": ["C17", "Указатели", "Массивы"],
+  "tags": ["C23", "Указатели", "Массивы"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-pointer-arithmetic-task-1",
@@ -25,7 +25,7 @@
     "difficulty": "intermediate",
     "starterCode": "#include <stdio.h>\n\nvoid reverse(int *begin, int *end) {\n    // Меняйте местами *begin и элемент перед end, сближая указатели.\n}\n\nint main(void) {\n    int a[1000];\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    reverse(a, a + n);\n    for (int i = 0; i < n; i++) {\n        printf(i > 0 ? \" %d\" : \"%d\", a[i]);\n    }\n    printf(\"\\n\");\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -120,7 +120,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nconst int *find_value(const int *begin, const int *end, int value) {\n    // Верните указатель на первый элемент, равный value, или end.\n    return end;\n}\n\nint main(void) {\n    int a[1000];\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    int q;\n    scanf(\"%d\", &q);\n    for (int k = 0; k < q; k++) {\n        int l, r, x;\n        scanf(\"%d %d %d\", &l, &r, &x);\n        const int *p = find_value(a + l, a + r, x);\n        if (p == a + r) {\n            printf(\"-1\\n\");\n        } else {\n            printf(\"%td\\n\", p - a);\n        }\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -214,7 +214,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nvoid move_zeros(int *begin, int *end) {\n    // Пишущий указатель w отстаёт от читающего r или совпадает с ним.\n}\n\nint main(void) {\n    int a[1000];\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    move_zeros(a, a + n);\n    for (int i = 0; i < n; i++) {\n        printf(i > 0 ? \" %d\" : \"%d\", a[i]);\n    }\n    printf(\"\\n\");\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -305,7 +305,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nvoid squeeze_spaces(char *s) {\n    // Читающий и пишущий указатели по одной строке.\n}\n\nint main(void) {\n    char line[202];\n    while (fgets(line, sizeof(line), stdin) != NULL) {\n        char *p = line;\n        while (*p != '\\0' && *p != '\\n') {\n            p++;\n        }\n        *p = '\\0';\n        squeeze_spaces(line);\n        printf(\"[%s]\\n\", line);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

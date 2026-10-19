@@ -1,127 +1,536 @@
 {
   "id": "cpp20-string",
-  "title": "std::string",
-  "description": "Строка C++ владеет буфером и знает размер, в отличие от char* с sentinel\\0. Это снижает риск выхода за границы, но копирование всё ещё стоит O(n).",
+  "title": "Строки: std::string",
+  "description": "Строка, которая хранит длину и управляет памятью; size, +=, push_back и доступ по индексу; сравнение и склеивание; find, rfind, npos и substr; insert, replace, erase; to_string и stoi; at и c_str; стоимость копирования.",
   "moduleId": "cpp-fundamentals",
-  "order": 5,
+  "order": 6,
   "difficulty": "beginner",
-  "estimatedMinutes": 35,
+  "estimatedMinutes": 45,
   "prerequisites": ["cpp20-cin"],
   "objectives": [
-    "Объяснить, зачем появился std::string и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Создавать, изменять и сравнивать строки std::string",
+    "Искать подстроки и правильно обрабатывать npos",
+    "Переводить числа в строки и обратно",
+    "Передавать строки функциям C через c_str"
   ],
-  "tags": ["C++20", "основы C++", "std::string"],
+  "tags": ["C++", "string", "Строки"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-string-exercise",
-    "title": "Части команды с пустыми полями",
-    "description": "Прочитайте одну ASCII-строку длиной до 200 и разделите по ;. Выведите количество полей, затем каждое на новой строке. Сохраните пустые поля, включая последнее: a;;b; даёт четыре поля. Пустая строка содержит одно пустое поле. Не используйте strtok.",
+    "id": "cpp20-string-task-1",
+    "title": "Инициалы",
+    "description": "Каждая строка ввода — фамилия, имя и, возможно, отчество латинскими буквами через пробел. Напечатайте фамилию и инициалы: `Ivanov I. P.` или `Ivanov I.`, если отчества нет.",
     "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "a;;b;\n",
-        "output": "4\na\n\nb\n\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "Ivanov Ivan Petrovich\n",
+        "output": "Ivanov I. P.\n"
       },
       {
-        "input": "\n",
-        "output": "1\n\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "Lovelace Ada\nHopper Grace Murray\n",
+        "output": "Lovelace A.\nHopper G. M.\n"
       }
     ],
     "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
+      "Строк не больше 30; в строке 2 или 3 слова, каждое начинается с заглавной буквы."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "Разберите строку строковым потоком: std::istringstream in(line); in >> surname >> name >> patronymic; — если отчества нет, третье чтение не удастся и patronymic останется пустой.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "Инициал — первый символ: name[0]. Ответ удобно собрать в std::string: result = surname + \" \" + name[0] + \".\".",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "a;;b;\n",
-        "expected": "4\na\n\nb\n\n"
+        "stdin": "Ivanov Ivan Petrovich\n",
+        "expected": "Ivanov I. P.\n"
       },
-      { "id": "case-2", "name": "Пример 2", "stdin": "\n", "expected": "1\n\n" }
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "Lovelace Ada\nHopper Grace Murray\n",
+        "expected": "Lovelace A.\nHopper G. M.\n"
+      }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": ";",
-        "expected": "2\n\n\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "Ritchie Dennis\n",
+        "expected": "Ritchie D.\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "abc",
-        "expected": "1\nabc\n"
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "Stroustrup Bjarne Q\n",
+        "expected": "Stroustrup B. Q.\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный сценарий 3",
-        "stdin": " a ; b ",
-        "expected": "2\n a \n b \n"
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "A B C\n",
+        "expected": "A B. C.\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "A B\n",
+        "expected": "A B.\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "Torvalds Linus Benedict\nThompson Ken\n",
+        "expected": "Torvalds L. B.\nThompson K.\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "Knuth Donald Ervin\n",
+        "expected": "Knuth D. E.\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "Kernighan Brian Wilson\nPike Rob\n",
+        "expected": "Kernighan B. W.\nPike R.\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "Liskov Barbara Jane\n",
+        "expected": "Liskov B. J.\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <string>\n\nvoid split_command(const std::string& text) {\n    std::size_t count = 1;\n    for (char ch : text) if (ch == ';') ++count;\n    std::cout << count << '\\n';\n    std::size_t start = 0;\n    while (true) {\n        const auto end = text.find(';', start);\n        std::cout << text.substr(start, end == std::string::npos ? end : end - start) << '\\n';\n        if (end == std::string::npos) break;\n        start = end + 1;\n    }\n}\nint main() {\n    std::string text;\n    std::getline(std::cin, text);\n    split_command(text);\n}\n",
-    "solutionExplanation": "find возвращает позицию либо npos; проверяем npos до прибавления единицы. substr(size) создаёт пустую строку. substr владеет результатом и копирует байты. Диапазоны не перекрываются, суммарный поиск и копирование O(n), пиковая рабочая память O(n). size считает char, а не буквы Unicode.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <iostream>\n#include <sstream>\n#include <string>\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        std::istringstream in(line);\n        std::string surname, name, patronymic;\n        in >> surname >> name >> patronymic;\n        std::string result = surname + \" \" + name[0] + \".\";\n        if (!patronymic.empty()) {\n            result += \" \";\n            result += patronymic[0];\n            result += \".\";\n        }\n        std::cout << result << '\\n';\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Строка разбирается на слова строковым потоком: если третьего слова нет, чтение `patronymic` не удаётся и строка остаётся пустой — это проверяет `empty()`.\n\nВыражение `surname + \" \" + name[0] + \".\"` вычисляется слева направо: `surname + \" \"` — уже `std::string`, к нему можно прибавить символ `name[0]` и литерал. Если бы выражение начиналось с двух литералов или литерала и символа, склеивания не было бы — получилась бы арифметика указателей.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-string-task-2",
+      "title": "Замена подстроки",
+      "description": "Первая строка ввода — два слова: что искать (`from`) и чем заменять (`to`). Дальше идут строки текста. В каждой строке замените все вхождения `from` на `to` слева направо (найденное вхождение заменяется, поиск продолжается после вставленного текста) и напечатайте строку.",
+      "difficulty": "beginner",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "cat dog\nthe cat sat on a cat\n",
+          "output": "the dog sat on a dog\n"
+        },
+        {
+          "input": "a aa\nbanana\n",
+          "output": "baanaanaa\n"
+        }
+      ],
+      "constraints": [
+        "from и to — непустые слова без пробелов, до 20 символов; строк текста не больше 30, длиной до 200 символов."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Цикл: pos = line.find(from, pos); пока pos != std::string::npos — line.replace(pos, from.size(), to); pos += to.size(); — и снова find.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Продолжать поиск нужно после вставленного текста (pos += to.size()), иначе при to, содержащем from, цикл никогда не закончится.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "cat dog\nthe cat sat on a cat\n",
+          "expected": "the dog sat on a dog\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "a aa\nbanana\n",
+          "expected": "baanaanaa\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Нет вхождений",
+          "stdin": "x y\nno match here\n",
+          "expected": "no match here\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Подряд",
+          "stdin": "ab X\nababab\n",
+          "expected": "XXX\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Перекрывающиеся",
+          "stdin": "aa b\naaaaa\n",
+          "expected": "bba\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Несколько строк",
+          "stdin": "C C++\nC and C\nC\n",
+          "expected": "C++ and C++\nC++\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Короче исходного",
+          "stdin": "long s\nlonglonglong\n",
+          "expected": "sss\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Длиннее исходного",
+          "stdin": "s longer\nsss\n",
+          "expected": "longerlongerlonger\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Внутри слова",
+          "stdin": "the THE\nthe theme of the\n",
+          "expected": "THE THEme of THE\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пустая строка",
+          "stdin": "z zz\nzzz\n\nz\n",
+          "expected": "zzzzzz\n\nzz\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <string>\n\nint main() {\n    std::string from, to;\n    if (!(std::cin >> from >> to)) {\n        return 0;\n    }\n    std::string line;\n    std::getline(std::cin, line);\n    while (std::getline(std::cin, line)) {\n        std::size_t pos = line.find(from);\n        while (pos != std::string::npos) {\n            line.replace(pos, from.size(), to);\n            pos = line.find(from, pos + to.size());\n        }\n        std::cout << line << '\\n';\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`find(from, pos)` ищет начиная с позиции `pos`, `replace(pos, len, to)` заменяет `len` символов строкой `to` — длины могут не совпадать, строка сама сдвинет хвост. После замены поиск продолжается **за** вставленным текстом: если начать с той же позиции, а `to` содержит `from` (например, `a` → `aa`), цикл заменял бы бесконечно.\n\nПервая строка читается оператором `>>`, а остаток этой строки пропускается пустым `getline` — иначе первый «текст» оказался бы пустой строкой.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-string-task-3",
+      "title": "Найди ошибку: ключ и значение",
+      "description": "Каждая строка ввода — пара вида `ключ=значение` или просто текст без знака `=`. Для пары программа печатает `ключ K, значение V`, а для строки без `=` должна печатать `нет значения: СТРОКА`.\n\nСтроки без `=` обрабатываются неправильно. Найдите и исправьте ошибку.",
+      "difficulty": "beginner",
+      "starterCode": "#include <iostream>\n#include <string>\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        std::size_t eq = line.find('=');\n        std::string key = line.substr(0, eq);\n        std::string value = line.substr(eq + 1);\n        std::cout << \"ключ \" << key << \", значение \" << value << '\\n';\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "name=Ada\nyear=1843\n",
+          "output": "ключ name, значение Ada\nключ year, значение 1843\n"
+        },
+        {
+          "input": "comment\n",
+          "output": "нет значения: comment\n"
+        }
+      ],
+      "constraints": ["Строк не больше 30, длиной до 100 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что возвращает find, если символа нет? Чему тогда равны line.substr(0, eq) и line.substr(eq + 1)?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "npos — наибольшее значение size_t, и npos + 1 переполняется в 0. Проверьте eq == std::string::npos до вызова substr.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "name=Ada\nyear=1843\n",
+          "expected": "ключ name, значение Ada\nключ year, значение 1843\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "comment\n",
+          "expected": "нет значения: comment\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "=x\n",
+          "expected": "ключ , значение x\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "x=\n",
+          "expected": "ключ x, значение \n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "a=b=c\n",
+          "expected": "ключ a, значение b=c\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "plain text line\n",
+          "expected": "нет значения: plain text line\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "\n",
+          "expected": "нет значения: \n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "k=v\nno pair\nk2=v2\n",
+          "expected": "ключ k, значение v\nнет значения: no pair\nключ k2, значение v2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "path=/usr/bin\n",
+          "expected": "ключ path, значение /usr/bin\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "equals sign missing here\n",
+          "expected": "нет значения: equals sign missing here\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <string>\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        std::size_t eq = line.find('=');\n        if (eq == std::string::npos) {\n            std::cout << \"нет значения: \" << line << '\\n';\n            continue;\n        }\n        std::string key = line.substr(0, eq);\n        std::string value = line.substr(eq + 1);\n        std::cout << \"ключ \" << key << \", значение \" << value << '\\n';\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Если знака `=` нет, `find` возвращает `npos`. Заготовка этого не проверяет: `line.substr(0, npos)` — вся строка (длина обрезается до конца строки), а `line.substr(npos + 1)` — это `substr(0)`, потому что беззнаковое `npos + 1` переполняется в ноль. В итоге и ключ, и значение равны всей строке, и программа не падает, а молча печатает неверный ответ.\n\n`npos` — не ошибка, которую можно не заметить, а обычное значение, которое нужно обработать. Сравнение с ним должно стоять сразу после `find`, до любого использования позиции.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-string-task-4",
+      "title": "Сжатие повторов",
+      "description": "Каждая строка ввода — команда и строка из строчных латинских букв или код:\n\n- `encode s` — сжать `s`: каждая серия одинаковых букв записывается буквой и, если серия длиннее 1, её длиной: `aaabcc` → `a3bc2`;\n- `decode s` — развернуть код обратно: `a3bc2` → `aaabcc`.\n\nНапечатайте результат каждой команды.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "encode aaabcc\ndecode a3bc2\n",
+          "output": "a3bc2\naaabcc\n"
+        },
+        {
+          "input": "encode abc\n",
+          "output": "abc\n"
+        }
+      ],
+      "constraints": [
+        "Для encode — от 1 до 1000 букв.",
+        "Для decode — корректный код: буквы, после которых может идти число от 2 до 1000; результат не длиннее 10 000 символов; строк не больше 20."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Кодирование: идите по строке, считая длину текущей серии; когда символ меняется или строка кончилась — допишите букву и, если длина больше 1, std::to_string(длина).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Декодирование: запомните букву, затем соберите идущие следом цифры в число (count = count * 10 + (c - '0')); если цифр нет, count = 1. Добавить символ count раз: result.append(count, буква).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "encode aaabcc\ndecode a3bc2\n",
+          "expected": "a3bc2\naaabcc\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "encode abc\n",
+          "expected": "abc\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна буква",
+          "stdin": "encode a\n",
+          "expected": "a\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Декодирование одной буквы",
+          "stdin": "decode a\n",
+          "expected": "a\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Двузначная длина",
+          "stdin": "encode zzzzzzzzzzzz\n",
+          "expected": "z12\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Декодирование двузначного числа",
+          "stdin": "decode z12\n",
+          "expected": "zzzzzzzzzzzz\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Серия из 1000",
+          "stdin": "encode bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n",
+          "expected": "b1000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Длинный результат",
+          "stdin": "decode a1000b2\n",
+          "expected": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabb\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Повторяющиеся серии",
+          "stdin": "encode aabbaa\n",
+          "expected": "a2b2a2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Туда и обратно",
+          "stdin": "decode x2y3x2\nencode xxyyyxx\n",
+          "expected": "xxyyyxx\nx2y3x2\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <string>\n\nstd::string encode(const std::string &s) {\n    std::string result;\n    for (std::size_t i = 0; i < s.size();) {\n        std::size_t j = i;\n        while (j < s.size() && s[j] == s[i]) {\n            j++;\n        }\n        result += s[i];\n        if (j - i > 1) {\n            result += std::to_string(j - i);\n        }\n        i = j;\n    }\n    return result;\n}\n\nstd::string decode(const std::string &code) {\n    std::string result;\n    for (std::size_t i = 0; i < code.size();) {\n        char letter = code[i++];\n        std::size_t count = 0;\n        while (i < code.size() && code[i] >= '0' && code[i] <= '9') {\n            count = count * 10 + static_cast<std::size_t>(code[i] - '0');\n            i++;\n        }\n        result.append(count == 0 ? 1 : count, letter);\n    }\n    return result;\n}\n\nint main() {\n    std::string command, s;\n    while (std::cin >> command >> s) {\n        std::cout << (command == \"encode\" ? encode(s) : decode(s)) << '\\n';\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Кодирование находит границы серий двумя индексами: `i` — начало серии, `j` идёт вперёд, пока символы совпадают. Длина серии `j − i` превращается в текст через `std::to_string` и дописывается к результату. Декодирование — обратный разбор: буква, затем, возможно, многозначное число, которое собирается по цифрам.\n\nСтроки здесь растут по одному символу или куску — `+=` и `append` работают как добавление в конец динамического массива, амортизированно за `O(1)` на символ. Функции возвращают `std::string` по значению: в C++ это нормально, современные компиляторы не копируют возвращаемую строку. Такое сжатие (RLE) используют в простых графических форматах и факсах — оно выгодно, когда длинных серий много.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-string-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «std::string»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "Строка C++ владеет буфером и знает размер, в отличие от char* с sentinel\\0. Это снижает риск выхода за границы, но копирование всё ещё стоит O(n)."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <string>\n\nint main() {\n    std::string s = \"abc\";\n    s += s;\n    s.push_back('!');\n    std::cout << s << ' ' << s.size() << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "s += s дописывает копию строки к самой себе: «abcabc», затем «!» — семь символов.",
+        "type": "text",
+        "answers": ["abcabc! 7"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
-        "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
-        ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "id": "q2",
+        "question": "Что возвращает find, если подстрока не найдена?",
+        "explanation": "npos — наибольшее значение std::size_t. Его нужно явно сравнивать с результатом find, а позиции хранить в std::size_t.",
+        "options": ["std::string::npos", "−1 типа int", "0", "Длину строки"],
+        "correct": 0
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <string>\n\nint main() {\n    std::string s = \"2026-10-17\";\n    std::cout << s.substr(5, 2) << s.substr(8) << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "substr(5, 2) — два символа с позиции 5: «10»; substr(8) — от позиции 8 до конца: «17».",
+        "type": "text",
+        "answers": ["1017"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Какое выражение не скомпилируется?",
+        "explanation": "Два строковых литерала — это два указателя const char *, а складывать указатели нельзя. Хотя бы один операнд должен быть std::string.",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "\"Hello, \" + \"world\"",
+          "std::string(\"Hello, \") + \"world\"",
+          "std::string s = \"Hello\"; s + '!'",
+          "std::string a, b; a + b"
         ],
-        "correct": 0,
-        "explanation": "Используйте std::string как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Почему \"apple\" > \"Apple\" при сравнении std::string?",
+        "explanation": "Операторы сравнения std::string работают лексикографически по кодам символов, как strcmp.",
+        "options": [
+          "Сравнение идёт по кодам символов, а код строчной a больше кода заглавной A",
+          "Строчные буквы всегда больше в любой кодировке по правилам языка",
+          "Сравниваются длины строк",
+          "Сравниваются адреса строк"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Чем s.at(i) отличается от s[i]?",
+        "explanation": "s[i] за границами — неопределённое поведение, как в массиве C. at делает ошибку явной.",
+        "options": [
+          "at проверяет индекс и при выходе за границы бросает исключение std::out_of_range",
+          "at работает быстрее",
+          "at возвращает копию символа, а [] — ссылку",
+          "Ничем"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <string>\n\nint main() {\n    std::string a = \"copy\";\n    std::string b = a;\n    b[0] = 'C';\n    std::cout << a << ' ' << b << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "std::string b = a создаёт независимую копию символов. Изменение b не затрагивает a — в отличие от копирования указателя char *.",
+        "type": "text",
+        "answers": ["copy Copy"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q8",
+        "question": "Какие утверждения верны?",
+        "explanation": "После изменения строки её буфер может переехать, и указатель из c_str() станет недействительным.",
+        "type": "multiple",
+        "options": [
+          "size() работает за O(1)",
+          "std::to_string(42) возвращает строку \"42\"",
+          "c_str() возвращает указатель, который остаётся действительным после любых изменений строки",
+          "insert в середину строки стоит O(n)"
+        ],
+        "correct": [0, 1, 3]
       }
     ]
   }

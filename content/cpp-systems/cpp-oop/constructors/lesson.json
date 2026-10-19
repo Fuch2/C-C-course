@@ -1,128 +1,544 @@
 {
   "id": "oop-constructors",
-  "title": "Конструкторы: объект сразу готов к работе",
-  "description": "Конструктор задаёт начальное состояние объекта и не имеет возвращаемого типа. Список инициализации создаёт поля непосредственно: это особенно важно для const полей, ссылок и объектов без конструктора по умолчанию. Поля инициализируются в порядке объявления в классе, независимо от порядка записей в списке. explicit предотвращает нежелательное неявное преобразование аргумента в объект.",
+  "title": "Конструкторы",
+  "description": "Объект, готовый к работе с первой строки: конструктор и инвариант, исключение при недопустимых аргументах; список инициализации и почему он лучше присваивания; порядок инициализации полей и -Wreorder; конструктор по умолчанию и = default; перегрузка и делегирование конструкторов; explicit; статическая фабрика с std::expected.",
   "moduleId": "cpp-oop",
-  "order": 6,
-  "difficulty": "advanced",
-  "estimatedMinutes": 45,
-  "prerequisites": ["oop-protected"],
+  "order": 3,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["oop-class"],
   "objectives": [
-    "Применить Конструкторы: объект сразу готов к работе в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Писать конструкторы, которые устанавливают инвариант или отказываются создавать объект",
+    "Инициализировать поля в списке инициализации в правильном порядке",
+    "Применять = default, делегирование и explicit",
+    "Создавать объекты с проверкой через статическую фабрику"
   ],
-  "tags": ["C++20", "ООП", "Конструкторы: объект сразу готов к работе"],
+  "tags": ["C++23", "ООП", "Конструктор", "explicit", "expected"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-constructors-exercise",
-    "title": "Практика: Конструкторы: объект сразу готов к работе",
-    "description": "Реализуйте class Interval с private int low_, high_ и конструктором Interval(int a,int b), который сохраняет минимум и максимум аргументов. int width() const возвращает high_-low_. Используйте список инициализации. solve(a,b) возвращает ширину Interval{a,b}. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Дроби",
+    "description": "Каждая строка ввода — числитель и знаменатель. Опишите класс `Fraction`, конструктор которого приводит дробь к виду с положительным знаменателем и сокращает её, а при нулевом знаменателе бросает `std::invalid_argument`. Для каждой строки напечатайте дробь `a/b` или `ошибка: знаменатель равен нулю`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(2, 8)",
-        "output": "6\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "6 -8\n1 0\n",
+        "output": "-3/4\nошибка: знаменатель равен нулю\n"
       },
       {
-        "input": "solve(8, 2)",
-        "output": "6\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "10 5\n",
+        "output": "2/1\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Числа по модулю до 10⁹; строк не больше 20."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "В конструкторе: проверка нуля, затем смена знака обоих чисел при отрицательном знаменателе, затем деление на std::gcd из <numeric>.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Создание дроби — внутри try, перехват — catch (const std::invalid_argument &e), текст — e.what().",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [2, 8],
-        "expected": "6\n"
+        "stdin": "6 -8\n1 0\n",
+        "expected": "-3/4\nошибка: знаменатель равен нулю\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [8, 2],
-        "expected": "6\n"
+        "stdin": "10 5\n",
+        "expected": "2/1\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [5, 5],
-        "expected": "0\n"
+        "id": "hidden-1",
+        "name": "Ноль",
+        "stdin": "0 5\n",
+        "expected": "0/1\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [-1000, 1000],
-        "expected": "2000\n"
+        "id": "hidden-2",
+        "name": "Оба отрицательные",
+        "stdin": "-4 -6\n",
+        "expected": "2/3\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Несократимая",
+        "stdin": "7 13\n",
+        "expected": "7/13\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Большие",
+        "stdin": "1000000000 -1000000000\n",
+        "expected": "-1/1\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Ноль на ноль",
+        "stdin": "0 0\n",
+        "expected": "ошибка: знаменатель равен нулю\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Две дроби",
+        "stdin": "12 18\n-1 1\n",
+        "expected": "2/3\n-1/1\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Целая",
+        "stdin": "999999999 333333333\n",
+        "expected": "3/1\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Ошибка и дробь",
+        "stdin": "5 0\n3 9\n",
+        "expected": "ошибка: знаменатель равен нулю\n1/3\n"
       }
     ],
-    "referenceSolution": "class Interval { int low_; int high_; public: Interval(int a,int b) : low_(a < b ? a : b), high_(a < b ? b : a) {} int width() const { return high_-low_; } };\nint solve(int a,int b) { return Interval{a,b}.width(); }",
-    "solutionExplanation": "Реализуйте class Interval с private int low_, high_ и конструктором Interval(int a,int b), который сохраняет минимум и максимум аргументов. int width() const возвращает high_-low_. Используйте список инициализации. solve(a,b) возвращает ширину Interval{a,b}. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не рассчитывайте на порядок записей списка инициализации и не читайте ещё не созданное поле. Не оставляйте объект в состоянии «потом обязательно вызови init». Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <numeric>\n#include <print>\n#include <stdexcept>\n\nclass Fraction {\npublic:\n    Fraction(long long numerator, long long denominator) {\n        if (denominator == 0) {\n            throw std::invalid_argument(\"знаменатель равен нулю\");\n        }\n        if (denominator < 0) {\n            numerator = -numerator;\n            denominator = -denominator;\n        }\n        long long g = std::gcd(numerator, denominator);\n        num_ = numerator / g;\n        den_ = denominator / g;\n    }\n\n    void print() const {\n        std::println(\"{}/{}\", num_, den_);\n    }\n\nprivate:\n    long long num_;\n    long long den_;\n};\n\nint main() {\n    long long a, b;\n    while (std::cin >> a >> b) {\n        try {\n            Fraction f(a, b);\n            f.print();\n        } catch (const std::invalid_argument &e) {\n            std::println(\"ошибка: {}\", e.what());\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Конструктор либо создаёт дробь в каноническом виде — положительный знаменатель, несократимая, — либо не создаёт её вовсе. Поэтому `print` и любые будущие методы могут полагаться на инвариант без проверок.\n\nДля `0/5` `std::gcd(0, 5) = 5`, и дробь становится `0/1` — каноническим нулём. Тип `long long` взят ради смены знака: `-(-2³¹)` не помещается в `int`.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-constructors-task-2",
+      "title": "Длительности",
+      "description": "Каждая строка ввода — длительность в одной из двух форм: `m M` — минуты или `hm H M` — часы и минуты. Опишите класс `Duration` с двумя конструкторами: `explicit Duration(int minutes)` (отрицательное значение превращается в 0) и `Duration(int hours, int minutes)`, который **делегирует** первому. Для каждой строки напечатайте `H ч M мин`, а в конце — `всего H ч M мин`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "m 90\nhm 2 15\n",
+          "output": "1 ч 30 мин\n2 ч 15 мин\nвсего 3 ч 45 мин\n"
+        },
+        {
+          "input": "m -10\n",
+          "output": "0 ч 0 мин\nвсего 0 ч 0 мин\n"
+        }
+      ],
+      "constraints": ["Строк не больше 30; числа по модулю до 10⁴."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Делегирование: Duration(int hours, int minutes) : Duration(hours * 60 + minutes) {}.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Добавьте метод int minutes() const, чтобы сложить длительности, и метод print() const для вывода.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "m 90\nhm 2 15\n",
+          "expected": "1 ч 30 мин\n2 ч 15 мин\nвсего 3 ч 45 мин\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "m -10\n",
+          "expected": "0 ч 0 мин\nвсего 0 ч 0 мин\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": "всего 0 ч 0 мин\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Ровно час",
+          "stdin": "hm 0 59\nm 1\n",
+          "expected": "0 ч 59 мин\n0 ч 1 мин\nвсего 1 ч 0 мин\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Отрицательные часы",
+          "stdin": "hm -1 30\n",
+          "expected": "0 ч 0 мин\nвсего 0 ч 0 мин\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Отрицательные минуты",
+          "stdin": "hm 1 -30\n",
+          "expected": "0 ч 30 мин\nвсего 0 ч 30 мин\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Много минут",
+          "stdin": "m 10000\n",
+          "expected": "166 ч 40 мин\nвсего 166 ч 40 мин\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Много часов",
+          "stdin": "hm 10000 0\n",
+          "expected": "10000 ч 0 мин\nвсего 10000 ч 0 мин\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Нули",
+          "stdin": "m 0\nhm 0 0\n",
+          "expected": "0 ч 0 мин\n0 ч 0 мин\nвсего 0 ч 0 мин\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Три длительности",
+          "stdin": "m 45\nm 45\nhm 1 0\n",
+          "expected": "0 ч 45 мин\n0 ч 45 мин\n1 ч 0 мин\nвсего 2 ч 30 мин\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nclass Duration {\npublic:\n    explicit Duration(int minutes) : minutes_(minutes < 0 ? 0 : minutes) {}\n    Duration(int hours, int minutes) : Duration(hours * 60 + minutes) {}\n\n    int minutes() const {\n        return minutes_;\n    }\n\n    void print(const char *prefix) const {\n        std::println(\"{}{} ч {} мин\", prefix, minutes_ / 60, minutes_ % 60);\n    }\n\nprivate:\n    int minutes_;\n};\n\nint main() {\n    std::string kind;\n    int total = 0;\n    while (std::cin >> kind) {\n        int a, b = 0;\n        std::cin >> a;\n        if (kind == \"hm\") {\n            std::cin >> b;\n        }\n        Duration d = kind == \"hm\" ? Duration(a, b) : Duration(a);\n        d.print(\"\");\n        total += d.minutes();\n    }\n    Duration(total).print(\"всего \");\n    return 0;\n}\n",
+      "solutionExplanation": "Правило «отрицательное — это ноль» записано только в конструкторе от минут; конструктор от часов и минут делегирует ему, поэтому `hm -1 30` (это −30 минут) тоже превращается в ноль. Две формы ввода не размножают проверки.\n\n`explicit` здесь не мешает: везде, где нужна длительность, она создаётся явно — `Duration(a)`. Сумма считается в минутах и снова превращается в `Duration` только для печати.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-constructors-task-3",
+      "title": "Найди ошибку: порядок инициализации",
+      "description": "Программа читает число `n` и `n` целых чисел и печатает их среднее:\n\n```text\nсреднее 2.50 из 4 чисел\n```\n\nКласс `Summary` вычисляет среднее в списке инициализации конструктора — и печатает что-то странное. Найдите и исправьте ошибку, не меняя список инициализации.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n\nclass Summary {\npublic:\n    Summary(long long sum, int count)\n        : sum_(sum), count_(count), average_(static_cast<double>(sum_) / count_) {}\n\n    void print() const {\n        std::println(\"среднее {:.2f} из {} чисел\", average_, count_);\n    }\n\nprivate:\n    double average_;\n    int count_;\n    long long sum_;\n};\n\nint main() {\n    int n;\n    std::cin >> n;\n    long long sum = 0;\n    for (int i = 0; i < n; i++) {\n        long long x;\n        std::cin >> x;\n        sum += x;\n    }\n    Summary s(sum, n);\n    s.print();\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "4\n1 2 3 4\n",
+          "output": "среднее 2.50 из 4 чисел\n"
+        },
+        {
+          "input": "1\n-7\n",
+          "output": "среднее -7.00 из 1 чисел\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 100; числа по модулю до 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Соберите программу и прочитайте предупреждения компилятора: -Wreorder говорит, в каком порядке на самом деле инициализируются поля.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Поля создаются в порядке объявления. average_ объявлено первым и вычисляется из ещё не инициализированных sum_ и count_. Объявите поля в том порядке, в каком они зависят друг от друга.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\n1 2 3 4\n",
+          "expected": "среднее 2.50 из 4 чисел\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n-7\n",
+          "expected": "среднее -7.00 из 1 чисел\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "3\n10 20 30\n",
+          "expected": "среднее 20.00 из 3 чисел\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "2\n1000000000 1000000000\n",
+          "expected": "среднее 1000000000.00 из 2 чисел\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "5\n1 1 1 1 2\n",
+          "expected": "среднее 1.20 из 5 чисел\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "3\n-1 -2 -3\n",
+          "expected": "среднее -2.00 из 3 чисел\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "2\n0 1\n",
+          "expected": "среднее 0.50 из 2 чисел\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "6\n5 5 5 5 5 5\n",
+          "expected": "среднее 5.00 из 6 чисел\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "3\n100 -100 1\n",
+          "expected": "среднее 0.33 из 3 чисел\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "4\n7 0 0 0\n",
+          "expected": "среднее 1.75 из 4 чисел\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n\nclass Summary {\npublic:\n    Summary(long long sum, int count)\n        : sum_(sum), count_(count), average_(static_cast<double>(sum_) / count_) {}\n\n    void print() const {\n        std::println(\"среднее {:.2f} из {} чисел\", average_, count_);\n    }\n\nprivate:\n    long long sum_;\n    int count_;\n    double average_;\n};\n\nint main() {\n    int n;\n    std::cin >> n;\n    long long sum = 0;\n    for (int i = 0; i < n; i++) {\n        long long x;\n        std::cin >> x;\n        sum += x;\n    }\n    Summary s(sum, n);\n    s.print();\n    return 0;\n}\n",
+      "solutionExplanation": "Список инициализации **выглядит** правильным: сначала `sum_`, потом `count_`, потом `average_`. Но порядок задаёт объявление полей в классе, а там `average_` стоит первым. Его инициализатор читает `sum_` и `count_`, которые ещё не созданы, — это мусор, и результат непредсказуем. GCC и Clang предупреждают: `field 'sum_' will be initialized after field 'average_'`.\n\nИсправление — объявить поля в порядке зависимостей: `sum_`, `count_`, `average_`. Предупреждение `-Wreorder` из этого урока стоит считать ошибкой: оно почти всегда указывает на чтение неинициализированного поля.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-constructors-task-4",
+      "title": "Цвет из строки",
+      "description": "Каждая строка ввода — цвет в веб-записи `#RRGGBB` (цифры в любом регистре). Опишите класс `Color` с **закрытым** конструктором от трёх компонент и статической функцией\n\n```cpp\nstatic std::expected<Color, std::string> parse(std::string_view text);\n```\n\nДля правильной записи напечатайте `rgb(R, G, B), яркость L`, где `L = (299·R + 587·G + 114·B) / 1000` (целочисленно). Иначе — `ошибка: текст`, проверяя по порядку:\n\n1. первый символ не `#` → `нет знака #`;\n2. длина не 7 → `нужно 6 цифр`;\n3. символ не шестнадцатеричная цифра → `не шестнадцатеричная цифра 'x'` (первый такой символ).",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "#FF8800\n#1a2b3c\n",
+          "output": "rgb(255, 136, 0), яркость 156\nrgb(26, 43, 60), яркость 39\n"
+        },
+        {
+          "input": "FF8800\n#FFF\n#12G456\n",
+          "output": "ошибка: нет знака #\nошибка: нужно 6 цифр\nошибка: не шестнадцатеричная цифра 'G'\n"
+        }
+      ],
+      "constraints": ["Строк не больше 30, без пробелов, длина до 20."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Значение шестнадцатеричной цифры: '0'–'9' → c − '0', 'a'–'f' → c − 'a' + 10, 'A'–'F' → c − 'A' + 10, иначе −1. Удобно вынести в отдельную функцию.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Компонента — два символа: 16 · первая цифра + вторая. Статическая parse — часть класса, поэтому может вызвать закрытый конструктор: return Color(r, g, b);.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "#FF8800\n#1a2b3c\n",
+          "expected": "rgb(255, 136, 0), яркость 156\nrgb(26, 43, 60), яркость 39\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "FF8800\n#FFF\n#12G456\n",
+          "expected": "ошибка: нет знака #\nошибка: нужно 6 цифр\nошибка: не шестнадцатеричная цифра 'G'\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Чёрный и белый",
+          "stdin": "#000000\n#ffffff\n",
+          "expected": "rgb(0, 0, 0), яркость 0\nrgb(255, 255, 255), яркость 255\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Основные цвета",
+          "stdin": "#FF0000\n#00FF00\n#0000FF\n",
+          "expected": "rgb(255, 0, 0), яркость 76\nrgb(0, 255, 0), яркость 149\nrgb(0, 0, 255), яркость 29\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Только решётка",
+          "stdin": "#\n",
+          "expected": "ошибка: нужно 6 цифр\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Длинная",
+          "stdin": "#1234567\n",
+          "expected": "ошибка: нужно 6 цифр\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Две решётки",
+          "stdin": "##12345\n",
+          "expected": "ошибка: не шестнадцатеричная цифра '#'\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Смешанный регистр",
+          "stdin": "#abcdeF\n",
+          "expected": "rgb(171, 205, 239), яркость 198\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Разбито пробелом",
+          "stdin": "#12 456\n",
+          "expected": "ошибка: нужно 6 цифр\nошибка: нет знака #\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Слово и серый",
+          "stdin": "red\n#808080\n",
+          "expected": "ошибка: нет знака #\nrgb(128, 128, 128), яркость 128\n"
+        }
+      ],
+      "referenceSolution": "#include <expected>\n#include <iostream>\n#include <print>\n#include <string>\n#include <string_view>\n\nint hex_digit(char c) {\n    if (c >= '0' && c <= '9') {\n        return c - '0';\n    }\n    if (c >= 'a' && c <= 'f') {\n        return c - 'a' + 10;\n    }\n    if (c >= 'A' && c <= 'F') {\n        return c - 'A' + 10;\n    }\n    return -1;\n}\n\nclass Color {\npublic:\n    static std::expected<Color, std::string> parse(std::string_view text) {\n        if (text.empty() || text[0] != '#') {\n            return std::unexpected(\"нет знака #\");\n        }\n        if (text.size() != 7) {\n            return std::unexpected(\"нужно 6 цифр\");\n        }\n        int parts[3] = {};\n        for (std::size_t i = 1; i < 7; i++) {\n            int d = hex_digit(text[i]);\n            if (d < 0) {\n                return std::unexpected(std::string(\"не шестнадцатеричная цифра '\") + text[i] + \"'\");\n            }\n            parts[(i - 1) / 2] = parts[(i - 1) / 2] * 16 + d;\n        }\n        return Color(parts[0], parts[1], parts[2]);\n    }\n\n    int brightness() const {\n        return (299 * r_ + 587 * g_ + 114 * b_) / 1000;\n    }\n\n    void print() const {\n        std::println(\"rgb({}, {}, {}), яркость {}\", r_, g_, b_, brightness());\n    }\n\nprivate:\n    Color(int r, int g, int b) : r_(r), g_(g), b_(b) {}\n    int r_;\n    int g_;\n    int b_;\n};\n\nint main() {\n    std::string line;\n    while (std::cin >> line) {\n        auto color = Color::parse(line);\n        if (color) {\n            color->print();\n        } else {\n            std::println(\"ошибка: {}\", color.error());\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Закрытый конструктор не проверяет ничего — он доверяет единственной функции, которая может его вызвать. Вся проверка сосредоточена в `parse`: создать `Color` в обход неё невозможно, а значит, каждый существующий цвет корректен.\n\nНеверная строка цвета — обычный ввод, а не сбой программы, поэтому `parse` возвращает `std::expected`, а не бросает исключение. Каждая проверка возвращает свою причину, и порядок проверок совпадает с условием. Две цифры одной компоненты накапливаются как `значение · 16 + цифра` — тот же приём, что при переводе десятичной строки в число.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-constructors-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "В каком порядке создаются поля объекта?",
-        "options": ["В порядке их объявления в классе", "В порядке записей списка инициализации"],
-        "correct": 0,
-        "explanation": "В теле конструктора поля уже существуют, поэтому присваивание там может означать лишнюю работу. Базовые подобъекты создаются раньше полей, тело выполняется последним. Если конструктор выбрасывает исключение, полного объекта не существует, а уже созданные члены разрушаются автоматически. Для учебного измерения некорректную границу можно либо отвергнуть исключением, либо явно нормализовать; контракт обязан назвать выбранную политику."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nclass Counter {\npublic:\n    explicit Counter(int start) : value_(start * 2) {}\n    Counter() : Counter(5) {}\n    int value() const { return value_; }\n\nprivate:\n    int value_;\n};\n\nint main() {\n    Counter a;\n    Counter b(3);\n    std::println(\"{} {}\", a.value(), b.value());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Конструктор по умолчанию делегирует конструктору с параметром 5, который удваивает значение.",
+        "type": "text",
+        "answers": ["10 6"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "12", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 12. Конструктор задаёт начальное состояние объекта и не имеет возвращаемого типа. Список инициализации создаёт поля непосредственно: это особенно важно для const полей, ссылок и объектов без конструктора по умолчанию. Поля инициализируются в порядке объявления в классе, независимо от порядка записей в списке. explicit предотвращает нежелательное неявное преобразование аргумента в объект."
-      },
-      {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q2",
+        "question": "Что происходит, если конструктор бросает исключение?",
+        "explanation": "Это стандартный способ отказаться создавать объект с недопустимыми данными.",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Не рассчитывайте на порядок записей списка инициализации и не читайте ещё не созданное поле. Не оставляйте объект в состоянии «потом обязательно вызови init»."
+          "Объект не создаётся, и использовать его невозможно",
+          "Объект создаётся с нулевыми полями",
+          "Исключение игнорируется, поля остаются мусором",
+          "Программа всегда завершается"
         ],
-        "correct": 1,
-        "explanation": "Добавьте второй const член и объясните, почему присваивание в теле конструктора не подходит. Затем рассмотрите explicit: прямая инициализация Gain{3} разрешена, автоматическое превращение числа в Gain при передаче функции запрещено. Такой барьер помогает не спутать значение с настройкой."
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Почему поля лучше инициализировать в списке инициализации, а не присваивать в теле конструктора? Выберите все верные причины.",
+        "explanation": "К моменту выполнения тела все поля уже созданы — присваивание лишь заменяет значение.",
+        "type": "multiple",
+        "options": [
+          "Поля-константы и поля-ссылки можно только инициализировать",
+          "Поле без конструктора по умолчанию нельзя сначала создать «пустым»",
+          "Для строк и контейнеров не будет лишнего создания и замены",
+          "В теле конструктора поля недоступны"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q4",
+        "question": "В каком порядке инициализируются поля?",
+        "explanation": "Поэтому список пишут в порядке объявления, а компилятор предупреждает о расхождении (-Wreorder).",
+        "options": [
+          "В порядке объявления полей в классе",
+          "В порядке записи в списке инициализации",
+          "В алфавитном порядке",
+          "Порядок не определён"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "В классе объявлен только конструктор Fraction(int, int). Что произойдёт при компиляции строки Fraction f;?",
+        "explanation": "Любой свой конструктор отменяет автоматический конструктор по умолчанию. Вернуть его можно через = default.",
+        "options": [
+          "Ошибка компиляции: конструктора по умолчанию нет",
+          "Создастся дробь 0/1",
+          "Создастся дробь с мусором в полях",
+          "Вызовется Fraction(0, 0)"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что запрещает слово explicit у конструктора Meters(double value)?",
+        "explanation": "С explicit нужно написать Meters(5.0) явно, и единицы измерения видны в коде.",
+        "options": [
+          "Неявное превращение числа в Meters — например, передачу 5.0 туда, где ждут Meters",
+          "Создание объекта Meters(5.0)",
+          "Копирование объектов Meters",
+          "Изменение поля после создания"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <string>\n\nclass Tag {\npublic:\n    explicit Tag(std::string text) : text_(\"#\" + text), length_(text_.size()) {}\n    void print() const { std::println(\"{} {}\", text_, length_); }\n\nprivate:\n    std::string text_;\n    std::size_t length_;\n};\n\nint main() {\n    Tag t(\"cpp\");\n    t.print();\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "text_ объявлено раньше length_, поэтому к моменту вычисления длины строка уже готова.",
+        "type": "text",
+        "answers": ["#cpp 4"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q8",
+        "question": "Как вызвать статическую функцию make класса Percent?",
+        "explanation": "Статическая функция принадлежит классу, а не объекту, и вызывается через имя класса и ::.",
+        "type": "text",
+        "answers": ["Percent::make(…)", "Percent::make()", "Percent::make", "Percent::make(42)"],
+        "placeholder": "Выражение"
+      },
+      {
+        "id": "q9",
+        "question": "Зачем делать конструктор закрытым, если есть статическая фабрика make, возвращающая std::expected?",
+        "explanation": "Фабрика — часть класса и может вызвать закрытый конструктор; код снаружи — только через неё.",
+        "options": [
+          "Чтобы объект нельзя было создать в обход проверки в make",
+          "Чтобы конструктор работал быстрее",
+          "Закрытые конструкторы нельзя вызвать даже внутри класса",
+          "Так требует std::expected"
+        ],
+        "correct": 0
       }
     ]
   }

@@ -1,120 +1,527 @@
 {
   "id": "cpp20-array",
-  "title": "std::array",
-  "description": "array хранит фиксированный размер в объекте и совместим с алгоритмами. Он не умеет расти, зато не делает heap-аллокаций сам по себе.",
+  "title": "Массив фиксированного размера std::array",
+  "description": "Недостатки массивов C: превращение в указатель, нет присваивания и сравнения; std::array: размер в типе, копирование, сравнение, fill, at и алгоритмы; таблицы известного размера и двумерные массивы; выбор между array и vector.",
   "moduleId": "cpp-fundamentals",
-  "order": 13,
-  "difficulty": "advanced",
-  "estimatedMinutes": 50,
+  "order": 16,
+  "difficulty": "beginner",
+  "estimatedMinutes": 35,
   "prerequisites": ["cpp20-vector"],
   "objectives": [
-    "Объяснить, зачем появился std::array и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Объявлять и инициализировать std::array",
+    "Передавать массивы в функции без потери размера",
+    "Применять к std::array алгоритмы и цикл по диапазону",
+    "Выбирать между std::array и std::vector"
   ],
-  "tags": ["C++20", "основы C++", "std::array"],
+  "tags": ["C++", "array", "Контейнеры"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-array-exercise",
-    "title": "Циклическое окно",
-    "description": "Прочитайте четыре значения и k. Сдвиньте std::array<int,4> влево на k%4 через std::rotate и выведите окно.",
-    "difficulty": "advanced",
+    "id": "cpp20-array-task-1",
+    "title": "Дни в месяце",
+    "description": "Каждая строка ввода — номер месяца и год. Напечатайте число дней в этом месяце или `ошибка`, если номер месяца не от 1 до 12. Год високосный, если делится на 4, кроме кратных 100, не делящихся на 400.\n\nХраните длины месяцев в `const std::array<int, 12>`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "1 2 3 4 1",
-        "output": "2 3 4 1\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "2 2024\n4 2025\n",
+        "output": "29\n30\n"
       },
       {
-        "input": "1 2 3 4 4",
-        "output": "1 2 3 4\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "13 2000\n",
+        "output": "ошибка\n"
       }
     ],
-    "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
-    ],
+    "constraints": ["1 ≤ год ≤ 9999; строк не больше 30."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "const std::array<int, 12> days = {31, 28, 31, …}; индекс — month − 1.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "Для февраля високосного года прибавьте единицу.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "1 2 3 4 1",
-        "expected": "2 3 4 1\n"
+        "stdin": "2 2024\n4 2025\n",
+        "expected": "29\n30\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "1 2 3 4 4",
-        "expected": "1 2 3 4\n"
+        "stdin": "13 2000\n",
+        "expected": "ошибка\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "0 0 0 0 9",
-        "expected": "0 0 0 0\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "1 1\n",
+        "expected": "31\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "12 9999\n",
+        "expected": "31\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "2 1900\n",
+        "expected": "28\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "2 2000\n",
+        "expected": "29\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "2 2023\n",
+        "expected": "28\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "0 2020\n",
+        "expected": "ошибка\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "7 2020\n8 2020\n",
+        "expected": "31\n31\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "9 1\n11 1\n",
+        "expected": "30\n30\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <array>\n#include <algorithm>\n\n\nint main() {\n    std::array<int,4> a{}; for(int& x:a)if(!(std::cin>>x))return 1; int k{}; if(!(std::cin>>k)||k<0)return 1; std::rotate(a.begin(),a.begin()+k%4,a.end()); for(int i=0;i<4;++i)std::cout<<(i?\" \":\"\")<<a[i]; std::cout<<'\\n';\n}\n",
-    "solutionExplanation": "std::array хранит ровно четыре элемента без heap. rotate линейна по размеру диапазона, индексы не проверяются; фиксированный размер известен компилятору.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <array>\n#include <iostream>\n\nbool is_leap(int year) {\n    return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);\n}\n\nint main() {\n    const std::array<int, 12> days = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};\n    int month, year;\n    while (std::cin >> month >> year) {\n        if (month < 1 || month > 12) {\n            std::cout << \"ошибка\\n\";\n            continue;\n        }\n        int result = days[static_cast<std::size_t>(month - 1)];\n        if (month == 2 && is_leap(year)) {\n            result++;\n        }\n        std::cout << result << '\\n';\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Двенадцать месяцев — свойство календаря, а не входных данных, поэтому таблица — `std::array` фиксированного размера, объявленный `const`. Номера месяцев начинаются с 1, индексы — с 0, отсюда `month − 1`. Проверка номера стоит до обращения к таблице: `days[12]` был бы чтением за границей.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-array-task-2",
+      "title": "Частоты цифр",
+      "description": "Прочитайте весь ввод посимвольно и посчитайте, сколько раз встречается каждая цифра. Напечатайте для каждой встретившейся цифры строку `цифра: количество` по возрастанию цифр. Если цифр нет, напечатайте `цифр нет`.\n\nСчётчики храните в `std::array<int, 10>`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "Phone: 8-800-555-35-35\n",
+          "output": "0: 2\n3: 2\n5: 5\n8: 2\n"
+        },
+        {
+          "input": "no digits here\n",
+          "output": "цифр нет\n"
+        }
+      ],
+      "constraints": ["Ввод до 10 000 символов ASCII."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "std::array<int, 10> count{}; — пустые скобки обнуляют счётчики. Для цифры c: count[c − '0']++.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Посимвольное чтение с пробелами и переводами строк: char c; while (std::cin.get(c)).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "Phone: 8-800-555-35-35\n",
+          "expected": "0: 2\n3: 2\n5: 5\n8: 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "no digits here\n",
+          "expected": "цифр нет\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": "цифр нет\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Все цифры",
+          "stdin": "0123456789\n",
+          "expected": "0: 1\n1: 1\n2: 1\n3: 1\n4: 1\n5: 1\n6: 1\n7: 1\n8: 1\n9: 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Одна цифра",
+          "stdin": "7777777\n",
+          "expected": "7: 7\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Вперемешку",
+          "stdin": "a1b2c3\n3 2 1\n",
+          "expected": "1: 2\n2: 2\n3: 2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Дата и время",
+          "stdin": "2026-10-17 10:30\n",
+          "expected": "0: 4\n1: 3\n2: 2\n3: 1\n6: 1\n7: 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Несколько строк",
+          "stdin": "9\n9\n9\n",
+          "expected": "9: 3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Число пи",
+          "stdin": "pi = 3.14159265358979\n",
+          "expected": "1: 2\n2: 1\n3: 2\n4: 1\n5: 3\n6: 1\n7: 1\n8: 1\n9: 3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Нули",
+          "stdin": "000\n",
+          "expected": "0: 3\n"
+        }
+      ],
+      "referenceSolution": "#include <array>\n#include <iostream>\n\nint main() {\n    std::array<int, 10> count{};\n    char c;\n    while (std::cin.get(c)) {\n        if (c >= '0' && c <= '9') {\n            count[static_cast<std::size_t>(c - '0')]++;\n        }\n    }\n    bool any = false;\n    for (std::size_t d = 0; d < count.size(); d++) {\n        if (count[d] > 0) {\n            std::cout << d << \": \" << count[d] << '\\n';\n            any = true;\n        }\n    }\n    if (!any) {\n        std::cout << \"цифр нет\\n\";\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Цифр ровно десять, поэтому счётчики — `std::array<int, 10>`, обнулённый пустыми фигурными скобками. Это прямая адресация из модуля «Алгоритмы»: цифра сама служит индексом, `c − '0'` превращает символ в число от 0 до 9.\n\nБез `{}` массив содержал бы мусор, и счётчики начинались бы со случайных значений. Цикл печати использует `count.size()` вместо числа 10 — если размер массива изменится, цикл не придётся исправлять.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-array-task-3",
+      "title": "Найди ошибку: среднее значение",
+      "description": "Программа читает ровно 6 целых чисел и печатает их среднее с двумя знаками после точки. Числа хранятся в массиве C, а функция `average` вычисляет количество элементов через `sizeof`.\n\nСреднее получается неверным. Найдите причину и исправьте программу, перейдя на `std::array`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <iomanip>\n#include <iostream>\n\ndouble average(int values[]) {\n    int n = static_cast<int>(sizeof(values) / sizeof(values[0]));\n    long long sum = 0;\n    for (int i = 0; i < n; i++) {\n        sum += values[i];\n    }\n    return static_cast<double>(sum) / n;\n}\n\nint main() {\n    int values[6];\n    for (int i = 0; i < 6; i++) {\n        std::cin >> values[i];\n    }\n    std::cout << std::fixed << std::setprecision(2) << average(values) << '\\n';\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "1 2 3 4 5 6\n",
+          "output": "3.50\n"
+        },
+        {
+          "input": "10 10 10 10 10 10\n",
+          "output": "10.00\n"
+        }
+      ],
+      "constraints": ["Ровно 6 чисел int, по модулю до 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Чему равен sizeof(values) внутри функции с параметром int values[]? Компилятор предупреждает об этом.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Параметр int values[] — это указатель int *: sizeof даёт 8, и n получается 2. Используйте std::array<int, 6> и values.size() — размер не теряется при передаче.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1 2 3 4 5 6\n",
+          "expected": "3.50\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "10 10 10 10 10 10\n",
+          "expected": "10.00\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0 0 0 0 0 6\n",
+          "expected": "1.00\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "-6 0 0 0 0 0\n",
+          "expected": "-1.00\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1000000000 1000000000 1000000000 1000000000 1000000000 1000000000\n",
+          "expected": "1000000000.00\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1 1 1 1 1 2\n",
+          "expected": "1.17\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "5 4 3 2 1 0\n",
+          "expected": "2.50\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "-1 -2 -3 -4 -5 -6\n",
+          "expected": "-3.50\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "7 0 0 0 0 0\n",
+          "expected": "1.17\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "2 2 2 3 3 3\n",
+          "expected": "2.50\n"
+        }
+      ],
+      "referenceSolution": "#include <array>\n#include <iomanip>\n#include <iostream>\n\ndouble average(const std::array<int, 6> &values) {\n    long long sum = 0;\n    for (int x : values) {\n        sum += x;\n    }\n    return static_cast<double>(sum) / static_cast<double>(values.size());\n}\n\nint main() {\n    std::array<int, 6> values{};\n    for (int &x : values) {\n        std::cin >> x;\n    }\n    std::cout << std::fixed << std::setprecision(2) << average(values) << '\\n';\n    return 0;\n}\n",
+      "solutionExplanation": "Параметр функции, объявленный как `int values[]`, — на самом деле указатель `int *`: массив при передаче превращается в адрес первого элемента. Поэтому `sizeof(values)` равен размеру указателя (8 байт), а не массива (24 байта), `n` получается 2, и функция усредняет только два первых числа. GCC предупреждает: `sizeof on array function parameter will return size of 'int*'`.\n\n`std::array<int, 6>` хранит размер в своём типе, и `values.size()` внутри функции возвращает 6. Передача по константной ссылке не копирует массив. Если бы функция должна была работать с массивами разной длины, её сделали бы шаблоном по `N` или передавали бы `std::vector`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-array-task-4",
+      "title": "Крестики-нолики",
+      "description": "Ввод — три строки по три символа: `X`, `O` или `.` (пустая клетка). Определите состояние игры и напечатайте:\n\n- `победа X` или `победа O` — если у игрока три знака в ряд по горизонтали, вертикали или диагонали;\n- `ничья` — если победителя нет и пустых клеток не осталось;\n- `игра продолжается` — иначе.\n\nДоску храните в `std::array<std::array<char, 3>, 3>`. Гарантируется, что победитель не больше одного.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "XXX\nOO.\n...\n",
+          "output": "победа X\n"
+        },
+        {
+          "input": "XOX\nXOO\nOXX\n",
+          "output": "ничья\n"
+        }
+      ],
+      "constraints": ["Ввод всегда корректен: три строки по три символа."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Все восемь линий удобно описать таблицей координат: std::array<std::array<int, 6>, 8> lines — тройки пар (строка, столбец).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Линия выиграна, если все три клетки равны одному символу и он не точка. Пустая клетка проверяется отдельным проходом по доске.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "XXX\nOO.\n...\n",
+          "expected": "победа X\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "XOX\nXOO\nOXX\n",
+          "expected": "ничья\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустая доска",
+          "stdin": "...\n...\n...\n",
+          "expected": "игра продолжается\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Вертикаль O",
+          "stdin": "O..\nO.X\nOX.\n",
+          "expected": "победа O\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Главная диагональ",
+          "stdin": "X.O\n.XO\n..X\n",
+          "expected": "победа X\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Побочная диагональ",
+          "stdin": "X.O\nXO.\nO.X\n",
+          "expected": "победа O\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Продолжается",
+          "stdin": "XOX\nOXO\nOX.\n",
+          "expected": "игра продолжается\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Ничья 2",
+          "stdin": "XXO\nOOX\nXOX\n",
+          "expected": "ничья\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Средняя строка",
+          "stdin": "...\nOOO\nX.X\n",
+          "expected": "победа O\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Полная без победы",
+          "stdin": "XOX\nXOX\nOXO\n",
+          "expected": "ничья\n"
+        }
+      ],
+      "referenceSolution": "#include <array>\n#include <iostream>\n#include <string>\n\nint main() {\n    std::array<std::array<char, 3>, 3> board{};\n    for (auto &row : board) {\n        std::string line;\n        std::cin >> line;\n        for (std::size_t c = 0; c < 3; c++) {\n            row[c] = line[c];\n        }\n    }\n    const std::array<std::array<int, 6>, 8> lines = {{\n        {0, 0, 0, 1, 0, 2}, {1, 0, 1, 1, 1, 2}, {2, 0, 2, 1, 2, 2},\n        {0, 0, 1, 0, 2, 0}, {0, 1, 1, 1, 2, 1}, {0, 2, 1, 2, 2, 2},\n        {0, 0, 1, 1, 2, 2}, {0, 2, 1, 1, 2, 0},\n    }};\n    auto at = [&board](int r, int c) { return board[static_cast<std::size_t>(r)][static_cast<std::size_t>(c)]; };\n    for (const auto &l : lines) {\n        char a = at(l[0], l[1]);\n        if (a != '.' && a == at(l[2], l[3]) && a == at(l[4], l[5])) {\n            std::cout << \"победа \" << a << '\\n';\n            return 0;\n        }\n    }\n    for (const auto &row : board) {\n        for (char cell : row) {\n            if (cell == '.') {\n                std::cout << \"игра продолжается\\n\";\n                return 0;\n            }\n        }\n    }\n    std::cout << \"ничья\\n\";\n    return 0;\n}\n",
+      "solutionExplanation": "Доска 3 × 3 — классический случай для `std::array`: размер — правило игры, а не данные. Восемь выигрышных линий записаны таблицей координат, а не восемью почти одинаковыми условиями: проверка одной линии написана один раз, и ошибиться в одной из восьми копий нельзя. Двойные фигурные скобки во внешнем инициализаторе нужны `std::array` массивов: внешние — для самого объекта, следующие — для его внутреннего массива.\n\nЛямбда `at` захватывает доску по ссылке и прячет преобразования индексов. Порядок проверок важен: сначала победа, потом пустые клетки — заполненная доска с тремя в ряд — это победа, а не ничья.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-array-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «std::array»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "array хранит фиксированный размер в объекте и совместим с алгоритмами. Он не умеет расти, зато не делает heap-аллокаций сам по себе."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <array>\n#include <iostream>\n\nint main() {\n    std::array<int, 3> a = {1, 2, 3};\n    std::array<int, 3> b = a;\n    b[2] = 30;\n    std::cout << a[2] << ' ' << b[2] << ' ' << (a == b) << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Присваивание копирует элементы: b — независимая копия. == сравнивает содержимое, массивы различаются.",
+        "type": "text",
+        "answers": ["3 30 0"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
+        "id": "q2",
+        "question": "Почему внутри функции void f(int a[]) выражение sizeof(a) не равно размеру массива?",
+        "explanation": "Массивы C при передаче превращаются в указатель на первый элемент и теряют размер.",
         "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
+          "Параметр-массив на самом деле указатель int *, и sizeof возвращает размер указателя",
+          "sizeof не работает внутри функций",
+          "Массив копируется не полностью",
+          "Равно — это корректный способ"
         ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "correct": 0
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Какие операции допустимы для std::array<int, 4> a, b;?",
+        "explanation": "Размер std::array фиксирован, поэтому push_back у него нет.",
+        "type": "multiple",
+        "options": ["a = b;", "a == b", "a.push_back(5);", "a.size()"],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q4",
+        "question": "Что содержит std::array<int, 3> a{}; ?",
+        "explanation": "Пустые фигурные скобки инициализируют все элементы нулями. Без них значения неопределённы.",
+        "options": ["Три нуля", "Мусор", "Пустой массив размера 0", "Ошибка компиляции"],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Можно ли присвоить std::array<int, 3> переменной типа std::array<int, 4>?",
+        "explanation": "std::array<int, 3> и std::array<int, 4> различаются так же, как int и double.",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "Нет: размер — часть типа, это разные типы",
+          "Да, последний элемент станет нулём",
+          "Да, если элементы одного типа",
+          "Только через static_cast"
         ],
-        "correct": 0,
-        "explanation": "Используйте std::array как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <algorithm>\n#include <array>\n#include <iostream>\n\nint main() {\n    std::array<int, 5> a = {5, 3, 8, 1, 9};\n    std::sort(a.begin(), a.end());\n    std::cout << a.front() << a.back() << a[2] << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "После сортировки 1 3 5 8 9: первый 1, последний 9, средний 5 — печатаются подряд.",
+        "type": "text",
+        "answers": ["195"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Где хранятся элементы локальной переменной std::array<double, 4>?",
+        "explanation": "std::array не выделяет память динамически — это обёртка над обычным массивом.",
+        "options": [
+          "Внутри самого объекта — на стеке",
+          "В куче",
+          "В статической памяти",
+          "В регистрах процессора"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Когда лучше std::vector, чем std::array?",
+        "explanation": "Переменный размер и большие объёмы — для vector. Маленькие таблицы известного размера — для array.",
+        "type": "multiple",
+        "options": [
+          "Когда число элементов зависит от входных данных",
+          "Когда массив очень большой",
+          "Когда размер известен заранее и мал",
+          "Когда нужны 7 дней недели"
+        ],
+        "correct": [0, 1]
       }
     ]
   }

@@ -1,154 +1,529 @@
 {
   "id": "lifetime-custom-deleters",
-  "title": "Пользовательские функции освобождения — Custom deleters",
-  "description": "Ресурс должен освобождаться парной операцией своего API: new/delete, new[]/delete[], malloc/free, fopen/fclose, библиотечные create/destroy.",
+  "title": "Пользовательские функции освобождения",
+  "description": "Ресурсы C-библиотек освобождаются своими функциями: free, fclose, xxx_destroy. Функция освобождения unique_ptr как часть типа — пустая структура, лямбда в decltype, указатель на функцию, структура с состоянием, и их цена; почему не брать адреса функций стандартной библиотеки; std::out_ptr и std::inout_ptr (C++23) для выходных параметров; функция освобождения shared_ptr в блоке управления; несовпадение способов выделения и освобождения.",
   "moduleId": "cpp-lifetime",
   "order": 24,
   "difficulty": "advanced",
   "estimatedMinutes": 55,
   "prerequisites": ["lifetime-cyclic-references"],
   "objectives": [
-    "Объяснить, почему ресурс освобождается парной операцией своего API.",
-    "Проследить на MemoryDiagram вызов deleter ровно один раз при перемещении и reset.",
-    "Реализовать deleter с заимствованным счётчиком и проверить порядок объявления жизней."
+    "Оборачивать ресурсы C-библиотек в unique_ptr с функцией освобождения",
+    "Выбирать тип функции освобождения без лишних накладных расходов",
+    "Связывать выходные параметры C-функций с умными указателями через std::out_ptr",
+    "Писать функции освобождения с состоянием"
   ],
-  "tags": [
-    "C++20",
-    "время жизни",
-    "управление ресурсами",
-    "Пользовательские функции освобождения — Custom deleters"
-  ],
+  "tags": ["C++23", "Время жизни", "unique_ptr", "shared_ptr", "out_ptr", "C API"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "lifetime-custom-deleters-exercise",
-    "title": "Практика: Пользовательские функции освобождения — Custom deleters",
-    "description": "Создайте CountingDelete, увеличивающий внешний счётчик и удаляющий int. solve создаёт unique_ptr<int, CountingDelete> со значением a, перемещает его во второго владельца, сохраняет значение + b, вызывает reset дважды и возвращает сохранённое при count == 1; иначе -9999. Счётчик объявите раньше владельцев.",
-    "difficulty": "advanced",
+    "title": "Устройства C-библиотеки",
+    "description": "В программе есть условная C-библиотека: `Device *device_open(const char *name)` (возвращает `nullptr`, если в имени нет двоеточия), `int device_read(const Device *)` и `void device_close(Device *)`. Открытие и закрытие печатают сообщения сами.\n\nНапишите структуру `DeviceCloser` с `operator()`, вызывающим `device_close`, и тип `using DevicePtr = std::unique_ptr<Device, DeviceCloser>;`. Устройства хранятся в `std::map<std::string, DevicePtr>`. Команды:\n\n- `open X имя` — открыть; если не удалось — напечатать `ошибка открытия имя` (старое устройство X не трогать); иначе заменить устройство X;\n- `read X` — `X: значение` или `X: закрыто`;\n- `close X` — закрыть.\n\nВ конце закройте устройства от последнего имени к первому.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 7)",
-        "output": "10\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "open a usb:1\nread a\nopen a bad\nread a\nopen a usb:2\nclose a\nread a\n",
+        "output": "открыто #1 usb:1\na: 10\nошибка открытия bad\na: 10\nоткрыто #2 usb:2\nзакрыто #1\nзакрыто #2\na: закрыто\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "read x\n",
+        "output": "x: закрыто\n"
       }
     ],
-    "constraints": [
-      "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Команд не больше 200; имена до 30 символов."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Проверьте deleter на трёх путях освобождения: reset, присваивание нового адреса, разрушение владельца. На каждом парная операция должна выполниться ровно один раз."
+        "id": "hint-1",
+        "text": "struct DeviceCloser { void operator()(Device *d) const noexcept { device_close(d); } };",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "Для FILE определите Fclose с void operator()(FILE*) const noexcept, вызывающим fclose, и храните unique_ptr<FILE, Fclose>; результат fopen проверяйте через bool владельца — deleter не вызывается для null. shared_ptr принимает deleter при создании, но хранит его в блоке управления: тип не входит в shared_ptr<T>; make_shared пользовательский deleter не принимает. Ошибку fflush/fclose, важную приложению, обрабатывайте явной close-операцией до деструктора: бросать из деструктора нельзя. Заимствованный контекст внутри deleter обязан пережить все пути освобождения: reset, присваивание, разрушение перемещённого владельца.\n\nНельзя закрывать FILE через delete или освобождать память из new через free — несовместимые пары. Пустой deleter, который ничего не освобождает, маскирует утечку вместо владения.\n\nВ практике deleter хранит указатель на счётчик. Переместите owner и убедитесь, что закрытие учитывается ровно один раз. Затем переставьте объявления счётчика и владельца на бумаге и объясните зависимость времени жизни."
+        "id": "hint-2",
+        "text": "Сначала откройте во временный DevicePtr и проверьте его, а уже потом присваивайте: тогда при ошибке старое устройство останется.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 7],
-        "expected": "10\n"
+        "stdin": "open a usb:1\nread a\nopen a bad\nread a\nopen a usb:2\nclose a\nread a\n",
+        "expected": "открыто #1 usb:1\na: 10\nошибка открытия bad\na: 10\nоткрыто #2 usb:2\nзакрыто #1\nзакрыто #2\na: закрыто\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "read x\n",
+        "expected": "x: закрыто\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный случай 1",
-        "arguments": [-8, 3],
-        "expected": "-5\n"
+        "id": "hidden-1",
+        "name": "Закрытие в конце",
+        "stdin": "open a d:1\nopen b d:2\n",
+        "expected": "открыто #1 d:1\nоткрыто #2 d:2\nзакрыто #2\nзакрыто #1\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный случай 2",
-        "arguments": [5, -9],
-        "expected": "-4\n"
+        "id": "hidden-2",
+        "name": "Ошибка без старого",
+        "stdin": "open a nocolon\nread a\n",
+        "expected": "ошибка открытия nocolon\na: закрыто\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный случай 3",
-        "arguments": [-1000, 1000],
-        "expected": "0\n"
+        "id": "hidden-3",
+        "name": "Двойное закрытие",
+        "stdin": "open a d:1\nclose a\nclose a\n",
+        "expected": "открыто #1 d:1\nзакрыто #1\n"
       },
       {
-        "id": "case-6",
-        "name": "Граничный случай 4",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-4",
+        "name": "Порядок закрытия",
+        "stdin": "open z d:1\nopen a d:2\nopen m d:3\n",
+        "expected": "открыто #1 d:1\nоткрыто #2 d:2\nоткрыто #3 d:3\nзакрыто #1\nзакрыто #3\nзакрыто #2\n"
       },
       {
-        "id": "case-7",
-        "name": "Граничный случай 5",
-        "arguments": [4, 4],
-        "expected": "8\n"
+        "id": "hidden-5",
+        "name": "Многократная замена",
+        "stdin": "open a d:1\nopen a d:2\nopen a d:3\nread a\n",
+        "expected": "открыто #1 d:1\nоткрыто #2 d:2\nзакрыто #1\nоткрыто #3 d:3\nзакрыто #2\na: 30\nзакрыто #3\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Только двоеточие",
+        "stdin": "open a :\nread a\n",
+        "expected": "открыто #1 :\na: 10\nзакрыто #1\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Ошибка у другого",
+        "stdin": "open a x:y\nopen b bad\nread b\nread a\n",
+        "expected": "открыто #1 x:y\nошибка открытия bad\nb: закрыто\na: 10\nзакрыто #1\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Закрытие пустого",
+        "stdin": "close q\nread q\n",
+        "expected": "q: закрыто\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct CountingDelete { int* count; void operator()(int* p) const noexcept { ++*count; delete p; } };\nint solve(int a, int b) { int count = 0; std::unique_ptr<int, CountingDelete> p(new int(a), CountingDelete{&count}); auto q = std::move(p); int saved = *q + b; q.reset(); q.reset(); return count == 1 ? saved : -9999; }",
-    "solutionExplanation": "Для FILE определите Fclose с void operator()(FILE*) const noexcept, вызывающим fclose, и храните unique_ptr<FILE, Fclose>; результат fopen проверяйте через bool владельца — deleter не вызывается для null. shared_ptr принимает deleter при создании, но хранит его в блоке управления: тип не входит в shared_ptr<T>; make_shared пользовательский deleter не принимает. Ошибку fflush/fclose, важную приложению, обрабатывайте явной close-операцией до деструктора: бросать из деструктора нельзя. Заимствованный контекст внутри deleter обязан пережить все пути освобождения: reset, присваивание, разрушение перемещённого владельца.\n\nНельзя закрывать FILE через delete или освобождать память из new через free — несовместимые пары. Пустой deleter, который ничего не освобождает, маскирует утечку вместо владения.\n\nВ практике deleter хранит указатель на счётчик. Переместите owner и убедитесь, что закрытие учитывается ровно один раз. Затем переставьте объявления счётчика и владельца на бумаге и объясните зависимость времени жизни.",
+    "referenceSolution": "#include <cstdio>\n#include <cstdlib>\n#include <cstring>\n#include <iostream>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Device {\n    int id;\n    char name[32];\n};\n\n// Условная C-библиотека устройств.\nextern \"C\" Device *device_open(const char *name) {\n    static int next = 1;\n    if (std::strchr(name, ':') == nullptr) {\n        return nullptr;\n    }\n    auto *d = static_cast<Device *>(std::malloc(sizeof(Device)));\n    d->id = next++;\n    std::snprintf(d->name, sizeof d->name, \"%s\", name);\n    std::println(\"открыто #{} {}\", d->id, d->name);\n    return d;\n}\n\nextern \"C\" int device_read(const Device *d) {\n    return d->id * 10;\n}\n\nextern \"C\" void device_close(Device *d) {\n    std::println(\"закрыто #{}\", d->id);\n    std::free(d);\n}\n\nstruct DeviceCloser {\n    void operator()(Device *d) const noexcept {\n        device_close(d);\n    }\n};\n\nusing DevicePtr = std::unique_ptr<Device, DeviceCloser>;\n\nint main() {\n    std::map<std::string, DevicePtr> devices;\n    std::string command, x;\n    while (std::cin >> command >> x) {\n        if (command == \"open\") {\n            std::string name;\n            std::cin >> name;\n            DevicePtr opened(device_open(name.c_str()));\n            if (!opened) {\n                std::println(\"ошибка открытия {}\", name);\n            } else {\n                devices[x] = std::move(opened);\n            }\n        } else if (command == \"read\") {\n            if (const DevicePtr &d = devices[x]) {\n                std::println(\"{}: {}\", x, device_read(d.get()));\n            } else {\n                std::println(\"{}: закрыто\", x);\n            }\n        } else {\n            devices[x].reset();\n        }\n    }\n    for (auto it = devices.rbegin(); it != devices.rend(); ++it) {\n        it->second.reset();\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "`DevicePtr` — RAII-владелец ресурса C-библиотеки: при замене, `reset` и уничтожении он вызывает `device_close`, а не `delete`. Пустая структура `DeviceCloser` не занимает места, так что `DevicePtr` размером с обычный указатель.\n\nОткрытие во временный указатель даёт строгую гарантию: если устройство не открылось, старое продолжает работать.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "lifetime-custom-deleters-task-2",
+      "title": "Строки из malloc",
+      "description": "Условная C-библиотека выделяет строки через `malloc` и считает выделения и освобождения:\n\n- `char *c_greet(const char *name)` — возвращает строку `Привет, имя!`;\n- `int c_reverse(const char *s, char **out)` — записывает в `*out` перевёрнутую копию ASCII-строки и возвращает 0, а для пустой строки возвращает −1 и ничего не выделяет;\n- `void c_free(void *p)` — освобождает.\n\nНапишите `struct CFree` для `std::unique_ptr<char, CFree>` и используйте `std::out_ptr` для `c_reverse`. Команды: `greet имя`, `reverse слово` (печатает результат), `stats` — `выделено A, освобождено F`. После всех команд напечатайте `stats` ещё раз — счётчики должны совпасть.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "greet Ада\nreverse abc\nstats\n",
+          "output": "Привет, Ада!\ncba\nвыделено 2, освобождено 2\nвыделено 2, освобождено 2\n"
+        },
+        {
+          "input": "stats\n",
+          "output": "выделено 0, освобождено 0\nвыделено 0, освобождено 0\n"
+        }
+      ],
+      "constraints": ["Команд не больше 200; слова в reverse — латиница и цифры."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "std::unique_ptr<char, CFree> out; if (c_reverse(word.c_str(), std::out_ptr(out)) == 0) … out.get() …",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Результат c_greet сразу отдайте владельцу: std::unique_ptr<char, CFree> s(c_greet(name.c_str()));",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "greet Ада\nreverse abc\nstats\n",
+          "expected": "Привет, Ада!\ncba\nвыделено 2, освобождено 2\nвыделено 2, освобождено 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "stats\n",
+          "expected": "выделено 0, освобождено 0\nвыделено 0, освобождено 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Один символ",
+          "stdin": "reverse a\n",
+          "expected": "a\nвыделено 1, освобождено 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Цифры",
+          "stdin": "reverse 12345\nreverse 54321\n",
+          "expected": "54321\n12345\nвыделено 2, освобождено 2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Два приветствия",
+          "stdin": "greet Алан\ngreet Грейс\nstats\n",
+          "expected": "Привет, Алан!\nПривет, Грейс!\nвыделено 2, освобождено 2\nвыделено 2, освобождено 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Палиндром",
+          "stdin": "reverse level\n",
+          "expected": "level\nвыделено 1, освобождено 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Чередование",
+          "stdin": "greet x\nreverse xy\ngreet y\n",
+          "expected": "Привет, x!\nyx\nПривет, y!\nвыделено 3, освобождено 3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Длинное слово",
+          "stdin": "reverse abcdefghijklmnopqrstuvwxyz\n",
+          "expected": "zyxwvutsrqponmlkjihgfedcba\nвыделено 1, освобождено 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Длинное имя",
+          "stdin": "greet Длинное-имя-пользователя\n",
+          "expected": "Привет, Длинное-имя-пользователя!\nвыделено 1, освобождено 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Статистика по ходу",
+          "stdin": "stats\nreverse ok\nstats\n",
+          "expected": "выделено 0, освобождено 0\nko\nвыделено 1, освобождено 1\nвыделено 1, освобождено 1\n"
+        }
+      ],
+      "referenceSolution": "#include <cstdlib>\n#include <cstring>\n#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n\nint allocated = 0;\nint freed = 0;\n\n// Условная C-библиотека.\nextern \"C\" char *c_greet(const char *name) {\n    const std::string text = std::string(\"Привет, \") + name + \"!\";\n    char *out = static_cast<char *>(std::malloc(text.size() + 1));\n    std::memcpy(out, text.c_str(), text.size() + 1);\n    ++allocated;\n    return out;\n}\n\nextern \"C\" int c_reverse(const char *s, char **out) {\n    const std::size_t n = std::strlen(s);\n    if (n == 0) {\n        return -1;\n    }\n    *out = static_cast<char *>(std::malloc(n + 1));\n    for (std::size_t i = 0; i < n; ++i) {\n        (*out)[i] = s[n - 1 - i];\n    }\n    (*out)[n] = '\\0';\n    ++allocated;\n    return 0;\n}\n\nextern \"C\" void c_free(void *p) {\n    if (p) {\n        ++freed;\n    }\n    std::free(p);\n}\n\nstruct CFree {\n    void operator()(char *p) const noexcept {\n        c_free(p);\n    }\n};\n\nusing CString = std::unique_ptr<char, CFree>;\n\nvoid stats() {\n    std::println(\"выделено {}, освобождено {}\", allocated, freed);\n}\n\nint main() {\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"stats\") {\n            stats();\n            continue;\n        }\n        std::string arg;\n        std::cin >> arg;\n        if (command == \"greet\") {\n            const CString s(c_greet(arg.c_str()));\n            std::println(\"{}\", s.get());\n        } else {\n            CString out;\n            if (c_reverse(arg.c_str(), std::out_ptr(out)) == 0) {\n                std::println(\"{}\", out.get());\n            } else {\n                std::println(\"пусто\");\n            }\n        }\n    }\n    stats();\n    return 0;\n}\n",
+      "solutionExplanation": "Память из C-библиотеки возвращается в неё же через `c_free`, и каждый блок освобождается ровно один раз — счётчики сходятся. `std::out_ptr(out)` передаёт в `c_reverse` адрес временного указателя, а после вызова кладёт результат в `out`: между вызовом и владельцем нет ни одной строки, где ресурс принадлежал бы сырому указателю.\n\nЕсли бы строки освобождались через `delete` (умный указатель по умолчанию), AddressSanitizer сообщил бы о несовпадении способов выделения и освобождения.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-custom-deleters-task-3",
+      "title": "Найди ошибку: не тот способ освобождения",
+      "description": "Для каждого слова программа вызывает C-функцию `c_upper`, которая возвращает копию слова в верхнем регистре (память выделена `malloc`), и печатает `слово → СЛОВО`. Вывод правильный, но AddressSanitizer сообщает об ошибке. Найдите и исправьте её.",
+      "difficulty": "advanced",
+      "starterCode": "#include <cctype>\n#include <cstdlib>\n#include <cstring>\n#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n\n// Условная C-библиотека: результат выделен malloc, освобождать — free.\nextern \"C\" char *c_upper(const char *s) {\n    const std::size_t n = std::strlen(s);\n    char *out = static_cast<char *>(std::malloc(n + 1));\n    for (std::size_t i = 0; i <= n; ++i) {\n        out[i] = static_cast<char>(std::toupper(static_cast<unsigned char>(s[i])));\n    }\n    return out;\n}\n\nint main() {\n    std::string word;\n    while (std::cin >> word) {\n        const std::unique_ptr<char> upper(c_upper(word.c_str()));\n        std::println(\"{} → {}\", word, upper.get());\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "hello world\n",
+          "output": "hello → HELLO\nworld → WORLD\n"
+        },
+        {
+          "input": "Cpp23\n",
+          "output": "Cpp23 → CPP23\n"
+        }
+      ],
+      "constraints": ["Слов не больше 100; слова — латиница и цифры."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Чем выделена память и чем её освобождает std::unique_ptr<char> по умолчанию?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Добавьте функцию освобождения: struct FreeDeleter { void operator()(char *p) const noexcept { std::free(p); } };",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "hello world\n",
+          "expected": "hello → HELLO\nworld → WORLD\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "Cpp23\n",
+          "expected": "Cpp23 → CPP23\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "a\n",
+          "expected": "a → A\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "ABC\n",
+          "expected": "ABC → ABC\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "mixed CASE words\n",
+          "expected": "mixed → MIXED\nCASE → CASE\nwords → WORDS\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "x1y2z3\n",
+          "expected": "x1y2z3 → X1Y2Z3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "longwordlongwordlongwordlongword\n",
+          "expected": "longwordlongwordlongwordlongword → LONGWORDLONGWORDLONGWORDLONGWORD\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "q w e r t y\n",
+          "expected": "q → Q\nw → W\ne → E\nr → R\nt → T\ny → Y\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "already UPPER\n",
+          "expected": "already → ALREADY\nUPPER → UPPER\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "123\n",
+          "expected": "123 → 123\n"
+        }
+      ],
+      "referenceSolution": "#include <cctype>\n#include <cstdlib>\n#include <cstring>\n#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n\n// Условная C-библиотека: результат выделен malloc, освобождать — free.\nextern \"C\" char *c_upper(const char *s) {\n    const std::size_t n = std::strlen(s);\n    char *out = static_cast<char *>(std::malloc(n + 1));\n    for (std::size_t i = 0; i <= n; ++i) {\n        out[i] = static_cast<char>(std::toupper(static_cast<unsigned char>(s[i])));\n    }\n    return out;\n}\n\nstruct FreeDeleter {\n    void operator()(char *p) const noexcept {\n        std::free(p);\n    }\n};\n\nint main() {\n    std::string word;\n    while (std::cin >> word) {\n        const std::unique_ptr<char, FreeDeleter> upper(c_upper(word.c_str()));\n        std::println(\"{} → {}\", word, upper.get());\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`std::unique_ptr<char>` освобождает объект через `delete`, а память выделена `malloc`. Смешивать способы нельзя: `delete` может работать с другим распределителем и вызывать деструкторы, а `malloc` их не знает. AddressSanitizer сообщает `alloc-dealloc-mismatch (malloc vs operator delete)`.\n\nФункция освобождения `FreeDeleter` возвращает память тем же способом, каким она выделена. Пустая структура не увеличивает размер указателя.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-custom-deleters-task-4",
+      "title": "Пул соединений",
+      "description": "Соединение `Conn { int id; }` дорого создавать, поэтому их переиспользуют. Пул `Pool` выдаёт `Handle = std::unique_ptr<Conn, Return>`, где `Return` — функция освобождения **с состоянием**: она хранит указатель на пул и вместо удаления возвращает соединение в пул.\n\n- `acquire()` берёт последнее возвращённое свободное соединение (`переиспользовано #N`) или создаёт новое (`новое соединение #N`, номера с 1);\n- возврат печатает `возвращено #N`;\n- деструктор пула удаляет свободные соединения в порядке, в котором они лежат в списке свободных, печатая `закрыто #N`.\n\nРучки хранятся в `std::map<std::string, Pool::Handle>`. Команды: `get H` — `handles[H] = pool.acquire()` (если у H уже было соединение, оно возвращается **после** выдачи нового), `put H` — вернуть, `idle` — `свободно N`. В конце верните ручки от последнего имени к первому; затем пул уничтожается.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "get a\nget b\nput a\nidle\nget c\nget b\nidle\n",
+          "output": "новое соединение #1\nновое соединение #2\nвозвращено #1\nсвободно 1\nпереиспользовано #1\nновое соединение #3\nвозвращено #2\nсвободно 1\nвозвращено #1\nвозвращено #3\nзакрыто #2\nзакрыто #1\nзакрыто #3\n"
+        },
+        {
+          "input": "idle\n",
+          "output": "свободно 0\n"
+        }
+      ],
+      "constraints": ["Команд не больше 300."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "struct Return { Pool *pool; void operator()(Conn *c) const noexcept { pool->give_back(c); } }; — Handle(c, Return{this}).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Пул должен пережить все ручки: объявите его в main раньше словаря ручек.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "get a\nget b\nput a\nidle\nget c\nget b\nidle\n",
+          "expected": "новое соединение #1\nновое соединение #2\nвозвращено #1\nсвободно 1\nпереиспользовано #1\nновое соединение #3\nвозвращено #2\nсвободно 1\nвозвращено #1\nвозвращено #3\nзакрыто #2\nзакрыто #1\nзакрыто #3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "idle\n",
+          "expected": "свободно 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна ручка",
+          "stdin": "get a\n",
+          "expected": "новое соединение #1\nвозвращено #1\nзакрыто #1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Повторное использование",
+          "stdin": "get a\nput a\nget a\nput a\nidle\n",
+          "expected": "новое соединение #1\nвозвращено #1\nпереиспользовано #1\nвозвращено #1\nсвободно 1\nзакрыто #1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Возврат несуществующей",
+          "stdin": "put a\nidle\n",
+          "expected": "свободно 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Замена у одной ручки",
+          "stdin": "get a\nget a\nget a\nidle\n",
+          "expected": "новое соединение #1\nновое соединение #2\nвозвращено #1\nпереиспользовано #1\nвозвращено #2\nсвободно 1\nвозвращено #1\nзакрыто #2\nзакрыто #1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Возврат в конце",
+          "stdin": "get z\nget y\nget x\n",
+          "expected": "новое соединение #1\nновое соединение #2\nновое соединение #3\nвозвращено #1\nвозвращено #2\nвозвращено #3\nзакрыто #1\nзакрыто #2\nзакрыто #3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Порядок переиспользования",
+          "stdin": "get a\nget b\nput b\nput a\nget c\nget d\n",
+          "expected": "новое соединение #1\nновое соединение #2\nвозвращено #2\nвозвращено #1\nпереиспользовано #1\nпереиспользовано #2\nвозвращено #2\nвозвращено #1\nзакрыто #2\nзакрыто #1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Двойной возврат",
+          "stdin": "get a\nput a\nput a\nidle\n",
+          "expected": "новое соединение #1\nвозвращено #1\nсвободно 1\nзакрыто #1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Последний возвращённый",
+          "stdin": "get p\nget q\nput p\nput q\nget r\nidle\n",
+          "expected": "новое соединение #1\nновое соединение #2\nвозвращено #1\nвозвращено #2\nпереиспользовано #2\nсвободно 1\nвозвращено #2\nзакрыто #1\nзакрыто #2\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <vector>\n\nstruct Conn {\n    int id;\n};\n\nclass Pool {\npublic:\n    struct Return {\n        Pool *pool;\n        void operator()(Conn *c) const noexcept {\n            pool->give_back(c);\n        }\n    };\n    using Handle = std::unique_ptr<Conn, Return>;\n\n    Pool() = default;\n    Pool(const Pool &) = delete;\n    Pool &operator=(const Pool &) = delete;\n    ~Pool() {\n        for (Conn *c : free_) {\n            std::println(\"закрыто #{}\", c->id);\n            delete c;\n        }\n    }\n\n    Handle acquire() {\n        if (!free_.empty()) {\n            Conn *c = free_.back();\n            free_.pop_back();\n            std::println(\"переиспользовано #{}\", c->id);\n            return Handle(c, Return{this});\n        }\n        auto owned = std::make_unique<Conn>(++created_);\n        std::println(\"новое соединение #{}\", owned->id);\n        return Handle(owned.release(), Return{this});\n    }\n\n    void give_back(Conn *c) {\n        std::println(\"возвращено #{}\", c->id);\n        free_.push_back(c);\n    }\n\n    std::size_t idle() const {\n        return free_.size();\n    }\n\nprivate:\n    std::vector<Conn *> free_;\n    int created_ = 0;\n};\n\nint main() {\n    Pool pool;\n    std::map<std::string, Pool::Handle> handles;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"idle\") {\n            std::println(\"свободно {}\", pool.idle());\n            continue;\n        }\n        std::string h;\n        std::cin >> h;\n        if (command == \"get\") {\n            handles.insert_or_assign(h, pool.acquire());\n        } else if (auto it = handles.find(h); it != handles.end()) {\n            it->second.reset();\n        }\n    }\n    for (auto it = handles.rbegin(); it != handles.rend(); ++it) {\n        it->second.reset();\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Функция освобождения не обязана освобождать память — она описывает, что значит «отпустить ресурс». Здесь это возврат в пул: код, который пользуется ручкой, по-прежнему просто перестаёт ею владеть, а соединение переживает ручку и достаётся следующему клиенту. Цена состояния — ручка хранит указатель на пул и занимает два указателя.\n\nПул должен пережить все ручки — иначе функция освобождения обратится к уничтоженному пулу. Поэтому в `main` пул объявлен первым и уничтожается последним. `release()` в `acquire` передаёт владение новым соединением из временного `unique_ptr` в ручку без единого момента, когда соединение никому не принадлежит.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "lifetime-custom-deleters-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "До какого момента обязан существовать контекст, заимствованный deleter?",
-        "options": [
-          "Только во время создания владельца",
-          "До завершения освобождения ресурса на любом пути: reset, присваивание, деструктор"
-        ],
-        "correct": 1,
-        "explanation": "Для FILE определите Fclose с void operator()(FILE*) const noexcept, вызывающим fclose, и храните unique_ptr<FILE, Fclose>; результат fopen проверяйте через bool владельца — deleter не вызывается для null. shared_ptr принимает deleter при создании, но хранит его в блоке управления: тип не входит в shared_ptr<T>; make_shared пользовательский deleter не принимает. Ошибку fflush/fclose, важную приложению, обрабатывайте явной close-операцией до деструктора: бросать из деструктора нельзя. Заимствованный контекст внутри deleter обязан пережить все пути освобождения: reset, присваивание, разрушение перемещённого владельца."
+        "id": "q1",
+        "question": "Чем освобождать память, выделенную malloc?",
+        "explanation": "Способы выделения и освобождения должны совпадать; иначе — неопределённое поведение.",
+        "options": ["free", "delete", "delete[]", "Любым из трёх"],
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["3 1", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "owner: указатель на ресурс + deleter с контекстом\nreset или разрушение owner\n→ вызов deleter(resource)\n→ парная операция освобождения ровно один раз\nДля null deleter не вызывается; контекст жив до завершения вызова"
+        "id": "q2",
+        "question": "Что верно про функцию освобождения std::unique_ptr? Выберите все.",
+        "explanation": "Тип функции освобождения фиксирован в типе указателя.",
+        "type": "multiple",
+        "options": [
+          "Она часть типа unique_ptr",
+          "Пустая структура с operator() не увеличивает размер",
+          "Указатель на функцию увеличивает размер до двух указателей",
+          "Её можно поменять у существующего объекта на другой тип"
+        ],
+        "correct": [0, 1, 2]
       },
       {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q3",
+        "question": "Почему не стоит писать std::unique_ptr<FILE, decltype(&std::fclose)>?",
+        "explanation": "Оборачивайте вызов в собственную структуру с operator().",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Нельзя закрывать FILE через delete или освобождать память из new через free — несовместимые пары. Пустой deleter, который ничего не освобождает, маскирует утечку вместо владения."
+          "Стандарт не разрешает брать адреса функций стандартной библиотеки, и указатель на функцию увеличивает размер",
+          "fclose нельзя вызывать из деструктора",
+          "FILE нельзя хранить в unique_ptr",
+          "Это ошибка компиляции во всех компиляторах"
         ],
-        "correct": 1,
-        "explanation": "В практике deleter хранит указатель на счётчик. Переместите owner и убедитесь, что закрытие учитывается ровно один раз. Затем переставьте объявления счётчика и владельца на бумаге и объясните зависимость времени жизни."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <memory>\n#include <print>\n\nstruct Noisy {\n    void operator()(int *p) const {\n        std::print(\"[{}]\", *p);\n        delete p;\n    }\n};\n\nint main() {\n    std::unique_ptr<int, Noisy> a(new int(1));\n    std::unique_ptr<int, Noisy> b(new int(2));\n    a = std::move(b);\n    std::print(\"|\");\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Присваивание освобождает старый объект a через Noisy; в конце освобождается объект, который теперь у a.",
+        "type": "text",
+        "answers": ["[1]|[2]"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Где хранится функция освобождения std::shared_ptr?",
+        "explanation": "Поэтому shared_ptr с разными функциями освобождения можно хранить в одном контейнере.",
+        "options": [
+          "В блоке управления — тип shared_ptr от неё не зависит",
+          "В типе shared_ptr",
+          "В самом объекте",
+          "Нигде — shared_ptr всегда вызывает delete"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Для чего нужен std::out_ptr (C++23)?",
+        "explanation": "После вызова адаптер кладёт полученный указатель во владельца.",
+        "options": [
+          "Чтобы передать умный указатель в C-функцию, возвращающую ресурс через параметр T **",
+          "Чтобы вывести указатель в поток",
+          "Чтобы освободить ресурс досрочно",
+          "Чтобы преобразовать shared_ptr в unique_ptr"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что сообщит AddressSanitizer, если память из malloc освобождается через delete?",
+        "explanation": "Та же ошибка — при delete для памяти из new[].",
+        "options": [
+          "alloc-dealloc-mismatch",
+          "heap-buffer-overflow",
+          "stack-use-after-return",
+          "Ничего"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Можно ли использовать std::make_shared вместе с пользовательской функцией освобождения?",
+        "explanation": "make_shared сам создаёт объект и знает, как его уничтожить; для своей функции освобождения нужен конструктор shared_ptr.",
+        "type": "text",
+        "answers": ["нет", "Нет"],
+        "placeholder": "Да или нет"
       }
     ]
   }

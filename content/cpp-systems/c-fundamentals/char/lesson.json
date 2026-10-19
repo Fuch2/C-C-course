@@ -13,9 +13,9 @@
     "Классифицировать и преобразовывать символы функциями ctype.h",
     "Обрабатывать текст посимвольно через getchar до конца ввода"
   ],
-  "tags": ["C17", "char", "ASCII", "getchar"],
+  "tags": ["C23", "char", "ASCII", "getchar"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-char-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -122,11 +122,11 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
-          "input": "Hi, C17!\n",
+          "input": "Hi, C23!\n",
           "output": "3 2 2 2\n"
         },
         {
@@ -151,7 +151,7 @@
         {
           "id": "case-1",
           "name": "Пример 1",
-          "stdin": "Hi, C17!\n",
+          "stdin": "Hi, C23!\n",
           "expected": "3 2 2 2\n"
         },
         {
@@ -219,12 +219,12 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
-          "input": "Hello, world!\nc17\n",
-          "output": "HELLO, WORLD!\nC17\n"
+          "input": "Hello, world!\nc23\n",
+          "output": "HELLO, WORLD!\nC23\n"
         },
         {
           "input": "ABC",
@@ -248,8 +248,8 @@
         {
           "id": "case-1",
           "name": "Пример 1",
-          "stdin": "Hello, world!\nc17\n",
-          "expected": "HELLO, WORLD!\nC17\n"
+          "stdin": "Hello, world!\nc23\n",
+          "expected": "HELLO, WORLD!\nC23\n"
         },
         {
           "id": "case-2",
@@ -316,7 +316,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -413,7 +413,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

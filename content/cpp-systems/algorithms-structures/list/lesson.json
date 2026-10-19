@@ -1,140 +1,535 @@
 {
   "id": "algo-list",
-  "title": "Односвязный список — Linked list",
-  "description": "Узел хранит значение и ссылку next.",
+  "title": "Односвязный список",
+  "description": "Узлы в куче и указатель на голову; добавление в начало, обход и освобождение; добавление в конец с указателем на хвост; удаление через указатель на указатель; разворот на месте; сравнение со списком и массивом, кэш и практика.",
   "moduleId": "algorithms-structures",
   "order": 17,
   "difficulty": "intermediate",
-  "estimatedMinutes": 60,
+  "estimatedMinutes": 55,
   "prerequisites": ["algo-vector"],
   "objectives": [
-    "Объяснить инвариант: Цепочка вагонов: каждый знает только следующий, а head — точка входа.",
-    "Обосновать время: Вставка в голову O(1), поиск и удаление всех совпадений O(n).",
-    "Оценить память и компромиссы: Стабильность адресов живых узлов и дешёвые локальные перестановки против дорогого обхода и отсутствия индексации."
+    "Создавать, обходить и освобождать односвязный список",
+    "Добавлять в начало и конец за O(1)",
+    "Удалять узлы через указатель на указатель",
+    "Разворачивать список на месте и находить цикл"
   ],
-  "tags": [
-    "алгоритмы",
-    "C17",
-    "Односвязный список — Linked list",
-    "структуры данных",
-    "cache locality"
-  ],
+  "tags": ["Структуры данных", "Связный список", "Указатели"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "algo-list-exercise",
-    "title": "Удаление всех совпадений из цепочки",
-    "description": "Ввод n (0…256), n int −1000…1000 и target. Постройте односвязный список в порядке ввода и удалите все узлы с target, освободив их. Выведите оставшиеся значения через пробел и перевод строки. Освободите оставшийся список. Допускается временный входной массив для построения с головы в обратном порядке.",
-    "difficulty": "intermediate",
+    "id": "algo-list-task-1",
+    "title": "Список задом наперёд",
+    "description": "Прочитайте `n` и `n` целых чисел. Сложите их в односвязный список, добавляя каждое число **в начало**, напечатайте список от головы через пробел и освободите все узлы.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "5 3 3 5 3 7 3",
-        "output": "5 7\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "4\n10 20 30 40\n",
+        "output": "40 30 20 10\n"
       },
       {
-        "input": "3 2 2 2 2",
-        "output": "\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "1\n-5\n",
+        "output": "-5\n"
       }
     ],
-    "constraints": [
-      "Используйте C17 и диапазоны входа из условия.",
-      "Выводите только требуемый результат.",
-      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
-    ],
+    "constraints": ["1 ≤ n ≤ 1000; числа int."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Цепочка вагонов: каждый знает только следующий, а head — точка входа."
+        "text": "Новый узел: node->value = x; node->next = head; head = node;.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Операция O(1) изменения ссылок не включает поиск позиции."
-      },
-      {
-        "id": "hint-3",
-        "order": 3,
-        "text": "3 → 3 → 5 → NULL, удаление 3 сначала меняет head на вторую 3, затем на 5. Нельзя пропускать второй совпавший узел."
+        "text": "При освобождении запоминайте next до free. Проверка программы идёт с LeakSanitizer — неосвобождённый узел приведёт к ошибке.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "5 3 3 5 3 7 3",
-        "expected": "5 7\n"
+        "stdin": "4\n10 20 30 40\n",
+        "expected": "40 30 20 10\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "3 2 2 2 2",
-        "expected": "\n"
+        "stdin": "1\n-5\n",
+        "expected": "-5\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "0 0",
-        "expected": "\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "2\n1 2\n",
+        "expected": "2 1\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "3 1 2 3 9",
-        "expected": "1 2 3\n"
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "3\n7 7 7\n",
+        "expected": "7 7 7\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный сценарий 3",
-        "stdin": "4 4 5 6 4 4",
-        "expected": "5 6\n"
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "5\n1 2 3 4 5\n",
+        "expected": "5 4 3 2 1\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "5\n-1 -2 -3 -4 -5\n",
+        "expected": "-5 -4 -3 -2 -1\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "3\n2147483647 0 -2147483648\n",
+        "expected": "-2147483648 0 2147483647\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "6\n0 1 0 1 0 1\n",
+        "expected": "1 0 1 0 1 0\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "7\n9 8 7 6 5 4 3\n",
+        "expected": "3 4 5 6 7 8 9\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "8\n1 3 5 7 2 4 6 8\n",
+        "expected": "8 6 4 2 7 5 3 1\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\ntypedef struct Node { int value; struct Node *next; } Node;\nstatic int prepend(Node **head,int value){\n    Node *node=malloc(sizeof *node);if(!node)return 0;\n    *node=(Node){value,*head};*head=node;return 1;\n}\nstatic void remove_value(Node **head,int target){\n    /* link указывает на поле, которое владеет ссылкой на текущий узел. */\n    Node **link=head;\n    while(*link){\n        if((*link)->value==target){Node *old=*link;*link=old->next;free(old);}\n        else link=&(*link)->next;\n    }\n}\nstatic void destroy(Node **head){\n    while(*head){Node *old=*head;*head=old->next;free(old);}\n}\nint main(void) {\nint a[256]; int n;\nif (scanf(\"%d\", &n)!=1 || n<0 || n>256) return 1;\nfor(int i=0;i<n;++i) if(scanf(\"%d\", &a[i])!=1) return 1;\nint target;if(scanf(\"%d\",&target)!=1)return 1;Node *head=NULL;for(int i=n;i>0;--i)if(!prepend(&head,a[i-1])){destroy(&head);return 1;}remove_value(&head,target);int first=1;for(Node *node=head;node;node=node->next){printf(\"%s%d\",first?\"\":\" \",node->value);first=0;}puts(\"\");destroy(&head);\nreturn 0;\n}\n",
-    "solutionExplanation": "Инвариант: Цепочка вагонов: каждый знает только следующий, а head — точка входа.\n\n3 → 3 → 5 → NULL, удаление 3 сначала меняет head на вторую 3, затем на 5. Нельзя пропускать второй совпавший узел.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. Операция O(1) изменения ссылок не включает поиск позиции.\n\nВремя: Вставка в голову O(1), поиск и удаление всех совпадений O(n).\nПамять: O(n) значений и указателей плюс накладные расходы отдельных аллокаций.\nКомпромисс: Стабильность адресов живых узлов и дешёвые локальные перестановки против дорогого обхода и отсутствия индексации.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *next;\n} Node;\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1) {\n        return 0;\n    }\n    Node *head = NULL;\n    for (int i = 0; i < n; i++) {\n        int x;\n        if (scanf(\"%d\", &x) != 1) {\n            break;\n        }\n        Node *node = malloc(sizeof *node);\n        if (node == NULL) {\n            return 1;\n        }\n        node->value = x;\n        node->next = head;\n        head = node;\n    }\n    for (Node *p = head; p != NULL; p = p->next) {\n        printf(p->next != NULL ? \"%d \" : \"%d\\n\", p->value);\n    }\n    while (head != NULL) {\n        Node *next = head->next;\n        free(head);\n        head = next;\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Добавление в начало — `O(1)`: новый узел указывает на старую голову и становится новой. Поэтому список хранит элементы в порядке, обратном вводу, — получилась печать задом наперёд без массива и без индексов.\n\nПоследний элемент печатается с переводом строки: у последнего узла `next == NULL`. Освобождение проходит по списку ещё раз и запоминает следующий узел до `free`. Программа проверяется с LeakSanitizer: потерянный узел — утечка, и она считается ошибкой.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "algo-list-task-2",
+      "title": "Удаление по значению",
+      "description": "Первая строка — `n` и `x`, вторая — `n` целых чисел. Сложите числа в односвязный список **в порядке ввода** (добавление в конец за `O(1)` с указателем на хвост). Удалите из списка все узлы со значением `x`, освобождая их, и напечатайте оставшийся список через пробел или `пусто`. В конце освободите все узлы.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "6 5\n5 1 5 5 2 5\n",
+          "output": "1 2\n"
+        },
+        {
+          "input": "3 7\n7 7 7\n",
+          "output": "пусто\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; числа int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Добавление в конец: если tail == NULL, новый узел — и голова, и хвост; иначе tail->next = node; tail = node.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Удаление: Node **link = &head; пока *link != NULL — если (*link)->value == x, сохраните узел, *link = узел->next, free(узел); иначе link = &(*link)->next.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "6 5\n5 1 5 5 2 5\n",
+          "expected": "1 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3 7\n7 7 7\n",
+          "expected": "пусто\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Нечего удалять",
+          "stdin": "1 3\n4\n",
+          "expected": "4\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Единственный узел",
+          "stdin": "1 4\n4\n",
+          "expected": "пусто\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Голова",
+          "stdin": "4 1\n1 2 3 4\n",
+          "expected": "2 3 4\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Хвост",
+          "stdin": "4 4\n1 2 3 4\n",
+          "expected": "1 2 3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Через один",
+          "stdin": "5 0\n0 1 0 1 0\n",
+          "expected": "1 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Подряд в середине",
+          "stdin": "6 -1\n-1 -1 2 -1 -1 3\n",
+          "expected": "2 3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Нет совпадений",
+          "stdin": "5 9\n1 2 3 4 5\n",
+          "expected": "1 2 3 4 5\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Крайние значения",
+          "stdin": "7 2147483647\n2147483647 0 2147483647 -2147483648 2147483647 1 2147483647\n",
+          "expected": "0 -2147483648 1\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *next;\n} Node;\n\nint main(void) {\n    int n, x;\n    if (scanf(\"%d %d\", &n, &x) != 2 || n < 1) {\n        return 0;\n    }\n    Node *head = NULL, *tail = NULL;\n    for (int i = 0; i < n; i++) {\n        int v;\n        if (scanf(\"%d\", &v) != 1) {\n            break;\n        }\n        Node *node = malloc(sizeof *node);\n        if (node == NULL) {\n            return 1;\n        }\n        node->value = v;\n        node->next = NULL;\n        if (tail == NULL) {\n            head = node;\n        } else {\n            tail->next = node;\n        }\n        tail = node;\n    }\n    Node **link = &head;\n    while (*link != NULL) {\n        Node *node = *link;\n        if (node->value == x) {\n            *link = node->next;\n            free(node);\n        } else {\n            link = &node->next;\n        }\n    }\n    if (head == NULL) {\n        printf(\"пусто\\n\");\n    }\n    for (Node *p = head; p != NULL; p = p->next) {\n        printf(p->next != NULL ? \"%d \" : \"%d\\n\", p->value);\n    }\n    while (head != NULL) {\n        Node *next = head->next;\n        free(head);\n        head = next;\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`link` всегда указывает на тот указатель, который ведёт к текущему узлу: сначала на `head`, потом на поле `next` очередного оставленного узла. Удаление — одно присваивание `*link = node->next`, и оно одинаково для головы, середины и конца. Когда узел удалён, `link` не сдвигается: теперь он указывает на следующий узел, который тоже нужно проверить. Так удаляются подряд идущие значения.\n\nУказатель `tail` после удаления может стать недействительным, но здесь он больше не используется. Если бы список продолжал пополняться, хвост пришлось бы обновлять при удалении последнего узла.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-list-task-3",
+      "title": "Найди ошибку: освобождение списка",
+      "description": "Программа читает целые числа до конца ввода, складывает их в односвязный список, печатает количество и сумму, а затем освобождает список.\n\nВывод правильный, но AddressSanitizer сообщает об ошибке. Найдите и исправьте её.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *next;\n} Node;\n\nint main(void) {\n    Node *head = NULL;\n    int x;\n    while (scanf(\"%d\", &x) == 1) {\n        Node *node = malloc(sizeof *node);\n        if (node == NULL) {\n            return 1;\n        }\n        node->value = x;\n        node->next = head;\n        head = node;\n    }\n    long long sum = 0;\n    int count = 0;\n    for (Node *p = head; p != NULL; p = p->next) {\n        sum += p->value;\n        count++;\n    }\n    printf(\"%d %lld\\n\", count, sum);\n    for (Node *p = head; p != NULL; p = p->next) {\n        free(p);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "1 2 3\n",
+          "output": "3 6\n"
+        },
+        {
+          "input": "",
+          "output": "0 0\n"
+        }
+      ],
+      "constraints": ["От 0 до 1000 чисел; числа int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "В каком порядке выполняются тело цикла for и выражение шага p = p->next?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "После free(p) поле p->next читать нельзя. Запомните следующий узел до освобождения: Node *next = head->next; free(head); head = next;.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1 2 3\n",
+          "expected": "3 6\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "0 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "5\n",
+          "expected": "1 5\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "-1 -2\n",
+          "expected": "2 -3\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "2147483647 2147483647\n",
+          "expected": "2 4294967294\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "0 0 0 0\n",
+          "expected": "4 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1 -1 1 -1 1\n",
+          "expected": "5 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "10 20 30 40 50 60\n",
+          "expected": "6 210\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "7\n8\n9\n",
+          "expected": "3 24\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "100 200 300\n",
+          "expected": "3 600\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *next;\n} Node;\n\nint main(void) {\n    Node *head = NULL;\n    int x;\n    while (scanf(\"%d\", &x) == 1) {\n        Node *node = malloc(sizeof *node);\n        if (node == NULL) {\n            return 1;\n        }\n        node->value = x;\n        node->next = head;\n        head = node;\n    }\n    long long sum = 0;\n    int count = 0;\n    for (Node *p = head; p != NULL; p = p->next) {\n        sum += p->value;\n        count++;\n    }\n    printf(\"%d %lld\\n\", count, sum);\n    while (head != NULL) {\n        Node *next = head->next;\n        free(head);\n        head = next;\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Цикл `for (p = head; p != NULL; p = p->next) free(p);` выглядит естественно, но выражение шага выполняется **после** тела: сначала `free(p)`, затем чтение `p->next` из освобождённого узла. Это использование после освобождения — AddressSanitizer сообщает `heap-use-after-free`.\n\nБез санитайзера программа обычно «работает»: освобождённая память ещё хранит старое значение `next`. Но аллокатор вправе записать туда свои служебные данные, и тогда цикл пойдёт по мусорному адресу. Правильное освобождение запоминает следующий узел до `free`. На пустом вводе ошибки нет — цикл не выполняется ни разу, поэтому тестировать нужно и непустые случаи.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-list-task-4",
+      "title": "Поиск цикла",
+      "description": "Из-за ошибки в программе последний узел списка мог начать указывать на один из предыдущих — тогда обход никогда не закончится. Проверьте список на цикл.\n\nПервая строка — `n`, вторая — `n` чисел `next[i]`: номер узла, на который указывает узел `i` (с нуля), или `-1` для `NULL`. Голова — узел 0; узлы, недостижимые из головы, в проверке не участвуют.\n\nПостройте настоящий список из `n` узлов, выделенных `malloc`, и найдите цикл **алгоритмом Флойда** — двумя указателями, без массива посещённых. Напечатайте `нет цикла` или `цикл: начало K, длина L`, где `K` — номер первого узла цикла на пути от головы.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5\n1 2 3 4 -1\n",
+          "output": "нет цикла\n"
+        },
+        {
+          "input": "5\n1 2 3 4 2\n",
+          "output": "цикл: начало 2, длина 3\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; −1 ≤ next[i] < n."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Медленный указатель шагает на один узел, быстрый — на два. Если быстрый дошёл до NULL — цикла нет. Если они встретились — цикл есть.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Длина цикла: от точки встречи шагайте по одному, пока не вернётесь в неё, считая шаги.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Начало цикла: поставьте один указатель в голову, другой — в точку встречи, и двигайте оба по одному шагу; они встретятся в начале цикла. Храните в узле его номер, чтобы напечатать K. Не забудьте освободить узлы через массив указателей, созданный при построении.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5\n1 2 3 4 -1\n",
+          "expected": "нет цикла\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5\n1 2 3 4 2\n",
+          "expected": "цикл: начало 2, длина 3\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Один узел",
+          "stdin": "1\n-1\n",
+          "expected": "нет цикла\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Петля на себя",
+          "stdin": "1\n0\n",
+          "expected": "цикл: начало 0, длина 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Цикл из двух",
+          "stdin": "2\n1 0\n",
+          "expected": "цикл: начало 0, длина 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Весь список — цикл",
+          "stdin": "4\n1 2 3 0\n",
+          "expected": "цикл: начало 0, длина 4\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Петля в конце",
+          "stdin": "6\n1 2 3 4 5 5\n",
+          "expected": "цикл: начало 5, длина 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Цикл со второго узла",
+          "stdin": "6\n1 2 3 4 5 1\n",
+          "expected": "цикл: начало 1, длина 5\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Недостижимые узлы",
+          "stdin": "7\n1 2 3 -1 0 0 0\n",
+          "expected": "нет цикла\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Длинный хвост",
+          "stdin": "10\n1 2 3 4 5 6 7 8 9 3\n",
+          "expected": "цикл: начало 3, длина 7\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int id;\n    struct Node *next;\n} Node;\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return 0;\n    }\n    Node *nodes[1000];\n    for (int i = 0; i < n; i++) {\n        nodes[i] = malloc(sizeof *nodes[i]);\n        if (nodes[i] == NULL) {\n            return 1;\n        }\n        nodes[i]->id = i;\n    }\n    for (int i = 0; i < n; i++) {\n        int next;\n        scanf(\"%d\", &next);\n        nodes[i]->next = next >= 0 ? nodes[next] : NULL;\n    }\n    Node *slow = nodes[0], *fast = nodes[0];\n    int cycle = 0;\n    while (fast != NULL && fast->next != NULL) {\n        slow = slow->next;\n        fast = fast->next->next;\n        if (slow == fast) {\n            cycle = 1;\n            break;\n        }\n    }\n    if (!cycle) {\n        printf(\"нет цикла\\n\");\n    } else {\n        int length = 1;\n        for (Node *p = slow->next; p != slow; p = p->next) {\n            length++;\n        }\n        Node *a = nodes[0], *b = slow;\n        while (a != b) {\n            a = a->next;\n            b = b->next;\n        }\n        printf(\"цикл: начало %d, длина %d\\n\", a->id, length);\n    }\n    for (int i = 0; i < n; i++) {\n        free(nodes[i]);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Если цикла нет, быстрый указатель дойдёт до `NULL`. Если цикл есть, оба указателя в него войдут, и внутри цикла быстрый догоняет медленного на один узел за шаг — встреча неизбежна не позже чем через длину цикла шагов.\n\nПочему встреча головы и точки встречи даёт начало цикла: пусть до начала цикла `a` шагов, а встреча произошла через `b` шагов внутри цикла длины `L`. Медленный прошёл `a + b`, быстрый — вдвое больше, и разница `a + b` кратна `L`. Значит, от точки встречи ещё `a` шагов приводят ровно в начало цикла — туда же за `a` шагов приходит указатель из головы.\n\nАлгоритм работает за `O(n)` и с `O(1)` дополнительной памяти. Массив `nodes` нужен только для построения и освобождения: из списка с циклом нельзя освободить узлы обходом — он не заканчивается.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "algo-list-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "invariant",
-        "question": "Сколько стоит удалить узел по неизвестному заранее значению?",
-        "options": ["O(n) с учётом поиска", "Всегда O(1)"],
-        "correct": 0,
-        "explanation": "Цепочка вагонов: каждый знает только следующий, а head — точка входа. 3 → 3 → 5 → NULL, удаление 3 сначала меняет head на вторую 3, затем на 5. Нельзя пропускать второй совпавший узел."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int value;\n    struct Node *next;\n} Node;\n\nint main(void) {\n    Node *head = NULL;\n    for (int i = 1; i <= 3; i++) {\n        Node *node = malloc(sizeof *node);\n        node->value = i;\n        node->next = head;\n        head = node;\n    }\n    for (Node *p = head; p != NULL; p = p->next) {\n        printf(\"%d \", p->value);\n    }\n    printf(\"\\n\");\n    while (head != NULL) {\n        Node *next = head->next;\n        free(head);\n        head = next;\n    }\n    return 0;\n}",
+        "explanation": "Каждый новый узел становится головой, поэтому элементы идут в обратном порядке.",
+        "type": "text",
+        "answers": ["3 2 1"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "complexity",
-        "question": "Какая оценка соответствует рассмотренной реализации?",
-        "options": [
-          "Всегда O(1), потому что все тесты ограничены по размеру.",
-          "Вставка в голову O(1), поиск и удаление всех совпадений O(n)."
-        ],
-        "correct": 1,
-        "explanation": "Стабильность адресов живых узлов и дешёвые локальные перестановки против дорогого обхода и отсутствия индексации."
+        "id": "q2",
+        "question": "Сколько стоит доступ к k-му элементу односвязного списка?",
+        "explanation": "Адреса узлов не вычисляются формулой, как у массива: до k-го узла можно добраться только по цепочке next.",
+        "options": ["O(k) — нужно пройти k узлов от головы", "O(1)", "O(log k)", "O(n²)"],
+        "correct": 0
       },
       {
-        "id": "engineering",
-        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "id": "q3",
+        "question": "Почему этот цикл освобождения ошибочен?",
+        "code": "for (Node *p = head; p != NULL; p = p->next) {\n    free(p);\n}",
+        "codeLanguage": "c",
+        "explanation": "Выражение шага выполняется после тела цикла, то есть после free(p). Это использование после освобождения.",
         "options": [
-          "Операция O(1) изменения ссылок не включает поиск позиции.",
-          "Совпадение Big O гарантирует одинаковое время на любой машине."
+          "p = p->next читает поле уже освобождённого узла",
+          "Освобождаются не все узлы",
+          "free нельзя вызывать в цикле",
+          "Ошибки нет"
         ],
-        "correct": 0,
-        "explanation": "Узлы могут лежать далеко друг от друга; pointer chasing мешает предвыборке следующего адреса. O(n) значений и указателей плюс накладные расходы отдельных аллокаций."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что даёт указатель на хвост (tail) в односвязном списке?",
+        "explanation": "Новый узел цепляется к tail->next сразу. Но удалить последний узел за O(1) нельзя: нужно найти предпоследний, а обратных ссылок нет.",
+        "options": [
+          "Добавление в конец за O(1)",
+          "Удаление из конца за O(1)",
+          "Доступ по индексу за O(1)",
+          "Обход в обратном порядке"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Зачем в удалении используют Node **link вместо Node *prev?",
+        "explanation": "link хранит адрес того указателя, который ведёт к текущему узлу. Присваивание *link = node->next работает для любого положения узла.",
+        "options": [
+          "Чтобы одинаково изменять и переменную head, и поле next предыдущего узла — без особого случая для головы",
+          "Чтобы удаление работало за O(1)",
+          "Потому что Node * нельзя изменять",
+          "Чтобы не вызывать free"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Список 1 → 2 → 3 разворачивают на месте. Сколько присваиваний head->next = prev будет выполнено?",
+        "explanation": "По одному на узел: каждая стрелка переворачивается ровно один раз.",
+        "type": "text",
+        "answers": ["3"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q7",
+        "question": "Почему обход массива на практике обычно быстрее обхода списка той же длины?",
+        "explanation": "Асимптотика одинаковая — O(n). Разница в константе: переход по указателю на произвольный адрес часто означает ожидание оперативной памяти.",
+        "options": [
+          "Элементы массива лежат подряд и загружаются в кэш процессора пачками; узлы списка разбросаны по памяти",
+          "Обход массива — O(1), а списка — O(n)",
+          "В списке больше сравнений",
+          "Списки нельзя обходить циклом for"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какие операции односвязного списка работают за O(1)?",
+        "explanation": "Поиск требует обхода, а для удаления последнего узла нужно найти предпоследний — тоже обход.",
+        "type": "multiple",
+        "options": [
+          "Добавление в начало",
+          "Удаление узла, следующего за известным",
+          "Поиск значения",
+          "Удаление последнего узла без указателя на предпоследний"
+        ],
+        "correct": [0, 1]
       }
     ]
   }

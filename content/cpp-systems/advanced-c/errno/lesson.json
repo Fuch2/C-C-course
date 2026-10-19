@@ -1,126 +1,545 @@
 {
   "id": "advanced-errno",
-  "title": "errno",
-  "description": "errno — изменяемый индикатор ошибки, который имеет смысл только согласно контракту вызванной функции.",
+  "title": "errno: как библиотека сообщает об ошибках",
+  "description": "Особое возвращаемое значение и код причины в errno; макросы кодов и их переносимость; perror и strerror; три правила работы с errno: проверять после неудачи, сохранять сразу, обнулять перед strtol и математикой; полный разбор чисел strtol; ошибки области и диапазона в math.h; errno в потоках.",
   "moduleId": "advanced-c",
-  "order": 27,
-  "difficulty": "advanced",
-  "estimatedMinutes": 40,
-  "prerequisites": ["advanced-error-handling"],
+  "order": 26,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["advanced-binary-files"],
   "objectives": [
-    "Объяснить: errno",
-    "Различать корректный контракт и ошибку: Проверка только результата strtol не различает корректный ноль и отсутствие числа.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Определять причину ошибки библиотечной функции по errno",
+    "Соблюдать правила: проверять результат, сохранять errno, обнулять перед strtol",
+    "Разбирать числа strtol с полной проверкой",
+    "Обрабатывать ошибки области и диапазона математических функций"
   ],
-  "tags": ["C17", "углублённый C", "errno"],
+  "tags": ["errno", "strerror", "perror", "strtol", "Обработка ошибок"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-errno-exercise",
-    "title": "Практика: errno",
-    "description": "Ввод один токен до 100 символов. Разберите его strtol в десятичной системе. При лишних символах, переполнении или значении вне −1000…1000 выведите ОШИБКА; иначе число.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-errno-task-1",
+    "title": "Разбор целых",
+    "description": "Каждая строка ввода — один токен (без пробелов внутри). Разберите его как десятичное целое типа `long` с помощью `strtol` и напечатайте одно из:\n- `число N` — токен целиком является числом (знак допустим);\n- `не число` — в начале токена нет цифр;\n- `лишние символы: ХВОСТ` — после числа остались символы (напечатайте их);\n- `переполнение` — число не помещается в `long`.\n\nЕсли есть и переполнение, и лишние символы, печатайте `переполнение`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "-32",
-        "output": "-32\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "42\n-17\n12px\nabc\n",
+        "output": "число 42\nчисло -17\nлишние символы: px\nне число\n"
       },
       {
-        "input": "12x",
-        "output": "ОШИБКА\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "99999999999999999999\n",
+        "output": "переполнение\n"
       }
     ],
-    "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
-    ],
+    "constraints": ["Токены — до 60 символов ASCII; строк не больше 30."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "errno — записка о конкретном неудачном вызове, а не общий датчик исправности программы."
+        "text": "Порядок: char *end; errno = 0; long v = strtol(word, &end, 10);.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверка только результата strtol не различает корректный ноль и отсутствие числа."
+        "text": "end == word — цифр не было; errno == ERANGE — переполнение; *end != '\\0' — хвост, он начинается с end.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Проверяйте переполнение раньше хвоста — так требует условие для смешанного случая.",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "-32",
-        "expected": "-32\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "42\n-17\n12px\nabc\n",
+        "expected": "число 42\nчисло -17\nлишние символы: px\nне число\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "12x",
-        "expected": "ОШИБКА\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "99999999999999999999\n",
+        "expected": "переполнение\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "0",
-        "expected": "0\n"
+        "id": "hidden-1",
+        "name": "Ноль и знаки",
+        "stdin": "0\n+5\n-0\n",
+        "expected": "число 0\nчисло 5\nчисло 0\n"
       },
       {
-        "id": "test-4",
-        "name": "Граничный сценарий 3",
-        "stdin": "99999999999999999999999999999",
-        "expected": "ОШИБКА\n"
+        "id": "hidden-2",
+        "name": "Граница LONG_MAX",
+        "stdin": "9223372036854775807\n9223372036854775808\n",
+        "expected": "число 9223372036854775807\nпереполнение\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Граница LONG_MIN",
+        "stdin": "-9223372036854775808\n-9223372036854775809\n",
+        "expected": "число -9223372036854775808\nпереполнение\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Только знак",
+        "stdin": "+\n-\n",
+        "expected": "не число\nне число\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Переполнение и хвост",
+        "stdin": "99999999999999999999xyz\n",
+        "expected": "переполнение\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Дробная запись",
+        "stdin": "3.14\n1e5\n",
+        "expected": "лишние символы: .14\nлишние символы: e5\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Префиксы",
+        "stdin": "0x1F\n007\n",
+        "expected": "лишние символы: x1F\nчисло 7\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Ошибка между числами",
+        "stdin": "5\n99999999999999999999\n7\n",
+        "expected": "число 5\nпереполнение\nчисло 7\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <errno.h>\nint main(void) {\n    char text[101],*end; if(scanf(\"%100s\",text)!=1)return 1;\n    errno=0;long value=strtol(text,&end,10);\n    if(errno==ERANGE || end==text || *end!='\\0' || value < -1000 || value > 1000)puts(\"ОШИБКА\");\n    else printf(\"%ld\\n\",value);\n    return 0;\n}\n",
-    "solutionExplanation": "errno — записка о конкретном неудачном вызове, а не общий датчик исправности программы.\n\nПроверка только результата strtol не различает корректный ноль и отсутствие числа.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '-32' → '-32\\n'; '12x' → 'ОШИБКА\\n'; '0' → '0\\n'; '99999999999999999999999999999' → 'ОШИБКА\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <errno.h>\n#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    char word[64];\n    while (scanf(\"%63s\", word) == 1) {\n        char *end;\n        errno = 0;\n        long value = strtol(word, &end, 10);\n        if (end == word) {\n            printf(\"не число\\n\");\n        } else if (errno == ERANGE) {\n            printf(\"переполнение\\n\");\n        } else if (*end != '\\0') {\n            printf(\"лишние символы: %s\\n\", end);\n        } else {\n            printf(\"число %ld\\n\", value);\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "`strtol` сообщает о трёх разных проблемах тремя способами: «не число» — указатель `end` остался в начале строки; «лишние символы» — `end` указывает не на конец; переполнение — `errno == ERANGE` (результат при этом `LONG_MAX` или `LONG_MIN`). `errno` обнуляется перед **каждым** вызовом: иначе переполнение одного токена «перешло» бы на следующий.\n\nПорядок проверок задаёт, какое сообщение важнее: пустой разбор исключает всё остальное, а переполнение по условию важнее хвоста.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-errno-task-2",
+      "title": "Операции с файлами",
+      "description": "Выполните команды над файлами в текущем каталоге и сообщите о результате каждой:\n- `create ИМЯ` — создать новый файл, но **не** перезаписывать существующий: `fopen(ИМЯ, \"wx\")`;\n- `append ИМЯ` — открыть на дописывание: `fopen(ИМЯ, \"a\")`;\n- `open ИМЯ` — открыть на чтение: `fopen(ИМЯ, \"r\")`;\n- `remove ИМЯ` — удалить: `remove(ИМЯ)`.\n\nОткрытый файл сразу закрывайте. При успехе печатайте `ИМЯ: успех`, при неудаче — `ИМЯ: КОД (описание)`, где `КОД` — имя макроса (`ENOENT`, `EEXIST`, `EISDIR`, `EACCES`, `ENOTDIR`; для других кодов — `E?`), а описание — `strerror` сохранённого кода.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "create a.txt\ncreate a.txt\nopen a.txt\nremove a.txt\nopen a.txt\n",
+          "output": "a.txt: успех\na.txt: EEXIST (File exists)\na.txt: успех\na.txt: успех\na.txt: ENOENT (No such file or directory)\n"
+        },
+        {
+          "input": "append .\n",
+          "output": ".: EISDIR (Is a directory)\n"
+        }
+      ],
+      "constraints": ["Команд не больше 30; имена — до 60 символов без пробелов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сразу после неудачного вызова сохраните код: int code = errno;. Только потом вызывайте printf и strerror.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Имя макроса по коду: таблица static const struct { int code; const char *name; } NAMES[] = {{ENOENT, \"ENOENT\"}, …};.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Для команд с fopen результат — указатель, для remove — ноль при успехе. Удобно вынести печать результата в функцию report(name, ok, code).",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "create a.txt\ncreate a.txt\nopen a.txt\nremove a.txt\nopen a.txt\n",
+          "expected": "a.txt: успех\na.txt: EEXIST (File exists)\na.txt: успех\na.txt: успех\na.txt: ENOENT (No such file or directory)\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "append .\n",
+          "expected": ".: EISDIR (Is a directory)\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Удаление несуществующего",
+          "stdin": "remove ghost.txt\n",
+          "expected": "ghost.txt: ENOENT (No such file or directory)\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Дописывание создаёт файл",
+          "stdin": "append log.txt\nappend log.txt\ncreate log.txt\n",
+          "expected": "log.txt: успех\nlog.txt: успех\nlog.txt: EEXIST (File exists)\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Несуществующий каталог",
+          "stdin": "open missing/inner.txt\ncreate missing/inner.txt\n",
+          "expected": "missing/inner.txt: ENOENT (No such file or directory)\nmissing/inner.txt: ENOENT (No such file or directory)\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Путь через файл",
+          "stdin": "create data.bin\nopen data.bin/x\n",
+          "expected": "data.bin: успех\ndata.bin/x: ENOTDIR (Not a directory)\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Каталог на чтение",
+          "stdin": "open .\n",
+          "expected": ".: успех\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Повторные операции",
+          "stdin": "create x\nremove x\nremove x\ncreate x\n",
+          "expected": "x: успех\nx: успех\nx: ENOENT (No such file or directory)\nx: успех\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Создать существующий каталог",
+          "stdin": "create .\n",
+          "expected": ".: EEXIST (File exists)\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Два файла",
+          "stdin": "append a\nappend b\nremove a\nopen b\nopen a\n",
+          "expected": "a: успех\nb: успех\na: успех\nb: успех\na: ENOENT (No such file or directory)\n"
+        }
+      ],
+      "referenceSolution": "#include <errno.h>\n#include <stdio.h>\n#include <string.h>\n\nstatic const struct {\n    int code;\n    const char *name;\n} NAMES[] = {\n    {ENOENT, \"ENOENT\"}, {EEXIST, \"EEXIST\"}, {EISDIR, \"EISDIR\"}, {EACCES, \"EACCES\"}, {ENOTDIR, \"ENOTDIR\"},\n};\n\nstatic const char *code_name(int code) {\n    for (size_t i = 0; i < sizeof NAMES / sizeof NAMES[0]; i++) {\n        if (NAMES[i].code == code) {\n            return NAMES[i].name;\n        }\n    }\n    return \"E?\";\n}\n\nstatic void report(const char *name, int ok, int code) {\n    if (ok) {\n        printf(\"%s: успех\\n\", name);\n    } else {\n        printf(\"%s: %s (%s)\\n\", name, code_name(code), strerror(code));\n    }\n}\n\nstatic void try_open(const char *name, const char *mode) {\n    FILE *f = fopen(name, mode);\n    int code = errno;\n    if (f != NULL) {\n        fclose(f);\n    }\n    report(name, f != NULL, code);\n}\n\nint main(void) {\n    char command[16], name[64];\n    while (scanf(\"%15s %63s\", command, name) == 2) {\n        if (strcmp(command, \"create\") == 0) {\n            try_open(name, \"wx\");\n        } else if (strcmp(command, \"append\") == 0) {\n            try_open(name, \"a\");\n        } else if (strcmp(command, \"open\") == 0) {\n            try_open(name, \"r\");\n        } else if (strcmp(command, \"remove\") == 0) {\n            int result = remove(name);\n            int code = errno;\n            report(name, result == 0, code);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Каждая операция сообщает о неудаче своим способом — `NULL` у `fopen`, ненулевой результат у `remove`, — а причину все они кладут в `errno`. Код сохраняется **сразу** после вызова: `fclose` и `printf` могли бы его изменить. Имя макроса программа находит по таблице, а не печатает число, — числовые значения кодов зависят от системы.\n\nРежим `\"wx\"` (C11) открывает файл, только если его ещё нет, — так программа не уничтожит чужие данные. Открытие каталога на запись даёт `EISDIR`, а путь через несуществующий каталог — `ENOENT`: система не нашла даже каталог. Описания `strerror` на английском — это стандартная локаль «C».",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-errno-task-3",
+      "title": "Найди ошибку: ложное переполнение",
+      "description": "Программа разбирает токены ввода как целые числа `long`: для каждого печатает `номер: число`, `номер: не число` (в том числе при лишних символах) или `номер: переполнение`, а в конце — сумму правильных чисел.\n\nПосле первого переполнения все следующие числа тоже объявляются переполнением. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <errno.h>\n#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    char word[64];\n    long long sum = 0;\n    int index = 0;\n    errno = 0;\n    while (scanf(\"%63s\", word) == 1) {\n        index++;\n        char *end;\n        long value = strtol(word, &end, 10);\n        if (end == word || *end != '\\0') {\n            printf(\"%d: не число\\n\", index);\n        } else if (errno == ERANGE) {\n            printf(\"%d: переполнение\\n\", index);\n        } else {\n            printf(\"%d: %ld\\n\", index, value);\n            sum += value;\n        }\n    }\n    printf(\"сумма: %lld\\n\", sum);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5 99999999999999999999 7\n",
+          "output": "1: 5\n2: переполнение\n3: 7\nсумма: 12\n"
+        },
+        {
+          "input": "1 2 3\n",
+          "output": "1: 1\n2: 2\n3: 3\nсумма: 6\n"
+        }
+      ],
+      "constraints": ["Токенов не больше 30, каждый до 60 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Когда errno получает значение ERANGE и кто её потом возвращает к нулю?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Библиотека никогда не обнуляет errno. Записывайте errno = 0 перед каждым вызовом strtol, а не один раз до цикла.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5 99999999999999999999 7\n",
+          "expected": "1: 5\n2: переполнение\n3: 7\nсумма: 12\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 2 3\n",
+          "expected": "1: 1\n2: 2\n3: 3\nсумма: 6\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "99999999999999999999 1\n",
+          "expected": "1: переполнение\n2: 1\nсумма: 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "-99999999999999999999 -1 2\n",
+          "expected": "1: переполнение\n2: -1\n3: 2\nсумма: 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "abc 99999999999999999999 x 4\n",
+          "expected": "1: не число\n2: переполнение\n3: не число\n4: 4\nсумма: 4\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "\n",
+          "expected": "сумма: 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "9223372036854775807 0\n",
+          "expected": "1: 9223372036854775807\n2: 0\nсумма: 9223372036854775807\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "99999999999999999999 99999999999999999999 10\n",
+          "expected": "1: переполнение\n2: переполнение\n3: 10\nсумма: 10\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "12x 3\n",
+          "expected": "1: не число\n2: 3\nсумма: 3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "1 99999999999999999999 2 99999999999999999999 3\n",
+          "expected": "1: 1\n2: переполнение\n3: 2\n4: переполнение\n5: 3\nсумма: 6\n"
+        }
+      ],
+      "referenceSolution": "#include <errno.h>\n#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    char word[64];\n    long long sum = 0;\n    int index = 0;\n    while (scanf(\"%63s\", word) == 1) {\n        index++;\n        char *end;\n        errno = 0;\n        long value = strtol(word, &end, 10);\n        if (end == word || *end != '\\0') {\n            printf(\"%d: не число\\n\", index);\n        } else if (errno == ERANGE) {\n            printf(\"%d: переполнение\\n\", index);\n        } else {\n            printf(\"%d: %ld\\n\", index, value);\n            sum += value;\n        }\n    }\n    printf(\"сумма: %lld\\n\", sum);\n    return 0;\n}\n",
+      "solutionExplanation": "`strtol` при переполнении записывает `ERANGE` в `errno`, а при успешном разборе `errno` не трогает. Программа обнуляет её один раз до цикла, поэтому после первого переполнения `ERANGE` остаётся навсегда — и каждое следующее число выглядит переполненным.\n\nПравило для функций без особого значения ошибки: `errno = 0` **непосредственно** перед каждым вызовом, проверка — сразу после. Тогда `ERANGE` говорит именно об этом вызове.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-errno-task-4",
+      "title": "Математика без сюрпризов",
+      "description": "Вычисляйте математические функции и сообщайте об ошибках по `errno`. Команды до конца ввода:\n- `sqrt X`, `log X`, `exp X` — корень, натуральный логарифм, экспонента;\n- `pow X Y` — X в степени Y.\n\nПеред каждым вызовом обнулите `errno`, после вызова проверьте её: `EDOM` — напечатайте `ошибка области: NAME(аргументы)`, `ERANGE` — `ошибка диапазона: NAME(аргументы)`, иначе — результат с шестью значащими цифрами (`%.6g`). Аргументы печатайте в формате `%g` через запятую и пробел.\n\nВ начале программы проверьте, что реализация сообщает об ошибках математики через `errno` (`math_errhandling & MATH_ERRNO`); если нет — напечатайте `errno не поддерживается` и завершите работу.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "sqrt 2\nsqrt -1\nlog 0\n",
+          "output": "1.41421\nошибка области: sqrt(-1)\nошибка диапазона: log(0)\n"
+        },
+        {
+          "input": "pow 2 10\npow -8 0.5\nexp 1000\n",
+          "output": "1024\nошибка области: pow(-8, 0.5)\nошибка диапазона: exp(1000)\n"
+        }
+      ],
+      "constraints": [
+        "Аргументы — числа в записи, которую понимает scanf(\"%lf\"); команд не больше 30."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Функции можно хранить в таблице: struct { const char *name; double (*f)(double); } FUNCS[] = {{\"sqrt\", sqrt}, {\"log\", log}, {\"exp\", exp}}; — а pow обработать отдельно.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сохраните errno в переменную сразу после вызова функции, до любого printf.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "glibc сообщает ERANGE и при переполнении (exp(1000)), и при исчезновении порядка (exp(-1000) = 0), и в полюсе (log(0), pow(0, -1)).",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "sqrt 2\nsqrt -1\nlog 0\n",
+          "expected": "1.41421\nошибка области: sqrt(-1)\nошибка диапазона: log(0)\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "pow 2 10\npow -8 0.5\nexp 1000\n",
+          "expected": "1024\nошибка области: pow(-8, 0.5)\nошибка диапазона: exp(1000)\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Логарифм",
+          "stdin": "log 1\nlog 2.718281828459045\n",
+          "expected": "0\n1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Логарифм отрицательного",
+          "stdin": "log -5\n",
+          "expected": "ошибка области: log(-5)\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Исчезновение порядка",
+          "stdin": "exp -1000\nexp 0\n",
+          "expected": "ошибка диапазона: exp(-1000)\n1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Полюс и 0 в степени 0",
+          "stdin": "pow 0 -1\npow 0 0\n",
+          "expected": "ошибка диапазона: pow(0, -1)\n1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Переполнение степени",
+          "stdin": "pow 10 400\npow 2 -1\n",
+          "expected": "ошибка диапазона: pow(10, 400)\n0.5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Ноль и большое число",
+          "stdin": "sqrt 0\nsqrt 1e300\n",
+          "expected": "0\n1e+150\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Отрицательное основание",
+          "stdin": "pow -2 3\npow -2 0.5\n",
+          "expected": "-8\nошибка области: pow(-2, 0.5)\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Граница exp",
+          "stdin": "exp 709\nexp 710\n",
+          "expected": "8.21841e+307\nошибка диапазона: exp(710)\n"
+        }
+      ],
+      "referenceSolution": "#include <errno.h>\n#include <math.h>\n#include <stdio.h>\n#include <string.h>\n\nstatic const struct {\n    const char *name;\n    double (*f)(double);\n} FUNCS[] = {{\"sqrt\", sqrt}, {\"log\", log}, {\"exp\", exp}};\n\nstatic void report(int code, double result, const char *name, double x, double y, int two) {\n    if (code == EDOM || code == ERANGE) {\n        printf(\"%s: %s(\", code == EDOM ? \"ошибка области\" : \"ошибка диапазона\", name);\n        if (two) {\n            printf(\"%g, %g)\\n\", x, y);\n        } else {\n            printf(\"%g)\\n\", x);\n        }\n    } else {\n        printf(\"%.6g\\n\", result);\n    }\n}\n\nint main(void) {\n    if (!(math_errhandling & MATH_ERRNO)) {\n        printf(\"errno не поддерживается\\n\");\n        return 0;\n    }\n    char name[16];\n    while (scanf(\"%15s\", name) == 1) {\n        double x, y = 0;\n        if (scanf(\"%lf\", &x) != 1) {\n            break;\n        }\n        if (strcmp(name, \"pow\") == 0) {\n            if (scanf(\"%lf\", &y) != 1) {\n                break;\n            }\n            errno = 0;\n            double result = pow(x, y);\n            int code = errno;\n            report(code, result, name, x, y, 1);\n            continue;\n        }\n        for (size_t i = 0; i < sizeof FUNCS / sizeof FUNCS[0]; i++) {\n            if (strcmp(FUNCS[i].name, name) == 0) {\n                errno = 0;\n                double result = FUNCS[i].f(x);\n                int code = errno;\n                report(code, result, name, x, 0, 0);\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Математические функции не могут вернуть «особое» значение ошибки: NaN и бесконечность бывают и законными результатами. Поэтому они сообщают об ошибках через `errno` — если это поддерживает реализация, что показывает `math_errhandling`. Схема та же, что у `strtol`: обнулить, вызвать, сразу сохранить, проверить.\n\nФункции хранятся в таблице указателей: `sqrt`, `log` и `exp` имеют одинаковый тип `double (double)`, и одна ветка кода обслуживает все три. Аргументы приходят из ввода, поэтому компилятор не может вычислить функции заранее — каждая ошибка действительно запишется в `errno`.\n\nОшибка области означает, что для такого аргумента функция не определена (`sqrt` отрицательного числа, `pow` отрицательного основания в дробной степени). Ошибка диапазона — что результат не представим: слишком большой, слишком маленький или бесконечность в полюсе.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-errno-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Почему errno обнуляют перед strtol?",
+        "id": "q1",
+        "question": "Как правильно узнать, почему fopen не открыл файл?",
+        "explanation": "Сначала результат, затем errno. Успешные функции могут менять errno, поэтому её значение без неудачи ничего не значит.",
         "options": [
-          "Чтобы отличить новую ошибку от старого значения",
-          "Потому что успешный strtol всегда оставляет ERANGE"
+          "Проверить, что fopen вернул NULL, сразу сохранить errno и получить описание через strerror",
+          "Проверить, что errno не равна нулю, не глядя на результат fopen",
+          "Вызвать feof для возвращённого указателя",
+          "fopen сам печатает причину ошибки"
         ],
-        "correct": 0,
-        "explanation": "errno — изменяемый индикатор ошибки, который имеет смысл только согласно контракту вызванной функции. Успешная функция не обязана обнулять старое значение. Поэтому для strtol перед вызовом устанавливают errno=0, после проверяют ERANGE, указатель конца и наличие хотя бы одной цифры."
+        "correct": 0
       },
       {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q2",
+        "question": "Почему в программе пишут errno == ENOENT, а не errno == 2?",
+        "explanation": "ENOENT определяет POSIX, но число задаёт конкретная система. Макрос подставит правильное значение.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "Проверка только результата strtol не различает корректный ноль и отсутствие числа."
+          "Числовые значения кодов в разных системах разные, а имя макроса переносимо",
+          "Сравнение с числом не компилируется",
+          "ENOENT быстрее",
+          "errno — строка, а не число"
         ],
-        "correct": 1,
-        "explanation": "errno — записка о конкретном неудачном вызове, а не общий датчик исправности программы."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["12 x", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: char *end;errno=0;long value=strtol(\"12x\",&end,10);printf(\"%ld %c\\n\",value,*end); Ожидаемый результат: 12 x"
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <errno.h>\n#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    char *end;\n    errno = 0;\n    long a = strtol(\"123abc\", &end, 10);\n    printf(\"%ld %s %d\\n\", a, end, errno == ERANGE);\n    return 0;\n}",
+        "explanation": "strtol читает цифры, пока может, и оставляет end на первом нецифровом символе. Переполнения нет, поэтому errno не ERANGE.",
+        "type": "text",
+        "answers": ["123 abc 0"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Зачем записывать errno = 0 перед вызовом strtol?",
+        "explanation": "LONG_MAX — и законный результат, и признак переполнения. Различить их можно только по ERANGE, а библиотека errno не обнуляет.",
+        "options": [
+          "strtol на любой исход может вернуть законное число, и только обнулённая заранее errno покажет, было ли переполнение",
+          "Без этого strtol не работает",
+          "Чтобы strtol вернула ноль при ошибке",
+          "Это нужно только в многопоточных программах"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какие функции не сообщают об ошибках разбора числа? Выберите все.",
+        "explanation": "atoi и atof возвращают 0 и для «0», и для «abc», а при переполнении поведение не определено. strtol и strtod сообщают через end и errno.",
+        "type": "multiple",
+        "options": ["atoi", "atof", "strtol", "strtod"],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q6",
+        "question": "Какую ошибку сообщает sqrt(-4.0) через errno (если math_errhandling включает MATH_ERRNO)?",
+        "explanation": "Аргумент вне области определения — EDOM, результат — NaN. Переполнение результата — ERANGE.",
+        "type": "text",
+        "answers": ["EDOM"],
+        "placeholder": "Макрос"
+      },
+      {
+        "id": "q7",
+        "question": "Что не так в строке printf(\"%d: %s\\n\", remove(name), strerror(errno));?",
+        "explanation": "GCC вычисляет аргументы справа налево и покажет описание старой ошибки (или Success). Результат и errno сохраняют в переменные сразу после вызова.",
+        "options": [
+          "Порядок вычисления аргументов не определён: strerror(errno) может вызваться раньше remove",
+          "remove нельзя вызывать внутри printf",
+          "strerror нельзя передавать в printf",
+          "Ничего, строка верна"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Влияет ли ошибка в одном потоке на errno другого потока в C11?",
+        "explanation": "errno имеет потоковое время хранения: макрос раскрывается в обращение к переменной текущего потока.",
+        "options": [
+          "Нет: у каждого потока своя errno",
+          "Да: errno — общая глобальная переменная",
+          "Только если потоки используют одну функцию",
+          "errno нельзя использовать в многопоточных программах"
+        ],
+        "correct": 0
       }
     ]
   }

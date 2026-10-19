@@ -1,117 +1,532 @@
 {
   "id": "advanced-bitwise-or",
-  "title": "Bitwise OR",
-  "description": "Побитовое | устанавливает разряд, если он установлен хотя бы в одном операнде.",
+  "title": "Побитовое ИЛИ, НЕ и флаги",
+  "description": "Операция | и установка битов; флаги как степени двойки и их наборы; операция ~ и целочисленное продвижение маленьких типов; сброс битов через & ~; проверки «хотя бы один» и «все»; ширина маски для 64-битных чисел; права доступа Unix и восьмеричные литералы; различие | и ||.",
   "moduleId": "advanced-c",
-  "order": 18,
-  "difficulty": "advanced",
-  "estimatedMinutes": 40,
+  "order": 17,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
   "prerequisites": ["advanced-bitwise-and"],
   "objectives": [
-    "Объяснить: Bitwise OR",
-    "Различать корректный контракт и ошибку: OR не заменяет многобитовое поле: старые единицы могут остаться.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Устанавливать, сбрасывать и проверять биты операциями |, & ~ и &",
+    "Описывать наборы флагов степенями двойки",
+    "Учитывать продвижение маленьких типов и ширину маски при использовании ~",
+    "Работать с правами доступа Unix в восьмеричной записи"
   ],
-  "tags": ["C17", "углублённый C", "Bitwise OR"],
+  "tags": ["Биты", "|", "~", "Флаги", "Права доступа"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-bitwise-or-exercise",
-    "title": "Практика: Bitwise OR",
-    "description": "Ввод value и enable 0…255. Включите биты enable и выведите новое значение.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-bitwise-or-task-1",
+    "title": "Права доступа",
+    "description": "Каждая строка ввода — права доступа Unix в одной из двух записей: тремя восьмеричными цифрами (`755`) или строкой из девяти символов (`rwxr-x---`). Переведите каждую запись в другую.\n\nВ строке позиции 1–3 относятся к владельцу, 4–6 — к группе, 7–9 — к остальным; в каждой тройке буквы `r`, `w`, `x` означают чтение, запись и выполнение, а `-` — отсутствие права. Восьмеричные числа печатайте ровно тремя цифрами.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "8 3",
-        "output": "11\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "755\nrw-r--r--\n",
+        "output": "rwxr-xr-x\n644\n"
       },
       {
-        "input": "5 5",
-        "output": "5\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "000\n---------\n",
+        "output": "---------\n000\n"
       }
     ],
-    "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
-    ],
+    "constraints": ["Записи корректны; строк не больше 20."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "OR включает переключатели, не трогая уже включённые соседние."
+        "text": "Отличить запись просто: если первый символ — цифра, это восьмеричное число. Прочитать его можно форматом %o.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "OR не заменяет многобитовое поле: старые единицы могут остаться."
+        "text": "Бит позиции i строки (i от 0 до 8) — 1u << (8 - i). Для строки → числа: если символ не '-', сделайте mode |= бит.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Число → строка: putchar(mode & бит ? \"rwxrwxrwx\"[i] : '-'). Печать числа тремя восьмеричными цифрами — printf(\"%03o\\n\", mode).",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "8 3",
-        "expected": "11\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "755\nrw-r--r--\n",
+        "expected": "rwxr-xr-x\n644\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "5 5",
-        "expected": "5\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "000\n---------\n",
+        "expected": "---------\n000\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "0 255",
-        "expected": "255\n"
+        "id": "hidden-1",
+        "name": "Все права",
+        "stdin": "777\n",
+        "expected": "rwxrwxrwx\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Все права строкой",
+        "stdin": "rwxrwxrwx\n",
+        "expected": "777\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Только владелец и группа",
+        "stdin": "600\n640\n",
+        "expected": "rw-------\nrw-r-----\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Отдельные права",
+        "stdin": "r--------\n--x--x--x\n",
+        "expected": "400\n111\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Одинаковые тройки",
+        "stdin": "111\n222\n444\n",
+        "expected": "--x--x--x\n-w--w--w-\nr--r--r--\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Только запись",
+        "stdin": "-w--w--w-\n",
+        "expected": "222\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Туда и обратно",
+        "stdin": "754\nrwxr-xr--\n",
+        "expected": "rwxr-xr--\n754\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Младший бит",
+        "stdin": "001\n--------x\n",
+        "expected": "--------x\n001\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    unsigned value,enable;if(scanf(\"%u%u\",&value,&enable)!=2)return 1;\n    printf(\"%u\\n\",value | enable);\n    return 0;\n}\n",
-    "solutionExplanation": "OR включает переключатели, не трогая уже включённые соседние.\n\nOR не заменяет многобитовое поле: старые единицы могут остаться.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '8 3' → '11\\n'; '5 5' → '5\\n'; '0 255' → '255\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <ctype.h>\n#include <stdio.h>\n\nint main(void) {\n    char word[16];\n    const char *letters = \"rwxrwxrwx\";\n    while (scanf(\"%15s\", word) == 1) {\n        if (isdigit((unsigned char)word[0])) {\n            unsigned mode;\n            if (sscanf(word, \"%o\", &mode) != 1) {\n                continue;\n            }\n            for (int i = 0; i < 9; i++) {\n                putchar(mode & (1u << (8 - i)) ? letters[i] : '-');\n            }\n            putchar('\\n');\n        } else {\n            unsigned mode = 0;\n            for (int i = 0; i < 9 && word[i] != '\\0'; i++) {\n                if (word[i] != '-') {\n                    mode |= 1u << (8 - i);\n                }\n            }\n            printf(\"%03o\\n\", mode);\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Девять прав — девять битов, и запись `rwxr-x---` — это просто двоичное число `111 101 000`, где единица изображена буквой. Восьмеричная система удобна потому, что каждая её цифра — ровно три бита, то есть одна тройка прав.\n\nПозиция в строке и номер бита связаны формулой `8 − i`: первая буква — старший бит. Сборка числа — последовательные `|=` для каждой буквы, разбор — проверка каждого бита через `&`. Форматы `%o` для `scanf` и `%03o` для `printf` читают и печатают восьмеричные числа без ручного перевода.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-bitwise-or-task-2",
+      "title": "Набор флагов",
+      "description": "Храните набор из шести флагов в одной переменной: `bold` (бит 0), `italic` (бит 1), `underline` (бит 2), `strike` (бит 3), `code` (бит 4), `link` (бит 5). Вначале все флаги сброшены. Команды до конца ввода:\n- `set ИМЯ` — установить флаг;\n- `clear ИМЯ` — сбросить флаг;\n- `has ИМЯ` — напечатать `да` или `нет`;\n- `all ИМЯ1 ИМЯ2` — напечатать `да`, если установлены **оба** флага, иначе `нет`;\n- `any ИМЯ1 ИМЯ2` — напечатать `да`, если установлен **хотя бы один**;\n- `show` — напечатать значение набора в виде `0xHH` (две шестнадцатеричные цифры) и имена установленных флагов в порядке битов через `|` или `нет`;\n- `reset` — сбросить все флаги.\n\nДля неизвестного имени напечатайте `неизвестный флаг ИМЯ` (и ничего не меняйте; в командах `all` и `any` — только это сообщение, для первого неизвестного имени).",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "set bold\nset link\nshow\nhas italic\nclear bold\nshow\n",
+          "output": "0x21 bold|link\nнет\n0x20 link\n"
+        },
+        {
+          "input": "show\nset code\nall code bold\nany code bold\nset blink\n",
+          "output": "0x00 нет\nнет\nда\nнеизвестный флаг blink\n"
+        }
+      ],
+      "constraints": ["Команд не больше 100; имена — до 15 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Таблица имён: static const char *const NAMES[] = {\"bold\", \"italic\", …}; функция поиска возвращает номер бита или −1.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Маска флага — 1u << номер. set: flags |= mask; clear: flags &= ~mask; has: (flags & mask) != 0.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Для all и any сложите маски двух флагов через |: all — (flags & m) == m, any — (flags & m) != 0.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "set bold\nset link\nshow\nhas italic\nclear bold\nshow\n",
+          "expected": "0x21 bold|link\nнет\n0x20 link\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "show\nset code\nall code bold\nany code bold\nset blink\n",
+          "expected": "0x00 нет\nнет\nда\nнеизвестный флаг blink\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Все флаги",
+          "stdin": "set bold\nset italic\nset underline\nset strike\nset code\nset link\nshow\n",
+          "expected": "0x3F bold|italic|underline|strike|code|link\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Повторы",
+          "stdin": "set bold\nset bold\nshow\nclear italic\nshow\n",
+          "expected": "0x01 bold\n0x01 bold\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "reset",
+          "stdin": "set strike\nreset\nshow\nhas strike\n",
+          "expected": "0x00 нет\nнет\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Проверка all",
+          "stdin": "set italic\nset underline\nall italic underline\nall italic bold\n",
+          "expected": "да\nнет\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Проверка any",
+          "stdin": "any bold link\nset link\nany bold link\n",
+          "expected": "нет\nда\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Неизвестные имена",
+          "stdin": "all bold nope\nany zzz bold\nclear what\n",
+          "expected": "неизвестный флаг nope\nнеизвестный флаг zzz\nнеизвестный флаг what\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Установить и сбросить",
+          "stdin": "set code\nclear code\nhas code\nshow\n",
+          "expected": "нет\n0x00 нет\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Шестнадцатеричное значение",
+          "stdin": "set underline\nset strike\nshow\nclear underline\nshow\n",
+          "expected": "0x0C underline|strike\n0x08 strike\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstatic const char *const NAMES[] = {\"bold\", \"italic\", \"underline\", \"strike\", \"code\", \"link\"};\nenum { FLAG_COUNT = sizeof NAMES / sizeof NAMES[0] };\n\nstatic int find_flag(const char *name) {\n    for (int i = 0; i < FLAG_COUNT; i++) {\n        if (strcmp(NAMES[i], name) == 0) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nint main(void) {\n    unsigned flags = 0;\n    char command[16], first[16], second[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"show\") == 0) {\n            printf(\"0x%02X \", flags);\n            if (flags == 0) {\n                printf(\"нет\");\n            }\n            int printed = 0;\n            for (int i = 0; i < FLAG_COUNT; i++) {\n                if (flags & (1u << i)) {\n                    printf(printed++ ? \"|%s\" : \"%s\", NAMES[i]);\n                }\n            }\n            printf(\"\\n\");\n            continue;\n        }\n        if (strcmp(command, \"reset\") == 0) {\n            flags = 0;\n            continue;\n        }\n        int pair = strcmp(command, \"all\") == 0 || strcmp(command, \"any\") == 0;\n        if (scanf(\"%15s\", first) != 1 || (pair && scanf(\"%15s\", second) != 1)) {\n            break;\n        }\n        int a = find_flag(first);\n        int b = pair ? find_flag(second) : 0;\n        if (a < 0 || b < 0) {\n            printf(\"неизвестный флаг %s\\n\", a < 0 ? first : second);\n            continue;\n        }\n        unsigned mask = 1u << a;\n        if (strcmp(command, \"set\") == 0) {\n            flags |= mask;\n        } else if (strcmp(command, \"clear\") == 0) {\n            flags &= ~mask;\n        } else if (strcmp(command, \"has\") == 0) {\n            printf(\"%s\\n\", (flags & mask) != 0 ? \"да\" : \"нет\");\n        } else if (pair) {\n            mask |= 1u << b;\n            int ok = strcmp(command, \"all\") == 0 ? (flags & mask) == mask : (flags & mask) != 0;\n            printf(\"%s\\n\", ok ? \"да\" : \"нет\");\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Все команды сводятся к трём операциям: `|=` устанавливает, `&= ~` сбрасывает, `&` проверяет. Проверки «все» и «хотя бы один» отличаются только сравнением: `(flags & mask) == mask` требует, чтобы под маской были все единицы, `!= 0` — хотя бы одна.\n\nИмена хранятся в таблице, и номер бита — это просто индекс имени. Число флагов вычисляется из таблицы через `sizeof` и кладётся в `enum`: добавьте имя в таблицу — и все команды, включая `show`, поддержат новый флаг.\n\nНеизвестное имя проверяется до любых изменений, поэтому ошибочная команда не портит набор.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-bitwise-or-task-3",
+      "title": "Найди ошибку: флаги письма",
+      "description": "Почтовый клиент хранит флаги письма в 64-битном числе: `seen`, `answered`, `flagged`, `draft` — младшие биты, `archived` и `spam` — биты 40 и 41. Команды: `set ИМЯ`, `clear ИМЯ` и `show` — печать значения в шестнадцатеричном виде и имён установленных флагов.\n\nПосле сброса одного из младших флагов письмо «теряет» флаги `archived` и `spam`, хотя их никто не сбрасывал. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <inttypes.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <string.h>\n\n#define SEEN 0x1u\n#define ANSWERED 0x2u\n#define FLAGGED 0x4u\n#define DRAFT 0x8u\n#define ARCHIVED (UINT64_C(1) << 40)\n#define SPAM (UINT64_C(1) << 41)\n\nstatic const struct {\n    const char *name;\n    uint64_t mask;\n} NAMES[] = {\n    {\"seen\", SEEN}, {\"answered\", ANSWERED}, {\"flagged\", FLAGGED},\n    {\"draft\", DRAFT}, {\"archived\", ARCHIVED}, {\"spam\", SPAM},\n};\n\nstatic void clear_flag(uint64_t *flags, const char *name) {\n    if (strcmp(name, \"seen\") == 0) {\n        *flags &= ~SEEN;\n    } else if (strcmp(name, \"answered\") == 0) {\n        *flags &= ~ANSWERED;\n    } else if (strcmp(name, \"flagged\") == 0) {\n        *flags &= ~FLAGGED;\n    } else if (strcmp(name, \"draft\") == 0) {\n        *flags &= ~DRAFT;\n    } else if (strcmp(name, \"archived\") == 0) {\n        *flags &= ~ARCHIVED;\n    } else if (strcmp(name, \"spam\") == 0) {\n        *flags &= ~SPAM;\n    }\n}\n\nstatic void set_flag(uint64_t *flags, const char *name) {\n    for (size_t i = 0; i < sizeof NAMES / sizeof NAMES[0]; i++) {\n        if (strcmp(NAMES[i].name, name) == 0) {\n            *flags |= NAMES[i].mask;\n        }\n    }\n}\n\nint main(void) {\n    uint64_t flags = 0;\n    char command[16], name[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"set\") == 0 && scanf(\"%15s\", name) == 1) {\n            set_flag(&flags, name);\n        } else if (strcmp(command, \"clear\") == 0 && scanf(\"%15s\", name) == 1) {\n            clear_flag(&flags, name);\n        } else if (strcmp(command, \"show\") == 0) {\n            printf(\"0x%\" PRIX64 \":\", flags);\n            for (size_t i = 0; i < sizeof NAMES / sizeof NAMES[0]; i++) {\n                if (flags & NAMES[i].mask) {\n                    printf(\" %s\", NAMES[i].name);\n                }\n            }\n            printf(\"\\n\");\n        }\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "set seen\nset archived\nclear seen\nshow\n",
+          "output": "0x10000000000: archived\n"
+        },
+        {
+          "input": "set spam\nset draft\nshow\n",
+          "output": "0x20000000008: draft spam\n"
+        }
+      ],
+      "constraints": ["Команд не больше 50."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Выпишите тип и значение выражения ~SEEN. Сколько в нём битов?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "SEEN определён как 0x1u — 32-битное число, и ~SEEN тоже 32-битное: при расширении до uint64_t старшие биты становятся нулями. Определите младшие маски 64-битными: UINT64_C(0x1).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "set seen\nset archived\nclear seen\nshow\n",
+          "expected": "0x10000000000: archived\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "set spam\nset draft\nshow\n",
+          "expected": "0x20000000008: draft spam\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "set archived\nset spam\nclear answered\nshow\n",
+          "expected": "0x30000000000: archived spam\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "set seen\nset answered\nset flagged\nset draft\nclear flagged\nshow\n",
+          "expected": "0xB: seen answered draft\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "set spam\nclear spam\nshow\n",
+          "expected": "0x0:\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "show\n",
+          "expected": "0x0:\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "set archived\nclear draft\nclear seen\nset seen\nshow\n",
+          "expected": "0x10000000001: seen archived\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "set seen\nset spam\nclear seen\nclear seen\nshow\n",
+          "expected": "0x20000000000: spam\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "set flagged\nset archived\nset spam\nclear archived\nshow\n",
+          "expected": "0x20000000004: flagged spam\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "set draft\nset archived\nclear draft\nshow\nset answered\nshow\n",
+          "expected": "0x10000000000: archived\n0x10000000002: answered archived\n"
+        }
+      ],
+      "referenceSolution": "#include <inttypes.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <string.h>\n\n#define SEEN UINT64_C(0x1)\n#define ANSWERED UINT64_C(0x2)\n#define FLAGGED UINT64_C(0x4)\n#define DRAFT UINT64_C(0x8)\n#define ARCHIVED (UINT64_C(1) << 40)\n#define SPAM (UINT64_C(1) << 41)\n\nstatic const struct {\n    const char *name;\n    uint64_t mask;\n} NAMES[] = {\n    {\"seen\", SEEN}, {\"answered\", ANSWERED}, {\"flagged\", FLAGGED},\n    {\"draft\", DRAFT}, {\"archived\", ARCHIVED}, {\"spam\", SPAM},\n};\n\nstatic void clear_flag(uint64_t *flags, const char *name) {\n    if (strcmp(name, \"seen\") == 0) {\n        *flags &= ~SEEN;\n    } else if (strcmp(name, \"answered\") == 0) {\n        *flags &= ~ANSWERED;\n    } else if (strcmp(name, \"flagged\") == 0) {\n        *flags &= ~FLAGGED;\n    } else if (strcmp(name, \"draft\") == 0) {\n        *flags &= ~DRAFT;\n    } else if (strcmp(name, \"archived\") == 0) {\n        *flags &= ~ARCHIVED;\n    } else if (strcmp(name, \"spam\") == 0) {\n        *flags &= ~SPAM;\n    }\n}\n\nstatic void set_flag(uint64_t *flags, const char *name) {\n    for (size_t i = 0; i < sizeof NAMES / sizeof NAMES[0]; i++) {\n        if (strcmp(NAMES[i].name, name) == 0) {\n            *flags |= NAMES[i].mask;\n        }\n    }\n}\n\nint main(void) {\n    uint64_t flags = 0;\n    char command[16], name[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"set\") == 0 && scanf(\"%15s\", name) == 1) {\n            set_flag(&flags, name);\n        } else if (strcmp(command, \"clear\") == 0 && scanf(\"%15s\", name) == 1) {\n            clear_flag(&flags, name);\n        } else if (strcmp(command, \"show\") == 0) {\n            printf(\"0x%\" PRIX64 \":\", flags);\n            for (size_t i = 0; i < sizeof NAMES / sizeof NAMES[0]; i++) {\n                if (flags & NAMES[i].mask) {\n                    printf(\" %s\", NAMES[i].name);\n                }\n            }\n            printf(\"\\n\");\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`SEEN` равен `0x1u` — это `unsigned int`, 32 бита. `~SEEN` переворачивает биты **в этом типе** и даёт `0xFFFFFFFE`. Только потом, при операции с `uint64_t`, значение расширяется до 64 бит — и старшие 32 бита оказываются нулями. `flags &= ~SEEN` стирает всё выше бита 31, включая `archived` и `spam`.\n\nС масками `UINT64_C(0x1)` выражение `~SEEN` сразу 64-битное: `0xFFFFFFFFFFFFFFFE`, и сбрасывается ровно один бит. Установка через `|=` работала и раньше — при расширении нули в старших битах для `|` безвредны. Поэтому ошибка проявлялась только при сбросе, и только для младших флагов: `ARCHIVED` и `SPAM` были 64-битными с самого начала.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-bitwise-or-task-4",
+      "title": "Широковещательный адрес",
+      "description": "Каждая строка ввода — подсеть в записи `a.b.c.d/p`. Для каждой напечатайте четыре строки:\n\n```\nсеть: N\nшироковещательный: B\nузлы: FIRST - LAST\nколичество: K\n```\n\n- `N` — адрес сети: биты вне маски обнулены (`адрес & маска`);\n- `B` — широковещательный адрес: биты вне маски установлены (`сеть | ~маска`);\n- для `p ≤ 30` узлы — от `N + 1` до `B − 1`, количество — `2^(32 − p) − 2`;\n- для `/31` (соединение двух устройств) узлы — от `N` до `B`, количество — 2;\n- для `/32` — единственный узел: сам адрес, количество — 1.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "192.168.1.77/24\n",
+          "output": "сеть: 192.168.1.0\nшироковещательный: 192.168.1.255\nузлы: 192.168.1.1 - 192.168.1.254\nколичество: 254\n"
+        },
+        {
+          "input": "10.0.0.5/31\n",
+          "output": "сеть: 10.0.0.4\nшироковещательный: 10.0.0.5\nузлы: 10.0.0.4 - 10.0.0.5\nколичество: 2\n"
+        }
+      ],
+      "constraints": [
+        "0 ≤ p ≤ 32, числа в адресах от 0 до 255; строк не больше 20.",
+        "Количество для /0 не помещается в 32 бита — используйте 64-битный тип."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Маска: p == 0 ? 0 : 0xFFFFFFFFu << (32 - p). Широковещательный адрес — network | ~mask; обе величины храните в uint32_t.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Количество адресов в сети — (uint64_t)1 << (32 - p): для /0 это 2³², и в uint32_t оно не поместится.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Напишите функцию печати адреса из uint32_t: (ip >> 24) & 0xFF, (ip >> 16) & 0xFF и так далее.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "192.168.1.77/24\n",
+          "expected": "сеть: 192.168.1.0\nшироковещательный: 192.168.1.255\nузлы: 192.168.1.1 - 192.168.1.254\nколичество: 254\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "10.0.0.5/31\n",
+          "expected": "сеть: 10.0.0.4\nшироковещательный: 10.0.0.5\nузлы: 10.0.0.4 - 10.0.0.5\nколичество: 2\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Префикс 32",
+          "stdin": "8.8.8.8/32\n",
+          "expected": "сеть: 8.8.8.8\nшироковещательный: 8.8.8.8\nузлы: 8.8.8.8 - 8.8.8.8\nколичество: 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Префикс 0",
+          "stdin": "0.0.0.0/0\n",
+          "expected": "сеть: 0.0.0.0\nшироковещательный: 255.255.255.255\nузлы: 0.0.0.1 - 255.255.255.254\nколичество: 4294967294\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Префикс 12",
+          "stdin": "172.16.200.1/12\n",
+          "expected": "сеть: 172.16.0.0\nшироковещательный: 172.31.255.255\nузлы: 172.16.0.1 - 172.31.255.254\nколичество: 1048574\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Префикс 26",
+          "stdin": "192.168.100.99/26\n",
+          "expected": "сеть: 192.168.100.64\nшироковещательный: 192.168.100.127\nузлы: 192.168.100.65 - 192.168.100.126\nколичество: 62\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Префикс 30",
+          "stdin": "10.1.2.3/30\n",
+          "expected": "сеть: 10.1.2.0\nшироковещательный: 10.1.2.3\nузлы: 10.1.2.1 - 10.1.2.2\nколичество: 2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Префикс 1",
+          "stdin": "255.255.255.255/1\n",
+          "expected": "сеть: 128.0.0.0\nшироковещательный: 255.255.255.255\nузлы: 128.0.0.1 - 255.255.255.254\nколичество: 2147483646\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Две сети",
+          "stdin": "1.2.3.4/8\n5.6.7.8/16\n",
+          "expected": "сеть: 1.0.0.0\nшироковещательный: 1.255.255.255\nузлы: 1.0.0.1 - 1.255.255.254\nколичество: 16777214\nсеть: 5.6.0.0\nшироковещательный: 5.6.255.255\nузлы: 5.6.0.1 - 5.6.255.254\nколичество: 65534\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Префикс 29",
+          "stdin": "203.0.113.200/29\n",
+          "expected": "сеть: 203.0.113.200\nшироковещательный: 203.0.113.207\nузлы: 203.0.113.201 - 203.0.113.206\nколичество: 6\n"
+        }
+      ],
+      "referenceSolution": "#include <inttypes.h>\n#include <stdint.h>\n#include <stdio.h>\n\nstatic void print_ip(uint32_t ip) {\n    printf(\"%u.%u.%u.%u\", (unsigned)(ip >> 24), (unsigned)(ip >> 16) & 0xFFu,\n           (unsigned)(ip >> 8) & 0xFFu, (unsigned)ip & 0xFFu);\n}\n\nint main(void) {\n    unsigned a, b, c, d, p;\n    while (scanf(\"%u.%u.%u.%u/%u\", &a, &b, &c, &d, &p) == 5 && p <= 32) {\n        uint32_t addr = (uint32_t)a << 24 | (uint32_t)b << 16 | (uint32_t)c << 8 | (uint32_t)d;\n        uint32_t mask = p == 0 ? 0 : 0xFFFFFFFFu << (32 - p);\n        uint32_t network = addr & mask;\n        uint32_t broadcast = network | ~mask;\n        uint32_t first = network, last = broadcast;\n        uint64_t count = (uint64_t)1 << (32 - p);\n        if (p <= 30) {\n            first = network + 1;\n            last = broadcast - 1;\n            count -= 2;\n        } else if (p == 32) {\n            first = last = addr;\n        }\n        printf(\"сеть: \");\n        print_ip(network);\n        printf(\"\\nшироковещательный: \");\n        print_ip(broadcast);\n        printf(\"\\nузлы: \");\n        print_ip(first);\n        printf(\" - \");\n        print_ip(last);\n        printf(\"\\nколичество: %\" PRIu64 \"\\n\", count);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Адрес сети и широковещательный адрес — две противоположные операции с маской: `&` обнуляет биты узла, а `| ~mask` заполняет их единицами. Всё, что между ними, — адреса узлов; сами крайние адреса в обычной сети узлам не выдают. Сети `/31` и `/32` — особые случаи, закреплённые в стандартах интернета: в `/31` оба адреса принадлежат двум концам соединения, в `/32` есть ровно один адрес.\n\nДве ловушки ширины типов. Маска для `/0` требует сдвига на 32 позиции — это неопределённое поведение, поэтому ноль обрабатывается отдельно. А количество адресов для `/0` равно 2³² и не помещается в `uint32_t`: его считают в `uint64_t`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-bitwise-or-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Что даст повторная установка той же маски?",
-        "options": ["То же значение", "Обязательно выключит биты"],
-        "correct": 0,
-        "explanation": "Побитовое | устанавливает разряд, если он установлен хотя бы в одном операнде. Операция value | mask включает выбранные флаги, сохраняя остальные. Повторная установка той же маски не меняет результат: операция идемпотентна, что полезно для повторяемых команд настройки."
+        "id": "q1",
+        "question": "Чему равно 0x05 | 0x0A? Запишите в шестнадцатеричном виде.",
+        "explanation": "0101 | 1010 = 1111: в каждой позиции единица есть хотя бы в одном операнде.",
+        "type": "text",
+        "answers": ["0x0F", "0xF", "0x0f", "0xf", "15"],
+        "placeholder": "Например, 0x1F"
       },
       {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q2",
+        "question": "Почему значения флагов задают степенями двойки: 1, 2, 4, 8…?",
+        "explanation": "Если бы флаги имели значения 1, 2, 3, то комбинация 1 | 2 совпала бы с флагом 3, и разобрать набор было бы невозможно.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "OR не заменяет многобитовое поле: старые единицы могут остаться."
+          "У каждого флага ровно один свой бит, и любую комбинацию можно однозначно разобрать",
+          "Так флаги быстрее сравниваются",
+          "Компилятор требует, чтобы значения enum были степенями двойки",
+          "Степени двойки занимают меньше памяти"
         ],
-        "correct": 1,
-        "explanation": "OR включает переключатели, не трогая уже включённые соседние."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["9", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: printf(\"%u\\n\",8u | 1u); Ожидаемый результат: 9"
+        "id": "q3",
+        "question": "Какое выражение сбрасывает бит 3 беззнакового x, не меняя остальные?",
+        "explanation": "~(1u << 3) — все единицы, кроме бита 3; & с такой маской обнуляет только его. x | (1u << 3) бит устанавливает, x & (1u << 3) оставляет только его.",
+        "options": ["x & ~(1u << 3)", "x | ~(1u << 3)", "x & (1u << 3)", "x | (1u << 3)"],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nenum { A = 1u << 0, B = 1u << 1, C = 1u << 2, D = 1u << 3 };\n\nint main(void) {\n    unsigned f = A | C;\n    f |= D;\n    f &= ~A;\n    printf(\"%u %d %d\\n\", f, (f & (C | D)) == (C | D), (f & B) != 0);\n    return 0;\n}",
+        "explanation": "A | C = 5, после |= D — 13, после сброса A — 12 (C | D). Оба флага C и D установлены, B — нет.",
+        "type": "text",
+        "answers": ["12 1 0"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Чему равно выражение ~x, если uint8_t x = 0x0F; и результат печатается как int?",
+        "explanation": "Перед операцией uint8_t продвигается до int, и ~ переворачивает все 32 бита: 0xFFFFFFF0 — это −16. Чтобы получить 240, нужно привести результат к uint8_t.",
+        "options": ["-16", "240", "0xF0", "0"],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Переменная uint64_t x = UINT64_MAX; выполнили x &= ~0x1u;. Что произошло?",
+        "explanation": "~0x1u — 32-битное 0xFFFFFFFE. При переводе в uint64_t старшие биты дополняются нулями, и & их стирает. Нужна 64-битная маска: ~UINT64_C(1).",
+        "options": [
+          "Сбросился бит 0 и все старшие 32 бита",
+          "Сбросился только бит 0",
+          "Ничего не изменилось",
+          "Ошибка компиляции"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Какие права даёт восьмеричное значение 0750? Запишите строкой из девяти символов.",
+        "explanation": "7 = 111 — rwx владельцу, 5 = 101 — r-x группе, 0 = 000 — ничего остальным.",
+        "type": "text",
+        "answers": ["rwxr-x---"],
+        "placeholder": "rwx…"
+      },
+      {
+        "id": "q8",
+        "question": "Что выведет printf(\"%d %d\\n\", 6 | 3, 6 || 3);?",
+        "explanation": "110 | 011 = 111 = 7, а логическое ИЛИ даёт просто 1 — «истина».",
+        "type": "text",
+        "answers": ["7 1"],
+        "placeholder": "Вывод"
       }
     ]
   }

@@ -1,149 +1,525 @@
 {
   "id": "lifetime-std-move",
-  "title": "std::move — разрешение на перемещение",
-  "description": "std::move — это приведение категории выражения к xvalue с сохранением cv-квалификаторов.",
+  "title": "std::move: когда разрешать перемещение",
+  "description": "std::move как приведение типа и обещание не использовать содержимое; последнее использование переменной; параметр-приёмник — принять по значению и переместить в поле; перенос диапазонов std::ranges::move и std::views::as_rvalue из C++23; где std::move вреден или бесполезен — return локальной переменной, константы, простые типы, чтение после перемещения.",
   "moduleId": "cpp-lifetime",
   "order": 13,
-  "difficulty": "advanced",
-  "estimatedMinutes": 55,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
   "prerequisites": ["lifetime-rvalue-references"],
   "objectives": [
-    "Объяснить std::move как приведение категории, а не как операцию переноса.",
-    "Проследить на MemoryDiagram, почему move от const выбирает копирующую перегрузку.",
-    "Реализовать Probe, фиксирующий выбор перегрузки значением поля kind."
+    "Ставить std::move при последнем использовании переменной",
+    "Писать параметры-приёмники по значению с перемещением в поле",
+    "Переносить диапазоны алгоритмами и представлениями",
+    "Узнавать вредные и бесполезные std::move"
   ],
-  "tags": ["C++20", "время жизни", "управление ресурсами", "std::move — разрешение на перемещение"],
+  "tags": ["C++23", "Время жизни", "std::move", "Перемещение", "ranges"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "lifetime-std-move-exercise",
-    "title": "Практика: std::move — разрешение на перемещение",
-    "description": "Создайте Probe с полем kind: конструктор по умолчанию ставит 0, копирующий — 1, перемещающий noexcept — 2. solve создаёт обычный и const Probe, конструирует новый объект из std::move каждого и возвращает 10 * kind первого + kind второго. Аргументы a и b не используются.",
-    "difficulty": "advanced",
+    "title": "Параметр-приёмник",
+    "description": "Структура `Tag` хранит строку и считает копии и перемещения. Класс `User` принимает имя **по значению** и перемещает его в поле: `explicit User(Tag name) : name_(std::move(name)) {}`.\n\nКоманды (каждая создаёт локального пользователя и печатает `пользователь имя`):\n\n- `var x` — `Tag t(x); const User u(t);`\n- `temp x` — `const User u{Tag(x)};` (с круглыми скобками `u(Tag(x))` компилятор прочитал бы строку как объявление функции — «most vexing parse»)\n- `moved x` — `Tag t(x); const User u(std::move(t));`\n- `stats` — `копий C, перемещений M`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 7)",
-        "output": "21\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "var a\ntemp b\nmoved c\nstats\n",
+        "output": "пользователь a\nпользователь b\nпользователь c\nкопий 1, перемещений 4\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "21\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "stats\n",
+        "output": "копий 0, перемещений 0\n"
       }
     ],
-    "constraints": [
-      "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Команд не больше 200."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Для каждого вызова определите, какая перегрузка будет выбрана: тип аргумента после std::move решает всё. const блокирует перемещение."
+        "id": "hint-1",
+        "text": "Посчитайте сами до запуска: var — копия в параметр и перемещение в поле; temp — только перемещение в поле; moved — два перемещения.",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "Если x — const T, результат имеет тип const T&&: типичный move-конструктор T(T&&) не может принять его, потому что изменение источника запрещено, — и доступный T(const T&) молча выполнит копирование. У unique_ptr копирование удалено, поэтому move от const даст честную ошибку компиляции. Для возврата локального значения пишите return result: применяются правила elision; return std::move(result) способно помешать NRVO. Не разбрасывайте move ради скорости — сначала установите, где прежнее состояние больше не нужно.\n\nНе объявляйте объект const, если собираетесь передать изменяемое владение. Наличие std::move в вызове не является доказательством, что выбрана move-перегрузка.\n\nProbe в примере печатает выбранную перегрузку. Сначала предскажите обе строки без запуска, затем удалите move-конструктор: оба случая будут копировать через const&."
+        "id": "hint-2",
+        "text": "Временный Tag(x) в аргументе инициализирует параметр без копий и перемещений — это гарантированное устранение копии.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 7],
-        "expected": "21\n"
+        "stdin": "var a\ntemp b\nmoved c\nstats\n",
+        "expected": "пользователь a\nпользователь b\nпользователь c\nкопий 1, перемещений 4\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "21\n"
+        "stdin": "stats\n",
+        "expected": "копий 0, перемещений 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный случай 1",
-        "arguments": [-8, 3],
-        "expected": "21\n"
+        "id": "hidden-1",
+        "name": "Только переменные",
+        "stdin": "var a\nvar b\nstats\n",
+        "expected": "пользователь a\nпользователь b\nкопий 2, перемещений 2\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный случай 2",
-        "arguments": [5, -9],
-        "expected": "21\n"
+        "id": "hidden-2",
+        "name": "Только временные",
+        "stdin": "temp a\ntemp b\ntemp c\nstats\n",
+        "expected": "пользователь a\nпользователь b\nпользователь c\nкопий 0, перемещений 3\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный случай 3",
-        "arguments": [-1000, 1000],
-        "expected": "21\n"
+        "id": "hidden-3",
+        "name": "Только move",
+        "stdin": "moved a\nstats\n",
+        "expected": "пользователь a\nкопий 0, перемещений 2\n"
       },
       {
-        "id": "case-6",
-        "name": "Граничный случай 4",
-        "arguments": [1000, -1000],
-        "expected": "21\n"
+        "id": "hidden-4",
+        "name": "Пусто",
+        "stdin": "",
+        "expected": ""
       },
       {
-        "id": "case-7",
-        "name": "Граничный случай 5",
-        "arguments": [4, 4],
-        "expected": "21\n"
+        "id": "hidden-5",
+        "name": "Длинное имя",
+        "stdin": "var длинное-имя-пользователя-системы\nstats\n",
+        "expected": "пользователь длинное-имя-пользователя-системы\nкопий 1, перемещений 1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Статистика по ходу",
+        "stdin": "temp x\nstats\nvar y\nstats\n",
+        "expected": "пользователь x\nкопий 0, перемещений 1\nпользователь y\nкопий 1, перемещений 2\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Смешанные",
+        "stdin": "moved p\nvar q\ntemp r\nmoved s\nstats\n",
+        "expected": "пользователь p\nпользователь q\nпользователь r\nпользователь s\nкопий 1, перемещений 6\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Кириллица",
+        "stdin": "var Ада\n",
+        "expected": "пользователь Ада\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct Probe { int kind = 0; Probe() = default; Probe(const Probe&): kind(1) {} Probe(Probe&&) noexcept: kind(2) {} };\nint solve(int a, int b) { (void)a; (void)b; Probe x; const Probe y; Probe first(std::move(x)), second(std::move(y)); return 10 * first.kind + second.kind; }",
-    "solutionExplanation": "Если x — const T, результат имеет тип const T&&: типичный move-конструктор T(T&&) не может принять его, потому что изменение источника запрещено, — и доступный T(const T&) молча выполнит копирование. У unique_ptr копирование удалено, поэтому move от const даст честную ошибку компиляции. Для возврата локального значения пишите return result: применяются правила elision; return std::move(result) способно помешать NRVO. Не разбрасывайте move ради скорости — сначала установите, где прежнее состояние больше не нужно.\n\nНе объявляйте объект const, если собираетесь передать изменяемое владение. Наличие std::move в вызове не является доказательством, что выбрана move-перегрузка.\n\nProbe в примере печатает выбранную перегрузку. Сначала предскажите обе строки без запуска, затем удалите move-конструктор: оба случая будут копировать через const&.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Tag {\n    static inline int copies = 0;\n    static inline int moves = 0;\n    std::string v;\n\n    explicit Tag(std::string s) : v(std::move(s)) {}\n    Tag(const Tag &o) : v(o.v) {\n        ++copies;\n    }\n    Tag(Tag &&o) noexcept : v(std::move(o.v)) {\n        ++moves;\n    }\n};\n\nclass User {\npublic:\n    explicit User(Tag name) : name_(std::move(name)) {}\n\n    const std::string &name() const {\n        return name_.v;\n    }\n\nprivate:\n    Tag name_;\n};\n\nint main() {\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"stats\") {\n            std::println(\"копий {}, перемещений {}\", Tag::copies, Tag::moves);\n            continue;\n        }\n        std::string x;\n        std::cin >> x;\n        if (command == \"var\") {\n            Tag t(x);\n            const User u(t);\n            std::println(\"пользователь {}\", u.name());\n        } else if (command == \"temp\") {\n            const User u{Tag(x)};\n            std::println(\"пользователь {}\", u.name());\n        } else {\n            Tag t(x);\n            const User u(std::move(t));\n            std::println(\"пользователь {}\", u.name());\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Параметр по значению — «приёмник»: функция получает собственный экземпляр, а как он появился, решает вызывающий. Из переменной — копией (вызывающий сохраняет оригинал), из временного — без операций вовсе, через `std::move` — перемещением. Дальше конструктор перемещает свой экземпляр в поле. Итог: копия только там, где без неё нельзя.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "lifetime-std-move-task-2",
+      "title": "Список дел",
+      "description": "Два списка строк: `todo` и `done`. Команды:\n\n- `add текст` — в конец `todo`;\n- `finish i` — перенести i-е дело (с 1) из `todo` в конец `done` **перемещением** и удалить его из `todo`;\n- `finish-all` — перенести все дела `todo` в конец `done` алгоритмом `std::ranges::move` и очистить `todo`;\n- `show` — две строки: `дела: …` и `готово: …` (элементы через запятую с пробелом, пустой список — `—`).",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "add код\nadd тест\nadd ревью\nfinish 2\nshow\nfinish-all\nshow\n",
+          "output": "дела: код, ревью\nготово: тест\nдела: —\nготово: тест, код, ревью\n"
+        },
+        {
+          "input": "show\n",
+          "output": "дела: —\nготово: —\n"
+        }
+      ],
+      "constraints": ["Команд не больше 300; finish ссылается на существующее дело."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "done.push_back(std::move(todo[i - 1])); todo.erase(todo.begin() + (i - 1));",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "std::ranges::move(todo, std::back_inserter(done)); — после этого в todo остались перемещённые строки, поэтому todo.clear().",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add код\nadd тест\nadd ревью\nfinish 2\nshow\nfinish-all\nshow\n",
+          "expected": "дела: код, ревью\nготово: тест\nдела: —\nготово: тест, код, ревью\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "show\n",
+          "expected": "дела: —\nготово: —\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одно дело",
+          "stdin": "add a\nfinish 1\nshow\n",
+          "expected": "дела: —\nготово: a\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Перенос пустого",
+          "stdin": "finish-all\nshow\n",
+          "expected": "дела: —\nготово: —\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Последнее и первое",
+          "stdin": "add a\nadd b\nadd c\nfinish 3\nfinish 1\nshow\n",
+          "expected": "дела: b\nготово: c, a\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Два переноса",
+          "stdin": "add a\nfinish-all\nadd b\nfinish-all\nshow\n",
+          "expected": "дела: —\nготово: a, b\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Длинная строка",
+          "stdin": "add очень-длинное-дело-которое-точно-в-куче\nfinish 1\nshow\n",
+          "expected": "дела: —\nготово: очень-длинное-дело-которое-точно-в-куче\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "По одному",
+          "stdin": "add x\nadd y\nshow\nfinish 1\nshow\nfinish 1\nshow\n",
+          "expected": "дела: x, y\nготово: —\nдела: y\nготово: x\nдела: —\nготово: x, y\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смешанные",
+          "stdin": "add 1\nadd 2\nadd 3\nadd 4\nfinish 2\nfinish 2\nfinish-all\nshow\n",
+          "expected": "дела: —\nготово: 2, 3, 1, 4\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Одинаковые дела",
+          "stdin": "add a\nadd a\nfinish 1\nshow\n",
+          "expected": "дела: a\nготово: a\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <iterator>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nstd::string join(const std::vector<std::string> &items) {\n    std::string s;\n    for (const std::string &item : items) {\n        s += (s.empty() ? \"\" : \", \") + item;\n    }\n    return s.empty() ? \"—\" : s;\n}\n\nint main() {\n    std::vector<std::string> todo;\n    std::vector<std::string> done;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"add\") {\n            std::string text;\n            std::cin >> text;\n            todo.push_back(std::move(text));\n        } else if (command == \"finish\") {\n            std::size_t i;\n            std::cin >> i;\n            done.push_back(std::move(todo[i - 1]));\n            todo.erase(todo.begin() + static_cast<std::ptrdiff_t>(i - 1));\n        } else if (command == \"finish-all\") {\n            std::ranges::move(todo, std::back_inserter(done));\n            todo.clear();\n        } else {\n            std::println(\"дела: {}\", join(todo));\n            std::println(\"готово: {}\", join(done));\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Каждое дело существует в одном экземпляре и лишь меняет владельца: перемещение забирает буфер строки, а `erase` и `clear` убирают опустевшие места. Без `erase` или `clear` в списке остались бы строки в неопределённом состоянии — формально корректные, но с неизвестным содержимым.\n\n`std::ranges::move` — алгоритм-двойник `std::ranges::copy`: он присваивает каждому месту назначения rvalue из источника.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-std-move-task-3",
+      "title": "Найди ошибку: пустое слово",
+      "description": "Программа читает слова, печатает самое длинное (первое из самых длинных, длина — `size()`) и затем все слова в исходном порядке. Самое длинное печатается правильно, но в списке всех слов на его месте пусто. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nint main() {\n    std::vector<std::string> words;\n    std::string w;\n    while (std::cin >> w) {\n        words.push_back(std::move(w));\n    }\n    std::string longest;\n    for (std::string &word : words) {\n        if (word.size() > longest.size()) {\n            longest = std::move(word);\n        }\n    }\n    std::string all;\n    for (const std::string &word : words) {\n        all += (all.empty() ? \"\" : \" \") + word;\n    }\n    std::println(\"самое длинное: {}\", longest);\n    std::println(\"все слова: {}\", all);\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "кот слон мышь\n",
+          "output": "самое длинное: слон\nвсе слова: кот слон мышь\n"
+        },
+        {
+          "input": "a bb ccc bb\n",
+          "output": "самое длинное: ccc\nвсе слова: a bb ccc bb\n"
+        }
+      ],
+      "constraints": ["Слов не больше 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что остаётся в векторе words после строки longest = std::move(word)?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Самое длинное слово нужно и в списке, поэтому его надо скопировать (или запомнить индекс), а не забрать.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "кот слон мышь\n",
+          "expected": "самое длинное: слон\nвсе слова: кот слон мышь\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "a bb ccc bb\n",
+          "expected": "самое длинное: ccc\nвсе слова: a bb ccc bb\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "one\n",
+          "expected": "самое длинное: one\nвсе слова: one\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "ab cd\n",
+          "expected": "самое длинное: ab\nвсе слова: ab cd\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "x yy zzz wwww\n",
+          "expected": "самое длинное: wwww\nвсе слова: x yy zzz wwww\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "длинное-слово короткое\n",
+          "expected": "самое длинное: длинное-слово\nвсе слова: длинное-слово короткое\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "aaa bbb\n",
+          "expected": "самое длинное: aaa\nвсе слова: aaa bbb\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "q\nw\nee\n",
+          "expected": "самое длинное: ee\nвсе слова: q w ee\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "supercalifragilisticexpialidocious is long\n",
+          "expected": "самое длинное: supercalifragilisticexpialidocious\nвсе слова: supercalifragilisticexpialidocious is long\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "a b c d e f\n",
+          "expected": "самое длинное: a\nвсе слова: a b c d e f\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nint main() {\n    std::vector<std::string> words;\n    std::string w;\n    while (std::cin >> w) {\n        words.push_back(std::move(w));\n    }\n    std::string longest;\n    for (std::string &word : words) {\n        if (word.size() > longest.size()) {\n            longest = word;\n        }\n    }\n    std::string all;\n    for (const std::string &word : words) {\n        all += (all.empty() ? \"\" : \" \") + word;\n    }\n    std::println(\"самое длинное: {}\", longest);\n    std::println(\"все слова: {}\", all);\n    return 0;\n}\n",
+      "solutionExplanation": "`std::move(word)` пообещал, что содержимое `word` больше не нужно, и присваивание забрало его. Но слово остаётся в векторе и печатается во второй строке — теперь пустым (в libstdc++ перемещённая строка пуста, в других реализациях содержимое может быть любым).\n\nПеремещайте только то, что действительно отдаёте. Здесь подходит копия `longest = word` или, чтобы не копировать вовсе, хранение индекса самого длинного слова.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-std-move-task-4",
+      "title": "Слияние без копий",
+      "description": "Структура `Tracked` хранит строку и считает копии и перемещения (в конструкторах и в операторах присваивания). Первая строка ввода — список A, вторая — список B; оба отсортированы по возрастанию. Прочитайте их в `std::vector<Tracked>` через `reserve` и `emplace_back` и обнулите счётчики.\n\nЗатем:\n\n1. `std::vector<Tracked> merge(std::vector<Tracked> a, std::vector<Tracked> b)` — слить в один отсортированный вектор (при равенстве сначала элемент из A), вызвать как `merge(std::move(a), std::move(b))`; напечатать `слияние: …`;\n2. `void dedupe(std::vector<Tracked> &v)` — удалить подряд идущие повторы на месте, сдвигая элементы перемещающим присваиванием (как `std::unique`), и обрезать хвост через `erase`; напечатать `без повторов: …`;\n3. напечатать `копий C, перемещений M`.\n\nПустой список печатается как `—`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "a c c e\nb c d\n",
+          "output": "слияние: a b c c c d e\nбез повторов: a b c d e\nкопий 0, перемещений 9\n"
+        },
+        {
+          "input": "\nx\n",
+          "output": "слияние: x\nбез повторов: x\nкопий 0, перемещений 1\n"
+        }
+      ],
+      "constraints": ["В каждом списке до 100 слов; строки могут быть пустыми."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Передача векторов в merge через std::move перемещает сами векторы — ни один элемент при этом не трогается. Внутри: result.reserve(a.size() + b.size()) и push_back(std::move(…)).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "dedupe: индекс записи w = 1; для r от 1: если v[r].v != v[w - 1].v, то при r != w выполнить v[w] = std::move(v[r]); затем ++w. В конце v.erase(v.begin() + w, v.end()).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "a c c e\nb c d\n",
+          "expected": "слияние: a b c c c d e\nбез повторов: a b c d e\nкопий 0, перемещений 9\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "\nx\n",
+          "expected": "слияние: x\nбез повторов: x\nкопий 0, перемещений 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Оба пустые",
+          "stdin": "\n\n",
+          "expected": "слияние: —\nбез повторов: —\nкопий 0, перемещений 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Все одинаковые",
+          "stdin": "a a a\na a\n",
+          "expected": "слияние: a a a a a\nбез повторов: a\nкопий 0, перемещений 5\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Без пересечения",
+          "stdin": "a b c\nd e f\n",
+          "expected": "слияние: a b c d e f\nбез повторов: a b c d e f\nкопий 0, перемещений 6\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "B раньше A",
+          "stdin": "d e f\na b c\n",
+          "expected": "слияние: a b c d e f\nбез повторов: a b c d e f\nкопий 0, перемещений 6\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Общий элемент",
+          "stdin": "apple banana\napple cherry\n",
+          "expected": "слияние: apple apple banana cherry\nбез повторов: apple banana cherry\nкопий 0, перемещений 6\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Чередование",
+          "stdin": "1 3 5 7 9\n2 4 6 8\n",
+          "expected": "слияние: 1 2 3 4 5 6 7 8 9\nбез повторов: 1 2 3 4 5 6 7 8 9\nкопий 0, перемещений 9\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Длинные строки",
+          "stdin": "длинная-строка-раз длинная-строка-раз\nдлинная-строка-два\n",
+          "expected": "слияние: длинная-строка-два длинная-строка-раз длинная-строка-раз\nбез повторов: длинная-строка-два длинная-строка-раз\nкопий 0, перемещений 3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пустой B",
+          "stdin": "x\n\n",
+          "expected": "слияние: x\nбез повторов: x\nкопий 0, перемещений 1\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <sstream>\n#include <string>\n#include <utility>\n#include <vector>\n\nstruct Tracked {\n    static inline int copies = 0;\n    static inline int moves = 0;\n    std::string v;\n\n    explicit Tracked(std::string value) : v(std::move(value)) {}\n    Tracked(const Tracked &other) : v(other.v) {\n        ++copies;\n    }\n    Tracked(Tracked &&other) noexcept : v(std::move(other.v)) {\n        ++moves;\n    }\n    Tracked &operator=(const Tracked &other) {\n        v = other.v;\n        ++copies;\n        return *this;\n    }\n    Tracked &operator=(Tracked &&other) noexcept {\n        v = std::move(other.v);\n        ++moves;\n        return *this;\n    }\n};\n\nstd::vector<Tracked> read_line() {\n    std::string line;\n    std::getline(std::cin, line);\n    std::istringstream in(line);\n    std::vector<std::string> words;\n    std::string w;\n    while (in >> w) {\n        words.push_back(w);\n    }\n    std::vector<Tracked> items;\n    items.reserve(words.size());\n    for (std::string &word : words) {\n        items.emplace_back(std::move(word));\n    }\n    return items;\n}\n\nstd::vector<Tracked> merge(std::vector<Tracked> a, std::vector<Tracked> b) {\n    std::vector<Tracked> result;\n    result.reserve(a.size() + b.size());\n    std::size_t i = 0, j = 0;\n    while (i < a.size() || j < b.size()) {\n        if (j == b.size() || (i < a.size() && !(b[j].v < a[i].v))) {\n            result.push_back(std::move(a[i++]));\n        } else {\n            result.push_back(std::move(b[j++]));\n        }\n    }\n    return result;\n}\n\nvoid dedupe(std::vector<Tracked> &v) {\n    if (v.empty()) {\n        return;\n    }\n    std::size_t w = 1;\n    for (std::size_t r = 1; r < v.size(); ++r) {\n        if (v[r].v != v[w - 1].v) {\n            if (r != w) {\n                v[w] = std::move(v[r]);\n            }\n            ++w;\n        }\n    }\n    v.erase(v.begin() + static_cast<std::ptrdiff_t>(w), v.end());\n}\n\nstd::string join(const std::vector<Tracked> &items) {\n    std::string s;\n    for (const Tracked &t : items) {\n        s += (s.empty() ? \"\" : \" \") + t.v;\n    }\n    return s.empty() ? \"—\" : s;\n}\n\nint main() {\n    std::vector<Tracked> a = read_line();\n    std::vector<Tracked> b = read_line();\n    Tracked::copies = 0;\n    Tracked::moves = 0;\n    std::vector<Tracked> merged = merge(std::move(a), std::move(b));\n    std::println(\"слияние: {}\", join(merged));\n    dedupe(merged);\n    std::println(\"без повторов: {}\", join(merged));\n    std::println(\"копий {}, перемещений {}\", Tracked::copies, Tracked::moves);\n    return 0;\n}\n",
+      "solutionExplanation": "Векторы передаются в `merge` и возвращаются из неё перемещением — это три обмена указателями, элементы при этом не трогаются. Каждый элемент перемещается в результат ровно один раз, а `dedupe` сдвигает влево только те элементы, которым действительно нужно сменить место. Итог — ни одной копии строк при любом объёме данных.\n\nТак же устроены стандартные `std::ranges::merge` с `std::move_iterator` и `std::ranges::unique`: алгоритмы, переставляющие элементы, работают перемещениями.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "lifetime-std-move-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Что непосредственно делает std::move?",
+        "id": "q1",
+        "question": "Что означает std::move(x) в коде?",
+        "explanation": "Перемещает конструктор или присваивание, выбранные благодаря приведению.",
         "options": [
-          "Переносит ресурс и обнуляет источник",
-          "Преобразует категорию выражения, сохраняя cv-квалификаторы"
+          "Обещание: содержимое x дальше не понадобится, его можно забрать",
+          "Команду немедленно переместить x в другую память",
+          "Удаление x",
+          "Копирование x во временный объект"
         ],
-        "correct": 1,
-        "explanation": "Если x — const T, результат имеет тип const T&&: типичный move-конструктор T(T&&) не может принять его, потому что изменение источника запрещено, — и доступный T(const T&) молча выполнит копирование. У unique_ptr копирование удалено, поэтому move от const даст честную ошибку компиляции. Для возврата локального значения пишите return result: применяются правила elision; return std::move(result) способно помешать NRVO. Не разбрасывайте move ради скорости — сначала установите, где прежнее состояние больше не нужно."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["move copy", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "std::move(x)            → только новая категория выражения\nT y(std::move(x))      → выбор конструктора → возможная передача\nconst T c; move(c)     → const T&&; T(T&&) не подходит\nКопирующая перегрузка принимает const T&& через const T&"
+        "id": "q2",
+        "question": "Конструктор Person(std::string name) : name_(std::move(name)) {}. Сколько копий строки при Person p(s); где s — переменная?",
+        "explanation": "Копия в параметр, затем перемещение в поле. Для временного аргумента копий нет вовсе.",
+        "options": ["Одна", "Ноль", "Две", "Три"],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q3",
+        "question": "Какие std::move бесполезны или вредны? Выберите все.",
+        "explanation": "Последнее — правильное использование.",
+        "type": "multiple",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Не объявляйте объект const, если собираетесь передать изменяемое владение. Наличие std::move в вызове не является доказательством, что выбрана move-перегрузка."
+          "return std::move(local);",
+          "std::move(x) для int x",
+          "f(std::move(c)) для const std::string c",
+          "v.push_back(std::move(s)) при последнем использовании s"
         ],
-        "correct": 1,
-        "explanation": "Probe в примере печатает выбранную перегрузку. Сначала предскажите обе строки без запуска, затем удалите move-конструктор: оба случая будут копировать через const&."
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <string>\n#include <utility>\n\nint main() {\n    std::string a = \"текст\";\n    std::string b = std::move(a);\n    a = \"новое\";\n    std::println(\"{} {}\", a, b);\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "После перемещения переменной можно присвоить новое значение и пользоваться ею дальше.",
+        "type": "text",
+        "answers": ["новое текст"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Что делает представление std::views::as_rvalue (C++23)?",
+        "explanation": "Сам контейнер не меняется по размеру: в нём остаются перемещённые элементы.",
+        "options": [
+          "Отдаёт элементы диапазона как rvalue, чтобы их можно было переместить",
+          "Копирует элементы",
+          "Сортирует элементы",
+          "Удаляет элементы из исходного контейнера"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Какие операции безопасны для std::string сразу после перемещения из неё? Выберите все.",
+        "explanation": "s[0] требует непустой строки, а содержимое не определено.",
+        "type": "multiple",
+        "options": ["s.clear()", "s = \"новое\"", "уничтожение s", "s[0]"],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q7",
+        "question": "Почему для параметра-приёмника выбирают передачу по значению вместо двух перегрузок const T & и T &&?",
+        "explanation": "Для типов с дорогим перемещением выгоднее перегрузки.",
+        "options": [
+          "Одна функция вместо двух ценой одного дешёвого перемещения",
+          "Так всегда быстрее",
+          "Перегрузки по ссылкам запрещены в конструкторах",
+          "Передача по значению не копирует"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какой флаг GCC и Clang предупреждает о return std::move(local)?",
+        "explanation": "Он входит в -Wall у Clang и GCC.",
+        "type": "text",
+        "answers": ["-Wpessimizing-move", "Wpessimizing-move"],
+        "placeholder": "Флаг"
       }
     ]
   }

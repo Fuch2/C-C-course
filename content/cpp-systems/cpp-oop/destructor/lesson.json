@@ -1,131 +1,542 @@
 {
   "id": "oop-destructor",
-  "title": "Деструктор и границы времени жизни",
-  "description": "Деструктор ~Type() завершает жизнь объекта. Автоматический объект разрушается при выходе из области видимости, в том числе при раскрутке стека исключением. Объекты одной области разрушаются в обратном порядке завершения создания. RAII связывает ресурс со временем жизни владельца: конструктор устанавливает владение, деструктор завершает его.",
+  "title": "Деструктор и время жизни",
+  "description": "Деструктор — парный конструктору метод, который вызывает компилятор; когда заканчивается жизнь локальных, временных, вложенных и глобальных объектов; обратный порядок разрушения локальных объектов и полей; RAII — ресурс в руках объекта; new[] и delete[]; запрет копирования класса, владеющего ресурсом; почему деструктор не бросает исключений.",
   "moduleId": "cpp-oop",
-  "order": 7,
-  "difficulty": "advanced",
+  "order": 6,
+  "difficulty": "intermediate",
   "estimatedMinutes": 45,
-  "prerequisites": ["oop-constructors"],
+  "prerequisites": ["oop-private"],
   "objectives": [
-    "Применить Деструктор и границы времени жизни в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Предсказывать момент и порядок вызова деструкторов",
+    "Освобождать ресурсы в деструкторе по принципу RAII",
+    "Запрещать копирование класса, владеющего ресурсом"
   ],
-  "tags": ["C++20", "ООП", "Деструктор и границы времени жизни"],
+  "tags": ["C++23", "ООП", "Деструктор", "RAII", "Время жизни"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-destructor-exercise",
-    "title": "Практика: Деструктор и границы времени жизни",
-    "description": "Реализуйте неперекопируемый Guard(int& value,int delta), который прибавляет delta при создании и вычитает ту же delta в деструкторе. solve(a,b) создаёт int value=a, во вложенной области Guard(value,b), сохраняет during=value, выходит из области и возвращает during + value. Копирование запретите через = delete. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Вход и выход",
+    "description": "Ввод — слова. Опишите класс `Guard`, конструктор которого печатает `вход: слово`, а деструктор — `выход: слово`. Создайте охранников **вложенно**: первый охраняет всё, внутри его жизни создаётся второй, внутри жизни второго — третий и так далее.\n\nДля вложенности удобна рекурсивная функция `visit(words, i)`: она создаёт охранника для `words[i]` и вызывает себя для `i + 1`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 5)",
-        "output": "11\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "дом комната шкаф\n",
+        "output": "вход: дом\nвход: комната\nвход: шкаф\nвыход: шкаф\nвыход: комната\nвыход: дом\n"
       },
       {
-        "input": "solve(0, 7)",
-        "output": "7\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "",
+        "output": ""
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Слов не больше 30."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "void visit(const std::vector<std::string> &words, std::size_t i) { if (i == words.size()) return; Guard g(words[i]); visit(words, i + 1); }",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Печатать «выход» вручную не нужно: деструктор g вызовется сам, когда visit завершится.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 5],
-        "expected": "11\n"
+        "stdin": "дом комната шкаф\n",
+        "expected": "вход: дом\nвход: комната\nвход: шкаф\nвыход: шкаф\nвыход: комната\nвыход: дом\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 7],
-        "expected": "7\n"
+        "stdin": "",
+        "expected": ""
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [-2, -4],
-        "expected": "-8\n"
+        "id": "hidden-1",
+        "name": "Один",
+        "stdin": "один\n",
+        "expected": "вход: один\nвыход: один\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [1000, -1000],
-        "expected": "1000\n"
+        "id": "hidden-2",
+        "name": "Два",
+        "stdin": "a b\n",
+        "expected": "вход: a\nвход: b\nвыход: b\nвыход: a\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Повторы",
+        "stdin": "x x x\n",
+        "expected": "вход: x\nвход: x\nвход: x\nвыход: x\nвыход: x\nвыход: x\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Четыре",
+        "stdin": "main parse read close\n",
+        "expected": "вход: main\nвход: parse\nвход: read\nвход: close\nвыход: close\nвыход: read\nвыход: parse\nвыход: main\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "По строкам",
+        "stdin": "a\nb\nc\nd\ne\n",
+        "expected": "вход: a\nвход: b\nвход: c\nвход: d\nвход: e\nвыход: e\nвыход: d\nвыход: c\nвыход: b\nвыход: a\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Пять",
+        "stdin": "город улица дом квартира комната\n",
+        "expected": "вход: город\nвход: улица\nвход: дом\nвход: квартира\nвход: комната\nвыход: комната\nвыход: квартира\nвыход: дом\nвыход: улица\nвыход: город\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Обратный алфавит",
+        "stdin": "z y\n",
+        "expected": "вход: z\nвход: y\nвыход: y\nвыход: z\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Восемь",
+        "stdin": "1 2 3 4 5 6 7 8\n",
+        "expected": "вход: 1\nвход: 2\nвход: 3\nвход: 4\nвход: 5\nвход: 6\nвход: 7\nвход: 8\nвыход: 8\nвыход: 7\nвыход: 6\nвыход: 5\nвыход: 4\nвыход: 3\nвыход: 2\nвыход: 1\n"
       }
     ],
-    "referenceSolution": "class Guard { int& value_; int delta_; public: Guard(int& value,int delta) : value_(value), delta_(delta) { value_ += delta_; } Guard(const Guard&) = delete; Guard& operator=(const Guard&) = delete; ~Guard() { value_ -= delta_; } };\nint solve(int a,int b) { int value=a; int during; { Guard g{value,b}; during=value; } return during+value; }",
-    "solutionExplanation": "Реализуйте неперекопируемый Guard(int& value,int delta), который прибавляет delta при создании и вычитает ту же delta в деструкторе. solve(a,b) создаёт int value=a, во вложенной области Guard(value,b), сохраняет during=value, выходит из области и возвращает during + value. Копирование запретите через = delete. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не вызывайте деструктор автоматического объекта вручную ради ранней очистки: обычный выход из области попытается разрушить его снова. Используйте вложенную область. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Guard {\npublic:\n    explicit Guard(std::string name) : name_(std::move(name)) {\n        std::println(\"вход: {}\", name_);\n    }\n\n    ~Guard() {\n        std::println(\"выход: {}\", name_);\n    }\n\nprivate:\n    std::string name_;\n};\n\nvoid visit(const std::vector<std::string> &words, std::size_t i) {\n    if (i == words.size()) {\n        return;\n    }\n    Guard guard(words[i]);\n    visit(words, i + 1);\n}\n\nint main() {\n    std::vector<std::string> words;\n    std::string word;\n    while (std::cin >> word) {\n        words.push_back(word);\n    }\n    visit(words, 0);\n    return 0;\n}\n",
+    "solutionExplanation": "Каждый вызов `visit` создаёт своего охранника и живёт, пока не завершатся все более глубокие вызовы. Поэтому выходы печатаются в обратном порядке: самый глубокий охранник уничтожается первым. Это тот же порядок, что у вложенных блоков, — стек вызовов работает как стопка областей видимости.\n\nВ программе нет ни одной строки, печатающей «выход»: это делает компилятор, вызывая деструктор при возврате из функции.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-destructor-task-2",
+      "title": "Буфер в куче",
+      "description": "Первое число ввода — размер буфера `n`. Опишите класс `IntBuffer`, который в конструкторе выделяет в куче массив из `n` нулей (`new int[n]{}`), в деструкторе освобождает его и запрещает копирование. Интерфейс: `bool set(int i, int value)`, `bool get(int i, int &out) const`, `long long sum() const`.\n\nКоманды: `set i v`, `get i` (напечатайте значение) и `sum`. Для индекса вне буфера печатайте `нет индекса i`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5\nset 0 10\nset 4 -3\nget 4\nsum\n",
+          "output": "-3\n7\n"
+        },
+        {
+          "input": "3\nset 3 1\nget -1\n",
+          "output": "нет индекса 3\nнет индекса -1\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 10⁵; команд не больше 100; значения по модулю до 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Поля: int *data_ и int size_. Проверка индекса: i >= 0 && i < size_.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Копирование: IntBuffer(const IntBuffer &) = delete; IntBuffer &operator=(const IntBuffer &) = delete;. Освобождение — delete[] data_; в деструкторе.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5\nset 0 10\nset 4 -3\nget 4\nsum\n",
+          "expected": "-3\n7\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3\nset 3 1\nget -1\n",
+          "expected": "нет индекса 3\nнет индекса -1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Новый буфер",
+          "stdin": "1\nsum\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Большие значения",
+          "stdin": "2\nset 0 1000000000\nset 1 1000000000\nsum\n",
+          "expected": "2000000000\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Большой буфер",
+          "stdin": "100000\nset 99999 5\nget 99999\nsum\n",
+          "expected": "5\n5\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Ноль по умолчанию",
+          "stdin": "4\nget 2\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Перезапись",
+          "stdin": "3\nset 1 5\nset 1 7\nget 1\n",
+          "expected": "7\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Только ошибки",
+          "stdin": "2\nset 2 1\nset -5 1\nsum\n",
+          "expected": "нет индекса 2\nнет индекса -5\n0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Заполнение",
+          "stdin": "5\nset 0 1\nset 1 2\nset 2 3\nset 3 4\nset 4 5\nsum\n",
+          "expected": "15\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Без команд",
+          "stdin": "3\n",
+          "expected": ""
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nclass IntBuffer {\npublic:\n    explicit IntBuffer(int size) : data_(new int[size]{}), size_(size) {}\n\n    ~IntBuffer() {\n        delete[] data_;\n    }\n\n    IntBuffer(const IntBuffer &) = delete;\n    IntBuffer &operator=(const IntBuffer &) = delete;\n\n    bool set(int i, int value) {\n        if (!valid(i)) {\n            return false;\n        }\n        data_[i] = value;\n        return true;\n    }\n\n    bool get(int i, int &out) const {\n        if (!valid(i)) {\n            return false;\n        }\n        out = data_[i];\n        return true;\n    }\n\n    long long sum() const {\n        long long s = 0;\n        for (int i = 0; i < size_; i++) {\n            s += data_[i];\n        }\n        return s;\n    }\n\nprivate:\n    bool valid(int i) const {\n        return i >= 0 && i < size_;\n    }\n\n    int *data_;\n    int size_;\n};\n\nint main() {\n    int n;\n    std::cin >> n;\n    IntBuffer buffer(n);\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"sum\") {\n            std::println(\"{}\", buffer.sum());\n            continue;\n        }\n        int i;\n        std::cin >> i;\n        if (command == \"set\") {\n            int value;\n            std::cin >> value;\n            if (!buffer.set(i, value)) {\n                std::println(\"нет индекса {}\", i);\n            }\n        } else {\n            int value;\n            if (buffer.get(i, value)) {\n                std::println(\"{}\", value);\n            } else {\n                std::println(\"нет индекса {}\", i);\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Буфер владеет массивом: выделяет его при создании и освобождает при уничтожении, поэтому в `main` нет ни одного `delete[]`. Запуск под AddressSanitizer подтверждает, что утечки нет.\n\nЗапрет копирования — не формальность. Без него `IntBuffer copy = buffer;` скопировал бы указатель, и в конце оба объекта освободили бы один массив. Проверка индекса вынесена в закрытый метод `valid`: её используют и `set`, и `get`. Пустые фигурные скобки в `new int[size]{}` обнуляют элементы — без них в массиве был бы мусор.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-destructor-task-3",
+      "title": "Найди ошибку: забытый деструктор",
+      "description": "Программа читает числа и печатает гистограмму: для каждого числа от 0 до 9, которое встретилось, — строку `число: сколько раз`. Числа вне 0–9 пропускаются.\n\nВывод верный, но проверка с AddressSanitizer отклоняет решение. Найдите и исправьте ошибку в классе `Histogram`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n\n// Считает, сколько раз встретилось каждое число от 0 до size - 1.\nclass Histogram {\npublic:\n    explicit Histogram(int size) : counts_(new int[size]{}), size_(size) {}\n\n    Histogram(const Histogram &) = delete;\n    Histogram &operator=(const Histogram &) = delete;\n\n    void add(int value) {\n        if (value >= 0 && value < size_) {\n            counts_[value]++;\n        }\n    }\n\n    void print() const {\n        for (int i = 0; i < size_; i++) {\n            if (counts_[i] > 0) {\n                std::println(\"{}: {}\", i, counts_[i]);\n            }\n        }\n    }\n\nprivate:\n    int *counts_;\n    int size_;\n};\n\nint main() {\n    Histogram h(10);\n    int x;\n    while (std::cin >> x) {\n        h.add(x);\n    }\n    h.print();\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3 1 3 9 3\n",
+          "output": "1: 1\n3: 3\n9: 1\n"
+        },
+        {
+          "input": "10 -1\n",
+          "output": ""
+        }
+      ],
+      "constraints": ["Чисел не больше 1000, каждое по модулю до 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Запустите программу и прочитайте отчёт LeakSanitizer в конце: какая память не освобождена?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Конструктор выделяет массив new int[size]{}, но никто его не освобождает. Добавьте деструктор ~Histogram() с delete[] counts_;.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 1 3 9 3\n",
+          "expected": "1: 1\n3: 3\n9: 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "10 -1\n",
+          "expected": ""
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "0\n",
+          "expected": "0: 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "5 5 5 5\n",
+          "expected": "5: 4\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "0 1 2 3 4 5 6 7 8 9\n",
+          "expected": "0: 1\n1: 1\n2: 1\n3: 1\n4: 1\n5: 1\n6: 1\n7: 1\n8: 1\n9: 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "9 8 7\n",
+          "expected": "7: 1\n8: 1\n9: 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1000000 -1000000 4\n",
+          "expected": "4: 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "2 2 3 3 3\n",
+          "expected": "2: 2\n3: 3\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "7\n7\n0\n",
+          "expected": "0: 1\n7: 2\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n\n// Считает, сколько раз встретилось каждое число от 0 до size - 1.\nclass Histogram {\npublic:\n    explicit Histogram(int size) : counts_(new int[size]{}), size_(size) {}\n\n    ~Histogram() {\n        delete[] counts_;\n    }\n\n    Histogram(const Histogram &) = delete;\n    Histogram &operator=(const Histogram &) = delete;\n\n    void add(int value) {\n        if (value >= 0 && value < size_) {\n            counts_[value]++;\n        }\n    }\n\n    void print() const {\n        for (int i = 0; i < size_; i++) {\n            if (counts_[i] > 0) {\n                std::println(\"{}: {}\", i, counts_[i]);\n            }\n        }\n    }\n\nprivate:\n    int *counts_;\n    int size_;\n};\n\nint main() {\n    Histogram h(10);\n    int x;\n    while (std::cin >> x) {\n        h.add(x);\n    }\n    h.print();\n    return 0;\n}\n",
+      "solutionExplanation": "Класс захватывает ресурс — массив в куче, — но не освобождает его: у него нет деструктора. Программа печатает правильный ответ, но при завершении LeakSanitizer находит невозвращённый блок (`detected memory leaks`), и проверка отклоняет решение. В долго работающей программе каждая гистограмма оставляла бы утечку.\n\nRAII требует обе половины: захват в конструкторе **и** освобождение в деструкторе. Копирование здесь уже запрещено — значит, освобождение в деструкторе безопасно. Ещё проще — хранить счётчики в `std::vector<int>`: он сам реализует RAII, и деструктор писать не придётся.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-destructor-task-4",
+      "title": "Временный файл",
+      "description": "Опишите класс `TempFile` — владельца временного файла C. Конструктор открывает файл функцией `std::tmpfile()` из `<cstdio>` и бросает `std::runtime_error`, если она вернула `nullptr`; деструктор закрывает файл `std::fclose` (временный файл при этом удаляется системой). Копирование запрещено. Методы: `void write_line(const std::string &)`, `void rewind()`, `bool read_line(std::string &out)`.\n\nПрограмма записывает в файл все строки ввода, перематывает его в начало, читает обратно и печатает `строк N` и `самая длинная: текст` (первая из самых длинных по числу байтов) или только `строк 0`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "первая\nсамая длинная строка\nкороткая\n",
+          "output": "строк 3\nсамая длинная: самая длинная строка\n"
+        },
+        {
+          "input": "",
+          "output": "строк 0\n"
+        }
+      ],
+      "constraints": ["Строк не больше 100, каждая не длиннее 200 байт."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "write_line: std::fputs(text.c_str(), file_); std::fputc('\\n', file_);. rewind: std::rewind(file_);.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "read_line: char buf[256]; if (!std::fgets(buf, sizeof buf, file_)) return false; затем убрать '\\n' в конце и присвоить out = buf.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "первая\nсамая длинная строка\nкороткая\n",
+          "expected": "строк 3\nсамая длинная: самая длинная строка\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "строк 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна строка",
+          "stdin": "одна\n",
+          "expected": "строк 1\nсамая длинная: одна\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Равные",
+          "stdin": "aa\nbb\ncc\n",
+          "expected": "строк 3\nсамая длинная: aa\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Пустые строки",
+          "stdin": "\n\n\n",
+          "expected": "строк 3\nсамая длинная: \n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Растущие",
+          "stdin": "x\nxx\nxxx\nxxxx\n",
+          "expected": "строк 4\nсамая длинная: xxxx\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Первая длиннее",
+          "stdin": "длинная строка с пробелами\nкороче\n",
+          "expected": "строк 2\nсамая длинная: длинная строка с пробелами\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "С пробелами",
+          "stdin": "a b c\nd e f g\n",
+          "expected": "строк 2\nсамая длинная: d e f g\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Ничья по длине",
+          "stdin": "1\n22\n1\n22\n",
+          "expected": "строк 4\nсамая длинная: 22\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Без перевода строки",
+          "stdin": "последняя без перевода",
+          "expected": "строк 1\nсамая длинная: последняя без перевода\n"
+        }
+      ],
+      "referenceSolution": "#include <cstdio>\n#include <iostream>\n#include <print>\n#include <stdexcept>\n#include <string>\n\nclass TempFile {\npublic:\n    TempFile() : file_(std::tmpfile()) {\n        if (file_ == nullptr) {\n            throw std::runtime_error(\"не удалось создать временный файл\");\n        }\n    }\n\n    ~TempFile() {\n        std::fclose(file_);\n    }\n\n    TempFile(const TempFile &) = delete;\n    TempFile &operator=(const TempFile &) = delete;\n\n    void write_line(const std::string &text) {\n        std::fputs(text.c_str(), file_);\n        std::fputc('\\n', file_);\n    }\n\n    void rewind() {\n        std::rewind(file_);\n    }\n\n    bool read_line(std::string &out) {\n        char buffer[256];\n        if (std::fgets(buffer, sizeof buffer, file_) == nullptr) {\n            return false;\n        }\n        out = buffer;\n        if (!out.empty() && out.back() == '\\n') {\n            out.pop_back();\n        }\n        return true;\n    }\n\nprivate:\n    std::FILE *file_;\n};\n\nint main() {\n    TempFile file;\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        file.write_line(line);\n    }\n    file.rewind();\n    int count = 0;\n    std::string longest;\n    bool any = false;\n    while (file.read_line(line)) {\n        count++;\n        if (!any || line.size() > longest.size()) {\n            longest = line;\n            any = true;\n        }\n    }\n    std::println(\"строк {}\", count);\n    if (any) {\n        std::println(\"самая длинная: {}\", longest);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`FILE *` — ресурс из мира C, и его тоже можно отдать под управление объекта. Конструктор либо открывает файл, либо бросает исключение — объекта с нулевым указателем не существует, и методам не нужно его проверять. Деструктор закрывает файл при любом выходе из `main`, в том числе при исключении.\n\nМетоды скрывают функции C и превращают их в операции класса. Запрет копирования обязателен: две копии закрыли бы один `FILE *` дважды. Стандартная библиотека C++ решает ту же задачу классом `std::fstream` — он тоже закрывает файл в деструкторе.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-destructor-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Что произойдёт с автоматическим Guard при выходе из блока?",
-        "options": [
-          "Деструктор восстановит внешнее значение",
-          "Он останется жить до конца процесса"
-        ],
-        "correct": 0,
-        "explanation": "Чаще всего собственный деструктор не нужен: string, vector и unique_ptr уже управляют своими ресурсами. Это правило нуля — не писать специальные операции без необходимости. Учебный Guard ниже временно изменяет внешнее значение и восстанавливает его. Его копирование запрещено, иначе два владельца пытались бы восстанавливать одно состояние. Ссылка на внешнее значение безопасна лишь потому, что это значение живёт дольше Guard. Деструктор не должен выбрасывать исключения."
+        "id": "q1",
+        "question": "Что выведет программа? Запишите вывод в одну строку через пробел.",
+        "code": "#include <print>\n\nstruct T {\n    char c;\n    explicit T(char c) : c(c) { std::print(\"+{} \", c); }\n    ~T() { std::print(\"-{} \", c); }\n};\n\nvoid run() {\n    T a('a');\n    {\n        T b('b');\n        T c('c');\n    }\n    T d('d');\n}\n\nint main() {\n    run();\n    std::println();\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "b и c уничтожаются при выходе из блока в обратном порядке, затем при выходе из run — d и a, тоже в обратном порядке.",
+        "type": "text",
+        "answers": ["+a +b +c -c -b +d -d -a"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "9 4", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 9 4. Деструктор ~Type() завершает жизнь объекта. Автоматический объект разрушается при выходе из области видимости, в том числе при раскрутке стека исключением. Объекты одной области разрушаются в обратном порядке завершения создания. RAII связывает ресурс со временем жизни владельца: конструктор устанавливает владение, деструктор завершает его."
+        "id": "q2",
+        "question": "Когда вызывается деструктор локального объекта?",
+        "explanation": "Поэтому работа, записанная в деструкторе, выполняется при любом пути выхода.",
+        "options": [
+          "При выходе из его блока любым путём — обычным, через return, break или исключение",
+          "Только при обычном выходе из блока",
+          "Когда программист вызывает его явно",
+          "При завершении программы"
+        ],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q3",
+        "question": "В каком порядке уничтожаются поля объекта?",
+        "explanation": "Построение и разрушение зеркальны: в теле деструктора поля ещё живы.",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Не вызывайте деструктор автоматического объекта вручную ради ранней очистки: обычный выход из области попытается разрушить его снова. Используйте вложенную область."
+          "После тела деструктора, в порядке, обратном объявлению",
+          "До тела деструктора, в порядке объявления",
+          "В порядке инициализации в списке конструктора",
+          "В алфавитном порядке"
         ],
-        "correct": 1,
-        "explanation": "Проследите две вложенные области с двумя Guard. Восстановление идёт от внутренней к внешней. Подумайте, что случится, если защищённое значение уничтожится раньше Guard. Именно порядок объявления, а не имя типа Guard, обеспечивает корректное заимствование."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что означает RAII?",
+        "explanation": "Resource Acquisition Is Initialization — основная идиома управления ресурсами в C++.",
+        "options": [
+          "Ресурс захватывается в конструкторе и освобождается в деструкторе — его жизнь совпадает с жизнью объекта",
+          "Ресурсы выделяются только при запуске программы",
+          "Все объекты создаются в куче",
+          "Исключения запрещены"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Класс выделяет память new int[n] в конструкторе и освобождает delete[] в деструкторе, но копирование не запрещено. Что произойдёт при IntBuffer b = a; и выходе из блока?",
+        "explanation": "Копирование по умолчанию копирует указатель, а не массив. Поэтому такое копирование запрещают через = delete.",
+        "options": [
+          "Оба объекта освободят один и тот же массив — двойное освобождение",
+          "b получит собственную копию массива",
+          "Ошибка компиляции",
+          "Ничего плохого: деструктор вызовется один раз"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Чем освобождают память, выделенную new int[100]?",
+        "explanation": "Для массивов — delete[], для одиночных объектов — delete. Перепутанная пара — неопределённое поведение.",
+        "type": "text",
+        "answers": ["delete[]", "delete []", "delete[] p", "delete[] p;"],
+        "placeholder": "Оператор"
+      },
+      {
+        "id": "q7",
+        "question": "Что выведет программа? Запишите вывод в одну строку через пробел.",
+        "code": "#include <print>\n\nstruct Part {\n    int id;\n    explicit Part(int id) : id(id) { std::print(\"{} \", id); }\n    ~Part() { std::print(\"~{} \", id); }\n};\n\nstruct Box {\n    Part first{1};\n    Part second{2};\n    Box() { std::print(\"box \"); }\n    ~Box() { std::print(\"~box \"); }\n};\n\nint main() {\n    {\n        Box b;\n    }\n    std::println();\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Сначала поля в порядке объявления, потом тело конструктора; разрушение — в обратном порядке.",
+        "type": "text",
+        "answers": ["1 2 box ~box ~2 ~1"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q8",
+        "question": "Почему деструктор не должен бросать исключений?",
+        "explanation": "Деструкторы по умолчанию noexcept; ошибки освобождения в них записывают в журнал или игнорируют.",
+        "options": [
+          "Он может вызываться во время раскрутки стека, и второе исключение завершит программу через std::terminate",
+          "Исключения в деструкторе игнорируются",
+          "Деструктор не может содержать try",
+          "Это замедляет программу"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q9",
+        "question": "Когда уничтожается временный объект в строке Guard(\"x\").print();?",
+        "explanation": "Временные объекты живут до конца полного выражения, в котором созданы.",
+        "options": [
+          "В конце полного выражения — после вызова print",
+          "Сразу после создания, до вызова print",
+          "В конце блока",
+          "При завершении программы"
+        ],
+        "correct": 0
       }
     ]
   }

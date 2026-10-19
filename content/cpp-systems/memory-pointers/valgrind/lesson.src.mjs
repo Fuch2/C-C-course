@@ -130,8 +130,8 @@ export default {
     'Различать категории утечек definitely, indirectly, possibly lost и still reachable',
     'Выбирать между AddressSanitizer и Valgrind для конкретной задачи',
   ],
-  tags: ['C17', 'Память', 'Valgrind', 'Memcheck', 'Отладка'],
-  standard: 'c17',
+  tags: ['C23', 'Память', 'Valgrind', 'Memcheck', 'Отладка'],
+  standard: 'c23',
   diagnostics: 'valgrind',
   quiz: [
     {

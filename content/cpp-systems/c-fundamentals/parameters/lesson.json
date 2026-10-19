@@ -13,9 +13,9 @@
     "Следить за порядком и типами аргументов",
     "Строить функции из вызовов других функций"
   ],
-  "tags": ["C17", "Функции", "Параметры", "Передача по значению"],
+  "tags": ["C23", "Функции", "Параметры", "Передача по значению"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-parameters-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "long long power(long long base, int exponent) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -135,7 +135,7 @@
       "difficulty": "beginner",
       "starterCode": "long long gcd(long long a, long long b) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -237,7 +237,7 @@
       "difficulty": "beginner",
       "starterCode": "int clamp(int value, int low, int high) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -343,7 +343,7 @@
       "difficulty": "beginner",
       "starterCode": "long long count_multiples(long long a, long long b, long long k) {\n    // Напишите тело функции. Функцию main писать не нужно.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -455,7 +455,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nvoid add_bonus(long long score, int levels) {\n    score = score + 100LL * levels;\n}\n\nint main(void) {\n    long long score;\n    int levels;\n    scanf(\"%lld %d\", &score, &levels);\n    add_bonus(score, levels);\n    printf(\"%lld\\n\", score);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

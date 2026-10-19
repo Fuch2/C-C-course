@@ -15,7 +15,7 @@
   ],
   "tags": ["CMake", "Сборка", "Цели", "Библиотеки", "ctest"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "advanced-cmake-task-1",
@@ -24,12 +24,12 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
-        "input": "cmake_minimum_required(VERSION 3.20)\nproject(app LANGUAGES C)\nset(CMAKE_C_STANDARD 17)\nset(CMAKE_C_EXTENSIONS OFF)\nset(CMAKE_BUILD_TYPE Release)\nadd_executable(app src/main.c src/util.c)\ntarget_include_directories(app PRIVATE include)\ntarget_compile_options(app PRIVATE -Wall -Wextra)\n",
-        "output": "gcc -Iinclude -O3 -DNDEBUG -std=c17 -Wall -Wextra -c src/main.c\ngcc -Iinclude -O3 -DNDEBUG -std=c17 -Wall -Wextra -c src/util.c\n"
+        "input": "cmake_minimum_required(VERSION 3.25)\nproject(app LANGUAGES C)\nset(CMAKE_C_STANDARD 23)\nset(CMAKE_C_EXTENSIONS OFF)\nset(CMAKE_BUILD_TYPE Release)\nadd_executable(app src/main.c src/util.c)\ntarget_include_directories(app PRIVATE include)\ntarget_compile_options(app PRIVATE -Wall -Wextra)\n",
+        "output": "gcc -Iinclude -O3 -DNDEBUG -std=c23 -Wall -Wextra -c src/main.c\ngcc -Iinclude -O3 -DNDEBUG -std=c23 -Wall -Wextra -c src/util.c\n"
       },
       {
         "input": "add_executable(hello hello.c)\n",
@@ -60,8 +60,8 @@
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "cmake_minimum_required(VERSION 3.20)\nproject(app LANGUAGES C)\nset(CMAKE_C_STANDARD 17)\nset(CMAKE_C_EXTENSIONS OFF)\nset(CMAKE_BUILD_TYPE Release)\nadd_executable(app src/main.c src/util.c)\ntarget_include_directories(app PRIVATE include)\ntarget_compile_options(app PRIVATE -Wall -Wextra)\n",
-        "expected": "gcc -Iinclude -O3 -DNDEBUG -std=c17 -Wall -Wextra -c src/main.c\ngcc -Iinclude -O3 -DNDEBUG -std=c17 -Wall -Wextra -c src/util.c\n"
+        "stdin": "cmake_minimum_required(VERSION 3.25)\nproject(app LANGUAGES C)\nset(CMAKE_C_STANDARD 23)\nset(CMAKE_C_EXTENSIONS OFF)\nset(CMAKE_BUILD_TYPE Release)\nadd_executable(app src/main.c src/util.c)\ntarget_include_directories(app PRIVATE include)\ntarget_compile_options(app PRIVATE -Wall -Wextra)\n",
+        "expected": "gcc -Iinclude -O3 -DNDEBUG -std=c23 -Wall -Wextra -c src/main.c\ngcc -Iinclude -O3 -DNDEBUG -std=c23 -Wall -Wextra -c src/util.c\n"
       },
       {
         "id": "case-2",
@@ -116,8 +116,8 @@
       {
         "id": "hidden-8",
         "name": "Полный проект",
-        "stdin": "set(CMAKE_C_STANDARD 17)\nset(CMAKE_C_EXTENSIONS OFF)\nset(CMAKE_BUILD_TYPE Debug)\nadd_executable(calc src/main.c src/lexer.c src/parser.c)\ntarget_compile_options(calc PRIVATE -Wall -Wextra -Wpedantic)\ntarget_compile_definitions(calc PRIVATE CALC_DEBUG)\ntarget_include_directories(calc PRIVATE include third_party)\n",
-        "expected": "gcc -DCALC_DEBUG -Iinclude -Ithird_party -g -std=c17 -Wall -Wextra -Wpedantic -c src/main.c\ngcc -DCALC_DEBUG -Iinclude -Ithird_party -g -std=c17 -Wall -Wextra -Wpedantic -c src/lexer.c\ngcc -DCALC_DEBUG -Iinclude -Ithird_party -g -std=c17 -Wall -Wextra -Wpedantic -c src/parser.c\n"
+        "stdin": "set(CMAKE_C_STANDARD 23)\nset(CMAKE_C_EXTENSIONS OFF)\nset(CMAKE_BUILD_TYPE Debug)\nadd_executable(calc src/main.c src/lexer.c src/parser.c)\ntarget_compile_options(calc PRIVATE -Wall -Wextra -Wpedantic)\ntarget_compile_definitions(calc PRIVATE CALC_DEBUG)\ntarget_include_directories(calc PRIVATE include third_party)\n",
+        "expected": "gcc -DCALC_DEBUG -Iinclude -Ithird_party -g -std=c23 -Wall -Wextra -Wpedantic -c src/main.c\ngcc -DCALC_DEBUG -Iinclude -Ithird_party -g -std=c23 -Wall -Wextra -Wpedantic -c src/lexer.c\ngcc -DCALC_DEBUG -Iinclude -Ithird_party -g -std=c23 -Wall -Wextra -Wpedantic -c src/parser.c\n"
       },
       {
         "id": "hidden-9",
@@ -141,7 +141,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -258,7 +258,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -430,10 +430,10 @@
       },
       {
         "id": "q7",
-        "question": "В CMakeLists.txt написано только set(CMAKE_C_STANDARD 17). Какой флаг стандарта получит gcc?",
-        "explanation": "По умолчанию CMAKE_C_EXTENSIONS включён. Для -std=c17 нужен set(CMAKE_C_EXTENSIONS OFF).",
+        "question": "В CMakeLists.txt написано только set(CMAKE_C_STANDARD 23). Какой флаг стандарта получит gcc?",
+        "explanation": "По умолчанию CMAKE_C_EXTENSIONS включён. Для -std=c23 нужен set(CMAKE_C_EXTENSIONS OFF).",
         "type": "text",
-        "answers": ["-std=gnu17"],
+        "answers": ["-std=gnu23"],
         "placeholder": "Флаг"
       },
       {

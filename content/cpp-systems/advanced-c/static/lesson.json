@@ -1,117 +1,554 @@
 {
   "id": "advanced-static",
-  "title": "static",
-  "description": "У static два важных применения.",
+  "title": "static: скрытые функции и состояние модуля",
+  "description": "Два смысла static: внутреннее связывание функций и глобальных переменных и статическое время жизни локальных; конфликт имён вспомогательных функций; скрытое состояние модуля; счётчики и кэши в static переменных; константные инициализаторы; указатель на static буфер; static в заголовке и static inline; предупреждение о неиспользуемых функциях.",
   "moduleId": "advanced-c",
-  "order": 9,
-  "difficulty": "advanced",
-  "estimatedMinutes": 40,
-  "prerequisites": ["advanced-conditional-compilation"],
+  "order": 4,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 55,
+  "prerequisites": ["advanced-header-guards"],
   "objectives": [
-    "Объяснить: static",
-    "Различать корректный контракт и ошибку: Локальный static не создаёт отдельную копию на каждый вызов и не делает ++ атомарным.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Скрывать вспомогательные функции и состояние модуля с помощью static",
+    "Использовать static локальные переменные для счётчиков и кэшей",
+    "Распознавать ошибку общего static буфера и проектировать интерфейс с буфером вызывающего",
+    "Объяснять, почему static переменная в заголовке почти всегда ошибка"
   ],
-  "tags": ["C17", "углублённый C", "static"],
+  "tags": ["static", "Внутреннее связывание", "Модуль", "Кэш", "Время жизни"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-static-exercise",
-    "title": "Практика: static",
-    "description": "Функция next_id хранит static-счётчик и возвращает очередной номер с 1. Ввод n 0…20; выведите n номеров через пробел и перевод строки.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-static-task-1",
+    "title": "Генератор идентификаторов",
+    "description": "В заготовке — заголовок модуля идентификаторов и функция `main`, которая обрабатывает команды до конца ввода:\n- `new P` — получить и напечатать новый идентификатор с префиксом `P`: `P-1`, `P-2`, … — у каждого префикса свой счётчик;\n- `reset P` — сбросить счётчик префикса: следующий идентификатор снова будет `P-1`;\n- `total` — напечатать, сколько идентификаторов выдано за всё время (сброс это число не уменьшает).\n\nНапишите раздел `ids.c`. Всё состояние модуля и вспомогательные функции должны быть `static`: снаружи модуль доступен только через три функции из заголовка. Результат `ids_next` записывает в буфер вызывающего кода.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n#include <string.h>\n\n// ---- ids.h ----\nvoid ids_next(const char *prefix, char *out, size_t size);   // записывает \"префикс-N\"\nvoid ids_reset(const char *prefix);\nint ids_total(void);\n\n// ---- main.c ----\nint main(void) {\n    char command[16], prefix[16], id[32];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"new\") == 0 && scanf(\"%15s\", prefix) == 1) {\n            ids_next(prefix, id, sizeof id);\n            printf(\"%s\\n\", id);\n        } else if (strcmp(command, \"reset\") == 0 && scanf(\"%15s\", prefix) == 1) {\n            ids_reset(prefix);\n        } else if (strcmp(command, \"total\") == 0) {\n            printf(\"%d\\n\", ids_total());\n        }\n    }\n    return 0;\n}\n\n// ---- ids.c ----\n// Напишите здесь состояние и функции модуля.\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "3",
-        "output": "1 2 3\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "new user\nnew user\nnew order\nnew user\ntotal\n",
+        "output": "user-1\nuser-2\norder-1\nuser-3\n4\n"
       },
       {
-        "input": "0",
-        "output": "\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "new a\nreset a\nnew a\ntotal\n",
+        "output": "a-1\na-1\n2\n",
+        "explanation": "Сброс начинает нумерацию заново, но не уменьшает total."
       }
     ],
     "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+      "Префиксы — от 1 до 15 латинских букв и цифр, различных префиксов не больше 50.",
+      "Команд не больше 1000."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Область видимости — где видно имя; длительность хранения — сколько живёт объект. Это разные координаты."
+        "text": "Состояние: static char prefixes[50][16]; static int counters[50]; static int used; static int total;.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Локальный static не создаёт отдельную копию на каждый вызов и не делает ++ атомарным."
+        "text": "Напишите static int find_or_add(const char *prefix): ищет префикс в таблице, а если его нет — добавляет со счётчиком 0 и возвращает индекс.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "ids_next увеличивает счётчик и total и пишет результат через snprintf(out, size, \"%s-%d\", prefix, counter).",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "3",
-        "expected": "1 2 3\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "new user\nnew user\nnew order\nnew user\ntotal\n",
+        "expected": "user-1\nuser-2\norder-1\nuser-3\n4\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "0",
-        "expected": "\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "new a\nreset a\nnew a\ntotal\n",
+        "expected": "a-1\na-1\n2\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "1",
-        "expected": "1\n"
+        "id": "hidden-1",
+        "name": "Пусто",
+        "stdin": "total\n",
+        "expected": "0\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Сброс неизвестного префикса",
+        "stdin": "reset ghost\nnew ghost\n",
+        "expected": "ghost-1\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Регистр",
+        "stdin": "new A\nnew a\nnew A\n",
+        "expected": "A-1\na-1\nA-2\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Несколько префиксов",
+        "stdin": "new p1\nnew p2\nnew p3\nnew p1\nnew p2\nnew p1\ntotal\n",
+        "expected": "p1-1\np2-1\np3-1\np1-2\np2-2\np1-3\n6\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Двузначные номера",
+        "stdin": "new x\nnew x\nnew x\nnew x\nnew x\nnew x\nnew x\nnew x\nnew x\nnew x\nnew x\nnew x\n",
+        "expected": "x-1\nx-2\nx-3\nx-4\nx-5\nx-6\nx-7\nx-8\nx-9\nx-10\nx-11\nx-12\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Префикс из 15 символов",
+        "stdin": "new abcdefghijklmno\nnew abcdefghijklmno\n",
+        "expected": "abcdefghijklmno-1\nabcdefghijklmno-2\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Два сброса",
+        "stdin": "new a\nnew b\nreset a\nreset b\nnew b\nnew a\ntotal\n",
+        "expected": "a-1\nb-1\nb-1\na-1\n4\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "total между командами",
+        "stdin": "new id\ntotal\nnew id\ntotal\nreset id\ntotal\n",
+        "expected": "id-1\n1\nid-2\n2\n2\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\nstatic int next_id(void) { static int value; return ++value; }\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 0 || n > 20) return 1;\n    for (int i=0; i<n; ++i) printf(\"%s%d\", i ? \" \" : \"\", next_id());\n    puts(\"\");\n    return 0;\n}\n",
-    "solutionExplanation": "Область видимости — где видно имя; длительность хранения — сколько живёт объект. Это разные координаты.\n\nЛокальный static не создаёт отдельную копию на каждый вызов и не делает ++ атомарным.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '3' → '1 2 3\\n'; '0' → '\\n'; '1' → '1\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n// ---- ids.h ----\nvoid ids_next(const char *prefix, char *out, size_t size);   // записывает \"префикс-N\"\nvoid ids_reset(const char *prefix);\nint ids_total(void);\n\n// ---- main.c ----\nint main(void) {\n    char command[16], prefix[16], id[32];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"new\") == 0 && scanf(\"%15s\", prefix) == 1) {\n            ids_next(prefix, id, sizeof id);\n            printf(\"%s\\n\", id);\n        } else if (strcmp(command, \"reset\") == 0 && scanf(\"%15s\", prefix) == 1) {\n            ids_reset(prefix);\n        } else if (strcmp(command, \"total\") == 0) {\n            printf(\"%d\\n\", ids_total());\n        }\n    }\n    return 0;\n}\n\n// ---- ids.c ----\nstatic char prefixes[50][16];\nstatic int counters[50];\nstatic int used = 0;\nstatic int total = 0;\n\nstatic int find_or_add(const char *prefix) {\n    for (int i = 0; i < used; i++) {\n        if (strcmp(prefixes[i], prefix) == 0) {\n            return i;\n        }\n    }\n    strcpy(prefixes[used], prefix);\n    counters[used] = 0;\n    return used++;\n}\n\nvoid ids_next(const char *prefix, char *out, size_t size) {\n    int i = find_or_add(prefix);\n    counters[i]++;\n    total++;\n    snprintf(out, size, \"%s-%d\", prefix, counters[i]);\n}\n\nvoid ids_reset(const char *prefix) {\n    counters[find_or_add(prefix)] = 0;\n}\n\nint ids_total(void) {\n    return total;\n}\n",
+    "solutionExplanation": "Таблица префиксов и счётчики — внутреннее состояние модуля: `static` делает их невидимыми для других файлов, поэтому изменить счётчик можно только через `ids_next` и `ids_reset`. Вспомогательная `find_or_add` тоже `static` — её нет в заголовке, и она не должна столкнуться с одноимённой функцией другого модуля.\n\n`ids_next` не возвращает указатель на свой буфер, а пишет в буфер вызывающего: так два идентификатора, полученные подряд, не затрут друг друга. `ids_reset` для ещё не встречавшегося префикса просто заводит его с нулевым счётчиком — результат тот же, что и без записи.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-static-task-2",
+      "title": "Биномиальные коэффициенты с кэшем",
+      "description": "Число сочетаний C(n, k) удовлетворяет правилу треугольника Паскаля:\n\n```\nC(n, 0) = C(n, n) = 1,    C(n, k) = C(n − 1, k − 1) + C(n − 1, k)\n```\n\nПрочитайте число запросов `q` и `q` пар `n k`. Для каждой напечатайте C(n, k) по модулю 1 000 000 007. В конце напечатайте `вычислено: X`, где X — число различных пар (n, k), значение которых функция **вычисляла**, а не брала из кэша, за всю работу программы.\n\nНапишите рекурсивную функцию `long long binom(int n, int k)` с кэшем в `static` массивах **внутри функции**: при входе она проверяет, не вычислено ли значение раньше; если нет — вычисляет (базовый случай или сумма двух рекурсивных вызовов), запоминает и увеличивает счётчик. Кэш общий для всех запросов.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\n4 2\n5 2\n",
+          "output": "6\n10\nвычислено: 11\n"
+        },
+        {
+          "input": "1\n0 0\n",
+          "output": "1\nвычислено: 1\n",
+          "explanation": "Базовый случай тоже вычисляется один раз."
+        }
+      ],
+      "constraints": ["1 ≤ q ≤ 20; 0 ≤ k ≤ n ≤ 500."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Внутри функции: static long long memo[501][501]; static unsigned char known[501][501];. Счётчик удобно сделать static глобальной переменной файла, чтобы main могла его напечатать.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Порядок в binom: if (known[n][k]) return memo[n][k]; затем вычислить value, записать memo[n][k] = value, known[n][k] = 1, увеличить счётчик.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Складывайте по модулю: (binom(n - 1, k - 1) + binom(n - 1, k)) % 1000000007 — оба слагаемых меньше модуля, переполнения нет.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\n4 2\n5 2\n",
+          "expected": "6\n10\nвычислено: 11\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n0 0\n",
+          "expected": "1\nвычислено: 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "k = 0",
+          "stdin": "1\n10 0\n",
+          "expected": "1\nвычислено: 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "k = n",
+          "stdin": "1\n10 10\n",
+          "expected": "1\nвычислено: 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Повторный запрос",
+          "stdin": "2\n6 3\n6 3\n",
+          "expected": "20\n20\nвычислено: 15\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Всё уже в кэше",
+          "stdin": "3\n5 2\n4 2\n3 1\n",
+          "expected": "10\n6\n3\nвычислено: 11\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Средний размер",
+          "stdin": "1\n30 15\n",
+          "expected": "155117520\nвычислено: 255\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Больше модуля",
+          "stdin": "1\n100 50\n",
+          "expected": "538992043\nвычислено: 2600\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Максимум",
+          "stdin": "1\n500 250\n",
+          "expected": "515561345\nвычислено: 63000\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Смешанные запросы",
+          "stdin": "4\n20 1\n20 19\n20 10\n21 10\n",
+          "expected": "20\n20\n184756\n352716\nвычислено: 165\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\n#define MOD 1000000007LL\n\nstatic long long computed = 0;\n\nlong long binom(int n, int k) {\n    static long long memo[501][501];\n    static unsigned char known[501][501];\n    if (known[n][k]) {\n        return memo[n][k];\n    }\n    long long value;\n    if (k == 0 || k == n) {\n        value = 1;\n    } else {\n        value = (binom(n - 1, k - 1) + binom(n - 1, k)) % MOD;\n    }\n    memo[n][k] = value;\n    known[n][k] = 1;\n    computed++;\n    return value;\n}\n\nint main(void) {\n    int q;\n    if (scanf(\"%d\", &q) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < q; i++) {\n        int n, k;\n        if (scanf(\"%d %d\", &n, &k) != 2) {\n            return 0;\n        }\n        printf(\"%lld\\n\", binom(n, k));\n    }\n    printf(\"вычислено: %lld\\n\", computed);\n    return 0;\n}\n",
+      "solutionExplanation": "Массивы `memo` и `known` объявлены внутри `binom`, но со `static`: они создаются один раз до начала программы, заполнены нулями и сохраняют содержимое между вызовами — и между запросами. Поэтому второй запрос, пересекающийся с первым, вычисляет только недостающие пары.\n\nБез кэша рекурсия для C(500, 250) делала бы порядка 10¹⁴⁹ вызовов. С кэшем каждая пара вычисляется один раз, и всех пар не больше 501 · 502 / 2. Отдельный массив `known` нужен потому, что по модулю значение могло бы оказаться и нулём — тогда проверка `memo[n][k] == 0` пересчитывала бы его снова.\n\nСчётчик `computed` вынесен на уровень файла (тоже `static`), потому что его читает `main`: локальную `static` переменную видно только внутри её функции.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-static-task-3",
+      "title": "Найди ошибку: общий буфер",
+      "description": "Программа печатает журнал переводов. Каждая строка ввода — две суммы в копейках: сколько было на счёте до перевода и сколько стало после. Для каждой строки нужно напечатать `было -> стало` в денежном формате: целая часть с пробелом между группами по три цифры, точка и две цифры копеек, у отрицательных сумм — минус: `123456` → `1 234.56`, `-500` → `-5.00`.\n\nПрограмма печатает одну и ту же сумму дважды. Найдите причину и исправьте программу.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nconst char *format_money(long long cents) {\n    static char out[32];\n\n    char digits[32];\n    int len = 0;\n    long long value = cents < 0 ? -cents : cents;\n    long long whole = value / 100;\n    do {\n        if (len % 4 == 3) {\n            digits[len++] = ' ';\n        }\n        digits[len++] = (char)('0' + whole % 10);\n        whole /= 10;\n    } while (whole > 0);\n    int pos = 0;\n    if (cents < 0) {\n        out[pos++] = '-';\n    }\n    while (len > 0) {\n        out[pos++] = digits[--len];\n    }\n    int rest = (int)(value % 100);\n    out[pos++] = '.';\n    out[pos++] = (char)('0' + rest / 10);\n    out[pos++] = (char)('0' + rest % 10);\n    out[pos] = '\\0';\n    return out;\n}\n\nint main(void) {\n    long long before, after;\n    while (scanf(\"%lld %lld\", &before, &after) == 2) {\n        printf(\"%s -> %s\\n\", format_money(before), format_money(after));\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "123456 100000\n",
+          "output": "1 234.56 -> 1 000.00\n"
+        },
+        {
+          "input": "-500 0\n",
+          "output": "-5.00 -> 0.00\n"
+        }
+      ],
+      "constraints": ["Суммы по модулю не больше 10¹⁵ копеек; строк не больше 20."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Посмотрите, куда format_money записывает результат и сколько таких мест в памяти.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Оба вызова возвращают указатель на один и тот же static массив. Передайте буфер параметром — void format_money(long long cents, char *out) — и заведите в main два массива.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "123456 100000\n",
+          "expected": "1 234.56 -> 1 000.00\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "-500 0\n",
+          "expected": "-5.00 -> 0.00\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "5 7\n",
+          "expected": "0.05 -> 0.07\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "99 100\n",
+          "expected": "0.99 -> 1.00\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "100000000 99999999\n",
+          "expected": "1 000 000.00 -> 999 999.99\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "-123456789 123456789\n",
+          "expected": "-1 234 567.89 -> 1 234 567.89\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1000000000000000 -1000000000000000\n",
+          "expected": "10 000 000 000 000.00 -> -10 000 000 000 000.00\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "0 1\n1 0\n",
+          "expected": "0.00 -> 0.01\n0.01 -> 0.00\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "12345 54321\n67890 9876\n",
+          "expected": "123.45 -> 543.21\n678.90 -> 98.76\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "-1 -99999\n",
+          "expected": "-0.01 -> -999.99\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nvoid format_money(long long cents, char *out) {\n\n    char digits[32];\n    int len = 0;\n    long long value = cents < 0 ? -cents : cents;\n    long long whole = value / 100;\n    do {\n        if (len % 4 == 3) {\n            digits[len++] = ' ';\n        }\n        digits[len++] = (char)('0' + whole % 10);\n        whole /= 10;\n    } while (whole > 0);\n    int pos = 0;\n    if (cents < 0) {\n        out[pos++] = '-';\n    }\n    while (len > 0) {\n        out[pos++] = digits[--len];\n    }\n    int rest = (int)(value % 100);\n    out[pos++] = '.';\n    out[pos++] = (char)('0' + rest / 10);\n    out[pos++] = (char)('0' + rest % 10);\n    out[pos] = '\\0';\n}\n\nint main(void) {\n    long long before, after;\n    while (scanf(\"%lld %lld\", &before, &after) == 2) {\n        char from[32], to[32];\n        format_money(before, from);\n        format_money(after, to);\n        printf(\"%s -> %s\\n\", from, to);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`format_money` возвращает указатель на свой `static` массив — он переживает вызов, но существует в единственном экземпляре. Оба аргумента `printf` вычисляются до печати, поэтому к моменту вывода в массиве лежит результат того вызова, который выполнился последним, и оба `%s` печатают одну строку. Какой из вызовов последний, стандарт не определяет: GCC и Clang ошибаются по-разному.\n\nИсправленная функция получает буфер от вызывающего кода. У каждого вызова теперь своя память, и функция к тому же не хранит скрытого состояния — её можно безопасно вызывать сколько угодно раз в одном выражении.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-static-task-4",
+      "title": "Модуль случайных чисел",
+      "description": "В заготовке — заголовок модуля псевдослучайных чисел и функция `main`, которая обрабатывает команды:\n- `seed S` — `rng_seed(S)` устанавливает состояние генератора равным `S`;\n- `next` — печатает `rng_next()`;\n- `range L H` — печатает `rng_range(L, H)`;\n- `shuffle n a₁ … aₙ` — перемешивает массив `rng_shuffle` и печатает его.\n\nНапишите раздел `rng.c`. Состояние генератора — одна `static` переменная типа `unsigned long long`; до первого `seed` она равна 1. Функции:\n- `rng_next`: `state = state · 6364136223846793005 + 1442695040888963407` (вычисления в `unsigned long long`, переполнение — по модулю 2⁶⁴), результат — старшие 31 бит: `state >> 33`;\n- `rng_range(L, H)`: `L + rng_next() % (H − L + 1)`;\n- `rng_shuffle`: алгоритм Фишера — Йетса: для `i` от `count − 1` до 1 выбрать `j = rng_next() % (i + 1)` и поменять местами элементы `i` и `j`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n#include <string.h>\n\n// ---- rng.h ----\nvoid rng_seed(unsigned long long seed);\nunsigned rng_next(void);                    // число от 0 до 2^31 - 1\nint rng_range(int low, int high);           // число от low до high включительно\nvoid rng_shuffle(int *values, int count);\n\n// ---- main.c ----\nint main(void) {\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"seed\") == 0) {\n            unsigned long long seed;\n            if (scanf(\"%llu\", &seed) == 1) {\n                rng_seed(seed);\n            }\n        } else if (strcmp(command, \"next\") == 0) {\n            printf(\"%u\\n\", rng_next());\n        } else if (strcmp(command, \"range\") == 0) {\n            int low, high;\n            if (scanf(\"%d %d\", &low, &high) == 2) {\n                printf(\"%d\\n\", rng_range(low, high));\n            }\n        } else if (strcmp(command, \"shuffle\") == 0) {\n            int n, values[100];\n            if (scanf(\"%d\", &n) != 1 || n < 1 || n > 100) {\n                break;\n            }\n            for (int i = 0; i < n; i++) {\n                if (scanf(\"%d\", &values[i]) != 1) {\n                    return 0;\n                }\n            }\n            rng_shuffle(values, n);\n            for (int i = 0; i < n; i++) {\n                printf(i + 1 < n ? \"%d \" : \"%d\\n\", values[i]);\n            }\n        }\n    }\n    return 0;\n}\n\n// ---- rng.c ----\n// Напишите здесь состояние и функции модуля.\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "seed 42\nnext\nnext\nrange 1 6\n",
+          "output": "1220265334\n484179026\n5\n"
+        },
+        {
+          "input": "next\nshuffle 5 1 2 3 4 5\n",
+          "output": "908834774\n2 3 5 1 4\n"
+        }
+      ],
+      "constraints": [
+        "0 ≤ S < 2⁶⁴; −10⁹ ≤ L ≤ H ≤ 10⁹, H − L < 10⁶; 1 ≤ n ≤ 100.",
+        "Команд не больше 200."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "static unsigned long long state = 1; — инициализатор константный, так что это разрешено и выполнится один раз до main.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Беззнаковая арифметика в C не переполняется, а заворачивается по модулю 2⁶⁴ — ровно то, что нужно генератору. Суффикс ULL у констант обязателен.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "В rng_range приведите разность к unsigned: (unsigned)(high - low + 1). В shuffle индекс j получайте как (int)(rng_next() % (unsigned)(i + 1)).",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "seed 42\nnext\nnext\nrange 1 6\n",
+          "expected": "1220265334\n484179026\n5\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "next\nshuffle 5 1 2 3 4 5\n",
+          "expected": "908834774\n2 3 5 1 4\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Затравка 0",
+          "stdin": "seed 0\nnext\nnext\nnext\n",
+          "expected": "167951807\n218396424\n1299921937\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Максимальная затравка",
+          "stdin": "seed 18446744073709551615\nnext\nnext\n",
+          "expected": "1574552488\n1490332343\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Отрицательный диапазон",
+          "stdin": "seed 7\nrange -10 10\nrange -10 10\nrange 5 5\n",
+          "expected": "7\n1\n5\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Повтор затравки",
+          "stdin": "seed 1\nnext\nseed 1\nnext\n",
+          "expected": "908834774\n908834774\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Перемешивание десяти",
+          "stdin": "seed 2024\nshuffle 10 1 2 3 4 5 6 7 8 9 10\n",
+          "expected": "4 5 2 8 6 10 1 9 7 3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Один элемент",
+          "stdin": "shuffle 1 99\nnext\n",
+          "expected": "99\n908834774\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Большие границы",
+          "stdin": "seed 123456789\nrange -1000000000 -999000001\nrange 0 999999\n",
+          "expected": "-999102636\n529271\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Смешанные команды",
+          "stdin": "seed 5\nnext\nshuffle 3 7 8 9\nnext\nrange 1 100\n",
+          "expected": "1724882992\n8 7 9\n664543405\n76\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n// ---- rng.h ----\nvoid rng_seed(unsigned long long seed);\nunsigned rng_next(void);                    // число от 0 до 2^31 - 1\nint rng_range(int low, int high);           // число от low до high включительно\nvoid rng_shuffle(int *values, int count);\n\n// ---- main.c ----\nint main(void) {\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"seed\") == 0) {\n            unsigned long long seed;\n            if (scanf(\"%llu\", &seed) == 1) {\n                rng_seed(seed);\n            }\n        } else if (strcmp(command, \"next\") == 0) {\n            printf(\"%u\\n\", rng_next());\n        } else if (strcmp(command, \"range\") == 0) {\n            int low, high;\n            if (scanf(\"%d %d\", &low, &high) == 2) {\n                printf(\"%d\\n\", rng_range(low, high));\n            }\n        } else if (strcmp(command, \"shuffle\") == 0) {\n            int n, values[100];\n            if (scanf(\"%d\", &n) != 1 || n < 1 || n > 100) {\n                break;\n            }\n            for (int i = 0; i < n; i++) {\n                if (scanf(\"%d\", &values[i]) != 1) {\n                    return 0;\n                }\n            }\n            rng_shuffle(values, n);\n            for (int i = 0; i < n; i++) {\n                printf(i + 1 < n ? \"%d \" : \"%d\\n\", values[i]);\n            }\n        }\n    }\n    return 0;\n}\n\n// ---- rng.c ----\nstatic unsigned long long state = 1;\n\nvoid rng_seed(unsigned long long seed) {\n    state = seed;\n}\n\nunsigned rng_next(void) {\n    state = state * 6364136223846793005ULL + 1442695040888963407ULL;\n    return (unsigned)(state >> 33);\n}\n\nint rng_range(int low, int high) {\n    return low + (int)(rng_next() % (unsigned)(high - low + 1));\n}\n\nvoid rng_shuffle(int *values, int count) {\n    for (int i = count - 1; i > 0; i--) {\n        int j = (int)(rng_next() % (unsigned)(i + 1));\n        int tmp = values[i];\n        values[i] = values[j];\n        values[j] = tmp;\n    }\n}\n",
+      "solutionExplanation": "Генератор — классический линейный конгруэнтный: следующее состояние получается из предыдущего умножением и сложением по модулю 2⁶⁴. Младшие биты такого генератора плохо перемешаны, поэтому наружу отдаются старшие 31 бит.\n\nСостояние — `static` переменная модуля: оно сохраняется между вызовами и недоступно другим файлам, так что `main` не может случайно испортить последовательность. Одна и та же затравка всегда даёт одну и ту же последовательность — поэтому генератор удобен в тестах и играх с повтором.\n\nЦена такого устройства — генератор один на всю программу. Если две части программы будут брать из него числа, они повлияют друг на друга. Когда нужны независимые генераторы, состояние выносят в структуру и передают её в каждую функцию: `rng_next(&gen)`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-static-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Что сохраняет локальный static между вызовами?",
-        "options": ["Состояние одного объекта", "Отдельный новый объект каждого вызова"],
-        "correct": 0,
-        "explanation": "У static два важных применения. На уровне файла он даёт имени внутреннее связывание: другой объектный файл не обращается к нему как к внешнему символу. У локального объекта static задаёт статическую длительность хранения: объект существует всё выполнение, хотя имя доступно лишь внутри блока."
-      },
-      {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q1",
+        "question": "Что означает static перед определением функции вне других функций?",
+        "explanation": "У функций static влияет только на видимость имени: линковщик не узнает о функции, и в другом файле может быть своя функция с тем же именем.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "Локальный static не создаёт отдельную копию на каждый вызов и не делает ++ атомарным."
+          "Функция видна только в своём .c файле: у неё внутреннее связывание",
+          "Функция сохраняет значения своих переменных между вызовами",
+          "Функция выполняется один раз до main",
+          "Функция не может вызывать другие функции"
         ],
-        "correct": 1,
-        "explanation": "Область видимости — где видно имя; длительность хранения — сколько живёт объект. Это разные координаты."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["11 12", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: int first=count();int second=count();printf(\"%d %d\\n\",first,second); Ожидаемый результат: 11 12"
+        "id": "q2",
+        "question": "В файлах a.c и b.c определено по функции static int helper(void) с разными телами. Что будет при сборке gcc a.c b.c main.c?",
+        "explanation": "Внутреннее связывание делает имена независимыми: это две разные функции, и линковщик о них не знает.",
+        "options": [
+          "Сборка пройдёт: каждая helper видна только в своём файле",
+          "multiple definition of helper",
+          "Ошибка компиляции b.c: redefinition of helper",
+          "Будет вызываться та helper, чей файл указан первым"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint step(void) {\n    static int value = 10;\n    int local = 0;\n    value += 5;\n    local += 5;\n    return value + local;\n}\n\nint main(void) {\n    step();\n    step();\n    printf(\"%d\\n\", step());\n    return 0;\n}",
+        "explanation": "static value инициализируется один раз и после трёх вызовов равна 25, а обычная local каждый раз начинается с нуля и становится 5. Третий вызов возвращает 25 + 5 = 30.",
+        "type": "text",
+        "answers": ["30"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "В заголовке counter.h написано static int counter = 0;. Его подключают a.c и b.c. Функция из a.c увеличивает counter до 3, затем функция из b.c печатает counter. Что напечатается?",
+        "explanation": "Заголовок вставляется в каждый файл, и static создаёт в каждой единице трансляции отдельный объект. Сборка проходит молча, а «общий» счётчик на деле не общий.",
+        "options": [
+          "0 — у каждого файла своя переменная counter",
+          "3 — переменная общая",
+          "Ошибка линковки multiple definition",
+          "Ошибка компиляции: static нельзя писать в заголовке"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какие инициализаторы допустимы для static переменной? Выберите все.",
+        "explanation": "Значение должно быть известно до запуска программы: арифметика над константами и адрес строкового литерала подходят. Вызов функции и значение другой переменной — нет, даже если та тоже static.",
+        "type": "multiple",
+        "options": [
+          "static int seconds = 24 * 60 * 60;",
+          "static const char *name = \"журнал\";",
+          "static int value = rand();",
+          "static double ratio = 1.0 / 3;",
+          "static int copy = seconds;  (где seconds — другая static переменная)"
+        ],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nconst char *label(int n) {\n    static char buffer[16];\n    snprintf(buffer, sizeof buffer, \"№%d\", n);\n    return buffer;\n}\n\nint main(void) {\n    const char *a = label(1);\n    const char *b = label(2);\n    printf(\"%s %s\\n\", a, b);\n    return 0;\n}",
+        "explanation": "Оба указателя ссылаются на один static буфер. После второго вызова в нём лежит «№2», поэтому обе строки одинаковы.",
+        "type": "text",
+        "answers": ["№2 №2"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Чему равна static локальная переменная int hits; без инициализатора при первом вызове функции?",
+        "explanation": "Объекты со статическим временем жизни заполняются нулями до начала программы — в отличие от обычных локальных переменных, значение которых не определено.",
+        "type": "text",
+        "answers": ["0", "нулю", "ноль"],
+        "placeholder": "Значение"
+      },
+      {
+        "id": "q8",
+        "question": "Почему GCC предупреждает «defined but not used» для неиспользуемой static функции, но молчит о такой же функции без static?",
+        "explanation": "Для функции с внешним связыванием компилятор не знает, не вызовут ли её из другого файла. У static функции все возможные вызовы находятся в текущей единице трансляции.",
+        "options": [
+          "static функцию могут вызвать только из того же файла, и компилятор видит, что никто этого не делает",
+          "Функции без static компилятор не анализирует",
+          "Предупреждение выдаётся только для функций с параметрами",
+          "Функция без static автоматически вызывается из main"
+        ],
+        "correct": 0
       }
     ]
   }

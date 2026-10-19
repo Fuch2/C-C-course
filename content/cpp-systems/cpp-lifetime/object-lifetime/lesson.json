@@ -1,149 +1,532 @@
 {
   "id": "lifetime-object-lifetime",
-  "title": "Время жизни объекта — Object lifetime",
-  "description": "Объект в C++ — это не участок памяти, а участок памяти с типом, состоянием и интервалом существования.",
+  "title": "Время жизни объекта",
+  "description": "Время жизни объекта и область видимости имени; автоматический, статический, динамический и потоковый виды хранения; статические переменные функций и порядок уничтожения; временные объекты, продление жизни ссылкой и висячие ссылки; гарантированное устранение копий C++17 и исправление времени жизни временных объектов в цикле for в C++23.",
   "moduleId": "cpp-lifetime",
   "order": 1,
-  "difficulty": "advanced",
-  "estimatedMinutes": 55,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
   "prerequisites": ["oop-composition-vs-inheritance"],
   "objectives": [
-    "Различать память, объект и значение и называть границы времени жизни объекта.",
-    "Проследить на MemoryDiagram создание и завершение объекта во вложенном блоке.",
-    "Вернуть результат вычисления по значению, не создавая висячих адресов."
+    "Отличать время жизни объекта от области видимости имени",
+    "Предсказывать порядок создания и уничтожения объектов разных видов хранения",
+    "Понимать, когда умирает временный объект и когда его жизнь продлевается",
+    "Находить висячие ссылки на части временных объектов"
   ],
-  "tags": ["C++20", "время жизни", "управление ресурсами", "Время жизни объекта — Object lifetime"],
+  "tags": ["C++23", "Время жизни", "Временные объекты", "static", "Висячие ссылки"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "lifetime-object-lifetime-exercise",
-    "title": "Практика: Время жизни объекта — Object lifetime",
-    "description": "В solve(a,b) создайте во вложенном блоке локальное измерение a+b и скопируйте его значение во внешнюю переменную. Верните значение после завершения блока. Не возвращайте адрес или ссылку на локальную переменную.",
-    "difficulty": "advanced",
+    "title": "Вложенные области",
+    "description": "Структура `Tracer` хранит имя, конструктор печатает `+имя`, деструктор — `-имя`. Прочитайте все слова входа в вектор и вызовите рекурсивную функцию `descend(names, 0)`:\n\n- если `i` равно числу слов — напечатайте `глубина i`;\n- иначе создайте локальный `Tracer` с именем `names[i]` и вызовите `descend(names, i + 1)`.\n\nПорядок строк должен получиться сам — из правил времени жизни, без ручной печати `-имя`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 7)",
-        "output": "10\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "a b\n",
+        "output": "+a\n+b\nглубина 2\n-b\n-a\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "",
+        "output": "глубина 0\n"
       }
     ],
-    "constraints": [
-      "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Слов не больше 100."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Выпишите для каждого объекта момент создания и момент завершения жизни. Копия значения не зависит от источника; адрес источника умирает вместе с объектом."
+        "id": "hint-1",
+        "text": "Локальный объект живёт до конца вызова descend, а вложенный вызов завершается раньше внешнего.",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "Различайте три сущности: переменную-указатель, объект по её адресу и владельца, отвечающего за освобождение. Указатель может пережить объект: delete не ищет и не обнуляет все копии адреса, поэтому ненулевой указатель не доказывает существование объекта. Напротив, копия значения int полностью независима от источника и может безопасно пережить его — именно поэтому результат вычислений возвращают по значению. Отдельный тонкий случай: после освобождения аллокатор может выдать тот же адрес новому объекту. Совпадение адреса не даёт старому заёмщику права доступа: разрешение связано с объектом, а не с числом.\n\nСлучайно правильное значение из освобождённой памяти не делает чтение законным. Undefined behavior не обязано приводить к падению: программа может работать на отладочной сборке и ломаться на релизной. Корректность исходника нельзя оценивать по ожидаемому stdout.\n\nЗамените копирование значения сохранением адреса &reading и прочитайте его после блока. Отметьте точную границу — закрывающую скобку, после которой разыменование становится недопустимым. Не запускайте дефектный вариант вне sandbox."
+        "id": "hint-2",
+        "text": "Передавайте вектор по константной ссылке: const std::vector<std::string> &names.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 7],
-        "expected": "10\n"
+        "stdin": "a b\n",
+        "expected": "+a\n+b\nглубина 2\n-b\n-a\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "",
+        "expected": "глубина 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный случай 1",
-        "arguments": [-8, 3],
-        "expected": "-5\n"
+        "id": "hidden-1",
+        "name": "Одно имя",
+        "stdin": "один\n",
+        "expected": "+один\nглубина 1\n-один\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный случай 2",
-        "arguments": [5, -9],
-        "expected": "-4\n"
+        "id": "hidden-2",
+        "name": "Три имени",
+        "stdin": "x y z\n",
+        "expected": "+x\n+y\n+z\nглубина 3\n-z\n-y\n-x\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный случай 3",
-        "arguments": [-1000, 1000],
-        "expected": "0\n"
+        "id": "hidden-3",
+        "name": "Одинаковые имена",
+        "stdin": "a a a\n",
+        "expected": "+a\n+a\n+a\nглубина 3\n-a\n-a\n-a\n"
       },
       {
-        "id": "case-6",
-        "name": "Граничный случай 4",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-4",
+        "name": "Четыре ресурса",
+        "stdin": "файл соединение блокировка буфер\n",
+        "expected": "+файл\n+соединение\n+блокировка\n+буфер\nглубина 4\n-буфер\n-блокировка\n-соединение\n-файл\n"
       },
       {
-        "id": "case-7",
-        "name": "Граничный случай 5",
-        "arguments": [4, 4],
-        "expected": "8\n"
+        "id": "hidden-5",
+        "name": "Десять уровней",
+        "stdin": "1 2 3 4 5 6 7 8 9 10\n",
+        "expected": "+1\n+2\n+3\n+4\n+5\n+6\n+7\n+8\n+9\n+10\nглубина 10\n-10\n-9\n-8\n-7\n-6\n-5\n-4\n-3\n-2\n-1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Слова на разных строках",
+        "stdin": "внешний\nвнутренний\n",
+        "expected": "+внешний\n+внутренний\nглубина 2\n-внутренний\n-внешний\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Греческие буквы",
+        "stdin": "α β\n",
+        "expected": "+α\n+β\nглубина 2\n-β\n-α\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Пять уровней",
+        "stdin": "q w e r t\n",
+        "expected": "+q\n+w\n+e\n+r\n+t\nглубина 5\n-t\n-r\n-e\n-w\n-q\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint solve(int a,int b) { int result = 0; { int sample = a + b; result = sample; } return result; }",
-    "solutionExplanation": "Различайте три сущности: переменную-указатель, объект по её адресу и владельца, отвечающего за освобождение. Указатель может пережить объект: delete не ищет и не обнуляет все копии адреса, поэтому ненулевой указатель не доказывает существование объекта. Напротив, копия значения int полностью независима от источника и может безопасно пережить его — именно поэтому результат вычислений возвращают по значению. Отдельный тонкий случай: после освобождения аллокатор может выдать тот же адрес новому объекту. Совпадение адреса не даёт старому заёмщику права доступа: разрешение связано с объектом, а не с числом.\n\nСлучайно правильное значение из освобождённой памяти не делает чтение законным. Undefined behavior не обязано приводить к падению: программа может работать на отладочной сборке и ломаться на релизной. Корректность исходника нельзя оценивать по ожидаемому stdout.\n\nЗамените копирование значения сохранением адреса &reading и прочитайте его после блока. Отметьте точную границу — закрывающую скобку, после которой разыменование становится недопустимым. Не запускайте дефектный вариант вне sandbox.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nstruct Tracer {\n    std::string name;\n    explicit Tracer(std::string n) : name(std::move(n)) {\n        std::println(\"+{}\", name);\n    }\n    ~Tracer() {\n        std::println(\"-{}\", name);\n    }\n};\n\nvoid descend(const std::vector<std::string> &names, std::size_t i) {\n    if (i == names.size()) {\n        std::println(\"глубина {}\", i);\n        return;\n    }\n    const Tracer t(names[i]);\n    descend(names, i + 1);\n}\n\nint main() {\n    std::vector<std::string> names;\n    std::string w;\n    while (std::cin >> w) {\n        names.push_back(w);\n    }\n    descend(names, 0);\n    return 0;\n}\n",
+    "solutionExplanation": "Каждый вызов `descend` создаёт свой объект в своём кадре стека. Вложенный вызов начинается после создания объекта и заканчивается раньше, чем внешний, поэтому объекты уничтожаются в обратном порядке. Эта симметрия — основа RAII: ресурсы освобождаются в порядке, обратном захвату, без единой строчки кода очистки.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "lifetime-object-lifetime-task-2",
+      "title": "Ленивые настройки",
+      "description": "Две функции со статическими переменными:\n\n- `int next_id()` — возвращает 1, 2, 3, … при последовательных вызовах (`static int counter`);\n- `const Config &config(int version)` — при **первом** вызове создаёт статический объект `Config` с полем `version`; конструктор `Config` печатает `загрузка V`. Последующие вызовы возвращают тот же объект и аргумент игнорируют.\n\nКоманды: `id` — напечатать `id N`; `cfg V` — вызвать `config(V)` и напечатать `версия X`, где X — версия из возвращённого объекта.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "id\ncfg 23\nid\ncfg 17\n",
+          "output": "id 1\nзагрузка 23\nверсия 23\nid 2\nверсия 23\n"
+        },
+        {
+          "input": "id\nid\nid\n",
+          "output": "id 1\nid 2\nid 3\n"
+        }
+      ],
+      "constraints": ["Команд не больше 100; версии от 1 до 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "static Config instance(version); внутри функции выполнится один раз — при первом вызове.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Возвращайте ссылку на статический объект: он живёт до конца программы, ссылка не повиснет.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "id\ncfg 23\nid\ncfg 17\n",
+          "expected": "id 1\nзагрузка 23\nверсия 23\nid 2\nверсия 23\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "id\nid\nid\n",
+          "expected": "id 1\nid 2\nid 3\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Без команд",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-2",
+          "name": "Одна загрузка",
+          "stdin": "cfg 5\n",
+          "expected": "загрузка 5\nверсия 5\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Аргумент игнорируется",
+          "stdin": "cfg 1\ncfg 2\ncfg 3\n",
+          "expected": "загрузка 1\nверсия 1\nверсия 1\nверсия 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Смешанные команды",
+          "stdin": "cfg 100\nid\nid\ncfg 1\n",
+          "expected": "загрузка 100\nверсия 100\nid 1\nid 2\nверсия 100\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Двузначные номера",
+          "stdin": "id\nid\nid\nid\nid\nid\nid\nid\nid\nid\nid\n",
+          "expected": "id 1\nid 2\nid 3\nid 4\nid 5\nid 6\nid 7\nid 8\nid 9\nid 10\nid 11\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Сначала номер",
+          "stdin": "id\ncfg 42\n",
+          "expected": "id 1\nзагрузка 42\nверсия 42\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Повтор той же версии",
+          "stdin": "cfg 7\ncfg 7\n",
+          "expected": "загрузка 7\nверсия 7\nверсия 7\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Чередование",
+          "stdin": "id\ncfg 3\nid\ncfg 4\nid\n",
+          "expected": "id 1\nзагрузка 3\nверсия 3\nid 2\nверсия 3\nid 3\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nstruct Config {\n    int version;\n    explicit Config(int v) : version(v) {\n        std::println(\"загрузка {}\", version);\n    }\n};\n\nint next_id() {\n    static int counter = 0;\n    return ++counter;\n}\n\nconst Config &config(int version) {\n    static const Config instance(version);\n    return instance;\n}\n\nint main() {\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"id\") {\n            std::println(\"id {}\", next_id());\n        } else {\n            int version;\n            std::cin >> version;\n            std::println(\"версия {}\", config(version).version);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Статическая переменная функции инициализируется один раз — когда выполнение впервые доходит до её объявления. Поэтому «загрузка» печатается только при первом `cfg`, а версия запоминается из первого вызова. Если `cfg` не встретилось ни разу, объект `Config` вообще не создаётся — отсюда название «ленивая инициализация».\n\nВозвращать ссылку на статический объект безопасно: он живёт до завершения программы. Стандарт гарантирует, что такая инициализация потокобезопасна, — это самый простой правильный способ сделать единственный общий объект.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-object-lifetime-task-3",
+      "title": "Найди ошибку: первое слово",
+      "description": "Для каждой строки ввода программа печатает `первое: W, слов: N` или `пустая строка`, если слов нет. Под AddressSanitizer она аварийно завершается на первой же непустой строке. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <sstream>\n#include <string>\n#include <vector>\n\nstd::vector<std::string> split(const std::string &line) {\n    std::istringstream in(line);\n    std::vector<std::string> words;\n    std::string w;\n    while (in >> w) {\n        words.push_back(w);\n    }\n    return words;\n}\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        if (split(line).empty()) {\n            std::println(\"пустая строка\");\n            continue;\n        }\n        const std::string &first = split(line).front();\n        const std::size_t count = split(line).size();\n        std::println(\"первое: {}, слов: {}\", first, count);\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "привет мир\n\nодно\n",
+          "output": "первое: привет, слов: 2\nпустая строка\nпервое: одно, слов: 1\n"
+        },
+        {
+          "input": "   отступ и   пробелы   \n",
+          "output": "первое: отступ, слов: 3\n"
+        }
+      ],
+      "constraints": ["Строк не больше 100, длина строки до 1000 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сколько живёт вектор, который вернул split(line)? А ссылка first?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сохраните результат split в локальную переменную и берите первое слово и размер из неё — заодно строка будет разбиваться один раз, а не три.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "привет мир\n\nодно\n",
+          "expected": "первое: привет, слов: 2\nпустая строка\nпервое: одно, слов: 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "   отступ и   пробелы   \n",
+          "expected": "первое: отступ, слов: 3\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "a\n",
+          "expected": "первое: a, слов: 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "\n\n",
+          "expected": "пустая строка\nпустая строка\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "очень-длинное-первое-слово-которое-не-влезет-в-короткую-строку два\n",
+          "expected": "первое: очень-длинное-первое-слово-которое-не-влезет-в-короткую-строку, слов: 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "x y z w v u t s r q\n",
+          "expected": "первое: x, слов: 10\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "один\nдва три\nчетыре пять шесть\n",
+          "expected": "первое: один, слов: 1\nпервое: два, слов: 2\nпервое: четыре, слов: 3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "\tтабуляция\tтоже\n",
+          "expected": "первое: табуляция, слов: 2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "повтор повтор повтор\n",
+          "expected": "первое: повтор, слов: 3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "последняя строка без перевода",
+          "expected": "первое: последняя, слов: 4\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <sstream>\n#include <string>\n#include <vector>\n\nstd::vector<std::string> split(const std::string &line) {\n    std::istringstream in(line);\n    std::vector<std::string> words;\n    std::string w;\n    while (in >> w) {\n        words.push_back(w);\n    }\n    return words;\n}\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        const std::vector<std::string> words = split(line);\n        if (words.empty()) {\n            std::println(\"пустая строка\");\n            continue;\n        }\n        std::println(\"первое: {}, слов: {}\", words.front(), words.size());\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`split(line)` возвращает временный вектор, который умирает в конце полного выражения. `front()` вернул ссылку на строку **внутри** этого вектора, и после точки с запятой `first` указывает в освобождённую память — `heap-use-after-free` при печати. Продление жизни здесь не срабатывает: ссылка привязана не к временному объекту, а к результату вызова его метода.\n\nИсправление — сохранить сам вектор в локальной переменной. Тогда слова живут до конца итерации, а разбиение строки выполняется один раз вместо трёх.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-object-lifetime-task-4",
+      "title": "Расписание уничтожения",
+      "description": "Смоделируйте правила времени жизни. Программа на входе — команды по одной в строке:\n\n- `{` — открыть блок, `}` — закрыть текущий блок;\n- `obj имя` — локальный объект текущего блока;\n- `tmp имя` — временный объект: создаётся и сразу уничтожается;\n- `static имя` — статическая переменная функции: создаётся при первой встрече этого имени, повторные встречи ничего не делают.\n\nСоздание печатайте как `+имя`, уничтожение — `-имя`. Объекты блока уничтожаются при его закрытии в порядке, обратном созданию. Команды вне всех `{ }` относятся к блоку `main`. В конце ввода закройте все незакрытые блоки (изнутри наружу) и блок `main`, затем уничтожьте статические объекты в порядке, обратном созданию.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "obj a\n{\nobj b\ntmp t\nstatic s\n}\nstatic s\nobj c\n",
+          "output": "+a\n+b\n+t\n-t\n+s\n-b\n+c\n-c\n-a\n-s\n"
+        },
+        {
+          "input": "static z\n",
+          "output": "+z\n-z\n"
+        }
+      ],
+      "constraints": [
+        "Команд не больше 200; } никогда не закрывает блок main; имена без пробелов."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Стек блоков: std::vector<std::vector<std::string>>, в начале — один пустой блок main. Закрытие — обход последнего блока с конца и pop_back.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Статические имена храните в векторе (для порядка) и проверяйте повтор через std::ranges::contains.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "obj a\n{\nobj b\ntmp t\nstatic s\n}\nstatic s\nobj c\n",
+          "expected": "+a\n+b\n+t\n-t\n+s\n-b\n+c\n-c\n-a\n-s\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "static z\n",
+          "expected": "+z\n-z\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Только main",
+          "stdin": "obj a\nobj b\nobj c\n",
+          "expected": "+a\n+b\n+c\n-c\n-b\n-a\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Незакрытые блоки",
+          "stdin": "{\n{\nobj x\n",
+          "expected": "+x\n-x\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Повтор статического",
+          "stdin": "static a\nstatic b\nstatic a\n",
+          "expected": "+a\n+b\n-b\n-a\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Только временные",
+          "stdin": "tmp a\ntmp b\n",
+          "expected": "+a\n-a\n+b\n-b\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Два соседних блока",
+          "stdin": "{\nobj a\n}\n{\nobj b\n}\n",
+          "expected": "+a\n-a\n+b\n-b\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Статические во вложенных блоках",
+          "stdin": "obj m\n{\nstatic s1\n{\nobj in\nstatic s2\n}\nobj after\n}\n",
+          "expected": "+m\n+s1\n+in\n+s2\n-in\n+after\n-after\n-m\n-s2\n-s1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Пустые блоки",
+          "stdin": "{\n}\n{\n{\n}\n}\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-8",
+          "name": "Глубокая вложенность",
+          "stdin": "obj a\n{\nobj b\n{\nobj c\n{\nobj d\n",
+          "expected": "+a\n+b\n+c\n+d\n-d\n-c\n-b\n-a\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <print>\n#include <string>\n#include <vector>\n\nvoid close_block(std::vector<std::vector<std::string>> &blocks) {\n    const std::vector<std::string> &block = blocks.back();\n    for (auto it = block.rbegin(); it != block.rend(); ++it) {\n        std::println(\"-{}\", *it);\n    }\n    blocks.pop_back();\n}\n\nint main() {\n    std::vector<std::vector<std::string>> blocks(1);\n    std::vector<std::string> statics;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"{\") {\n            blocks.emplace_back();\n        } else if (command == \"}\") {\n            close_block(blocks);\n        } else {\n            std::string name;\n            std::cin >> name;\n            if (command == \"obj\") {\n                std::println(\"+{}\", name);\n                blocks.back().push_back(name);\n            } else if (command == \"tmp\") {\n                std::println(\"+{}\", name);\n                std::println(\"-{}\", name);\n            } else if (!std::ranges::contains(statics, name)) {\n                std::println(\"+{}\", name);\n                statics.push_back(name);\n            }\n        }\n    }\n    while (!blocks.empty()) {\n        close_block(blocks);\n    }\n    for (auto it = statics.rbegin(); it != statics.rend(); ++it) {\n        std::println(\"-{}\", *it);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Модель повторяет то, что делает компилятор. Автоматические объекты образуют стек: блок закрывается — его объекты уничтожаются от последнего к первому. Временный объект не переживает своё выражение. Статические объекты не принадлежат никакому блоку: они создаются при первой встрече и уничтожаются после завершения `main`, тоже в обратном порядке.\n\nОбратите внимание, что статический объект, впервые встреченный во вложенном блоке, переживает и этот блок, и `main`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "lifetime-object-lifetime-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Что доказывает ненулевой указатель после удаления объекта?",
+        "id": "q1",
+        "question": "Чем время жизни отличается от области видимости?",
+        "explanation": "Статическая переменная функции невидима снаружи, но живёт до конца программы.",
         "options": [
-          "Что объект по этому адресу всё ещё существует",
-          "Только наличие сохранённого ненулевого значения адреса"
+          "Время жизни — свойство объекта во время работы, область видимости — свойство имени в тексте программы",
+          "Это одно и то же",
+          "Область видимости бывает только у глобальных переменных",
+          "Время жизни определяет компоновщик"
         ],
-        "correct": 1,
-        "explanation": "Различайте три сущности: переменную-указатель, объект по её адресу и владельца, отвечающего за освобождение. Указатель может пережить объект: delete не ищет и не обнуляет все копии адреса, поэтому ненулевой указатель не доказывает существование объекта. Напротив, копия значения int полностью независима от источника и может безопасно пережить его — именно поэтому результат вычислений возвращают по значению. Отдельный тонкий случай: после освобождения аллокатор может выдать тот же адрес новому объекту. Совпадение адреса не даёт старому заёмщику права доступа: разрешение связано с объектом, а не с числом."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["42", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "1. Внешний total создан, значение 0\n2. Вход в блок: создан reading, значение 42\n3. total получает КОПИЮ значения 42; связь с reading не сохраняется\n4. Выход из блока: reading мёртв, память кадра ещё существует\n5. total жив и хранит 42; чтение total законно"
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct T {\n    char c;\n    ~T() { std::print(\"{}\", c); }\n};\n\nint main() {\n    T a{'a'};\n    {\n        T b{'b'};\n        T c{'c'};\n    }\n    T d{'d'};\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Блок закрывается раньше: c, затем b; в конце main — d, затем a.",
+        "type": "text",
+        "answers": ["cbda"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q3",
+        "question": "Когда создаётся статическая переменная внутри функции?",
+        "explanation": "Инициализация происходит один раз, при первом проходе, и потокобезопасна.",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Случайно правильное значение из освобождённой памяти не делает чтение законным. Undefined behavior не обязано приводить к падению: программа может работать на отладочной сборке и ломаться на релизной. Корректность исходника нельзя оценивать по ожидаемому stdout."
+          "При первом выполнении её объявления",
+          "До запуска main",
+          "При каждом вызове функции",
+          "При компиляции"
         ],
-        "correct": 1,
-        "explanation": "Замените копирование значения сохранением адреса &reading и прочитайте его после блока. Отметьте точную границу — закрывающую скобку, после которой разыменование становится недопустимым. Не запускайте дефектный вариант вне sandbox."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Когда умирает временный объект, не привязанный к ссылке?",
+        "explanation": "Обычно — на точке с запятой.",
+        "options": ["В конце полного выражения", "В конце блока", "В конце функции", "После main"],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "В каком случае жизнь временного объекта продлевается?",
+        "explanation": "Продление работает только при прямой привязке временного объекта к ссылке. Ссылка, полученная через функцию, повисает.",
+        "options": [
+          "const T &r = make();",
+          "const T &r = make().self(); где self() возвращает ссылку на *this",
+          "T *p = &make();",
+          "Ни в каком"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Сколько раз будет вызван конструктор Tracer в строке Tracer t = make(); где make() возвращает Tracer(\"x\")?",
+        "explanation": "С C++17 возврат временного объекта гарантированно строит его сразу на месте t.",
+        "options": ["Один", "Два", "Три", "Зависит от оптимизации"],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "В каком порядке уничтожаются статические объекты?",
+        "explanation": "Как и автоматические: последний созданный уничтожается первым.",
+        "options": ["Обратном созданию", "В порядке создания", "В алфавитном", "Не уничтожаются"],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Что изменил C++23 в цикле for (const auto &x : make().items())?",
+        "explanation": "Раньше make() умирал до начала цикла. Поддержка компиляторами появилась недавно: Clang 19, GCC 15.",
+        "options": [
+          "Временные объекты заголовка цикла живут до конца цикла",
+          "Такой цикл запрещён",
+          "items() стал возвращать копию",
+          "Ничего"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q9",
+        "question": "Как называется ссылка на объект, время жизни которого уже закончилось?",
+        "explanation": "Обращение через неё — неопределённое поведение; ASan сообщает use-after-free или use-after-scope.",
+        "type": "text",
+        "answers": ["висячая", "висячая ссылка", "dangling", "dangling reference"],
+        "placeholder": "Одно слово"
       }
     ]
   }

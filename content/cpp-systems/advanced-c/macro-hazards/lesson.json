@@ -1,117 +1,429 @@
 {
   "id": "advanced-macro-hazards",
-  "title": "Опасности макросов",
-  "description": "У макроса нет обычной области видимости локальных переменных функции.",
+  "title": "Опасности макросов и безопасные замены",
+  "description": "Чем макрос отличается от функции: повторное вычисление аргументов с побочными эффектами, захват имён, отсутствие проверки типов, запятые в аргументах, ошибки и отладка; безопасные замены — static inline, enum и _Generic; правила для макросов, без которых не обойтись.",
   "moduleId": "advanced-c",
-  "order": 7,
-  "difficulty": "advanced",
-  "estimatedMinutes": 40,
+  "order": 10,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
   "prerequisites": ["advanced-function-macros"],
   "objectives": [
-    "Объяснить: Опасности макросов",
-    "Различать корректный контракт и ошибку: Выражения MIN(next(), limit) и SQUARE(i++) могут вызвать вычисление больше одного раза.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Распознавать повторное вычисление аргументов и захват имён в макросах",
+    "Объяснять, почему макрос не проверяет типы и как это проявляется",
+    "Заменять макросы функциями static inline и выражениями _Generic",
+    "Писать необходимые макросы по правилам, снижающим риск ошибок"
   ],
-  "tags": ["C17", "углублённый C", "Опасности макросов"],
+  "tags": ["Макросы", "Побочные эффекты", "static inline", "_Generic", "Захват имён"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-macro-hazards-exercise",
-    "title": "Практика: Опасности макросов",
-    "description": "Найди ошибку: вместо SQUARE(i++) используйте функцию square, затем увеличьте i отдельным оператором. Ввод −100…100. Выведите квадрат исходного i и новое i.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-macro-hazards-task-1",
+    "title": "Найди ошибку: двойное чтение",
+    "description": "Программа читает `n`, затем `n` целых чисел и печатает их максимум и сколько чисел прочитано. Для максимума используется макрос `MAX`, в который передаётся вызов функции чтения.\n\nНа некоторых входах программа печатает неверный максимум и неверное количество прочитанных чисел. Исправьте ошибку так, чтобы каждое число читалось ровно один раз.",
+    "difficulty": "intermediate",
+    "starterCode": "#include <stdio.h>\n\n#define MAX(a, b) ((a) > (b) ? (a) : (b))\n\nstatic int read_count = 0;\n\n// Читает следующее число; если чисел больше нет, возвращает -1000000.\nint next_value(void) {\n    int value;\n    if (scanf(\"%d\", &value) != 1) {\n        return -1000000;\n    }\n    read_count++;\n    return value;\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1) {\n        return 0;\n    }\n    int best = -1000000;\n    for (int i = 0; i < n; i++) {\n        best = MAX(next_value(), best);\n    }\n    printf(\"максимум: %d\\n\", best);\n    printf(\"прочитано чисел: %d\\n\", read_count);\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "3",
-        "output": "9 4\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "3\n1 5 2\n",
+        "output": "максимум: 5\nпрочитано чисел: 3\n"
       },
       {
-        "input": "-2",
-        "output": "4 -1\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "2\n-4 -9\n",
+        "output": "максимум: -4\nпрочитано чисел: 2\n"
       }
     ],
-    "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
-    ],
+    "constraints": ["1 ≤ n ≤ 50; числа от −10⁵ до 10⁵."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Проверяйте результат копирования целиком, как будто вставили его руками в место вызова."
+        "text": "Подставьте макрос вручную: сколько раз next_value() окажется в выражении и когда вызовется второй раз?",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Выражения MIN(next(), limit) и SQUARE(i++) могут вызвать вычисление больше одного раза."
+        "text": "Замените макрос функцией static inline int max_int(int a, int b) — её аргументы вычисляются один раз. Другой вариант — сначала сохранить значение в переменную.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "3",
-        "expected": "9 4\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "3\n1 5 2\n",
+        "expected": "максимум: 5\nпрочитано чисел: 3\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "-2",
-        "expected": "4 -1\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "2\n-4 -9\n",
+        "expected": "максимум: -4\nпрочитано чисел: 2\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "0",
-        "expected": "0 1\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "1\n42\n",
+        "expected": "максимум: 42\nпрочитано чисел: 1\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "4\n1 2 3 4\n",
+        "expected": "максимум: 4\nпрочитано чисел: 4\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "4\n4 3 2 1\n",
+        "expected": "максимум: 4\nпрочитано чисел: 4\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "5\n0 0 0 0 0\n",
+        "expected": "максимум: 0\nпрочитано чисел: 5\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "6\n10 -1 20 -2 30 -3\n",
+        "expected": "максимум: 30\nпрочитано чисел: 6\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "3\n-100000 100000 0\n",
+        "expected": "максимум: 100000\nпрочитано чисел: 3\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "7\n5 1 6 2 7 3 8\n",
+        "expected": "максимум: 8\nпрочитано чисел: 7\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "2\n7 7\n",
+        "expected": "максимум: 7\nпрочитано чисел: 2\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\nstatic int square(int value) { return value * value; }\nint main(void) {\n    int i;\n    if (scanf(\"%d\", &i) != 1) return 1;\n    int result = square(i);\n    ++i;\n    printf(\"%d %d\\n\", result, i);\n    return 0;\n}\n",
-    "solutionExplanation": "Проверяйте результат копирования целиком, как будто вставили его руками в место вызова.\n\nВыражения MIN(next(), limit) и SQUARE(i++) могут вызвать вычисление больше одного раза.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '3' → '9 4\\n'; '-2' → '4 -1\\n'; '0' → '0 1\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <stdio.h>\n\nstatic inline int max_int(int a, int b) {\n    return a > b ? a : b;\n}\n\nstatic int read_count = 0;\n\n// Читает следующее число; если чисел больше нет, возвращает -1000000.\nint next_value(void) {\n    int value;\n    if (scanf(\"%d\", &value) != 1) {\n        return -1000000;\n    }\n    read_count++;\n    return value;\n}\n\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1) {\n        return 0;\n    }\n    int best = -1000000;\n    for (int i = 0; i < n; i++) {\n        best = max_int(next_value(), best);\n    }\n    printf(\"максимум: %d\\n\", best);\n    printf(\"прочитано чисел: %d\\n\", read_count);\n    return 0;\n}\n",
+    "solutionExplanation": "`MAX(next_value(), best)` раскрывается в `((next_value()) > (best) ? (next_value()) : (best))`. Когда прочитанное число больше текущего максимума, выбирается первая ветка — и `next_value()` вызывается ещё раз, «съедая» следующее число. В итоге максимум может стать числом, которое вообще не участвовало в сравнении, а часть чисел пропускается.\n\nФункция вычисляет аргументы до вызова — ровно по одному разу. `static inline` позволяет компилятору встроить её так же, как подставился бы макрос, поэтому исправление ничего не стоит. Важнее другое: побочный эффект в аргументе макроса — классическая ошибка, которую не видно в месте вызова.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-macro-hazards-task-2",
+      "title": "Найди ошибку: захват имени",
+      "description": "Программа читает размеры таблицы `rows cols` и саму таблицу целых чисел, затем печатает сумму каждой строки (`строка K: S`) и общую сумму (`всего: T`). Сумму строки считает макрос `SUM_ARRAY`.\n\nСуммы получаются неверными, хотя сам макрос аккуратно оформлен: скобки, `do { … } while (0)`, своё имя для накопителя. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\n#define SUM_ARRAY(arr, n, result)              \\\n    do {                                       \\\n        long long acc_ = 0;                    \\\n        for (int i = 0; i < (n); i++) {        \\\n            acc_ += (arr)[i];                \\\n        }                                      \\\n        (result) = acc_;                       \\\n    } while (0)\n\nint main(void) {\n    int rows, cols;\n    int m[10][10] = {{0}};\n    long long sums[10];\n    if (scanf(\"%d %d\", &rows, &cols) != 2 || rows < 1 || rows > 10 || cols < 1 || cols > 10) {\n        return 0;\n    }\n    for (int i = 0; i < rows; i++) {\n        for (int j = 0; j < cols; j++) {\n            if (scanf(\"%d\", &m[i][j]) != 1) {\n                return 0;\n            }\n        }\n    }\n    long long total = 0;\n    for (int i = 0; i < rows; i++) {\n        SUM_ARRAY(m[i], cols, sums[i]);\n        total += sums[i];\n    }\n    for (int i = 0; i < rows; i++) {\n        printf(\"строка %d: %lld\\n\", i + 1, sums[i]);\n    }\n    printf(\"всего: %lld\\n\", total);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2 3\n1 2 3\n4 5 6\n",
+          "output": "строка 1: 6\nстрока 2: 15\nвсего: 21\n"
+        },
+        {
+          "input": "1 1\n7\n",
+          "output": "строка 1: 7\nвсего: 7\n"
+        }
+      ],
+      "constraints": ["1 ≤ rows, cols ≤ 10; числа от −10⁶ до 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Подставьте макрос в строку SUM_ARRAY(m[i], cols, sums[i]); внутри цикла main. Что означает i в выражении (m[i])[i] внутри макроса?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Счётчик цикла макроса называется так же, как переменная цикла в main, и скрывает её. Дайте ему необычное имя (например, i_) — или замените макрос функцией.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2 3\n1 2 3\n4 5 6\n",
+          "expected": "строка 1: 6\nстрока 2: 15\nвсего: 21\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 1\n7\n",
+          "expected": "строка 1: 7\nвсего: 7\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 3\n1 2 3\n",
+          "expected": "строка 1: 6\nвсего: 6\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "3 1\n1\n2\n3\n",
+          "expected": "строка 1: 1\nстрока 2: 2\nстрока 3: 3\nвсего: 6\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "2 2\n1 0\n0 1\n",
+          "expected": "строка 1: 1\nстрока 2: 1\nвсего: 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "3 3\n1 2 3\n4 5 6\n7 8 9\n",
+          "expected": "строка 1: 6\nстрока 2: 15\nстрока 3: 24\nвсего: 45\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "2 4\n-1 -2 -3 -4\n10 20 30 40\n",
+          "expected": "строка 1: -10\nстрока 2: 100\nвсего: 90\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "4 2\n1000000 1000000\n-1000000 5\n0 0\n3 3\n",
+          "expected": "строка 1: 2000000\nстрока 2: -999995\nстрока 3: 0\nстрока 4: 6\nвсего: 1000011\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "1 10\n1 2 3 4 5 6 7 8 9 10\n",
+          "expected": "строка 1: 55\nвсего: 55\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "3 2\n5 5\n6 6\n7 7\n",
+          "expected": "строка 1: 10\nстрока 2: 12\nстрока 3: 14\nвсего: 36\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\n#define SUM_ARRAY(arr, n, result)              \\\n    do {                                       \\\n        long long acc_ = 0;                    \\\n        for (int i_ = 0; i_ < (n); i_++) {     \\\n            acc_ += (arr)[i_];               \\\n        }                                      \\\n        (result) = acc_;                       \\\n    } while (0)\n\nint main(void) {\n    int rows, cols;\n    int m[10][10] = {{0}};\n    long long sums[10];\n    if (scanf(\"%d %d\", &rows, &cols) != 2 || rows < 1 || rows > 10 || cols < 1 || cols > 10) {\n        return 0;\n    }\n    for (int i = 0; i < rows; i++) {\n        for (int j = 0; j < cols; j++) {\n            if (scanf(\"%d\", &m[i][j]) != 1) {\n                return 0;\n            }\n        }\n    }\n    long long total = 0;\n    for (int i = 0; i < rows; i++) {\n        SUM_ARRAY(m[i], cols, sums[i]);\n        total += sums[i];\n    }\n    for (int i = 0; i < rows; i++) {\n        printf(\"строка %d: %lld\\n\", i + 1, sums[i]);\n    }\n    printf(\"всего: %lld\\n\", total);\n    return 0;\n}\n",
+      "solutionExplanation": "Аргумент `m[i]` подставляется внутрь цикла макроса, где уже объявлена своя переменная `i`. Выражение `(m[i])[i]` получает **внутреннюю** `i`, и вместо суммы строки макрос складывает элементы `m[0][0]`, `m[1][1]`, … — диагональ таблицы. А вот `(result) = acc_` стоит после цикла, где снова видна `i` из `main`, поэтому результат записывается в правильную ячейку `sums[i]` — ошибку трудно заметить.\n\nКомпилятор молчит: затенение имени законно. Переименование счётчика в `i_` устраняет совпадение в этой программе, но надёжнее функция: `long long sum_array(const int *a, int n)` вообще не видит переменных вызывающего кода.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-macro-hazards-task-3",
+      "title": "Обобщённые функции",
+      "description": "Функция `main` в заготовке читает команды до конца ввода: тип (`int`, `long`, `double` или `word`) и два значения этого типа, а затем вызывает `PRINT(MAX2(a, b))`.\n\nНапишите функции и макросы на основе `_Generic` так, чтобы `main` компилировалась без изменений и предупреждений:\n- `MAX2(a, b)` выбирает функцию по типу `a` и возвращает большее из двух значений; для слов — то, что больше по `strcmp` (при равенстве — любое);\n- `PRINT(x)` печатает значение в зависимости от типа: `int: 5`, `long: 5`, `double: 2.500` (три знака после точки), `строка: слово`.\n\nУчтите, что массив `char a[32]` в `_Generic` превращается в `char *`, а функция максимума для строк может возвращать `const char *`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n#include <string.h>\n\n// Напишите функции и макросы MAX2 и PRINT.\n\nint main(void) {\n    char type[8];\n    while (scanf(\"%7s\", type) == 1) {\n        if (strcmp(type, \"int\") == 0) {\n            int a, b;\n            if (scanf(\"%d %d\", &a, &b) != 2) {\n                break;\n            }\n            PRINT(MAX2(a, b));\n        } else if (strcmp(type, \"long\") == 0) {\n            long long a, b;\n            if (scanf(\"%lld %lld\", &a, &b) != 2) {\n                break;\n            }\n            PRINT(MAX2(a, b));\n        } else if (strcmp(type, \"double\") == 0) {\n            double a, b;\n            if (scanf(\"%lf %lf\", &a, &b) != 2) {\n                break;\n            }\n            PRINT(MAX2(a, b));\n        } else if (strcmp(type, \"word\") == 0) {\n            char a[32], b[32];\n            if (scanf(\"%31s %31s\", a, b) != 2) {\n                break;\n            }\n            PRINT(MAX2(a, b));\n        }\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "int 3 9\ndouble 2.5 -1\n",
+          "output": "int: 9\ndouble: 2.500\n"
+        },
+        {
+          "input": "word pear apple\nlong 5000000000 4\n",
+          "output": "строка: pear\nlong: 5000000000\n"
+        }
+      ],
+      "constraints": ["Команд не больше 30; слова — до 31 символа; long — значения long long."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Напишите четыре функции максимума: для int, long long, double и строк (параметры и результат — const char *). Ветки в _Generic: int, long long, double и char *.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "MAX2: #define MAX2(a, b) _Generic((a), int: max_int, long long: max_ll, double: max_double, char *: max_str)((a), (b)).",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "PRINT должен принимать и char *, и const char *: результат max_str — const char *. Добавьте в _Generic обе ветки с одной функцией печати.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "int 3 9\ndouble 2.5 -1\n",
+          "expected": "int: 9\ndouble: 2.500\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "word pear apple\nlong 5000000000 4\n",
+          "expected": "строка: pear\nlong: 5000000000\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Отрицательные int",
+          "stdin": "int -5 -3\n",
+          "expected": "int: -3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Большие long",
+          "stdin": "long -9000000000000000000 9000000000000000000\n",
+          "expected": "long: 9000000000000000000\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Маленькие double",
+          "stdin": "double 0.0004 0.0001\n",
+          "expected": "double: 0.000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Равные слова",
+          "stdin": "word apple apple\n",
+          "expected": "строка: apple\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Регистр в strcmp",
+          "stdin": "word Zebra apple\n",
+          "expected": "строка: apple\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Все типы",
+          "stdin": "int 7 7\nlong 7 7\ndouble 7 7\nword seven seven\n",
+          "expected": "int: 7\nlong: 7\ndouble: 7.000\nстрока: seven\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Отрицательные double",
+          "stdin": "double -1e9 -2e9\n",
+          "expected": "double: -1000000000.000\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Длинные слова",
+          "stdin": "word abcdefghijklmnopqrstuvwxyz01234 abcdefghijklmnopqrstuvwxyz01235\n",
+          "expected": "строка: abcdefghijklmnopqrstuvwxyz01235\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstatic inline int max_int(int a, int b) {\n    return a > b ? a : b;\n}\n\nstatic inline long long max_ll(long long a, long long b) {\n    return a > b ? a : b;\n}\n\nstatic inline double max_double(double a, double b) {\n    return a > b ? a : b;\n}\n\nstatic inline const char *max_str(const char *a, const char *b) {\n    return strcmp(a, b) >= 0 ? a : b;\n}\n\nstatic void print_int(int x) {\n    printf(\"int: %d\\n\", x);\n}\n\nstatic void print_ll(long long x) {\n    printf(\"long: %lld\\n\", x);\n}\n\nstatic void print_double(double x) {\n    printf(\"double: %.3f\\n\", x);\n}\n\nstatic void print_str(const char *s) {\n    printf(\"строка: %s\\n\", s);\n}\n\n#define MAX2(a, b) \\\n    _Generic((a), int: max_int, long long: max_ll, double: max_double, char *: max_str)((a), (b))\n\n#define PRINT(x)                                                                   \\\n    _Generic((x), int: print_int, long long: print_ll, double: print_double,      \\\n             char *: print_str, const char *: print_str)(x)\n\nint main(void) {\n    char type[8];\n    while (scanf(\"%7s\", type) == 1) {\n        if (strcmp(type, \"int\") == 0) {\n            int a, b;\n            if (scanf(\"%d %d\", &a, &b) != 2) {\n                break;\n            }\n            PRINT(MAX2(a, b));\n        } else if (strcmp(type, \"long\") == 0) {\n            long long a, b;\n            if (scanf(\"%lld %lld\", &a, &b) != 2) {\n                break;\n            }\n            PRINT(MAX2(a, b));\n        } else if (strcmp(type, \"double\") == 0) {\n            double a, b;\n            if (scanf(\"%lf %lf\", &a, &b) != 2) {\n                break;\n            }\n            PRINT(MAX2(a, b));\n        } else if (strcmp(type, \"word\") == 0) {\n            char a[32], b[32];\n            if (scanf(\"%31s %31s\", a, b) != 2) {\n                break;\n            }\n            PRINT(MAX2(a, b));\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`_Generic` выбирает выражение по типу управляющего выражения во время компиляции, не вычисляя его. Здесь результат выбора — имя функции, за которым идёт обычный вызов, поэтому каждый аргумент вычисляется один раз, а типы проверяются, как у любой функции. Получилась «перегрузка» в стиле C++, но без копий логики.\n\nДве тонкости. Массив `char a[32]` в управляющем выражении превращается в указатель `char *` — поэтому ветка `char *` подходит для массивов. А `max_str` возвращает `const char *`, и `PRINT` получает уже другой тип: без ветки `const char *` компилятор сообщил бы, что подходящей ветки нет. Типы `char *` и `const char *` в `_Generic` различаются.\n\nЕсли тип не совпал ни с одной веткой (например, `float`), будет ошибка компиляции — в отличие от макроса `MAX`, который молча сравнил бы что угодно. При желании можно добавить ветку `default:`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-macro-hazards-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Как гарантировать одно вычисление аргумента?",
-        "options": ["Использовать обычную функцию", "Добавить ещё одну пару скобок в макрос"],
-        "correct": 0,
-        "explanation": "У макроса нет обычной области видимости локальных переменных функции. Он может захватить имя вызывающего кода, повторить аргумент или изменить структуру if/else. Многооператорный макрос оборачивают в do { ... } while (0), чтобы снаружи он выглядел как один оператор. Это не устраняет опасности повторного использования аргумента."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\n#define ABS(x) ((x) < 0 ? -(x) : (x))\n\nstatic int counter = 0;\n\nint next(void) {\n    return --counter;\n}\n\nint main(void) {\n    int v = ABS(next());\n    printf(\"%d %d\\n\", v, counter);\n    return 0;\n}",
+        "explanation": "ABS(next()) раскрывается в ((next()) < 0 ? -(next()) : (next())). Первый вызов вернул -1 — условие истинно, и next() вызывается снова, возвращая -2. Итог: v = 2, counter = -2, хотя ожидалось 1 и -1.",
+        "type": "text",
+        "answers": ["2 -2"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q2",
+        "question": "Сколько раз вызовется функция read_value() в строке int m = MAX(read_value(), 0); при #define MAX(a, b) ((a) > (b) ? (a) : (b)), если она вернула 7?",
+        "explanation": "Один раз в условии и ещё раз в выбранной ветке, потому что 7 > 0. Если бы первый вызов вернул отрицательное число, второй раз вызвался бы 0, а не функция.",
+        "type": "text",
+        "answers": ["2", "два", "дважды"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\n#define TWICE_SUM(x) do { int sum = 0; sum += (x); sum += (x); printf(\"%d\\n\", sum); } while (0)\n\nint main(void) {\n    int sum = 10;\n    TWICE_SUM(sum);\n    return 0;\n}",
+        "explanation": "Внутри макроса sum — новая переменная, равная нулю. Аргумент sum подставился в блок макроса и означает уже её: 0 + 0 + 0 = 0. Это захват имени.",
+        "type": "text",
+        "answers": ["0"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Почему MAX(-1, 1u) при #define MAX(a, b) ((a) > (b) ? (a) : (b)) возвращает 4294967295?",
+        "explanation": "Обычные арифметические преобразования приводят оба операнда к unsigned int. Функция с параметрами int не допустила бы такого.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "Выражения MIN(next(), limit) и SQUARE(i++) могут вызвать вычисление больше одного раза."
+          "При сравнении int с unsigned int число -1 превращается в беззнаковое 4294967295",
+          "Макрос переполняет стек",
+          "Препроцессор неправильно разбирает знак минус",
+          "Это ошибка компилятора"
         ],
-        "correct": 1,
-        "explanation": "Проверяйте результат копирования целиком, как будто вставили его руками в место вызова."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["6 4", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: int i=3;int value=twice(i);++i;printf(\"%d %d\\n\",value,i); Ожидаемый результат: 6 4"
+        "id": "q5",
+        "question": "Сколько аргументов получит макрос в вызове INIT(table, {1, 2, 3})?",
+        "explanation": "Препроцессор учитывает только круглые скобки. Запятые внутри фигурных скобок делят аргументы: table, {1, 2 и 3}.",
+        "type": "text",
+        "answers": ["4", "четыре"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q6",
+        "question": "Что из этого — преимущества static inline функции перед макросом? Выберите все.",
+        "explanation": "Получить текст аргумента может только препроцессор (оператор #). Остальное — свойства функций.",
+        "type": "multiple",
+        "options": [
+          "Каждый аргумент вычисляется ровно один раз",
+          "Типы аргументов проверяются",
+          "Локальные переменные не конфликтуют с именами вызывающего кода",
+          "Можно получить текст аргумента как строку"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q7",
+        "question": "Что делает выражение _Generic((x), int: f_int, double: f_double)(x)?",
+        "explanation": "Управляющее выражение _Generic не вычисляется: от него берётся только тип. Результат выбора — имя функции, а за ним следует обычный вызов.",
+        "options": [
+          "Во время компиляции выбирает функцию по типу x и вызывает её с аргументом x",
+          "Во время работы программы проверяет тип x",
+          "Преобразует x к int или double",
+          "Вызывает обе функции и сравнивает результаты"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какие правила снижают риск ошибок в макросе, без которого не обойтись? Выберите все.",
+        "explanation": "Точку с запятой ставит вызывающий код, а локальным переменным макроса нужны необычные имена, иначе возможен захват.",
+        "type": "multiple",
+        "options": [
+          "Имя заглавными буквами",
+          "Каждый параметр и всю замену — в скобки",
+          "Несколько инструкций — в do { … } while (0)",
+          "Точка с запятой в конце определения",
+          "Локальные переменные с короткими именами вроде i и t"
+        ],
+        "correct": [0, 1, 2]
       }
     ]
   }

@@ -1,131 +1,535 @@
 {
   "id": "oop-solid",
-  "title": "SOLID: применимые основы на коде датчиков",
-  "description": "SRP помогает разделить причины изменения: Sensor получает измерение, Filter решает допуск, TelemetryProcessor организует проход. OCP означает, что новый датчик добавляется реализацией контракта, без правки цикла обработки. Это полезно при ожидаемом расширении, но не требует интерфейса для каждой арифметической функции.",
+  "title": "SOLID",
+  "description": "Пять принципов объектного проектирования как вопросы к коду: единственная ответственность и разделение ввода, вычислений и оформления; открытость/закрытость и замена повторяющихся switch классами или таблицей; подстановка Лисков и классическая ошибка «квадрат — это прямоугольник»; разделение интерфейсов и инверсия зависимостей; когда абстракции не нужны.",
   "moduleId": "cpp-oop",
-  "order": 23,
+  "order": 27,
   "difficulty": "advanced",
-  "estimatedMinutes": 60,
-  "prerequisites": ["oop-slicing"],
+  "estimatedMinutes": 55,
+  "prerequisites": ["oop-concepts"],
   "objectives": [
-    "Применить SOLID: применимые основы на коде датчиков в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Разделять ответственность между функциями и классами",
+    "Добавлять новые виды поведения без правки работающего кода",
+    "Распознавать наследование, нарушающее подстановку Лисков",
+    "Оценивать, когда абстракция оправдана"
   ],
-  "tags": ["C++20", "ООП", "SOLID: применимые основы на коде датчиков"],
+  "tags": ["C++23", "ООП", "SOLID", "Проектирование"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-solid-exercise",
-    "title": "Практика: SOLID: применимые основы на коде датчиков",
-    "description": "Filter задаёт virtual bool accept(int) const = 0 и виртуальный деструктор. NonNegative принимает x>=0. Функция int sum_selected(int a,int b,const Filter&) проверяет каждое значение и суммирует принятые. solve(a,b) использует NonNegative; sum_selected не должна проверять конкретный тип фильтра. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Отчёт по заказам",
+    "description": "Первое слово ввода — формат `text` или `csv`, затем строки `имя сумма`. Разделите программу на три части:\n\n- чтение: `std::vector<Order> read_orders(std::istream &)`, где `Order { std::string customer; long long amount; }`;\n- вычисления: `Stats compute(const std::vector<Order> &)` — число заказов, сумма и крупнейший заказ (при равенстве — первый);\n- оформление: интерфейс `ReportPrinter` с методом `void print(const Stats &) const` и реализации `TextPrinter`, `CsvPrinter`.\n\nФормат `text`: `заказов N, сумма S, крупнейший имя (сумма)` или `заказов нет`. Формат `csv`: строка заголовка `count,total,top,top_amount` и строка значений; для пустого набора — `0,0,-,0`.",
+    "difficulty": "intermediate",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 4)",
-        "output": "7\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "text\nАда 300\nАлан 120\nГрейс 300\n",
+        "output": "заказов 3, сумма 720, крупнейший Ада (300)\n"
       },
       {
-        "input": "solve(-3, 4)",
-        "output": "4\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "csv\nАда 300\n",
+        "output": "count,total,top,top_amount\n1,300,Ада,300\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Заказов не больше 100; суммы от 1 до 10⁹."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "Stats хранит count, total, top (имя) и top_amount; для пустого набора count == 0.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Выбор принтера — единственное место, где упоминаются конкретные классы: std::unique_ptr<ReportPrinter> printer = format == \"csv\" ? … : …;",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 4],
-        "expected": "7\n"
+        "stdin": "text\nАда 300\nАлан 120\nГрейс 300\n",
+        "expected": "заказов 3, сумма 720, крупнейший Ада (300)\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [-3, 4],
-        "expected": "4\n"
+        "stdin": "csv\nАда 300\n",
+        "expected": "count,total,top,top_amount\n1,300,Ада,300\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [0, -1],
-        "expected": "0\n"
+        "id": "hidden-1",
+        "name": "Пустой текстовый отчёт",
+        "stdin": "text\n",
+        "expected": "заказов нет\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [-1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-2",
+        "name": "Пустой CSV",
+        "stdin": "csv\n",
+        "expected": "count,total,top,top_amount\n0,0,-,0\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Крупнейший последний",
+        "stdin": "csv\na 1\nb 2\nc 3\n",
+        "expected": "count,total,top,top_amount\n3,6,c,3\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Большие суммы",
+        "stdin": "text\nx 1000000000\ny 1000000000\nz 1000000000\n",
+        "expected": "заказов 3, сумма 3000000000, крупнейший x (1000000000)\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Один заказ",
+        "stdin": "text\nодин 5\n",
+        "expected": "заказов 1, сумма 5, крупнейший один (5)\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Равные суммы",
+        "stdin": "csv\nq 7\nw 7\n",
+        "expected": "count,total,top,top_amount\n2,14,q,7\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Крупнейший в середине",
+        "stdin": "text\nb 2\na 9\nc 1\n",
+        "expected": "заказов 3, сумма 12, крупнейший a (9)\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Повтор имени",
+        "stdin": "csv\nm 10\nn 20\nm 30\n",
+        "expected": "count,total,top,top_amount\n3,60,m,30\n"
       }
     ],
-    "referenceSolution": "struct Filter { virtual bool accept(int x) const = 0; virtual ~Filter() = default; };\nstruct NonNegative : Filter { bool accept(int x) const override { return x>=0; } };\nint sum_selected(int a,int b,const Filter& f) { int total=0; if(f.accept(a)) total+=a; if(f.accept(b)) total+=b; return total; }\nint solve(int a,int b) { NonNegative f; return sum_selected(a,b,f); }",
-    "solutionExplanation": "Filter задаёт virtual bool accept(int) const = 0 и виртуальный деструктор. NonNegative принимает x>=0. Функция int sum_selected(int a,int b,const Filter&) проверяет каждое значение и суммирует принятые. solve(a,b) использует NonNegative; sum_selected не должна проверять конкретный тип фильтра. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не создавайте IMeasurementFactoryManager ради одного struct. SOLID не оправдывает косвенность без сценария замены или отдельного контракта. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n#include <vector>\n\nstruct Order {\n    std::string customer;\n    long long amount;\n};\n\nstruct Stats {\n    int count = 0;\n    long long total = 0;\n    std::string top;\n    long long top_amount = 0;\n};\n\nstd::vector<Order> read_orders(std::istream &in) {\n    std::vector<Order> orders;\n    Order o;\n    while (in >> o.customer >> o.amount) {\n        orders.push_back(o);\n    }\n    return orders;\n}\n\nStats compute(const std::vector<Order> &orders) {\n    Stats s;\n    for (const Order &o : orders) {\n        if (s.count == 0 || o.amount > s.top_amount) {\n            s.top = o.customer;\n            s.top_amount = o.amount;\n        }\n        s.count++;\n        s.total += o.amount;\n    }\n    return s;\n}\n\nclass ReportPrinter {\npublic:\n    virtual ~ReportPrinter() = default;\n    virtual void print(const Stats &s) const = 0;\n};\n\nclass TextPrinter final : public ReportPrinter {\npublic:\n    void print(const Stats &s) const override {\n        if (s.count == 0) {\n            std::println(\"заказов нет\");\n            return;\n        }\n        std::println(\"заказов {}, сумма {}, крупнейший {} ({})\", s.count, s.total, s.top, s.top_amount);\n    }\n};\n\nclass CsvPrinter final : public ReportPrinter {\npublic:\n    void print(const Stats &s) const override {\n        std::println(\"count,total,top,top_amount\");\n        std::println(\"{},{},{},{}\", s.count, s.total, s.count == 0 ? \"-\" : s.top, s.top_amount);\n    }\n};\n\nint main() {\n    std::string format;\n    std::cin >> format;\n    const std::unique_ptr<ReportPrinter> printer =\n        format == \"csv\" ? std::unique_ptr<ReportPrinter>(std::make_unique<CsvPrinter>())\n                        : std::unique_ptr<ReportPrinter>(std::make_unique<TextPrinter>());\n    printer->print(compute(read_orders(std::cin)));\n    return 0;\n}\n",
+    "solutionExplanation": "Каждая часть меняется по своей причине. Новый формат ввода затронет только `read_orders`, новая метрика — `Stats` и `compute`, новый формат отчёта — ещё один наследник `ReportPrinter`. `compute` не знает ни о потоках, ни о печати, поэтому её легко проверить на готовом векторе.\n\n`read_orders` принимает `std::istream &`, а не читает из `std::cin` сама: в тесте ей можно передать `std::istringstream` со строкой.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-solid-task-2",
+      "title": "Скидки из таблицы",
+      "description": "Первая строка — цена. Затем строки `вид значение`, скидки применяются по порядку:\n\n- `percent P` — цена · (100 − P) / 100 (целочисленно);\n- `minus X` — цена − X, но не меньше 0;\n- `cap C` — не больше C.\n\nКаждый вид — наследник интерфейса `Discount` (`long long apply(long long) const`). Создание — через таблицу `std::map<std::string, std::function<std::unique_ptr<Discount>(long long)>>`: имя вида → функция, создающая скидку. После каждой скидки напечатайте `вид значение → цена`. Для вида, которого нет в таблице, напечатайте `неизвестная скидка вид` и продолжайте. В конце — `итог N`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "1000\npercent 10\nminus 50\ncap 800\n",
+          "output": "percent 10 → 900\nminus 50 → 850\ncap 800 → 800\nитог 800\n"
+        },
+        {
+          "input": "500\nbonus 5\n",
+          "output": "неизвестная скидка bonus\nитог 500\n"
+        }
+      ],
+      "constraints": ["Цена до 10⁹; 0 ≤ P ≤ 100; X, C от 0 до 10⁹; строк не больше 50."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Запись таблицы: {\"percent\", [](long long v) { return std::make_unique<Percent>(v); }}. Тип результата лямбды приводится к std::unique_ptr<Discount> внутри std::function.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Поиск: if (auto it = table.find(kind); it != table.end()) { auto d = it->second(value); … }",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1000\npercent 10\nminus 50\ncap 800\n",
+          "expected": "percent 10 → 900\nminus 50 → 850\ncap 800 → 800\nитог 800\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "500\nbonus 5\n",
+          "expected": "неизвестная скидка bonus\nитог 500\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Без скидок",
+          "stdin": "100\n",
+          "expected": "итог 100\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Не ниже нуля",
+          "stdin": "100\nminus 1000\n",
+          "expected": "minus 1000 → 0\nитог 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скидка 100%",
+          "stdin": "999\npercent 100\n",
+          "expected": "percent 100 → 0\nитог 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скидка 0%",
+          "stdin": "999\npercent 0\n",
+          "expected": "percent 0 → 999\nитог 999\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Большая цена",
+          "stdin": "1000000000\npercent 50\ncap 1\n",
+          "expected": "percent 50 → 500000000\ncap 1 → 1\nитог 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Округление вниз",
+          "stdin": "77\npercent 33\n",
+          "expected": "percent 33 → 51\nитог 51\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Неизвестная в середине",
+          "stdin": "300\ncap 500\nfoo 1\nminus 100\n",
+          "expected": "cap 500 → 300\nнеизвестная скидка foo\nminus 100 → 200\nитог 200\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Порядок важен",
+          "stdin": "1000\nminus 100\npercent 10\n",
+          "expected": "minus 100 → 900\npercent 10 → 810\nитог 810\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <functional>\n#include <iostream>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n\nclass Discount {\npublic:\n    virtual ~Discount() = default;\n    virtual long long apply(long long price) const = 0;\n};\n\nclass Percent final : public Discount {\npublic:\n    explicit Percent(long long p) : p_(p) {}\n    long long apply(long long price) const override {\n        return price * (100 - p_) / 100;\n    }\n\nprivate:\n    long long p_;\n};\n\nclass Minus final : public Discount {\npublic:\n    explicit Minus(long long x) : x_(x) {}\n    long long apply(long long price) const override {\n        return std::max(0LL, price - x_);\n    }\n\nprivate:\n    long long x_;\n};\n\nclass Cap final : public Discount {\npublic:\n    explicit Cap(long long c) : c_(c) {}\n    long long apply(long long price) const override {\n        return std::min(price, c_);\n    }\n\nprivate:\n    long long c_;\n};\n\nusing Factory = std::function<std::unique_ptr<Discount>(long long)>;\n\nconst std::map<std::string, Factory> &discount_table() {\n    static const std::map<std::string, Factory> table{\n        {\"percent\", [](long long v) { return std::make_unique<Percent>(v); }},\n        {\"minus\", [](long long v) { return std::make_unique<Minus>(v); }},\n        {\"cap\", [](long long v) { return std::make_unique<Cap>(v); }},\n    };\n    return table;\n}\n\nint main() {\n    long long price;\n    std::cin >> price;\n    std::string kind;\n    long long value;\n    while (std::cin >> kind >> value) {\n        const auto &table = discount_table();\n        if (const auto it = table.find(kind); it != table.end()) {\n            price = it->second(value)->apply(price);\n            std::println(\"{} {} → {}\", kind, value, price);\n        } else {\n            std::println(\"неизвестная скидка {}\", kind);\n        }\n    }\n    std::println(\"итог {}\", price);\n    return 0;\n}\n",
+      "solutionExplanation": "Цикл применения скидок не знает ни одного конкретного класса. Чтобы добавить новый вид, достаточно написать класс и одну строку в таблице — ни `main`, ни остальные скидки не меняются. Таблица заменяет `switch` по строке и заодно даёт естественную обработку неизвестных видов.\n\n`std::function` здесь хранит лямбды разных типов — то самое стирание типа из прошлого урока.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-solid-task-3",
+      "title": "Найди ошибку: растянутый квадрат",
+      "description": "Программа хранит прямоугольники. Команды: `rect w h` — добавить прямоугольник, `square a` — добавить прямоугольник со сторонами a × a, `stretch k` — растянуть **по ширине** в k раз все уже добавленные фигуры. В конце для каждой фигуры печатается `квадрат WxH = S`, если стороны равны, иначе `прямоугольник WxH = S`.\n\nПосле растяжения квадрат должен стать прямоугольником, но программа растягивает его во все стороны. Исправьте устройство классов.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Rect {\npublic:\n    Rect(int w, int h) : w_(w), h_(h) {}\n    virtual ~Rect() = default;\n    virtual void set_width(int w) {\n        w_ = w;\n    }\n    virtual void set_height(int h) {\n        h_ = h;\n    }\n    int width() const {\n        return w_;\n    }\n    int height() const {\n        return h_;\n    }\n    int area() const {\n        return w_ * h_;\n    }\n\nprotected:\n    int w_, h_;\n};\n\nclass Square final : public Rect {\npublic:\n    explicit Square(int a) : Rect(a, a) {}\n    void set_width(int w) override {\n        w_ = h_ = w;\n    }\n    void set_height(int h) override {\n        w_ = h_ = h;\n    }\n};\n\nvoid stretch(Rect &r, int k) {\n    r.set_width(r.width() * k);\n}\n\nint main() {\n    std::vector<std::unique_ptr<Rect>> shapes;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"rect\") {\n            int w, h;\n            std::cin >> w >> h;\n            shapes.push_back(std::make_unique<Rect>(w, h));\n        } else if (command == \"square\") {\n            int a;\n            std::cin >> a;\n            shapes.push_back(std::make_unique<Square>(a));\n        } else {\n            int k;\n            std::cin >> k;\n            for (const auto &s : shapes) {\n                stretch(*s, k);\n            }\n        }\n    }\n    for (const auto &s : shapes) {\n        const char *name = s->width() == s->height() ? \"квадрат\" : \"прямоугольник\";\n        std::println(\"{} {}x{} = {}\", name, s->width(), s->height(), s->area());\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "square 3\nrect 2 5\nstretch 2\n",
+          "output": "прямоугольник 6x3 = 18\nпрямоугольник 4x5 = 20\n"
+        },
+        {
+          "input": "square 2\n",
+          "output": "квадрат 2x2 = 4\n"
+        }
+      ],
+      "constraints": ["Команд не больше 50; размеры и k от 1 до 100; площади помещаются в int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какое обещание Rect нарушает Square::set_width?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Квадрат здесь — не отдельное поведение, а прямоугольник с равными сторонами. Уберите наследника и создавайте Rect(a, a).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "square 3\nrect 2 5\nstretch 2\n",
+          "expected": "прямоугольник 6x3 = 18\nпрямоугольник 4x5 = 20\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "square 2\n",
+          "expected": "квадрат 2x2 = 4\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "square 1\nstretch 3\n",
+          "expected": "прямоугольник 3x1 = 3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "square 4\nstretch 1\n",
+          "expected": "квадрат 4x4 = 16\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "rect 2 4\nstretch 2\n",
+          "expected": "квадрат 4x4 = 16\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "square 2\nstretch 2\nsquare 5\n",
+          "expected": "прямоугольник 4x2 = 8\nквадрат 5x5 = 25\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "square 1\nsquare 2\nstretch 2\nstretch 2\n",
+          "expected": "прямоугольник 4x1 = 4\nпрямоугольник 8x2 = 16\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "rect 1 1\nstretch 5\n",
+          "expected": "прямоугольник 5x1 = 5\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "square 10\nrect 3 3\nstretch 10\n",
+          "expected": "прямоугольник 100x10 = 1000\nпрямоугольник 30x3 = 90\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "stretch 2\nsquare 7\n",
+          "expected": "квадрат 7x7 = 49\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Rect {\npublic:\n    Rect(int w, int h) : w_(w), h_(h) {}\n    virtual ~Rect() = default;\n    virtual void set_width(int w) {\n        w_ = w;\n    }\n    virtual void set_height(int h) {\n        h_ = h;\n    }\n    int width() const {\n        return w_;\n    }\n    int height() const {\n        return h_;\n    }\n    int area() const {\n        return w_ * h_;\n    }\n\nprotected:\n    int w_, h_;\n};\n\nvoid stretch(Rect &r, int k) {\n    r.set_width(r.width() * k);\n}\n\nint main() {\n    std::vector<std::unique_ptr<Rect>> shapes;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"rect\") {\n            int w, h;\n            std::cin >> w >> h;\n            shapes.push_back(std::make_unique<Rect>(w, h));\n        } else if (command == \"square\") {\n            int a;\n            std::cin >> a;\n            shapes.push_back(std::make_unique<Rect>(a, a));\n        } else {\n            int k;\n            std::cin >> k;\n            for (const auto &s : shapes) {\n                stretch(*s, k);\n            }\n        }\n    }\n    for (const auto &s : shapes) {\n        const char *name = s->width() == s->height() ? \"квадрат\" : \"прямоугольник\";\n        std::println(\"{} {}x{} = {}\", name, s->width(), s->height(), s->area());\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`Rect` обещает, что `set_width` меняет только ширину, и `stretch` честно на это опирается. `Square` переопределяет сеттеры так, чтобы остаться квадратом, — и нарушает обещание базы. Код, написанный для `Rect`, получает неожиданный результат, а компилятор молчит: сигнатуры совпадают.\n\nИзменяемый квадрат не может быть подтипом изменяемого прямоугольника. Квадрат — это состояние прямоугольника (стороны равны), а не особый вид поведения, поэтому отдельный класс не нужен: название определяется по сторонам при печати.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-solid-task-4",
+      "title": "Оплата",
+      "description": "Интерфейс `PaymentMethod` с методом `std::expected<long long, std::string> charge(long long amount)`: при успехе возвращает комиссию, при отказе — причину. Реализации:\n\n- `Card` — всегда успешно, комиссия `amount / 50` (2 %, целочисленно);\n- `Wallet(balance)` — без комиссии; если сумма больше остатка — отказ `недостаточно средств`, иначе остаток уменьшается;\n- `GiftCard(balance)` — без комиссии, одноразовая: после первой успешной оплаты — отказ `карта использована`; сумма больше номинала — отказ `недостаточно средств` (карта при этом не тратится).\n\nКласс `Checkout` владеет способами оплаты в `std::map<std::string, std::unique_ptr<PaymentMethod>>` и ничего не знает о конкретных классах. Ввод: `card id`, `wallet id balance`, `gift id balance`, `pay id amount`. На каждый `pay` напечатайте `оплата id: сумма, комиссия F` или `отказ id: причина` (для неизвестного id причина — `нет такого способа`). В конце — `принято S, комиссий F`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "card c1\nwallet w1 500\ngift g1 300\npay c1 1000\npay w1 600\npay w1 400\npay g1 100\npay g1 100\npay x 5\n",
+          "output": "оплата c1: 1000, комиссия 20\nотказ w1: недостаточно средств\nоплата w1: 400, комиссия 0\nоплата g1: 100, комиссия 0\nотказ g1: карта использована\nотказ x: нет такого способа\nпринято 1500, комиссий 20\n"
+        },
+        {
+          "input": "",
+          "output": "принято 0, комиссий 0\n"
+        }
+      ],
+      "constraints": ["Строк не больше 100; id уникальны; суммы и остатки от 1 до 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Ни одна реализация не бросает исключений: все отказы — через std::unexpected. Это часть договора интерфейса, и каждый наследник обязан его соблюдать.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Checkout::pay: найти id в map; auto result = it->second->charge(amount); if (result) { … *result … } else { … result.error() … }.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "card c1\nwallet w1 500\ngift g1 300\npay c1 1000\npay w1 600\npay w1 400\npay g1 100\npay g1 100\npay x 5\n",
+          "expected": "оплата c1: 1000, комиссия 20\nотказ w1: недостаточно средств\nоплата w1: 400, комиссия 0\nоплата g1: 100, комиссия 0\nотказ g1: карта использована\nотказ x: нет такого способа\nпринято 1500, комиссий 20\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "принято 0, комиссий 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Комиссия округляется вниз",
+          "stdin": "card a\npay a 49\n",
+          "expected": "оплата a: 49, комиссия 0\nпринято 49, комиссий 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Кошелёк до нуля",
+          "stdin": "wallet w 100\npay w 100\npay w 1\n",
+          "expected": "оплата w: 100, комиссия 0\nотказ w: недостаточно средств\nпринято 100, комиссий 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Подарочная карта после отказа",
+          "stdin": "gift g 50\npay g 60\npay g 50\npay g 1\n",
+          "expected": "отказ g: недостаточно средств\nоплата g: 50, комиссия 0\nотказ g: карта использована\nпринято 50, комиссий 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Нет способов",
+          "stdin": "pay none 10\n",
+          "expected": "отказ none: нет такого способа\nпринято 0, комиссий 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Большие суммы",
+          "stdin": "card c\npay c 1000000000\npay c 1000000000\n",
+          "expected": "оплата c: 1000000000, комиссия 20000000\nоплата c: 1000000000, комиссия 20000000\nпринято 2000000000, комиссий 40000000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Несколько оплат кошельком",
+          "stdin": "wallet w 10\npay w 3\npay w 3\npay w 3\npay w 3\n",
+          "expected": "оплата w: 3, комиссия 0\nоплата w: 3, комиссия 0\nоплата w: 3, комиссия 0\nотказ w: недостаточно средств\nпринято 9, комиссий 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Два способа",
+          "stdin": "card b\nwallet a 5\npay a 5\npay b 50\n",
+          "expected": "оплата a: 5, комиссия 0\nоплата b: 50, комиссия 1\nпринято 55, комиссий 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Минимальная подарочная",
+          "stdin": "gift g 1\npay g 1\n",
+          "expected": "оплата g: 1, комиссия 0\nпринято 1, комиссий 0\n"
+        }
+      ],
+      "referenceSolution": "#include <expected>\n#include <iostream>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n\nclass PaymentMethod {\npublic:\n    virtual ~PaymentMethod() = default;\n    virtual std::expected<long long, std::string> charge(long long amount) = 0;\n};\n\nclass Card final : public PaymentMethod {\npublic:\n    std::expected<long long, std::string> charge(long long amount) override {\n        return amount / 50;\n    }\n};\n\nclass Wallet final : public PaymentMethod {\npublic:\n    explicit Wallet(long long balance) : balance_(balance) {}\n    std::expected<long long, std::string> charge(long long amount) override {\n        if (amount > balance_) {\n            return std::unexpected(\"недостаточно средств\");\n        }\n        balance_ -= amount;\n        return 0;\n    }\n\nprivate:\n    long long balance_;\n};\n\nclass GiftCard final : public PaymentMethod {\npublic:\n    explicit GiftCard(long long balance) : balance_(balance) {}\n    std::expected<long long, std::string> charge(long long amount) override {\n        if (used_) {\n            return std::unexpected(\"карта использована\");\n        }\n        if (amount > balance_) {\n            return std::unexpected(\"недостаточно средств\");\n        }\n        used_ = true;\n        return 0;\n    }\n\nprivate:\n    long long balance_;\n    bool used_ = false;\n};\n\nclass Checkout {\npublic:\n    void add(const std::string &id, std::unique_ptr<PaymentMethod> method) {\n        methods_.emplace(id, std::move(method));\n    }\n\n    void pay(const std::string &id, long long amount) {\n        const auto it = methods_.find(id);\n        if (it == methods_.end()) {\n            std::println(\"отказ {}: нет такого способа\", id);\n            return;\n        }\n        const auto result = it->second->charge(amount);\n        if (result) {\n            accepted_ += amount;\n            fees_ += *result;\n            std::println(\"оплата {}: {}, комиссия {}\", id, amount, *result);\n        } else {\n            std::println(\"отказ {}: {}\", id, result.error());\n        }\n    }\n\n    void summary() const {\n        std::println(\"принято {}, комиссий {}\", accepted_, fees_);\n    }\n\nprivate:\n    std::map<std::string, std::unique_ptr<PaymentMethod>> methods_;\n    long long accepted_ = 0;\n    long long fees_ = 0;\n};\n\nint main() {\n    Checkout checkout;\n    std::string command, id;\n    while (std::cin >> command >> id) {\n        if (command == \"card\") {\n            checkout.add(id, std::make_unique<Card>());\n        } else if (command == \"wallet\" || command == \"gift\") {\n            long long balance;\n            std::cin >> balance;\n            if (command == \"wallet\") {\n                checkout.add(id, std::make_unique<Wallet>(balance));\n            } else {\n                checkout.add(id, std::make_unique<GiftCard>(balance));\n            }\n        } else {\n            long long amount;\n            std::cin >> amount;\n            checkout.pay(id, amount);\n        }\n    }\n    checkout.summary();\n    return 0;\n}\n",
+      "solutionExplanation": "В решении работают все пять принципов. `Checkout` отвечает только за проведение оплат и учёт (S). Новый способ оплаты — новый наследник без правки `Checkout` (O). Каждый наследник соблюдает договор: не бросает исключений и сообщает отказ через `std::expected`, поэтому `Checkout` одинаково обрабатывает любой способ (L). Интерфейс состоит из одного метода (I), а `Checkout` зависит от него, а не от `Card` или `Wallet` (D).\n\nКонкретные классы упоминаются только в `main` — в месте сборки программы. Если бы `GiftCard` бросала исключение вместо `std::unexpected`, она нарушила бы договор интерфейса, и `Checkout` пришлось бы знать о её особенностях.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-solid-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Как проявляется DIP в sum_selected?",
+        "id": "q1",
+        "question": "Функция читает заказы из файла, считает статистику и печатает отчёт в HTML. Какой принцип она нарушает в первую очередь?",
+        "explanation": "Её придётся менять по трём разным причинам: формат ввода, метрики, оформление.",
         "options": [
-          "Алгоритм зависит от Filter, реализацию выбирает вызывающий код",
-          "Алгоритм содержит switch по всем названиям фильтров"
+          "Единственной ответственности",
+          "Подстановки Лисков",
+          "Разделения интерфейсов",
+          "Никакой"
         ],
-        "correct": 0,
-        "explanation": "LSP требует сохранять обещания базы: если read(raw) принимает отрицательное raw, наследник не может молча запретить его. ISP удерживает интерфейс узким: читающему клиенту не нужны reset и save. DIP направляет зависимость алгоритма к Sensor, а конкретный TemperatureSensor выбирает внешний код сборки. Передача зависимости через конструктор — обычный C++ вызов, специальный контейнер зависимостей не нужен. Начинайте с реальной причины изменения и измеримого теста, а не с пяти новых уровней абстракции."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "0 4", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 0 4. SRP помогает разделить причины изменения: Sensor получает измерение, Filter решает допуск, TelemetryProcessor организует проход. OCP означает, что новый датчик добавляется реализацией контракта, без правки цикла обработки. Это полезно при ожидаемом расширении, но не требует интерфейса для каждой арифметической функции."
+        "id": "q2",
+        "question": "Что означает принцип открытости/закрытости?",
+        "explanation": "Например, новая скидка — новый класс, а код применения скидок не меняется.",
+        "options": [
+          "Новое поведение добавляется новым кодом, без правки проверенного",
+          "Все поля класса должны быть открытыми",
+          "Класс нельзя наследовать",
+          "Код нельзя менять после выпуска"
+        ],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nclass Rect {\npublic:\n    virtual ~Rect() = default;\n    virtual void set(int w, int h) {\n        w_ = w;\n        h_ = h;\n    }\n    int area() const {\n        return w_ * h_;\n    }\n\nprotected:\n    int w_ = 0, h_ = 0;\n};\n\nclass Square final : public Rect {\npublic:\n    void set(int w, int) override {\n        w_ = h_ = w;\n    }\n};\n\nint main() {\n    Square s;\n    Rect &r = s;\n    r.set(5, 2);\n    std::println(\"{}\", r.area());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Квадрат игнорирует высоту: 5 · 5 = 25, а код, написанный для Rect, ждёт 10. Это нарушение подстановки Лисков.",
+        "type": "text",
+        "answers": ["25"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Наследник нарушает подстановку Лисков, если он… Выберите все.",
+        "explanation": "Новые методы не мешают коду, работающему через базу. Мешают нарушенные обещания.",
+        "type": "multiple",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Не создавайте IMeasurementFactoryManager ради одного struct. SOLID не оправдывает косвенность без сценария замены или отдельного контракта."
+          "Бросает исключение там, где база обещала не бросать",
+          "Требует от аргументов больше, чем база",
+          "Гарантирует меньше, чем обещала база",
+          "Добавляет новый метод, которого нет в базе"
         ],
-        "correct": 1,
-        "explanation": "Замените Positive на фильтр, принимающий только отрицательные значения, и оставьте select без правок. Затем представьте, что новый Sensor отвергает разрешённое базой значение: это нарушение подстановки, даже если его сигнатуры правильны. Проверяйте семантику всех реализаций одинаковыми тестами."
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q5",
+        "question": "Почему компилятор не обнаруживает нарушение подстановки Лисков?",
+        "explanation": "Поведение проверяют тесты и ревью, а не компилятор.",
+        "options": [
+          "Типы и сигнатуры совпадают; нарушен смысл поведения, а не правила языка",
+          "Нужно включить -Wall",
+          "Обнаруживает, если метод помечен override",
+          "Нарушение возможно только в шаблонах"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Какой признак чаще всего указывает на нарушение открытости/закрытости?",
+        "explanation": "Каждый новый вид требует правки всех таких switch. Полноту хотя бы проверит std::visit, если это variant.",
+        "options": [
+          "Одинаковый switch по виду объекта в нескольких функциях",
+          "Класс с виртуальным деструктором",
+          "Функция длиной больше 10 строк",
+          "Использование std::vector"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Когда вводить интерфейс оправдано? Выберите все.",
+        "explanation": "Абстракция «на вырост» усложняет код, не давая гибкости.",
+        "type": "multiple",
+        "options": [
+          "Есть вторая реализация",
+          "Логику нужно проверять с подставной реализацией",
+          "Реализацию выбирают во время работы",
+          "На всякий случай, для каждого класса"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q8",
+        "question": "Принцип, по которому логика зависит от абстракций, а конкретные реализации передаются снаружи, называется принципом инверсии…",
+        "explanation": "Буква D в SOLID.",
+        "type": "text",
+        "answers": ["зависимостей", "инверсии зависимостей", "dependency inversion"],
+        "placeholder": "Одно слово"
       }
     ]
   }

@@ -15,7 +15,7 @@ export default {
     'Выбирать тип сборки и подключать тесты через ctest',
   ],
   tags: ['CMake', 'Сборка', 'Цели', 'Библиотеки', 'ctest'],
-  standard: 'c17',
+  standard: 'c23',
   quiz: [
     {
       q: 'Что делает CMake?',
@@ -74,11 +74,11 @@ export default {
         'Глобальные настройки действуют на всё подряд и не переносятся вместе с библиотекой в другой проект.',
     },
     {
-      q: 'В CMakeLists.txt написано только set(CMAKE_C_STANDARD 17). Какой флаг стандарта получит gcc?',
-      answers: ['-std=gnu17'],
+      q: 'В CMakeLists.txt написано только set(CMAKE_C_STANDARD 23). Какой флаг стандарта получит gcc?',
+      answers: ['-std=gnu23'],
       placeholder: 'Флаг',
       explain:
-        'По умолчанию CMAKE_C_EXTENSIONS включён. Для -std=c17 нужен set(CMAKE_C_EXTENSIONS OFF).',
+        'По умолчанию CMAKE_C_EXTENSIONS включён. Для -std=c23 нужен set(CMAKE_C_EXTENSIONS OFF).',
     },
     {
       q: 'Что из этого нужно хранить в Git? Выберите все.',
@@ -268,8 +268,8 @@ CMake не придумывает флаги — он собирает их из
 Видимость работает уже на уровне одной цели: \`INTERFACE\`-требование описывает, что нужно **пользователям** цели, и к её собственной компиляции не применяется. А тип сборки — единственный параметр, который выбирается при настройке, а не в \`CMakeLists.txt\`: один и тот же файл даёт и отладочную, и выпускную сборку.`,
       examples: [
         {
-          in: 'cmake_minimum_required(VERSION 3.20)\nproject(app LANGUAGES C)\nset(CMAKE_C_STANDARD 17)\nset(CMAKE_C_EXTENSIONS OFF)\nset(CMAKE_BUILD_TYPE Release)\nadd_executable(app src/main.c src/util.c)\ntarget_include_directories(app PRIVATE include)\ntarget_compile_options(app PRIVATE -Wall -Wextra)\n',
-          out: 'gcc -Iinclude -O3 -DNDEBUG -std=c17 -Wall -Wextra -c src/main.c\ngcc -Iinclude -O3 -DNDEBUG -std=c17 -Wall -Wextra -c src/util.c\n',
+          in: 'cmake_minimum_required(VERSION 3.25)\nproject(app LANGUAGES C)\nset(CMAKE_C_STANDARD 23)\nset(CMAKE_C_EXTENSIONS OFF)\nset(CMAKE_BUILD_TYPE Release)\nadd_executable(app src/main.c src/util.c)\ntarget_include_directories(app PRIVATE include)\ntarget_compile_options(app PRIVATE -Wall -Wextra)\n',
+          out: 'gcc -Iinclude -O3 -DNDEBUG -std=c23 -Wall -Wextra -c src/main.c\ngcc -Iinclude -O3 -DNDEBUG -std=c23 -Wall -Wextra -c src/util.c\n',
         },
         { in: 'add_executable(hello hello.c)\n', out: 'gcc -c hello.c\n' },
       ],
@@ -294,7 +294,7 @@ CMake не придумывает флаги — он собирает их из
           name: 'Порядок команд и пустая строка',
         },
         {
-          in: 'set(CMAKE_C_STANDARD 17)\nset(CMAKE_C_EXTENSIONS OFF)\nset(CMAKE_BUILD_TYPE Debug)\nadd_executable(calc src/main.c src/lexer.c src/parser.c)\ntarget_compile_options(calc PRIVATE -Wall -Wextra -Wpedantic)\ntarget_compile_definitions(calc PRIVATE CALC_DEBUG)\ntarget_include_directories(calc PRIVATE include third_party)\n',
+          in: 'set(CMAKE_C_STANDARD 23)\nset(CMAKE_C_EXTENSIONS OFF)\nset(CMAKE_BUILD_TYPE Debug)\nadd_executable(calc src/main.c src/lexer.c src/parser.c)\ntarget_compile_options(calc PRIVATE -Wall -Wextra -Wpedantic)\ntarget_compile_definitions(calc PRIVATE CALC_DEBUG)\ntarget_include_directories(calc PRIVATE include third_party)\n',
           name: 'Полный проект',
         },
         {

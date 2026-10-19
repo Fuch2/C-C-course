@@ -1,128 +1,520 @@
 {
   "id": "algo-graph",
-  "title": "Основы графов",
-  "description": "Граф состоит из вершин и рёбер.",
+  "title": "Графы и их представление",
+  "description": "Вершины, рёбра и основные понятия: ориентированность, вес, степень, путь, цикл, связность; матрица смежности; списки смежности и сжатое представление через префиксные суммы; сравнение представлений; ввод графа и нумерация с единицы.",
   "moduleId": "algorithms-structures",
   "order": 26,
   "difficulty": "intermediate",
-  "estimatedMinutes": 60,
+  "estimatedMinutes": 50,
   "prerequisites": ["algo-heap"],
   "objectives": [
-    "Объяснить инвариант: Структура хранит отношения между объектами, а не только последовательность объектов.",
-    "Обосновать время: Построение и полный обход списков O(V+E); матрицы O(V²).",
-    "Оценить память и компромиссы: Матрица хороша для плотного графа и частых проверок рёбер, списки — для разреженного обхода."
+    "Описывать задачи на языке графов",
+    "Строить матрицу смежности и списки смежности",
+    "Выбирать представление графа по плотности и операциям",
+    "Читать граф из ввода без ошибок нумерации"
   ],
-  "tags": ["алгоритмы", "C17", "Основы графов", "структуры данных", "cache locality"],
+  "tags": ["Графы", "Матрица смежности", "Списки смежности"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "algo-graph-exercise",
-    "title": "Степени вершин сети",
-    "description": "Ввод V (1…32), E (0…128), затем E пар вершин 0…V−1. Граф неориентированный, петли и повторные рёбра допускаются. Храните списки смежности в массиве дуг. Выведите степени всех вершин через пробел. Петля вносит 2 в степень.",
-    "difficulty": "intermediate",
+    "id": "algo-graph-task-1",
+    "title": "Степени вершин",
+    "description": "Граф задаётся так: первая строка — число вершин `V` и рёбер `E`, дальше `E` строк `u v`; вершины нумеруются с 1. Граф неориентированный, петель нет, но между двумя вершинами может быть несколько рёбер.\n\nНапечатайте степени вершин от 1 до `V` через пробел, а на второй строке — сумму степеней и проверку леммы о рукопожатиях: `сумма S = 2 · E`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте ввод, алгоритм и освобождение ресурсов. */\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "3 3 0 1 1 2 1 1",
-        "output": "1 4 1\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "5 5\n1 2\n1 3\n2 3\n2 4\n4 5\n",
+        "output": "2 3 2 2 1\nсумма 10 = 2 · 5\n"
       },
       {
-        "input": "3 0",
-        "output": "0 0 0\n",
-        "explanation": "Пример фиксирует протокол. Границы и особые состояния проверяются отдельно."
+        "input": "3 0\n",
+        "output": "0 0 0\nсумма 0 = 2 · 0\n"
       }
     ],
-    "constraints": [
-      "Используйте C17 и диапазоны входа из условия.",
-      "Выводите только требуемый результат.",
-      "Не обращайтесь за логическую длину и освобождайте все полученные ресурсы."
-    ],
+    "constraints": ["1 ≤ V ≤ 10⁵; 0 ≤ E ≤ 2·10⁵."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Структура хранит отношения между объектами, а не только последовательность объектов."
+        "text": "Массив степеней на V + 1 элемент (вершины с 1). Каждое ребро u v увеличивает degree[u] и degree[v].",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Оценка O(V+E) предполагает списки; просмотр всей строки матрицы для каждой вершины даёт O(V²)."
-      },
-      {
-        "id": "hint-3",
-        "order": 3,
-        "text": "Рёбра (0,1),(1,2),(1,1) дают степени 1,4,1. Сумма степеней 6 равна 2E."
+        "text": "Сумма степеней может превысить int при больших E? Нет: 2E ≤ 4·10⁵. Но привычка считать суммы в long long не повредит.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "3 3 0 1 1 2 1 1",
-        "expected": "1 4 1\n"
+        "stdin": "5 5\n1 2\n1 3\n2 3\n2 4\n4 5\n",
+        "expected": "2 3 2 2 1\nсумма 10 = 2 · 5\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "3 0",
-        "expected": "0 0 0\n"
+        "stdin": "3 0\n",
+        "expected": "0 0 0\nсумма 0 = 2 · 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "2 2 0 1 0 1",
-        "expected": "2 2\n"
+        "id": "hidden-1",
+        "name": "Одна вершина",
+        "stdin": "1 0\n",
+        "expected": "0\nсумма 0 = 2 · 0\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "1 1 0 0",
-        "expected": "2\n"
+        "id": "hidden-2",
+        "name": "Кратные рёбра",
+        "stdin": "2 3\n1 2\n1 2\n2 1\n",
+        "expected": "3 3\nсумма 6 = 2 · 3\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Звезда",
+        "stdin": "4 3\n1 2\n1 3\n1 4\n",
+        "expected": "3 1 1 1\nсумма 6 = 2 · 3\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Цикл",
+        "stdin": "4 4\n1 2\n2 3\n3 4\n4 1\n",
+        "expected": "2 2 2 2\nсумма 8 = 2 · 4\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Паросочетание",
+        "stdin": "6 3\n1 2\n3 4\n5 6\n",
+        "expected": "1 1 1 1 1 1\nсумма 6 = 2 · 3\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Полный граф",
+        "stdin": "5 10\n1 2\n1 3\n1 4\n1 5\n2 3\n2 4\n2 5\n3 4\n3 5\n4 5\n",
+        "expected": "4 4 4 4 4\nсумма 20 = 2 · 10\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Последняя вершина",
+        "stdin": "6 2\n6 1\n6 5\n",
+        "expected": "1 0 0 0 1 2\nсумма 4 = 2 · 2\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Путь",
+        "stdin": "7 6\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n",
+        "expected": "1 2 2 2 2 2 1\nсумма 12 = 2 · 6\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <limits.h>\n\nenum { MAX_VERTICES=32, MAX_ARCS=256 };\ntypedef struct { int to,next; } Edge;\ntypedef struct { int head[MAX_VERTICES],count; Edge edges[MAX_ARCS]; } Graph;\nstatic void init(Graph *g){for(int i=0;i<MAX_VERTICES;++i)g->head[i]=-1;g->count=0;}\nstatic int connect(Graph *g,int from,int to){\n    if(g->count==MAX_ARCS)return 0;\n    g->edges[g->count]=(Edge){to,g->head[from]};g->head[from]=g->count++;return 1;\n}\nstatic int read_graph(Graph *g,int *vertices){\n    int m;if(scanf(\"%d%d\",vertices,&m)!=2 || *vertices<1 || *vertices>32 || m<0 || m>128)return 0;\n    init(g);\n    for(int i=0;i<m;++i){int a,b;if(scanf(\"%d%d\",&a,&b)!=2 || a<0 || b<0 || a>=*vertices || b>=*vertices)return 0;\n        if(!connect(g,a,b) || !connect(g,b,a))return 0;\n    }return 1;\n}\nint main(void) {\nGraph g;int n;if(!read_graph(&g,&n))return 1;for(int v=0;v<n;++v){int degree=0;for(int e=g.head[v];e!=-1;e=g.edges[e].next)++degree;printf(\"%s%d\",v?\" \":\"\",degree);}puts(\"\");\nreturn 0;\n}\n",
-    "solutionExplanation": "Инвариант: Структура хранит отношения между объектами, а не только последовательность объектов.\n\nРёбра (0,1),(1,2),(1,1) дают степени 1,4,1. Сумма степеней 6 равна 2E.\n\nВ эталоне сначала проверяется ввод, затем строится состояние и выполняется операция. Оценка O(V+E) предполагает списки; просмотр всей строки матрицы для каждой вершины даёт O(V²).\n\nВремя: Построение и полный обход списков O(V+E); матрицы O(V²).\nПамять: O(V+E) у списков; наш буфер имеет явные верхние границы 32 вершин и 128 рёбер.\nКомпромисс: Матрица хороша для плотного графа и частых проверок рёбер, списки — для разреженного обхода.\n\nДля динамических структур проследите все ветви отказа: частично созданные узлы или блоки должны быть освобождены. Тесты stdout проверяют функциональный контракт, ASan/UBSan дополняют его на выполненных путях; требуемую асимптотику обосновывайте по реализации, она не выводится из малого времени теста.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <stdio.h>\n\nstatic int degree[100001];\n\nint main(void) {\n    int vertices, edges;\n    if (scanf(\"%d %d\", &vertices, &edges) != 2 || vertices < 1 || vertices > 100000) {\n        return 0;\n    }\n    for (int i = 0; i < edges; i++) {\n        int u, v;\n        if (scanf(\"%d %d\", &u, &v) != 2) {\n            break;\n        }\n        degree[u]++;\n        degree[v]++;\n    }\n    long long sum = 0;\n    for (int v = 1; v <= vertices; v++) {\n        printf(v < vertices ? \"%d \" : \"%d\\n\", degree[v]);\n        sum += degree[v];\n    }\n    printf(\"сумма %lld = 2 · %d\\n\", sum, edges);\n    return 0;\n}\n",
+    "solutionExplanation": "Степень вершины — число концов рёбер в ней. Каждое ребро даёт два конца, поэтому сумма степеней всегда `2E`: это видно прямо из алгоритма — каждая итерация цикла увеличивает сумму ровно на 2. Кратные рёбра считаются отдельно: два ребра между 1 и 2 дают обеим вершинам степень 2.\n\nМассив объявлен на `V + 1` элемент, потому что вершины нумеруются с 1, а ячейка 0 просто не используется. Время — `O(V + E)`, граф целиком хранить не нужно.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "algo-graph-task-2",
+      "title": "Списки смежности",
+      "description": "Граф задаётся так: первая строка — число вершин `V` и рёбер `E`, дальше `E` строк `u v`; вершины нумеруются с 1. Граф **ориентированный**: строка `u v` — ребро `u → v`.\n\nПостройте сжатое представление (массив начал и общий массив соседей) и напечатайте для каждой вершины от 1 до `V` строку `v: соседи` — соседи в том порядке, в каком рёбра шли во вводе. Если соседей нет, строка — просто `v:`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "4 5\n1 2\n3 1\n1 4\n2 4\n1 3\n",
+          "output": "1: 2 4 3\n2: 4\n3: 1\n4:\n"
+        },
+        {
+          "input": "2 0\n",
+          "output": "1:\n2:\n"
+        }
+      ],
+      "constraints": ["1 ≤ V ≤ 10⁵; 0 ≤ E ≤ 2·10⁵."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сохраните рёбра в массивы from[] и to[]. Посчитайте исходящие степени в start[u + 1], затем префиксные суммы: start[v] — начало списка вершины v.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Скопируйте start в fill и разложите рёбра по порядку ввода: neighbours[fill[u]++] = v. Так сохранится исходный порядок.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4 5\n1 2\n3 1\n1 4\n2 4\n1 3\n",
+          "expected": "1: 2 4 3\n2: 4\n3: 1\n4:\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2 0\n",
+          "expected": "1:\n2:\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Петля",
+          "stdin": "1 1\n1 1\n",
+          "expected": "1: 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Ориентированный цикл",
+          "stdin": "3 3\n1 2\n2 3\n3 1\n",
+          "expected": "1: 2\n2: 3\n3: 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Все из последней",
+          "stdin": "3 3\n3 1\n3 2\n3 3\n",
+          "expected": "1:\n2:\n3: 1 2 3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Кратные рёбра",
+          "stdin": "4 4\n1 2\n1 2\n1 2\n2 1\n",
+          "expected": "1: 2 2 2\n2: 1\n3:\n4:\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Все в первую",
+          "stdin": "5 4\n2 1\n3 1\n4 1\n5 1\n",
+          "expected": "1:\n2: 1\n3: 1\n4: 1\n5: 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Обратный путь",
+          "stdin": "6 5\n6 5\n5 4\n4 3\n3 2\n2 1\n",
+          "expected": "1:\n2: 1\n3: 2\n4: 3\n5: 4\n6: 5\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Порядок ввода",
+          "stdin": "4 6\n4 3\n4 2\n4 1\n1 4\n2 4\n3 4\n",
+          "expected": "1: 4\n2: 4\n3: 4\n4: 3 2 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Без рёбер",
+          "stdin": "5 0\n",
+          "expected": "1:\n2:\n3:\n4:\n5:\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\nstatic int from[200000], to[200000];\nstatic int start[100002], fill[100001];\nstatic int neighbours[200000];\n\nint main(void) {\n    int vertices, edges;\n    if (scanf(\"%d %d\", &vertices, &edges) != 2 || vertices < 1 || vertices > 100000 || edges > 200000) {\n        return 0;\n    }\n    for (int i = 0; i < edges; i++) {\n        scanf(\"%d %d\", &from[i], &to[i]);\n        start[from[i] + 1]++;\n    }\n    for (int v = 1; v <= vertices + 1; v++) {\n        start[v] += start[v - 1];\n    }\n    for (int v = 1; v <= vertices; v++) {\n        fill[v] = start[v];\n    }\n    for (int i = 0; i < edges; i++) {\n        neighbours[fill[from[i]]++] = to[i];\n    }\n    for (int v = 1; v <= vertices; v++) {\n        printf(\"%d:\", v);\n        for (int k = start[v]; k < start[v + 1]; k++) {\n            printf(\" %d\", neighbours[k]);\n        }\n        printf(\"\\n\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Сжатое представление строится в три прохода, каждый — `O(V + E)`. Подсчёт степеней определяет длину каждого списка, префиксные суммы — где он начинается в общем массиве, а раскладка по порядку ввода заполняет списки, сохраняя порядок рёбер.\n\nСдвиг на единицу в `start[from + 1]++` делает так, что после префиксных сумм `start[v]` — число рёбер из вершин **меньше** `v`, то есть начало списка `v`, а `start[v + 1]` — его конец. Отдельный массив `fill` нужен потому, что `start` ещё понадобится для печати. Для ориентированного графа каждое ребро хранится один раз — у начальной вершины.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-graph-task-3",
+      "title": "Найди ошибку: нумерация с единицы",
+      "description": "Граф задаётся так: первая строка — число вершин `V` и рёбер `E`, дальше `E` строк `u v`; вершины нумеруются с 1. Граф неориентированный.\n\nПрограмма печатает вершину наибольшей степени (при равенстве — с наименьшим номером) и её степень. AddressSanitizer сообщает об ошибке, когда у последней вершины есть рёбра. Найдите и исправьте её.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    int vertices, edges;\n    if (scanf(\"%d %d\", &vertices, &edges) != 2 || vertices < 1) {\n        return 0;\n    }\n    int *degree = calloc((size_t)vertices, sizeof *degree);\n    if (degree == NULL) {\n        return 1;\n    }\n    for (int i = 0; i < edges; i++) {\n        int u, v;\n        if (scanf(\"%d %d\", &u, &v) != 2) {\n            break;\n        }\n        degree[u]++;\n        degree[v]++;\n    }\n    int best = 1;\n    for (int v = 2; v <= vertices; v++) {\n        if (degree[v] > degree[best]) {\n            best = v;\n        }\n    }\n    printf(\"%d %d\\n\", best, degree[best]);\n    free(degree);\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "4 3\n1 2\n1 3\n2 3\n",
+          "output": "1 2\n"
+        },
+        {
+          "input": "3 2\n1 3\n2 3\n",
+          "output": "3 2\n"
+        }
+      ],
+      "constraints": ["1 ≤ V ≤ 1000; 0 ≤ E ≤ 1000; петель нет."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какие индексы есть у массива из V элементов? Какие номера вершин встречаются во вводе?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Вершины нумеруются от 1 до V, а массив degree выделен на V элементов с индексами 0…V − 1. Выделите V + 1 элемент.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4 3\n1 2\n1 3\n2 3\n",
+          "expected": "1 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3 2\n1 3\n2 3\n",
+          "expected": "3 2\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 0\n",
+          "expected": "1 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "2 1\n1 2\n",
+          "expected": "1 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "5 4\n5 1\n5 2\n5 3\n5 4\n",
+          "expected": "5 4\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "4 4\n1 2\n2 3\n3 4\n4 1\n",
+          "expected": "1 2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "6 3\n1 6\n2 6\n3 4\n",
+          "expected": "6 2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "5 2\n1 2\n3 4\n",
+          "expected": "1 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "3 3\n1 2\n2 3\n1 3\n",
+          "expected": "1 2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "7 6\n7 1\n7 2\n1 2\n3 4\n5 6\n6 7\n",
+          "expected": "7 3\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    int vertices, edges;\n    if (scanf(\"%d %d\", &vertices, &edges) != 2 || vertices < 1) {\n        return 0;\n    }\n    int *degree = calloc((size_t)vertices + 1, sizeof *degree);\n    if (degree == NULL) {\n        return 1;\n    }\n    for (int i = 0; i < edges; i++) {\n        int u, v;\n        if (scanf(\"%d %d\", &u, &v) != 2) {\n            break;\n        }\n        degree[u]++;\n        degree[v]++;\n    }\n    int best = 1;\n    for (int v = 2; v <= vertices; v++) {\n        if (degree[v] > degree[best]) {\n            best = v;\n        }\n    }\n    printf(\"%d %d\\n\", best, degree[best]);\n    free(degree);\n    return 0;\n}\n",
+      "solutionExplanation": "Массив степеней выделен на `V` элементов — индексы от 0 до `V − 1`. Вершины во вводе нумеруются от 1 до `V`, поэтому `degree[V]` — запись за концом блока. AddressSanitizer сообщает `heap-buffer-overflow`; без санитайзера запись испортила бы служебные данные кучи или соседний блок.\n\nОшибка проявляется, только если у вершины `V` есть рёбра, а цикл поиска максимума вдобавок читает `degree[V]`. Поэтому тесты графовых задач должны включать рёбра с последней вершиной. Самое простое исправление — выделить `V + 1` ячейку и не использовать нулевую.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "algo-graph-task-4",
+      "title": "Общие соседи",
+      "description": "Граф задаётся так: первая строка — число вершин `V` и рёбер `E`, дальше `E` строк `u v`; вершины нумеруются с 1. Граф неориентированный, без петель и кратных рёбер. Дальше до конца ввода идут запросы — пары вершин `a b`. Для каждого запроса напечатайте, сколько у `a` и `b` **общих соседей** — вершин, соединённых ребром с обеими.\n\nТак социальные сети предлагают «возможно, вы знакомы»: чем больше общих друзей, тем выше в списке. Ответ на запрос должен стоить `O(deg a + deg b)`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5 6\n1 2\n1 3\n2 3\n2 4\n3 4\n4 5\n1 4\n2 3\n",
+          "output": "2\n2\n"
+        },
+        {
+          "input": "3 1\n1 2\n1 3\n",
+          "output": "0\n"
+        }
+      ],
+      "constraints": ["1 ≤ V ≤ 10⁵; 0 ≤ E ≤ 2·10⁵; запросов не больше 10⁴."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Постройте сжатые списки смежности (каждое ребро — у обоих концов) и отсортируйте список каждой вершины qsort.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Общие соседи — пересечение двух отсортированных списков. Пересекайте их двумя указателями, как при слиянии: меньший элемент сдвигается, равные дают общего соседа.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5 6\n1 2\n1 3\n2 3\n2 4\n3 4\n4 5\n1 4\n2 3\n",
+          "expected": "2\n2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3 1\n1 2\n1 3\n",
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна вершина",
+          "stdin": "1 0\n1 1\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Звезда",
+          "stdin": "4 3\n1 2\n1 3\n1 4\n2 3\n3 4\n2 4\n",
+          "expected": "1\n1\n1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Полный граф",
+          "stdin": "4 6\n1 2\n1 3\n1 4\n2 3\n2 4\n3 4\n1 2\n3 4\n",
+          "expected": "2\n2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Путь",
+          "stdin": "5 4\n1 2\n2 3\n3 4\n4 5\n1 3\n2 4\n1 5\n",
+          "expected": "1\n1\n0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Двудольный",
+          "stdin": "6 6\n1 4\n1 5\n1 6\n2 4\n2 5\n3 6\n1 2\n1 3\n2 3\n",
+          "expected": "2\n1\n0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Запрос a a",
+          "stdin": "3 2\n1 2\n2 3\n2 2\n",
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Соседи друг друга",
+          "stdin": "6 7\n6 1\n6 2\n6 3\n5 1\n5 2\n5 3\n5 6\n5 6\n6 5\n",
+          "expected": "3\n3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Без рёбер",
+          "stdin": "5 0\n1 2\n3 4\n",
+          "expected": "0\n0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\nstatic int from[200000], to[200000];\nstatic int start[100002], fill[100001];\nstatic int neighbours[400000];\n\nstatic int compare(const void *a, const void *b) {\n    int x = *(const int *)a, y = *(const int *)b;\n    return (x > y) - (x < y);\n}\n\nint main(void) {\n    int vertices, edges;\n    if (scanf(\"%d %d\", &vertices, &edges) != 2 || vertices < 1 || vertices > 100000 || edges > 200000) {\n        return 0;\n    }\n    for (int i = 0; i < edges; i++) {\n        scanf(\"%d %d\", &from[i], &to[i]);\n        start[from[i] + 1]++;\n        start[to[i] + 1]++;\n    }\n    for (int v = 1; v <= vertices + 1; v++) {\n        start[v] += start[v - 1];\n    }\n    for (int v = 1; v <= vertices; v++) {\n        fill[v] = start[v];\n    }\n    for (int i = 0; i < edges; i++) {\n        neighbours[fill[from[i]]++] = to[i];\n        neighbours[fill[to[i]]++] = from[i];\n    }\n    for (int v = 1; v <= vertices; v++) {\n        qsort(&neighbours[start[v]], (size_t)(start[v + 1] - start[v]), sizeof(int), compare);\n    }\n    int a, b;\n    while (scanf(\"%d %d\", &a, &b) == 2) {\n        int i = start[a], j = start[b], common = 0;\n        while (i < start[a + 1] && j < start[b + 1]) {\n            if (neighbours[i] < neighbours[j]) {\n                i++;\n            } else if (neighbours[i] > neighbours[j]) {\n                j++;\n            } else {\n                common++;\n                i++;\n                j++;\n            }\n        }\n        printf(\"%d\\n\", common);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Подготовка — построение сжатых списков `O(V + E)` и сортировка каждого списка: суммарно `O(E log E)`. После этого пересечение двух списков работает как слияние из урока о сортировке слиянием: два указателя идут по отсортированным спискам, меньший элемент пропускается, совпадающий — общий сосед. Каждый шаг сдвигает хотя бы один указатель, поэтому запрос стоит `O(deg a + deg b)`.\n\nЕсли `a` и `b` соседи друг друга, они не считаются общими соседями: `b` есть в списке `a`, но самого `b` нет в списке `b` — петель нет. Для запроса `a a` ответ — степень `a`: каждый сосед общий сам с собой. Хеш-множество тоже решило бы задачу, но отсортированные массивы проще, компактнее и быстрее обходятся в памяти.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "algo-graph-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "invariant",
-        "question": "Как учитывается петля в степени неориентированного графа?",
-        "options": ["Добавляет 2", "Не учитывается"],
-        "correct": 0,
-        "explanation": "Структура хранит отношения между объектами, а не только последовательность объектов. Рёбра (0,1),(1,2),(1,1) дают степени 1,4,1. Сумма степеней 6 равна 2E."
+        "id": "q1",
+        "question": "В неориентированном графе 7 рёбер. Чему равна сумма степеней всех вершин?",
+        "explanation": "Каждое ребро добавляет по единице к степени двух концов: сумма степеней равна 2E.",
+        "type": "text",
+        "answers": ["14"],
+        "placeholder": "Число"
       },
       {
-        "id": "complexity",
-        "question": "Какая оценка соответствует рассмотренной реализации?",
-        "options": [
-          "Всегда O(1), потому что все тесты ограничены по размеру.",
-          "Построение и полный обход списков O(V+E); матрицы O(V²)."
-        ],
-        "correct": 1,
-        "explanation": "Матрица хороша для плотного графа и частых проверок рёбер, списки — для разреженного обхода."
+        "id": "q2",
+        "question": "Сколько ячеек занимает матрица смежности графа из 1000 вершин и 3000 рёбер?",
+        "explanation": "V² = 10⁶ ячеек независимо от числа рёбер. Списки смежности заняли бы около V + 2E = 7000 ячеек.",
+        "type": "text",
+        "answers": ["1000000"],
+        "placeholder": "Число"
       },
       {
-        "id": "engineering",
-        "question": "Какое инженерное ограничение необходимо учитывать?",
+        "id": "q3",
+        "question": "Какие задачи естественно описываются ориентированным графом?",
+        "explanation": "Зависимость, ссылка и подписка имеют направление. Взаимная дружба — неориентированное ребро.",
+        "type": "multiple",
         "options": [
-          "Оценка O(V+E) предполагает списки; просмотр всей строки матрицы для каждой вершины даёт O(V²).",
-          "Совпадение Big O гарантирует одинаковое время на любой машине."
+          "Зависимости целей в Makefile",
+          "Ссылки между веб-страницами",
+          "Дружба в социальной сети, где дружба взаимна",
+          "Подписки в сети, где можно подписаться без взаимности"
         ],
-        "correct": 0,
-        "explanation": "Массив дуг лучше множества malloc, CSR дополнительно делает соседей непрерывными. O(V+E) у списков; наш буфер имеет явные верхние границы 32 вершин и 128 рёбер."
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nint main(void) {\n    int adj[4][4] = {{0}};\n    int edges[][2] = {{0, 1}, {1, 2}, {2, 0}, {2, 3}};\n    for (int i = 0; i < 4; i++) {\n        adj[edges[i][0]][edges[i][1]] = 1;\n    }\n    int out = 0, in = 0;\n    for (int v = 0; v < 4; v++) {\n        out += adj[2][v];\n        in += adj[v][2];\n    }\n    printf(\"%d %d\\n\", out, in);\n    return 0;\n}",
+        "explanation": "Граф ориентированный: из вершины 2 выходят рёбра в 0 и 3, а входит одно — из 1. Строка матрицы — исходящие рёбра, столбец — входящие.",
+        "type": "text",
+        "answers": ["2 1"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Сколько стоит перебор всех соседей вершины u в матрице смежности и в списках смежности?",
+        "explanation": "В матрице нужно просмотреть всю строку, в списках — только сохранённых соседей.",
+        "options": ["O(V) и O(deg u)", "O(1) и O(1)", "O(deg u) и O(V)", "O(E) и O(V)"],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Когда матрица смежности лучше списков смежности?",
+        "explanation": "Матрица проверяет ребро за O(1), но занимает V² памяти и перебирает соседей за O(V).",
+        "options": [
+          "Граф плотный и небольшой, а главная операция — проверка наличия ребра",
+          "Граф огромный и разреженный",
+          "Нужно обойти граф за O(V + E)",
+          "Никогда"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Степени вершин 1…4 равны 2, 1, 3, 2. Сжатое представление хранит начала списков start[v] = сумма степеней вершин меньше v. Чему равно start[4]?",
+        "explanation": "start[4] = deg(1) + deg(2) + deg(3) = 2 + 1 + 3 = 6: соседи вершины 4 начинаются с позиции 6.",
+        "type": "text",
+        "answers": ["6"],
+        "placeholder": "Число"
+      },
+      {
+        "id": "q8",
+        "question": "Чем опасен код int degree[V]; … degree[v]++; если вершины во вводе нумеруются от 1 до V?",
+        "explanation": "Индексы массива — от 0 до V − 1. Нужно V + 1 ячейка или вычитание единицы при чтении. Неиспользуемая ячейка 0 — не ошибка, а запись в degree[V] — ошибка.",
+        "options": [
+          "Для v = V запись идёт за границу массива",
+          "degree[0] останется неиспользованным, но это не ошибка",
+          "Ничем",
+          "Массив переполнится при больших степенях"
+        ],
+        "correct": 0
       }
     ]
   }

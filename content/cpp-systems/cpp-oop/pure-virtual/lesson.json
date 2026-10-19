@@ -1,178 +1,438 @@
 {
   "id": "oop-pure-virtual",
   "title": "Чисто виртуальные функции",
-  "description": "Запись virtual int read() const = 0 объявляет обязательную операцию без реализации по умолчанию в интерфейсе. Класс, у которого остаётся чисто виртуальный финальный переопределитель, абстрактен. Производный класс становится конкретным, когда реализует все обязательные операции. Ноль здесь — часть синтаксиса, а не возвращаемое значение.",
+  "description": "Заглушка в базе вместо реализации и почему она опасна; чисто виртуальная функция = 0 и абстрактный класс; ошибка компиляции при создании неполного объекта; базовый класс как обязательный договор; чисто виртуальная функция с телом; почему нельзя вызывать её из конструктора базы. Первый этап проекта «Система обработки датчиков».",
   "moduleId": "cpp-oop",
-  "order": 17,
-  "difficulty": "advanced",
-  "estimatedMinutes": 60,
+  "order": 19,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
   "prerequisites": ["oop-final"],
   "objectives": [
-    "Применить Чисто виртуальные функции в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Объявлять чисто виртуальные функции и абстрактные классы",
+    "Превращать забытое переопределение в ошибку компиляции",
+    "Проектировать базовый класс как договор для наследников"
   ],
-  "tags": ["C++20", "ООП", "Чисто виртуальные функции", "датчики", "проект"],
+  "tags": ["C++23", "ООП", "Чисто виртуальная функция", "Абстрактный класс", "Проект"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-pure-virtual-exercise",
-    "title": "Практика: Чисто виртуальные функции",
-    "description": "Определите Source с чисто виртуальным int read() const и виртуальным деструктором. Constant(int) сохраняет число, реализует read. Функция int twice(const Source&) вызывает read ровно два раза и суммирует результаты. solve(a,b) возвращает twice(Constant{a})+b. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Животные",
+    "description": "Опишите абстрактный класс `Animal` с чисто виртуальными функциями `std::string name() const` и `std::string sound() const`, и наследников `Cat` (`кошка`, `мяу`), `Dog` (`собака`, `гав`) и `Cow` (`корова`, `муу`). Функция `void speak(const Animal &a, int times)` печатает `имя: звук звук …` (звук повторяется `times` раз через пробел).\n\nКаждая строка ввода — вид (`cat`, `dog`, `cow`) и число повторов.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(4, 1)",
-        "output": "9\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "cat 2\ndog 1\n",
+        "output": "кошка: мяу мяу\nсобака: гав\n"
       },
       {
-        "input": "solve(0, 2)",
-        "output": "2\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "cow 3\n",
+        "output": "корова: муу муу муу\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Строк не больше 30; повторов от 1 до 10."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "virtual std::string sound() const = 0; — и обязательно virtual ~Animal() = default;.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Звуки собирайте в строку: line += (i ? \" \" : \"\") + a.sound();.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [4, 1],
-        "expected": "9\n"
+        "stdin": "cat 2\ndog 1\n",
+        "expected": "кошка: мяу мяу\nсобака: гав\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 2],
-        "expected": "2\n"
+        "stdin": "cow 3\n",
+        "expected": "корова: муу муу муу\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [-3, 1],
-        "expected": "-5\n"
+        "id": "hidden-1",
+        "name": "Пусто",
+        "stdin": "",
+        "expected": ""
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [1000, -1000],
-        "expected": "1000\n"
+        "id": "hidden-2",
+        "name": "Десять раз",
+        "stdin": "cat 10\n",
+        "expected": "кошка: мяу мяу мяу мяу мяу мяу мяу мяу мяу мяу\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Две собаки",
+        "stdin": "dog 1\ndog 2\n",
+        "expected": "собака: гав\nсобака: гав гав\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Все виды",
+        "stdin": "cow 1\ncat 1\ndog 1\n",
+        "expected": "корова: муу\nкошка: мяу\nсобака: гав\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Один раз",
+        "stdin": "cat 1\n",
+        "expected": "кошка: мяу\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Пять",
+        "stdin": "dog 5\n",
+        "expected": "собака: гав гав гав гав гав\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Повтор",
+        "stdin": "cow 2\ncow 2\n",
+        "expected": "корова: муу муу\nкорова: муу муу\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Смесь",
+        "stdin": "cat 3\ncow 4\n",
+        "expected": "кошка: мяу мяу мяу\nкорова: муу муу муу муу\n"
       }
     ],
-    "referenceSolution": "struct Source { virtual int read() const = 0; virtual ~Source() = default; };\nclass Constant : public Source { int value_; public: explicit Constant(int x) : value_(x) {} int read() const override { return value_; } };\nint twice(const Source& s) { return s.read()+s.read(); }\nint solve(int a,int b) { Constant s{a}; return twice(s)+b; }",
-    "solutionExplanation": "Определите Source с чисто виртуальным int read() const и виртуальным деструктором. Constant(int) сохраняет число, реализует read. Функция int twice(const Source&) вызывает read ровно два раза и суммирует результаты. solve(a,b) возвращает twice(Constant{a})+b. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не возвращайте фиктивный ноль в базе, если реального значения по умолчанию нет. Такая заглушка скрывает забытое переопределение. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nclass Animal {\npublic:\n    virtual ~Animal() = default;\n    virtual std::string name() const = 0;\n    virtual std::string sound() const = 0;\n};\n\nclass Cat : public Animal {\npublic:\n    std::string name() const override {\n        return \"кошка\";\n    }\n\n    std::string sound() const override {\n        return \"мяу\";\n    }\n};\n\nclass Dog : public Animal {\npublic:\n    std::string name() const override {\n        return \"собака\";\n    }\n\n    std::string sound() const override {\n        return \"гав\";\n    }\n};\n\nclass Cow : public Animal {\npublic:\n    std::string name() const override {\n        return \"корова\";\n    }\n\n    std::string sound() const override {\n        return \"муу\";\n    }\n};\n\nvoid speak(const Animal &a, int times) {\n    std::string line;\n    for (int i = 0; i < times; i++) {\n        line += (i ? \" \" : \"\") + a.sound();\n    }\n    std::println(\"{}: {}\", a.name(), line);\n}\n\nint main() {\n    Cat cat;\n    Dog dog;\n    Cow cow;\n    std::string kind;\n    int times;\n    while (std::cin >> kind >> times) {\n        if (kind == \"cat\") {\n            speak(cat, times);\n        } else if (kind == \"dog\") {\n            speak(dog, times);\n        } else {\n            speak(cow, times);\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "У «просто животного» нет ни имени, ни звука, поэтому функции в базе чисто виртуальные, а сама база абстрактная: создать `Animal` нельзя. Каждый наследник обязан реализовать оба метода — забудь он `sound`, объект нельзя было бы создать.\n\n`speak` работает с договором `Animal` и не знает о конкретных видах.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
   "additionalExercises": [
     {
-      "id": "oop-project-sensors",
-      "title": "Проект, этап 1: модели датчиков",
-      "description": "Реализуйте Measurement{int sensorId,int value}, абстрактный Sensor с virtual Measurement read(int raw) const=0 и virtual destructor; TemperatureSensor(int id,int offset) возвращает {id,raw+offset}, PressureSensor(int id,int scale) — {id,raw*scale}. Поля закрыты, реализации final, методы override. solve(a,b) создаёт TemperatureSensor{1,b} и PressureSensor{2,2}, читает оба через const Sensor& с raw=a и возвращает сумму кодов результатов. Это техническая контрольная сумма, а не сумма физических величин. a,b — целые −1000…1000. Без main.",
-      "difficulty": "advanced",
+      "id": "oop-pure-virtual-task-2",
+      "title": "Налоговые правила",
+      "description": "Опишите абстрактный класс `Tax` с единственной чисто виртуальной функцией `long long amount(long long income) const` и три правила:\n\n- `flat` — 13 % дохода;\n- `progressive` — 13 % с части до 2 400 000 и 15 % с части сверх неё;\n- `exempt L` — освобождение: доход до `L` включительно не облагается, с превышения — 13 %.\n\nВсе проценты — целочисленно (`x · p / 100`), отдельно для каждой части. Первая строка — правила через пробел (у `exempt` следом идёт `L`). Затем доходы. Для каждого дохода напечатайте налоги по всем правилам через пробел.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "cpp",
-      "standard": "c++20",
-      "compiler": "clang",
+      "standard": "c++23",
+      "compiler": "gcc",
       "diagnostics": "sanitizers",
-      "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <stdexcept>\n#include <utility>\nstruct Measurement { int sensorId; int value; };\nclass Sensor {\npublic:\n    virtual Measurement read(int raw) const = 0;\n    virtual ~Sensor() = default;\n};\nclass TemperatureSensor final : public Sensor {\n    int id_; int offset_;\npublic:\n    TemperatureSensor(int id, int offset) : id_(id), offset_(offset) {}\n    Measurement read(int raw) const override {\n        (void)raw; (void)id_; (void)offset_;\n        throw std::logic_error(\"Реализуйте преобразование температуры\");\n    }\n};\nclass PressureSensor final : public Sensor {\n    int id_; int scale_;\npublic:\n    PressureSensor(int id, int scale) : id_(id), scale_(scale) {}\n    Measurement read(int raw) const override {\n        (void)raw; (void)id_; (void)scale_;\n        throw std::logic_error(\"Реализуйте преобразование давления\");\n    }\n};\nint solve(int a,int b) { (void)a; (void)b; throw std::logic_error(\"Соберите проверку двух датчиков через Sensor\"); }",
       "examples": [
         {
-          "input": "solve(10, 2)",
-          "output": "32\n",
-          "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+          "input": "flat progressive\n1000000\n5000000\n",
+          "output": "130000 130000\n650000 702000\n"
         },
         {
-          "input": "solve(0, -3)",
-          "output": "-3\n",
-          "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+          "input": "exempt 100000 flat\n50000\n150000\n",
+          "output": "0 6500\n6500 19500\n"
         }
       ],
-      "constraints": [
-        "Аргументы a, b — целые от −1000 до 1000 включительно.",
-        "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-        "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-      ],
+      "constraints": ["Правил от 1 до 5; доходов до 30; числа до 10¹²."],
       "hints": [
         {
           "id": "hint-1",
-          "order": 1,
-          "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+          "text": "Первая строка читается через std::getline и разбирается по словам; правила храните в векторах конкретных типов с reserve и указателях на базу.",
+          "order": 1
         },
         {
           "id": "hint-2",
-          "order": 2,
-          "text": "Каждый конкретный датчик хранит свою калибровку, read возвращает независимое Measurement. Базовые ссылки сохраняют динамический тип. Процессору не придётся знать формулы конкретных устройств. Время и дополнительная память каждого чтения O(1)."
+          "text": "Если правила одного вида не повторяются в условии, можно обойтись тремя объектами в main и вектором указателей в порядке строки.",
+          "order": 2
         }
       ],
       "publicTests": [
         {
           "id": "case-1",
           "name": "Пример 1",
-          "arguments": [10, 2],
-          "expected": "32\n"
+          "stdin": "flat progressive\n1000000\n5000000\n",
+          "expected": "130000 130000\n650000 702000\n"
         },
         {
           "id": "case-2",
           "name": "Пример 2",
-          "arguments": [0, -3],
-          "expected": "-3\n"
+          "stdin": "exempt 100000 flat\n50000\n150000\n",
+          "expected": "0 6500\n6500 19500\n"
         }
       ],
       "hiddenTests": [
         {
-          "id": "case-3",
-          "name": "Граничный сценарий 1",
-          "arguments": [-10, 2],
-          "expected": "-28\n"
+          "id": "hidden-1",
+          "name": "Нулевой доход",
+          "stdin": "flat\n0\n",
+          "expected": "0\n"
         },
         {
-          "id": "case-4",
-          "name": "Граничный сценарий 2",
-          "arguments": [1000, -1000],
-          "expected": "2000\n"
+          "id": "hidden-2",
+          "name": "Граница прогрессии",
+          "stdin": "progressive\n2400000\n2400001\n",
+          "expected": "312000\n312000\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Освобождение 0",
+          "stdin": "exempt 0\n100\n",
+          "expected": "13\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Триллион",
+          "stdin": "flat progressive exempt 1000000\n1000000000000\n",
+          "expected": "130000000000 149999952000 129999870000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Два освобождения",
+          "stdin": "exempt 500 exempt 1000\n700\n",
+          "expected": "26 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Округление вниз",
+          "stdin": "flat flat\n99\n",
+          "expected": "12 12\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Два дохода",
+          "stdin": "progressive flat\n10000000\n1\n",
+          "expected": "1452000 1300000\n0 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Сравнение правил",
+          "stdin": "exempt 2400000 progressive\n3000000\n",
+          "expected": "78000 402000\n"
         }
       ],
-      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <stdexcept>\n#include <utility>\nstruct Measurement { int sensorId; int value; };\nclass Sensor {\npublic:\n    virtual Measurement read(int raw) const = 0;\n    virtual ~Sensor() = default;\n};\nclass TemperatureSensor final : public Sensor {\n    int id_;\n    int offset_;\npublic:\n    TemperatureSensor(int id, int offset) : id_(id), offset_(offset) {}\n    Measurement read(int raw) const override { return {id_, raw + offset_}; }\n};\nclass PressureSensor final : public Sensor {\n    int id_;\n    int scale_;\npublic:\n    PressureSensor(int id, int scale) : id_(id), scale_(scale) {}\n    Measurement read(int raw) const override { return {id_, raw * scale_}; }\n};\nint solve(int a,int b) { TemperatureSensor t{1,b}; PressureSensor p{2,2}; const Sensor& left=t; const Sensor& right=p; return left.read(a).value+right.read(a).value; }",
-      "solutionExplanation": "Каждый конкретный датчик хранит свою калибровку, read возвращает независимое Measurement. Базовые ссылки сохраняют динамический тип. Процессору не придётся знать формулы конкретных устройств. Время и дополнительная память каждого чтения O(1).",
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <sstream>\n#include <string>\n#include <vector>\n\nclass Tax {\npublic:\n    virtual ~Tax() = default;\n    virtual long long amount(long long income) const = 0;\n};\n\nclass Flat : public Tax {\npublic:\n    long long amount(long long income) const override {\n        return income * 13 / 100;\n    }\n};\n\nclass Progressive : public Tax {\npublic:\n    long long amount(long long income) const override {\n        const long long border = 2400000;\n        if (income <= border) {\n            return income * 13 / 100;\n        }\n        return border * 13 / 100 + (income - border) * 15 / 100;\n    }\n};\n\nclass Exempt : public Tax {\npublic:\n    explicit Exempt(long long limit) : limit_(limit) {}\n\n    long long amount(long long income) const override {\n        return income <= limit_ ? 0 : (income - limit_) * 13 / 100;\n    }\n\nprivate:\n    long long limit_;\n};\n\nint main() {\n    std::string line;\n    std::getline(std::cin, line);\n    std::istringstream words(line);\n    std::vector<Flat> flats;\n    std::vector<Progressive> progressives;\n    std::vector<Exempt> exempts;\n    flats.reserve(5);\n    progressives.reserve(5);\n    exempts.reserve(5);\n    std::vector<const Tax *> rules;\n    std::string kind;\n    while (words >> kind) {\n        if (kind == \"flat\") {\n            flats.emplace_back();\n            rules.push_back(&flats.back());\n        } else if (kind == \"progressive\") {\n            progressives.emplace_back();\n            rules.push_back(&progressives.back());\n        } else {\n            long long limit;\n            words >> limit;\n            exempts.emplace_back(limit);\n            rules.push_back(&exempts.back());\n        }\n    }\n    long long income;\n    while (std::cin >> income) {\n        std::string out;\n        for (const Tax *t : rules) {\n            out += (out.empty() ? \"\" : \" \") + std::to_string(t->amount(income));\n        }\n        std::println(\"{}\", out);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`Tax` — чистый договор: ни полей, ни реализаций. Код подсчёта знает только, что у любого правила есть `amount`. Правила хранятся в векторах конкретных типов с зарезервированной ёмкостью, а порядок из условия — в векторе указателей на базу.\n\n`std::istringstream` из `<sstream>` превращает строку в поток, из которого слова читаются так же, как из `std::cin`, — удобно, когда первая строка устроена иначе, чем остальные.",
       "checking": {
-        "type": "function",
-        "functionName": "solve",
-        "returnType": "int",
-        "parameters": [
-          { "name": "a", "type": "int" },
-          { "name": "b", "type": "int" }
-        ]
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-pure-virtual-task-3",
+      "title": "Найди ошибку: вызов из конструктора",
+      "description": "Абстрактный класс `Document` при создании печатает `создан документ: вид`. Наследник `Invoice` (счёт) занимает 1 страницу плюс ещё одну на каждые 20 позиций. Для каждого числа позиций из ввода программа создаёт счёт и печатает:\n\n```text\nсоздан документ: счёт\nсчёт: 2 стр.\n```\n\nПрограмма не собирается в GCC, а собранная Clang аварийно завершается. Найдите и исправьте ошибку, сохранив вывод.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Document {\npublic:\n    Document() {\n        std::println(\"создан документ: {}\", kind());\n    }\n\n    virtual ~Document() = default;\n    virtual std::string kind() const = 0;\n    virtual int pages() const = 0;\n};\n\nclass Invoice : public Document {\npublic:\n    explicit Invoice(int items) : items_(items) {}\n\n    std::string kind() const override {\n        return \"счёт\";\n    }\n\n    int pages() const override {\n        return 1 + items_ / 20;\n    }\n\nprivate:\n    int items_;\n};\n\nint main() {\n    int items;\n    while (std::cin >> items) {\n        Invoice invoice(items);\n        const Document &d = invoice;\n        std::println(\"{}: {} стр.\", d.kind(), d.pages());\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "25\n",
+          "output": "создан документ: счёт\nсчёт: 2 стр.\n"
+        },
+        {
+          "input": "0\n",
+          "output": "создан документ: счёт\nсчёт: 1 стр.\n"
+        }
+      ],
+      "constraints": ["Чисел не больше 20; позиций от 0 до 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какую функцию вызывает конструктор Document и существует ли уже в этот момент часть Invoice?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Виртуальный вызов в конструкторе базы не доходит до наследника, а у чисто виртуальной kind() нет реализации в базе. Передайте вид документа аргументом конструктора Document.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "25\n",
+          "expected": "создан документ: счёт\nсчёт: 2 стр.\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "0\n",
+          "expected": "создан документ: счёт\nсчёт: 1 стр.\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "19\n",
+          "expected": "создан документ: счёт\nсчёт: 1 стр.\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "20\n",
+          "expected": "создан документ: счёт\nсчёт: 2 стр.\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "1000\n",
+          "expected": "создан документ: счёт\nсчёт: 51 стр.\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1\n40\n",
+          "expected": "создан документ: счёт\nсчёт: 1 стр.\nсоздан документ: счёт\nсчёт: 3 стр.\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "39\n",
+          "expected": "создан документ: счёт\nсчёт: 2 стр.\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "100\n",
+          "expected": "создан документ: счёт\nсчёт: 6 стр.\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "7\n8\n9\n",
+          "expected": "создан документ: счёт\nсчёт: 1 стр.\nсоздан документ: счёт\nсчёт: 1 стр.\nсоздан документ: счёт\nсчёт: 1 стр.\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "60\n",
+          "expected": "создан документ: счёт\nсчёт: 4 стр.\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Document {\npublic:\n    explicit Document(std::string kind) {\n        std::println(\"создан документ: {}\", kind);\n    }\n\n    virtual ~Document() = default;\n    virtual std::string kind() const = 0;\n    virtual int pages() const = 0;\n};\n\nclass Invoice : public Document {\npublic:\n    explicit Invoice(int items) : Document(\"счёт\"), items_(items) {}\n\n    std::string kind() const override {\n        return \"счёт\";\n    }\n\n    int pages() const override {\n        return 1 + items_ / 20;\n    }\n\nprivate:\n    int items_;\n};\n\nint main() {\n    int items;\n    while (std::cin >> items) {\n        Invoice invoice(items);\n        const Document &d = invoice;\n        std::println(\"{}: {} стр.\", d.kind(), d.pages());\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Пока выполняется конструктор `Document`, объект ещё не стал счётом: часть `Invoice` не создана, и виртуальный вызов `kind()` уходит в версию `Document`. А её нет — функция чисто виртуальная. GCC видит это при компиляции (предупреждение и ошибка компоновки `undefined reference`), в программе Clang вызов срабатывает во время работы, и она завершается с сообщением `pure virtual method called`.\n\nИнформацию, нужную базе при создании, наследник передаёт аргументом конструктора: `Invoice(int items) : Document(\"счёт\"), …`. Виртуальные функции используют уже после создания объекта.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-project-sensors",
+      "title": "Проект, этап 1: модели датчиков",
+      "description": "Первый этап проекта «Система обработки датчиков». Опишите:\n\n- `struct Measurement { int sensorId; int value; };` — результат измерения;\n- абстрактный класс `Sensor` с чисто виртуальной функцией `Measurement read(int raw) const` и виртуальным деструктором;\n- финальные классы `TemperatureSensor(int id, int offset)` — возвращает `{id, raw + offset}` — и `PressureSensor(int id, int scale)` — `{id, raw · scale}`. Поля закрыты, методы помечены `override`.\n\nФункция `Measurement measure(const Sensor &s, int raw)` вызывает `read` через ссылку на базу. Каждая строка ввода — `T id калибровка raw` или `P id калибровка raw`. Для каждой напечатайте `id value`, а в конце — `датчиков N` и `сумма кодов S` (сумма всех value: это контрольный код протокола, а не физическая величина).",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "T 1 2 8\nP 2 3 7\n",
+          "output": "1 10\n2 21\nдатчиков 2\nсумма кодов 31\n"
+        },
+        {
+          "input": "",
+          "output": "датчиков 0\nсумма кодов 0\n"
+        }
+      ],
+      "constraints": [
+        "Строк не больше 100; id от 1 до 1000; калибровка от −10 до 10; raw от −1000 до 1000."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "class Sensor { public: virtual ~Sensor() = default; virtual Measurement read(int raw) const = 0; };",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Датчики разных видов можно создавать прямо в ветках if и сразу передавать в measure — хранить их не нужно.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "T 1 2 8\nP 2 3 7\n",
+          "expected": "1 10\n2 21\nдатчиков 2\nсумма кодов 31\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "датчиков 0\nсумма кодов 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Отрицательная поправка",
+          "stdin": "T 7 -5 5\n",
+          "expected": "7 0\nдатчиков 1\nсумма кодов 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Нулевой масштаб",
+          "stdin": "P 9 0 1000\n",
+          "expected": "9 0\nдатчиков 1\nсумма кодов 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Границы масштаба",
+          "stdin": "P 1 10 1000\nP 2 -10 1000\n",
+          "expected": "1 10000\n2 -10000\nдатчиков 2\nсумма кодов 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Границы значений",
+          "stdin": "T 1000 10 -1000\n",
+          "expected": "1000 -990\nдатчиков 1\nсумма кодов -990\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Повтор id",
+          "stdin": "T 3 1 1\nT 3 1 1\n",
+          "expected": "3 2\n3 2\nдатчиков 2\nсумма кодов 4\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Отрицательные",
+          "stdin": "P 4 -1 2\nT 8 -2 -3\nP 2 2 -10\n",
+          "expected": "4 -2\n8 -5\n2 -20\nдатчиков 3\nсумма кодов -27\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Нули",
+          "stdin": "T 1 0 0\nP 2 0 0\nT 3 0 0\n",
+          "expected": "1 0\n2 0\n3 0\nдатчиков 3\nсумма кодов 0\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Почти границы",
+          "stdin": "P 5 7 -999\nT 6 -10 999\n",
+          "expected": "5 -6993\n6 989\nдатчиков 2\nсумма кодов -6004\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n\nstruct Measurement {\n    int sensorId;\n    int value;\n};\n\nclass Sensor {\npublic:\n    virtual ~Sensor() = default;\n    virtual Measurement read(int raw) const = 0;\n};\n\nclass TemperatureSensor final : public Sensor {\npublic:\n    TemperatureSensor(int id, int offset) : id_(id), offset_(offset) {}\n\n    Measurement read(int raw) const override {\n        return {id_, raw + offset_};\n    }\n\nprivate:\n    int id_;\n    int offset_;\n};\n\nclass PressureSensor final : public Sensor {\npublic:\n    PressureSensor(int id, int scale) : id_(id), scale_(scale) {}\n\n    Measurement read(int raw) const override {\n        return {id_, raw * scale_};\n    }\n\nprivate:\n    int id_;\n    int scale_;\n};\n\nMeasurement measure(const Sensor &s, int raw) {\n    return s.read(raw);\n}\n\nint main() {\n    char type;\n    int id, calibration, raw;\n    int count = 0;\n    long long sum = 0;\n    while (std::cin >> type >> id >> calibration >> raw) {\n        Measurement m = type == 'T' ? measure(TemperatureSensor(id, calibration), raw)\n                                    : measure(PressureSensor(id, calibration), raw);\n        std::println(\"{} {}\", m.sensorId, m.value);\n        count++;\n        sum += m.value;\n    }\n    std::println(\"датчиков {}\", count);\n    std::println(\"сумма кодов {}\", sum);\n    return 0;\n}\n",
+      "solutionExplanation": "`Sensor` — договор: «датчик умеет превратить сырое значение в измерение». У «просто датчика» нет формулы, поэтому `read` чисто виртуальная, и создать `Sensor` нельзя. Каждый вид датчика хранит свою калибровку закрытой и реализует формулу в `read`; конкретные классы `final` — у них не будет наследников.\n\n`measure` знает только договор. На втором этапе к нему добавится фильтр, а на третьем — процессор, который владеет набором датчиков любых видов и обрабатывает их одним циклом, ничего не зная о формулах.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
       }
     }
   ],
@@ -181,28 +441,95 @@
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Что означает = 0 в объявлении виртуального метода?",
-        "options": ["Операция объявлена чисто виртуальной", "Метод всегда возвращает ноль"],
-        "correct": 0,
-        "explanation": "У чисто виртуальной функции может быть отдельное определение, но это не отменяет абстрактность соответствующего класса. Чисто виртуальному деструктору определение необходимо: он всё равно участвует в уничтожении. Для нашего интерфейса проще обычный virtual ~Sensor() = default. Не вызывайте чисто виртуальные функции виртуально из конструктора или деструктора базы. Интерфейс должен требовать только то, что способен обеспечить каждый датчик."
-      },
-      {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "14", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 14. Запись virtual int read() const = 0 объявляет обязательную операцию без реализации по умолчанию в интерфейсе. Класс, у которого остаётся чисто виртуальный финальный переопределитель, абстрактен. Производный класс становится конкретным, когда реализует все обязательные операции. Ноль здесь — часть синтаксиса, а не возвращаемое значение."
-      },
-      {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q1",
+        "question": "Что означает запись virtual double area() const = 0;?",
+        "explanation": "Это чисто виртуальная функция, а класс с ней — абстрактный.",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Не возвращайте фиктивный ноль в базе, если реального значения по умолчанию нет. Такая заглушка скрывает забытое переопределение."
+          "У базы нет реализации; каждый неабстрактный наследник обязан дать свою",
+          "Функция возвращает 0",
+          "Функцию нельзя вызывать",
+          "Функция статическая"
         ],
-        "correct": 1,
-        "explanation": "Удалите реализацию read у Constant и объясните, почему его нельзя создать. Ошибка появляется до выполнения. Затем добавьте другой конкретный Source и передайте его тому же клиенту без изменения клиента. Это практический смысл обязательной операции интерфейса."
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Что из этого скомпилируется, если Shape — абстрактный класс, а Circle — его неабстрактный наследник? Выберите все.",
+        "explanation": "Объект абстрактного класса создать нельзя; ссылки и указатели на него — можно.",
+        "type": "multiple",
+        "options": [
+          "Shape s;",
+          "Circle c(1);",
+          "const Shape &r = c;",
+          "std::vector<const Shape *> v;"
+        ],
+        "correct": [1, 2, 3]
+      },
+      {
+        "id": "q3",
+        "question": "Наследник реализовал только одну из двух чисто виртуальных функций базы. Какой он?",
+        "explanation": "Ошибка появится при попытке создать его объект.",
+        "options": [
+          "Абстрактный",
+          "Неабстрактный: одной реализации достаточно",
+          "Ошибочный — не скомпилируется даже объявление",
+          "Финальный"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct Unit {\n    virtual ~Unit() = default;\n    virtual int power() const = 0;\n    int doubled() const { return 2 * power(); }\n};\n\nstruct Knight : Unit {\n    int power() const override { return 7; }\n};\n\nint main() {\n    Knight k;\n    const Unit &u = k;\n    std::println(\"{}\", u.doubled());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Обычный метод базы вызывает чисто виртуальную функцию — работает версия настоящего объекта.",
+        "type": "text",
+        "answers": ["14"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Почему чисто виртуальная функция лучше заглушки virtual double area() const { return 0; }?",
+        "explanation": "И объект «просто фигуры», который ничего не означает, создать становится невозможно.",
+        "options": [
+          "Забытое переопределение становится ошибкой компиляции, а не тихим нулём",
+          "Она работает быстрее",
+          "Она занимает меньше памяти",
+          "Заглушки запрещены стандартом"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Может ли у чисто виртуальной функции быть тело?",
+        "explanation": "Редкий приём: общая часть поведения, которую наследники вызывают явно.",
+        "options": [
+          "Да, если определить его вне класса; наследник всё равно обязан переопределить функцию, но может вызвать Base::f()",
+          "Нет, никогда",
+          "Да, и тогда класс перестаёт быть абстрактным",
+          "Только у деструктора"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что произойдёт, если конструктор базы вызовет чисто виртуальную функцию без тела?",
+        "explanation": "Если базе нужны данные наследника при создании, их передают аргументом конструктора.",
+        "options": [
+          "Наследник ещё не создан: GCC выдаст ошибку компоновки, программа Clang аварийно завершится (pure virtual method called)",
+          "Вызовется версия наследника",
+          "Вызов будет пропущен",
+          "Функция вернёт значение по умолчанию"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Как называют класс, состоящий только из чисто виртуальных функций и виртуального деструктора?",
+        "explanation": "Интерфейс — чистый договор без данных и реализаций.",
+        "type": "text",
+        "answers": ["интерфейс", "Интерфейс"],
+        "placeholder": "Слово"
       }
     ]
   }

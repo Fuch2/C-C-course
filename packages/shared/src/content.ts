@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { Root } from 'hast';
 
 export const idSchema = z.string().regex(/^[a-z0-9][a-z0-9-]{0,79}$/);
-export const standardSchema = z.enum(['c11', 'c17', 'c++17', 'c++20']);
+export const standardSchema = z.enum(['c11', 'c17', 'c23', 'c++17', 'c++20', 'c++23']);
 export const compilerSchema = z.enum(['gcc', 'clang']);
 const text = z.string().trim().min(1);
 const ids = z.array(idSchema).refine((v) => new Set(v).size === v.length, 'Повтор идентификатора');

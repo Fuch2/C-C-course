@@ -1,0 +1,543 @@
+{
+  "id": "oop-variant",
+  "title": "std::variant и std::visit",
+  "description": "Тип-сумма std::variant для закрытого набора видов: альтернативы, index, get, get_if, holds_alternative, bad_variant_access; std::visit с набором лямбд overloaded и проверка всех случаев компилятором; сравнение с виртуальными функциями — что легче добавлять, типы или операции; конечный автомат на variant и monostate.",
+  "moduleId": "cpp-oop",
+  "order": 25,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["oop-interfaces"],
+  "objectives": [
+    "Хранить значение одного из нескольких типов в std::variant",
+    "Безопасно доставать значение через get_if и std::visit",
+    "Выбирать между variant и иерархией с виртуальными функциями",
+    "Описывать состояния конечного автомата альтернативами variant"
+  ],
+  "tags": ["C++23", "ООП", "variant", "visit", "Конечный автомат"],
+  "published": true,
+  "standard": "c++23",
+  "completion": "practice",
+  "exercise": {
+    "id": "oop-variant-exercise",
+    "title": "Команды робота",
+    "description": "Робот стоит в точке (0, 0) и смотрит на север. Команды описаны структурами `Move { int steps; }`, `Turn { bool left; }`, `Say { std::string text; }` и типом `using Command = std::variant<Move, Turn, Say>;`.\n\nВвод — команды по одной: `move N`, `turn left` или `turn right`, `say слово`. Сначала разберите команду в `Command`, затем выполните её через `std::visit`:\n\n- `Move` — шаг на N клеток в текущем направлении (север — `y + N`, восток — `x + N`, юг — `y − N`, запад — `x − N`);\n- `Turn` — поворот на 90°;\n- `Say` — печать `(x, y) слово`.\n\nВ конце напечатайте `конец (x, y) направление`, где направление — `север`, `восток`, `юг` или `запад`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "cpp",
+    "standard": "c++23",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "move 2\nturn right\nmove 3\nsay привет\nturn left\nturn left\nmove 1\n",
+        "output": "(3, 2) привет\nконец (2, 2) запад\n"
+      },
+      {
+        "input": "",
+        "output": "конец (0, 0) север\n"
+      }
+    ],
+    "constraints": ["Команд не больше 100; 0 ≤ N ≤ 1000."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Направление удобно хранить числом 0…3 (север, восток, юг, запад): поворот направо — (d + 1) % 4, налево — (d + 3) % 4.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "Обработчики в overloaded захватывают состояние робота по ссылке: [&](const Move &m) { … }.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "move 2\nturn right\nmove 3\nsay привет\nturn left\nturn left\nmove 1\n",
+        "expected": "(3, 2) привет\nконец (2, 2) запад\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "",
+        "expected": "конец (0, 0) север\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Поворот налево с севера",
+        "stdin": "turn left\n",
+        "expected": "конец (0, 0) запад\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Полный оборот",
+        "stdin": "turn right\nturn right\nturn right\nturn right\n",
+        "expected": "конец (0, 0) север\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Движение на юг",
+        "stdin": "turn right\nturn right\nmove 5\nsay юг\n",
+        "expected": "(0, -5) юг\nконец (0, -5) юг\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Нулевой шаг",
+        "stdin": "say старт\nmove 0\nsay стоп\n",
+        "expected": "(0, 0) старт\n(0, 0) стоп\nконец (0, 0) север\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Большие шаги",
+        "stdin": "move 1000\nturn left\nmove 1000\n",
+        "expected": "конец (-1000, 1000) запад\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Три поворота налево",
+        "stdin": "turn left\nturn left\nturn left\nmove 4\n",
+        "expected": "конец (4, 0) восток\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Несколько фраз",
+        "stdin": "move 1\nsay a\nmove 1\nsay b\nmove 1\nsay c\n",
+        "expected": "(0, 1) a\n(0, 2) b\n(0, 3) c\nконец (0, 3) север\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Квадрат",
+        "stdin": "turn right\nmove 2\nturn right\nmove 2\nturn right\nmove 2\nturn right\nmove 2\nsay дома\n",
+        "expected": "(0, 0) дома\nконец (0, 0) север\n"
+      }
+    ],
+    "referenceSolution": "#include <array>\n#include <iostream>\n#include <print>\n#include <string>\n#include <variant>\n\nstruct Move {\n    int steps;\n};\n\nstruct Turn {\n    bool left;\n};\n\nstruct Say {\n    std::string text;\n};\n\nusing Command = std::variant<Move, Turn, Say>;\n\ntemplate <class... Ts>\nstruct overloaded : Ts... {\n    using Ts::operator()...;\n};\n\nCommand parse(const std::string &kind, std::istream &in) {\n    if (kind == \"move\") {\n        int steps;\n        in >> steps;\n        return Move{steps};\n    }\n    if (kind == \"turn\") {\n        std::string side;\n        in >> side;\n        return Turn{side == \"left\"};\n    }\n    std::string text;\n    in >> text;\n    return Say{text};\n}\n\nint main() {\n    constexpr std::array<int, 4> dx{0, 1, 0, -1};\n    constexpr std::array<int, 4> dy{1, 0, -1, 0};\n    constexpr std::array<const char *, 4> names{\"север\", \"восток\", \"юг\", \"запад\"};\n    int x = 0, y = 0, dir = 0;\n    std::string kind;\n    while (std::cin >> kind) {\n        const Command command = parse(kind, std::cin);\n        std::visit(overloaded{\n                       [&](const Move &m) {\n                           x += dx[dir] * m.steps;\n                           y += dy[dir] * m.steps;\n                       },\n                       [&](const Turn &t) { dir = t.left ? (dir + 3) % 4 : (dir + 1) % 4; },\n                       [&](const Say &s) { std::println(\"({}, {}) {}\", x, y, s.text); },\n                   },\n                   command);\n    }\n    std::println(\"конец ({}, {}) {}\", x, y, names[dir]);\n    return 0;\n}\n",
+    "solutionExplanation": "Разбор и выполнение разделены: `parse` превращает текст в значение `Command`, а `visit` выполняет его. Команда — просто данные, её можно сохранить в вектор, отменить или передать по сети, и для этого не нужна иерархия классов с кучей.\n\nЕсли добавить в `Command` новую команду, например `Jump`, компилятор потребует обработчик в `visit` — забыть случай не получится.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "oop-variant-task-2",
+      "title": "Токены",
+      "description": "Разберите слова входа на токены `using Token = std::variant<long long, double, std::string>;`:\n\n- слово целиком читается как целое (`std::from_chars` в `long long`) — целое;\n- иначе слово целиком читается как дробное (`std::from_chars` в `double`) — дробное;\n- иначе — строка.\n\nДля каждого токена напечатайте `целое N`, `дробное D` или `строка S` (дробное — в формате `{}` библиотеки `<format>`). В конце напечатайте `целых K, сумма S` — количество и сумму целых токенов (используйте `std::get_if` или `std::holds_alternative`).",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "42 2.5 кот -7\n",
+          "output": "целое 42\nдробное 2.5\nстрока кот\nцелое -7\nцелых 2, сумма 35\n"
+        },
+        {
+          "input": "",
+          "output": "целых 0, сумма 0\n"
+        }
+      ],
+      "constraints": [
+        "Слов не больше 100; целые по модулю до 10¹²; слова nan и inf во входе не встречаются."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Чтобы слово читалось «целиком», проверьте не только ec == std::errc(), но и что указатель ptr дошёл до конца строки.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Печать через visit: [](long long n) { … }, [](double d) { … }, [](const std::string &s) { … }.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "42 2.5 кот -7\n",
+          "expected": "целое 42\nдробное 2.5\nстрока кот\nцелое -7\nцелых 2, сумма 35\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "целых 0, сумма 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Экспонента и хвост",
+          "stdin": "1e3 12кг 0.1\n",
+          "expected": "дробное 1000\nстрока 12кг\nдробное 0.1\nцелых 0, сумма 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Только строки",
+          "stdin": "a b c\n",
+          "expected": "строка a\nстрока b\nстрока c\nцелых 0, сумма 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Большие целые",
+          "stdin": "1000000000000 -1000000000000 5\n",
+          "expected": "целое 1000000000000\nцелое -1000000000000\nцелое 5\nцелых 3, сумма 5\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Дробные",
+          "stdin": "3.0 -0.5\n",
+          "expected": "дробное 3\nдробное -0.5\nцелых 0, сумма 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Нули",
+          "stdin": "0 00 -0\n",
+          "expected": "целое 0\nцелое 0\nцелое 0\nцелых 3, сумма 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Знак плюс и точка в конце",
+          "stdin": "+5 5.\n",
+          "expected": "строка +5\nдробное 5\nцелых 0, сумма 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смешанные слова",
+          "stdin": "x1 1x 7\n",
+          "expected": "строка x1\nстрока 1x\nцелое 7\nцелых 1, сумма 7\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Десять целых",
+          "stdin": "1 2 3 4 5 6 7 8 9 10\n",
+          "expected": "целое 1\nцелое 2\nцелое 3\nцелое 4\nцелое 5\nцелое 6\nцелое 7\nцелое 8\nцелое 9\nцелое 10\nцелых 10, сумма 55\n"
+        }
+      ],
+      "referenceSolution": "#include <charconv>\n#include <iostream>\n#include <print>\n#include <string>\n#include <variant>\n#include <vector>\n\nusing Token = std::variant<long long, double, std::string>;\n\ntemplate <class... Ts>\nstruct overloaded : Ts... {\n    using Ts::operator()...;\n};\n\nToken classify(const std::string &word) {\n    const char *begin = word.data();\n    const char *end = begin + word.size();\n    long long integer = 0;\n    if (const auto [ptr, ec] = std::from_chars(begin, end, integer); ec == std::errc() && ptr == end) {\n        return integer;\n    }\n    double real = 0;\n    if (const auto [ptr, ec] = std::from_chars(begin, end, real); ec == std::errc() && ptr == end) {\n        return real;\n    }\n    return word;\n}\n\nint main() {\n    std::vector<Token> tokens;\n    std::string word;\n    while (std::cin >> word) {\n        tokens.push_back(classify(word));\n    }\n    for (const Token &t : tokens) {\n        std::visit(overloaded{\n                       [](long long n) { std::println(\"целое {}\", n); },\n                       [](double d) { std::println(\"дробное {}\", d); },\n                       [](const std::string &s) { std::println(\"строка {}\", s); },\n                   },\n                   t);\n    }\n    long long count = 0, sum = 0;\n    for (const Token &t : tokens) {\n        if (const long long *n = std::get_if<long long>(&t)) {\n            count++;\n            sum += *n;\n        }\n    }\n    std::println(\"целых {}, сумма {}\", count, sum);\n    return 0;\n}\n",
+      "solutionExplanation": "Каждый токен знает свой вид, и дальше программа не разбирает текст повторно. Печать перебирает все случаи через `visit`, а подсчёт интересуется только целыми — для него достаточно `get_if`, который возвращает `nullptr` для остальных альтернатив.\n\nПорядок проверок важен: «42» читается и как целое, и как дробное, поэтому сначала пробуем целое. Условие «указатель дошёл до конца» отбрасывает слова вроде «12кг», у которых число — только начало.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-variant-task-3",
+      "title": "Найди ошибку: номер вместо типа",
+      "description": "Программа читает настройки `ключ значение`. Значение, которое целиком читается как целое, хранится как число, иначе — как текст (`using Value = std::variant<std::string, long long>;`). Для каждой настройки печатается `ключ: число N` или `ключ: текст S`, а в конце — `сумма S` всех числовых значений.\n\nСначала `Value` было объявлено как `std::variant<long long, std::string>`, потом альтернативы переставили — и сумма сломалась, а на текстовых настройках программа завершается аварийно. Исправьте проверку так, чтобы она не зависела от порядка альтернатив.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <charconv>\n#include <iostream>\n#include <print>\n#include <string>\n#include <variant>\n\nusing Value = std::variant<std::string, long long>;\n\ntemplate <class... Ts>\nstruct overloaded : Ts... {\n    using Ts::operator()...;\n};\n\nValue parse(const std::string &text) {\n    long long number = 0;\n    const char *end = text.data() + text.size();\n    const auto [ptr, ec] = std::from_chars(text.data(), end, number);\n    if (ec == std::errc() && ptr == end) {\n        return number;\n    }\n    return text;\n}\n\nint main() {\n    std::string key, raw;\n    long long total = 0;\n    while (std::cin >> key >> raw) {\n        const Value value = parse(raw);\n        std::visit(overloaded{\n                       [&](long long n) { std::println(\"{}: число {}\", key, n); },\n                       [&](const std::string &s) { std::println(\"{}: текст {}\", key, s); },\n                   },\n                   value);\n        if (value.index() == 0) {\n            total += std::get<long long>(value);\n        }\n    }\n    std::println(\"сумма {}\", total);\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "port 8080\nhost localhost\nretries 3\n",
+          "output": "port: число 8080\nhost: текст localhost\nretries: число 3\nсумма 8083\n"
+        },
+        {
+          "input": "a 1\nb 2\n",
+          "output": "a: число 1\nb: число 2\nсумма 3\n"
+        }
+      ],
+      "constraints": ["Настроек не больше 50; числа по модулю до 10¹²."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какой тип теперь имеет альтернатива с номером 0?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Проверяйте тип, а не номер: std::get_if<long long>(&value) или std::holds_alternative<long long>(value).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "port 8080\nhost localhost\nretries 3\n",
+          "expected": "port: число 8080\nhost: текст localhost\nretries: число 3\nсумма 8083\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "a 1\nb 2\n",
+          "expected": "a: число 1\nb: число 2\nсумма 3\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "x -5\n",
+          "expected": "x: число -5\nсумма -5\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "name Ада\n",
+          "expected": "name: текст Ада\nсумма 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "v 1.5\nw 2\n",
+          "expected": "v: текст 1.5\nw: число 2\nсумма 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "a 1000000000000\nb 1000000000000\n",
+          "expected": "a: число 1000000000000\nb: число 1000000000000\nсумма 2000000000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "k 12кг\n",
+          "expected": "k: текст 12кг\nсумма 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "p 0\nq ноль\n",
+          "expected": "p: число 0\nq: текст ноль\nсумма 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "one 1\ntwo два\nthree 3\nfour четыре\n",
+          "expected": "one: число 1\ntwo: текст два\nthree: число 3\nfour: текст четыре\nсумма 4\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "only 42\n",
+          "expected": "only: число 42\nсумма 42\n"
+        }
+      ],
+      "referenceSolution": "#include <charconv>\n#include <iostream>\n#include <print>\n#include <string>\n#include <variant>\n\nusing Value = std::variant<std::string, long long>;\n\ntemplate <class... Ts>\nstruct overloaded : Ts... {\n    using Ts::operator()...;\n};\n\nValue parse(const std::string &text) {\n    long long number = 0;\n    const char *end = text.data() + text.size();\n    const auto [ptr, ec] = std::from_chars(text.data(), end, number);\n    if (ec == std::errc() && ptr == end) {\n        return number;\n    }\n    return text;\n}\n\nint main() {\n    std::string key, raw;\n    long long total = 0;\n    while (std::cin >> key >> raw) {\n        const Value value = parse(raw);\n        std::visit(overloaded{\n                       [&](long long n) { std::println(\"{}: число {}\", key, n); },\n                       [&](const std::string &s) { std::println(\"{}: текст {}\", key, s); },\n                   },\n                   value);\n        if (const long long *n = std::get_if<long long>(&value)) {\n            total += *n;\n        }\n    }\n    std::println(\"сумма {}\", total);\n    return 0;\n}\n",
+      "solutionExplanation": "После перестановки альтернатив номер 0 принадлежит строке. Условие `value.index() == 0` теперь истинно для текста, и `std::get<long long>` бросает `std::bad_variant_access`, которое никто не ловит. А для чисел (номер 1) условие ложно — они не попадают в сумму.\n\n`std::get_if<long long>(&value)` проверяет тип и достаёт значение за один шаг и не зависит от порядка альтернатив. Номер альтернативы почти никогда не нужен в прикладном коде.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-variant-task-4",
+      "title": "Соединение",
+      "description": "Опишите конечный автомат соединения. Состояния: `Disconnected`, `Connecting { int attempt; }`, `Connected { std::string session; }` — альтернативы `State`. События: `Connect`, `Fail`, `Ok { std::string session; }`, `Drop` — альтернативы `Event`. Начальное состояние — `Disconnected`.\n\nПереходы:\n\n- `Disconnected` + `Connect` → `Connecting { 1 }`;\n- `Connecting { n }` + `Fail` → `Connecting { n + 1 }`, если `n < 3`, иначе `Disconnected`;\n- `Connecting` + `Ok { s }` → `Connected { s }`;\n- `Connected` + `Drop` → `Disconnected`;\n- любое другое сочетание — событие игнорируется.\n\nФункция `std::optional<State> next(const State &, const Event &)` возвращает новое состояние или `std::nullopt`. Ввод — слова `connect`, `fail`, `ok ид`, `drop`. После каждого события напечатайте новое состояние: `отключено`, `подключение, попытка N` или `подключено, сессия ид`; для проигнорированного — `игнор: событие` (`connect`, `fail`, `ok` или `drop`) и состояние не меняйте.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "connect fail fail ok s7 drop drop\n",
+          "output": "подключение, попытка 1\nподключение, попытка 2\nподключение, попытка 3\nподключено, сессия s7\nотключено\nигнор: drop\n"
+        },
+        {
+          "input": "connect fail fail fail ok a\n",
+          "output": "подключение, попытка 1\nподключение, попытка 2\nподключение, попытка 3\nотключено\nигнор: ok\n"
+        }
+      ],
+      "constraints": ["Событий не больше 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "std::visit принимает несколько variant сразу: std::visit(overloaded{…}, state, event) вызывает обработчик с двумя параметрами.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Последним в overloaded поставьте обобщённую лямбду [](const auto &, const auto &) -> std::optional<State> { return std::nullopt; } — она поймает все остальные пары. Точные обработчики выигрывают у шаблона при перегрузке.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "connect fail fail ok s7 drop drop\n",
+          "expected": "подключение, попытка 1\nподключение, попытка 2\nподключение, попытка 3\nподключено, сессия s7\nотключено\nигнор: drop\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "connect fail fail fail ok a\n",
+          "expected": "подключение, попытка 1\nподключение, попытка 2\nподключение, попытка 3\nотключено\nигнор: ok\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Без событий",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-2",
+          "name": "События в начальном состоянии",
+          "stdin": "fail\ndrop\n",
+          "expected": "игнор: fail\nигнор: drop\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Повторное подключение",
+          "stdin": "connect\nconnect\n",
+          "expected": "подключение, попытка 1\nигнор: connect\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "События в подключённом состоянии",
+          "stdin": "connect\nok x\nconnect\nfail\n",
+          "expected": "подключение, попытка 1\nподключено, сессия x\nигнор: connect\nигнор: fail\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Переподключение",
+          "stdin": "connect ok 1 drop connect ok 2\n",
+          "expected": "подключение, попытка 1\nподключено, сессия 1\nотключено\nподключение, попытка 1\nподключено, сессия 2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Ok без подключения",
+          "stdin": "ok z\n",
+          "expected": "игнор: ok\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Успех со второй попытки",
+          "stdin": "connect fail ok abc drop\n",
+          "expected": "подключение, попытка 1\nподключение, попытка 2\nподключено, сессия abc\nотключено\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Два исчерпания попыток",
+          "stdin": "connect fail fail fail connect fail fail fail\n",
+          "expected": "подключение, попытка 1\nподключение, попытка 2\nподключение, попытка 3\nотключено\nподключение, попытка 1\nподключение, попытка 2\nподключение, попытка 3\nотключено\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <optional>\n#include <print>\n#include <string>\n#include <utility>\n#include <variant>\n\nstruct Disconnected {};\nstruct Connecting {\n    int attempt;\n};\nstruct Connected {\n    std::string session;\n};\nusing State = std::variant<Disconnected, Connecting, Connected>;\n\nstruct Connect {};\nstruct Fail {};\nstruct Ok {\n    std::string session;\n};\nstruct Drop {};\nusing Event = std::variant<Connect, Fail, Ok, Drop>;\n\ntemplate <class... Ts>\nstruct overloaded : Ts... {\n    using Ts::operator()...;\n};\n\nstd::optional<State> next(const State &state, const Event &event) {\n    return std::visit(\n        overloaded{\n            [](const Disconnected &, const Connect &) -> std::optional<State> { return Connecting{1}; },\n            [](const Connecting &c, const Fail &) -> std::optional<State> {\n                if (c.attempt < 3) {\n                    return Connecting{c.attempt + 1};\n                }\n                return Disconnected{};\n            },\n            [](const Connecting &, const Ok &ok) -> std::optional<State> { return Connected{ok.session}; },\n            [](const Connected &, const Drop &) -> std::optional<State> { return Disconnected{}; },\n            [](const auto &, const auto &) -> std::optional<State> { return std::nullopt; },\n        },\n        state, event);\n}\n\nstd::string describe(const State &state) {\n    return std::visit(overloaded{\n                          [](const Disconnected &) { return std::string(\"отключено\"); },\n                          [](const Connecting &c) { return \"подключение, попытка \" + std::to_string(c.attempt); },\n                          [](const Connected &c) { return \"подключено, сессия \" + c.session; },\n                      },\n                      state);\n}\n\nint main() {\n    State state;\n    std::string word;\n    while (std::cin >> word) {\n        Event event = Connect{};\n        if (word == \"fail\") {\n            event = Fail{};\n        } else if (word == \"ok\") {\n            std::string session;\n            std::cin >> session;\n            event = Ok{session};\n        } else if (word == \"drop\") {\n            event = Drop{};\n        }\n        if (std::optional<State> changed = next(state, event)) {\n            state = std::move(*changed);\n            std::println(\"{}\", describe(state));\n        } else {\n            std::println(\"игнор: {}\", word);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Таблица переходов записана прямо в `overloaded`: одна лямбда — одна строка таблицы. `std::visit` с двумя `variant` выбирает обработчик по паре «состояние + событие», а обобщённая лямбда в конце обрабатывает все недопустимые пары.\n\nДанные живут только в своих состояниях: номер сессии есть лишь у `Connected`, и прочитать его в состоянии «отключено» невозможно — такого поля там просто нет. С флагами и полями в одном классе этот инвариант пришлось бы поддерживать вручную.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "oop-variant-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <string>\n#include <variant>\n\nint main() {\n    std::variant<int, double, std::string> v = 2.5;\n    std::println(\"{}\", v.index());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Нумерация альтернатив начинается с нуля: int — 0, double — 1.",
+        "type": "text",
+        "answers": ["1"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что делает std::get<int>(v), если в v сейчас строка?",
+        "explanation": "std::get проверяет альтернативу и бросает исключение при несовпадении.",
+        "options": [
+          "Бросает std::bad_variant_access",
+          "Возвращает 0",
+          "Возвращает nullptr",
+          "Неопределённое поведение без диагностики"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Что возвращает std::get_if<int>(&v), если в v не int?",
+        "explanation": "get_if — проверка и доступ за один шаг, без исключений.",
+        "options": ["nullptr", "Указатель на 0", "Исключение", "Указатель на строку"],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "В overloaded для std::visit нет обработчика одной из альтернатив. Что произойдёт?",
+        "explanation": "visit должен уметь вызвать функцию для каждой альтернативы — это проверяется при компиляции.",
+        "options": [
+          "Ошибка компиляции",
+          "Исключение во время работы",
+          "Эта альтернатива молча пропускается",
+          "Вызовется первый обработчик"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что легче добавить, если виды объектов описаны std::variant?",
+        "explanation": "Новая операция — ещё одна функция с visit. Новый вид требует правки всех обработчиков; с виртуальными функциями — наоборот.",
+        "options": [
+          "Новую операцию над всеми видами",
+          "Новый вид объектов",
+          "И то и другое одинаково легко",
+          "Ничего нельзя добавить без переписывания программы"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что хранит std::variant<Idle, Running> state; сразу после создания?",
+        "explanation": "Поэтому первой ставят начальное состояние или std::monostate.",
+        "options": [
+          "Значение первой альтернативы, созданное по умолчанию",
+          "Ничего — variant пуст",
+          "Значение последней альтернативы",
+          "Неинициализированную память"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Где хранится значение std::variant<int, std::string>?",
+        "explanation": "variant не выделяет память сам; размер — наибольшая альтернатива плюс номер. Строка, конечно, может держать свои символы в куче.",
+        "options": [
+          "Внутри самого объекта variant",
+          "Всегда в куче",
+          "В статической памяти",
+          "В отдельном векторе"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Почему проверка if (v.index() == 1) хуже, чем std::holds_alternative<std::string>(v)?",
+        "explanation": "Проверка по типу не зависит от порядка альтернатив.",
+        "options": [
+          "Номер ломается при изменении порядка типов в variant",
+          "index() медленнее",
+          "index() не существует",
+          "holds_alternative бросает исключение"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q9",
+        "question": "Как называется пустой тип, который ставят первой альтернативой variant, если у остальных нет конструктора по умолчанию?",
+        "explanation": "std::monostate — «нет значения» для variant.",
+        "type": "text",
+        "answers": ["std::monostate", "monostate"],
+        "placeholder": "Имя типа"
+      }
+    ]
+  }
+}

@@ -13,9 +13,9 @@
     "Использовать возвращаемое значение snprintf для обнаружения обрезки",
     "Писать функции записи строк, получающие размер буфера"
   ],
-  "tags": ["C17", "Память", "Переполнение буфера", "Строки", "snprintf"],
+  "tags": ["C23", "Память", "Переполнение буфера", "Строки", "snprintf"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-buffer-overflow-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n#include <string.h>\n\nstruct Player {\n    char name[12];\n    int score;\n};\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    struct Player players[20];\n    for (int i = 0; i < n; i++) {\n        char buffer[64];\n        scanf(\"%63s %d\", buffer, &players[i].score);\n        strcpy(players[i].name, buffer);\n    }\n    for (int i = 0; i < n; i++) {\n        printf(\"%s %d\\n\", players[i].name, players[i].score);\n    }\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -129,7 +129,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    char word[8];\n    int count = 0;\n    while (scanf(\"%s\", word) == 1) {\n        word[7] = '\\0';\n        printf(\"%s\\n\", word);\n        count++;\n    }\n    printf(\"words=%d\\n\", count);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -233,7 +233,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <string.h>\n\nint append(char *dst, size_t size, const char *src) {\n    return -1;\n}\n\nint main(void) {\n    char path[32] = \"\";\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        char part[64];\n        scanf(\"%63s\", part);\n        if (append(path, sizeof path, part) == 0) {\n            printf(\"ok %s\\n\", path);\n        } else {\n            printf(\"overflow %s\\n\", path);\n        }\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -337,7 +337,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

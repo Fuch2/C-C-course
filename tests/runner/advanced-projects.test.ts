@@ -7,7 +7,7 @@ const projects = loadCourse()
   .lessons.filter((l) => l.moduleId === 'advanced-c')
   .flatMap((l) => l.additionalExercises);
 describe.skipIf(process.env.RUN_DOCKER_TESTS !== '1')('Контракты проектов C17 в Docker', () => {
-  it('vector сохраняет владельца, размер и данные при отказе realloc', async () => {
+  it('обобщённый вектор сохраняет данные и состояние при отказе realloc', async () => {
     const vector = projects.find((e) => e.id === 'advanced-project-vector')!;
     const source = `
 #include <stdio.h>
@@ -24,30 +24,39 @@ ${vector.referenceSolution}
 #undef main
 #undef realloc
 int main(void) {
-    Vector v = {0};
-    if (!push(&v, 17)) return 1;
-    int *old = v.data;
+    Vector v;
+    vector_init(&v, sizeof(int));
+    int x = 17;
+    if (!vector_push(&v, &x)) return 1;
+    void *old = v.data;
     size_t old_capacity = v.capacity;
+    for (int i = 0; i < 3; i++) {
+        x = i;
+        if (!vector_push(&v, &x)) return 2;
+    }
     deny_allocation = 1;
-    if (reserve(&v, 20) || push(&v, 18)) return 2;
-    if (v.data != old || v.size != 1 || v.capacity != old_capacity || v.data[0] != 17) return 3;
-    if (reserve(&v, SIZE_MAX)) return 4;
-    int out = 99;
-    if (at(&v, 1, &out) || out != 99) return 5;
-    clear(&v);
-    if (pop(&v, &out) || out != 99 || v.capacity != old_capacity) return 6;
+    x = 99;
+    if (vector_push(&v, &x) || vector_insert(&v, 0, &x) || vector_reserve(&v, 100)) return 3;
+    if (v.data != old || v.size != 4 || v.capacity != old_capacity) return 4;
+    if (*(int *)vector_get(&v, 0) != 17 || *(int *)vector_get(&v, 3) != 2) return 5;
+    if (vector_reserve(&v, SIZE_MAX) || vector_get(&v, 4) != NULL) return 6;
     deny_allocation = 0;
-    if (!push(&v, 42) || v.data[0] != 42) return 7;
-    destroy(&v);
-    destroy(&v);
-    if (v.data || v.size || v.capacity) return 8;
+    int out = -1;
+    if (!vector_remove(&v, 0, &out) || out != 17 || v.size != 3) return 7;
+    while (vector_pop(&v, &out)) {
+    }
+    out = 55;
+    if (vector_pop(&v, &out) || out != 55 || v.capacity != old_capacity) return 8;
+    vector_free(&v);
+    vector_free(&v);
+    if (v.data || v.size || v.capacity) return 9;
     puts("Контракт соблюдён");
     return 0;
 }`;
     const result = await executeSandbox(
       {
         source,
-        standard: 'c17',
+        standard: 'c23',
         compiler: 'clang',
         stdin: '',
         cases: [{ stdin: '' }],
@@ -62,13 +71,13 @@ int main(void) {
   it.each([
     [
       'advanced-project-binary-parser',
-      '(unsigned long)bytes[0] | ((unsigned long)bytes[1] << 8)',
-      '((unsigned long)bytes[0] << 8) | (unsigned long)bytes[1]',
+      '(unsigned long)bytes[0] | (unsigned long)bytes[1] << 8',
+      '(unsigned long)bytes[0] << 8 | (unsigned long)bytes[1]',
     ],
     [
       'advanced-project-measurement-log',
-      'if(!stats->count || value>stats->max)',
-      'if(value>stats->max)',
+      'if (stats->count == 0 || value > stats->max)',
+      'if (value > stats->max)',
     ],
   ])(
     'тесты отвергают смысловую ошибку в %s',
@@ -82,7 +91,7 @@ int main(void) {
       const result = await executeSandbox(
         {
           source,
-          standard: 'c17',
+          standard: 'c23',
           compiler: 'clang',
           stdin: '',
           cases: allExerciseTests(exercise).map((test) => ({ stdin: testInput(test) })),

@@ -1,55 +1,295 @@
-## Цели обучения
+## Проверка типа вручную
 
-- Применить Полиморфизм во время выполнения в работающем C++20 коде.
-- Проследить состояние и время жизни объектов в примере.
-- Реализовать контракт практики и проверить граничные случаи.
+Без виртуальных функций разные виды объектов обрабатывают так, как привыкли в C: хранят код вида и ветвятся по нему.
 
-## Задача и модель
+```cpp
+#include <print>
+#include <vector>
 
-Гетерогенная коллекция содержит разные конкретные типы за общим интерфейсом. vector&lt;unique_ptr&lt;Sensor>> владеет датчиками, сохраняя их динамические типы. unique_ptr — единственный владелец; std::make_unique создаёт объект, а std::move передаёт владение. Копировать unique_ptr нельзя. Перемещение не копирует сам датчик и оставляет исходный указатель пустым.
+enum class Kind { circle, rect };
 
-## Как это работает в C++
+struct Shape {
+    Kind kind;
+    double a;
+    double b;
+};
 
-Алгоритм проходит по коллекции и вызывает read без switch по типам. Новый класс датчика не требует изменения цикла. Цена — косвенный вызов, отдельные размещения объектов и возможное ухудшение локальности. Если набор типов закрыт и значения малы, другие представления могут быть выгоднее; здесь нужен открытый интерфейс. Для заимствованной коллекции подойдут ссылки или указатели с внешним владельцем, но это другой контракт времени жизни.
+double area(const Shape &s) {
+    switch (s.kind) {
+    case Kind::circle:
+        return 3.14159 * s.a * s.a;
+    case Kind::rect:
+        return s.a * s.b;
+    }
+    return 0;
+}
 
-## Запускаемый пример
+int main() {
+    std::vector<Shape> shapes = {{Kind::circle, 1, 0}, {Kind::rect, 2, 3}};
+    double total = 0;
+    for (const Shape &s : shapes) {
+        total += area(s);
+    }
+    std::println("{:.2f}", total);
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+9.14
+```
+
+Пока функций и видов мало, это нормально. Но знания о каждом виде размазаны по программе: `area`, `perimeter`, `draw`, `save` — в каждой свой `switch`. Новый вид (треугольник) означает правку **всех** этих функций, и пропущенная ветка обнаружится только во время работы. У треугольника три стороны, а в `Shape` всего два поля — придётся менять и структуру.
+
+## Полиморфизм: знание живёт в классе
+
+С виртуальными функциями всё знание о виде собрано в его классе, а код, обрабатывающий фигуры, вообще не упоминает виды:
+
+```cpp
+#include <memory>
+#include <numbers>
+#include <print>
+#include <vector>
+
+class Shape {
+public:
+    virtual ~Shape() = default;
+    virtual double area() const = 0;
+};
+
+class Circle final : public Shape {
+public:
+    explicit Circle(double r) : r_(r) {}
+    double area() const override {
+        return std::numbers::pi * r_ * r_;
+    }
+
+private:
+    double r_;
+};
+
+class Rect final : public Shape {
+public:
+    Rect(double w, double h) : w_(w), h_(h) {}
+    double area() const override {
+        return w_ * h_;
+    }
+
+private:
+    double w_;
+    double h_;
+};
+
+int main() {
+    std::vector<std::unique_ptr<Shape>> shapes;
+    shapes.push_back(std::make_unique<Circle>(1));
+    shapes.push_back(std::make_unique<Rect>(2, 3));
+    double total = 0;
+    for (const auto &s : shapes) {
+        total += s->area();
+    }
+    std::println("{:.2f}", total);
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+9.14
+```
+
+Добавить треугольник — значит **добавить** класс, ничего не меняя в существующем коде. Это **принцип открытости/закрытости** (буква O в SOLID): код открыт для расширения, но закрыт для изменения. Цикл суммирования, написанный сегодня, без правок работает с фигурами, которые придумают завтра.
+
+## Фабрика: из данных — в объект
+
+Остаётся одно место, где виды всё-таки перечисляются, — там, где объекты **создаются** из данных: из файла, ввода, сети. Это место выносят в одну функцию — **фабрику**, которая возвращает `std::unique_ptr` на базу:
 
 ```cpp
 #include <iostream>
 #include <memory>
-#include <vector>
+#include <print>
+#include <string>
 
-struct Source { virtual int read() const = 0; virtual ~Source() = default; };
-struct A : Source { int read() const override { return 3; } }; struct B : Source { int read() const override { return 8; } };
-int main() { std::vector<std::unique_ptr<Source>> v; v.push_back(std::make_unique<A>()); v.push_back(std::make_unique<B>()); int total=0; for(const auto& s:v) total+=s->read(); std::cout << total << '\n'; }
+class Shape {
+public:
+    virtual ~Shape() = default;
+    virtual double area() const = 0;
+};
+
+class Square final : public Shape {
+public:
+    explicit Square(double s) : s_(s) {}
+    double area() const override {
+        return s_ * s_;
+    }
+
+private:
+    double s_;
+};
+
+class Rect final : public Shape {
+public:
+    Rect(double w, double h) : w_(w), h_(h) {}
+    double area() const override {
+        return w_ * h_;
+    }
+
+private:
+    double w_;
+    double h_;
+};
+
+std::unique_ptr<Shape> read_shape(std::istream &in) {
+    std::string kind;
+    if (!(in >> kind)) {
+        return nullptr;
+    }
+    if (kind == "square") {
+        double s;
+        in >> s;
+        return std::make_unique<Square>(s);
+    }
+    if (kind == "rect") {
+        double w, h;
+        in >> w >> h;
+        return std::make_unique<Rect>(w, h);
+    }
+    return nullptr;
+}
+
+int main() {
+    while (auto shape = read_shape(std::cin)) {
+        std::println("{:.1f}", shape->area());
+    }
+    return 0;
+}
 ```
 
-Ожидаемый вывод:
+Ввод:
 
 ```text
-11
+square 3 rect 2 5
 ```
 
-## Разбор и эксперимент
+Вывод:
 
-Добавьте третий источник и оставьте цикл неизменным. После std::move(ptr) нельзя разыменовывать исходный unique_ptr без проверки: он пуст. reserve для вектора переносит владельцев, но сами отдельно выделенные Sensor сохраняют адреса до удаления.
+```text
+9.0
+10.0
+```
 
-<CommonMistake title="Ошибка, которую нужно заметить">
+Перечисление видов теперь в одном месте, и оно касается только создания. Весь остальной код работает с `Shape`. Фабрика возвращает пустой указатель, если вид неизвестен или ввод кончился, — цикл `while (auto shape = …)` на этом останавливается.
 
-Не храните производные значения в vector&lt;Base>: это либо невозможно для абстрактной базы, либо приводит к срезке. Не используйте голый new как способ избежать размышления о владельце.
+## `dynamic_cast`: когда очень нужно узнать тип
+
+Иногда код всё же должен узнать, какой объект перед ним: например, только книгам нужна проверка возраста. Для безопасного приведения «вниз» по иерархии есть `dynamic_cast`. Для указателя он возвращает указатель на наследника — или `nullptr`, если объект другого типа:
+
+```cpp
+#include <memory>
+#include <print>
+#include <vector>
+
+class Item {
+public:
+    virtual ~Item() = default;
+    virtual int price() const = 0;
+};
+
+class Book final : public Item {
+public:
+    explicit Book(int pages) : pages_(pages) {}
+    int price() const override {
+        return 500;
+    }
+    int pages() const {
+        return pages_;
+    }
+
+private:
+    int pages_;
+};
+
+class Mug final : public Item {
+public:
+    int price() const override {
+        return 300;
+    }
+};
+
+int main() {
+    std::vector<std::unique_ptr<Item>> cart;
+    cart.push_back(std::make_unique<Book>(320));
+    cart.push_back(std::make_unique<Mug>());
+    cart.push_back(std::make_unique<Book>(180));
+    int pages = 0;
+    for (const auto &item : cart) {
+        if (const auto *book = dynamic_cast<const Book *>(item.get())) {
+            pages += book->pages();
+        }
+    }
+    std::println("страниц {}", pages);
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+страниц 500
+```
+
+`dynamic_cast` проверяет тип во время выполнения (по той же таблице виртуальных функций) и работает только для полиморфных классов. Обычный `static_cast` в такой ситуации ничего не проверяет: приведение кружки к книге — неопределённое поведение, и UBSan сообщит `downcast of address … which does not point to an object of type 'Book'`.
+
+Но относитесь к `dynamic_cast` как к сигналу: частые проверки типа — это `switch` из начала урока, вернувшийся в другом обличье. Обычно вопрос «книга ли это?» лучше задать виртуальной функцией самому объекту.
+
+<Concept title="Полиморфизм во время выполнения">
+
+Ветвление по коду вида размазывает знание о видах по программе; виртуальные функции собирают его в классах, и код обработки не упоминает видов — принцип открытости/закрытости. Виды перечисляют только при создании объектов — в фабрике, возвращающей `std::unique_ptr` на базу. `dynamic_cast<const T *>` безопасно приводит вниз по иерархии и возвращает `nullptr` для чужого типа; `static_cast` вниз не проверяет ничего. Частый `dynamic_cast` — признак недостающей виртуальной функции.
+
+</Concept>
+
+## Частые ошибки
+
+<CommonMistake title="switch по типу рядом с иерархией">
+
+`if (shape->name() == "круг") … else if …` поверх виртуальных функций возвращает все проблемы ветвления. Добавьте в базу виртуальную функцию с нужным поведением.
 
 </CommonMistake>
 
+<CommonMistake title="static_cast вниз без уверенности в типе">
+
+`static_cast<Book *>(item)` для произвольного товара — неопределённое поведение, если это не книга. Для проверки используйте `dynamic_cast` и проверку на `nullptr`.
+
+</CommonMistake>
+
+<CommonMistake title="Фабрика, размазанная по программе">
+
+`std::make_unique<Circle>` в десяти местах разбора данных — новый вид снова потребует правки десяти мест. Создание из данных собирают в одну функцию.
+
+</CommonMistake>
+
+## Попробуйте сами
+
+1. Добавьте треугольник в оба варианта первых примеров. Сколько мест пришлось менять в каждом?
+2. В фабрике передайте неизвестный вид `circle 2`. Что делает цикл?
+3. Замените в примере с корзиной `dynamic_cast` на `static_cast` и запустите с санитайзерами.
+
 ## Практика
 
-Source имеет pure virtual read() const и виртуальный деструктор. Direct(int) возвращает сохранённое число, Doubled(int) — удвоенное. solve(a,b) создаёт vector&lt;unique_ptr&lt;Source>>, добавляет Direct&#123;a&#125; и Doubled&#123;b&#125; через make_unique, затем возвращает сумму read в одном цикле. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.
+1. **Фабрика фигур** — создание объектов из ввода.
+2. **Стековая машина** — команды-объекты и один цикл исполнения.
+3. **Найди ошибку: каждая вещь — книга** — `static_cast` вместо проверки типа.
+4. **Дерево выражения** — узлы-объекты с виртуальным вычислением.
 
 <CodingExercise />
 
-## Самопроверка
+## Итоги
 
-Что происходит при перемещении unique_ptr в коллекцию? Сначала ответьте своими словами, затем пройдите вопросы в панели проверки.
-
-## Резюме
-
-Передаётся владение существующим объектом. Примените это правило к практическому заданию: назовите состояние объектов до и после вызова, а также владельца каждой используемой зависимости.
+- Ветвление по коду вида размазывает знание о видах; виртуальные функции собирают его в классах.
+- Принцип открытости/закрытости: новый вид — новый класс без правки существующего кода.
+- Объекты из данных создаёт одна фабрика, возвращающая `std::unique_ptr` на базу.
+- `dynamic_cast` безопасно проверяет тип и возвращает `nullptr`; `static_cast` вниз не проверяет ничего.
+- Частые проверки типа — признак недостающей виртуальной функции.

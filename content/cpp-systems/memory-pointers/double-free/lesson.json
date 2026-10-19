@@ -13,9 +13,9 @@
     "Исправлять ошибку глубокой копией, передачей владения или заимствованием",
     "Делать функции очистки безопасными для повторного вызова"
   ],
-  "tags": ["C17", "Память", "Double free", "Владение", "Найди ошибку"],
+  "tags": ["C23", "Память", "Double free", "Владение", "Найди ошибку"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-double-free-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "intermediate",
     "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Contact {\n    char *name;\n    char *phone;\n};\n\nchar *copy_text(const char *s) {\n    char *c = malloc(strlen(s) + 1);\n    if (c != NULL) {\n        strcpy(c, s);\n    }\n    return c;\n}\n\nvoid contact_free(struct Contact *c) {\n    free(c->name);\n    free(c->phone);\n}\n\nint main(void) {\n    char name[32], phone[32], updated[32];\n    if (scanf(\"%31s %31s %31s\", name, phone, updated) != 3) {\n        return 1;\n    }\n    struct Contact original = {copy_text(name), copy_text(phone)};\n    struct Contact backup = original;\n    free(original.phone);\n    original.phone = copy_text(updated);\n    printf(\"original: %s %s\\n\", original.name, original.phone);\n    printf(\"backup: %s %s\\n\", backup.name, backup.phone);\n    contact_free(&original);\n    contact_free(&backup);\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -129,7 +129,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n// Печатает сообщение и забирает владение им: освобождает строку.\nvoid log_and_release(char *message) {\n    printf(\"[log] %s\\n\", message);\n    free(message);\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 1; i <= q; i++) {\n        char word[32];\n        scanf(\"%31s\", word);\n        char *message = malloc(48);\n        if (message == NULL) {\n            return 1;\n        }\n        snprintf(message, 48, \"#%d %s\", i, word);\n        log_and_release(message);\n        printf(\"length=%zu\\n\", strlen(message));\n        free(message);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -233,7 +233,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstruct Buffer {\n    int *data;\n    size_t count;\n};\n\nvoid buffer_reset(struct Buffer *b) {\n    free(b->data);\n}\n\nint main(void) {\n    struct Buffer b = {NULL, 0};\n    char cmd[8];\n    while (scanf(\"%7s\", cmd) == 1) {\n        if (strcmp(cmd, \"fill\") == 0) {\n            size_t k;\n            scanf(\"%zu\", &k);\n            buffer_reset(&b);\n            b.data = malloc(k * sizeof *b.data);\n            if (b.data == NULL) {\n                return 1;\n            }\n            for (size_t i = 0; i < k; i++) {\n                b.data[i] = (int)i + 1;\n            }\n            b.count = k;\n        } else if (strcmp(cmd, \"sum\") == 0) {\n            long long sum = 0;\n            for (size_t i = 0; i < b.count; i++) {\n                sum += b.data[i];\n            }\n            printf(\"%lld\\n\", sum);\n        } else {\n            buffer_reset(&b);\n        }\n    }\n    buffer_reset(&b);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -337,7 +337,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

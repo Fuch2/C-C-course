@@ -1,0 +1,527 @@
+{
+  "id": "tooling-ecosystem",
+  "title": "Современная экосистема C и C++",
+  "description": "Инструменты вокруг компилятора: база команд compile_commands.json, clang-format и проверка стиля в CI, статический анализ clang-tidy и GCC -fanalyzer, языковой сервер clangd, менеджеры зависимостей vcpkg и Conan, CMake FetchContent и фиксация версий, CMake Presets, непрерывная интеграция с матрицей компиляторов и режимов.",
+  "moduleId": "developer-tools",
+  "order": 13,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["git-basic-workflow"],
+  "objectives": [
+    "Объяснять назначение compile_commands.json и создавать его через CMake",
+    "Настраивать clang-format и clang-tidy для проекта и CI",
+    "Подключать зависимости через vcpkg или Conan с фиксированными версиями",
+    "Описывать сборку пресетами CMake и матрицей CI"
+  ],
+  "tags": ["clang-format", "clang-tidy", "clangd", "vcpkg", "Conan", "CI"],
+  "published": true,
+  "standard": "c23",
+  "completion": "practice",
+  "exercise": {
+    "id": "tooling-ecosystem-task-1",
+    "title": "Проверка форматирования",
+    "description": "Напишите упрощённую проверку стиля в духе `clang-format --dry-run --Werror`. Первая строка ввода — два числа: ширина отступа N и предел длины строки M. Дальше — строки кода. Для каждой строки (нумерация с 1) проверьте по порядку и выведите нарушения:\n\n1. есть символ табуляции — `строка K: табуляция`;\n2. иначе, если строка не пустая и не из одних пробелов, а число ведущих пробелов S не кратно N — `строка K: отступ S не кратен N`;\n3. строка оканчивается пробелом — `строка K: пробелы в конце`;\n4. длина L (в байтах, без перевода строки) больше M — `строка K: длина L > M`.\n\nВ конце выведите `нарушений T`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "c",
+    "standard": "c23",
+    "compiler": "gcc",
+    "examples": [
+      {
+        "input": "4 20\nint main(void) {\n   return 0;\n}\n",
+        "output": "строка 2: отступ 3 не кратен 4\nнарушений 1\n"
+      },
+      {
+        "input": "2 10\nint x = 12345; \n\tint y;\n",
+        "output": "строка 1: пробелы в конце\nстрока 1: длина 15 > 10\nстрока 2: табуляция\nнарушений 3\n"
+      }
+    ],
+    "constraints": [
+      "1 ≤ N ≤ 8; 10 ≤ M ≤ 200; строк не больше 500, каждая короче 1000 байт; символы — ASCII."
+    ],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Строку читайте fgets, перевод строки отрежьте через line[strcspn(line, \"\\n\")] = '\\0'.",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "strspn(line, \" \") — число ведущих пробелов; если оно равно длине, строка состоит из одних пробелов.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "4 20\nint main(void) {\n   return 0;\n}\n",
+        "expected": "строка 2: отступ 3 не кратен 4\nнарушений 1\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "2 10\nint x = 12345; \n\tint y;\n",
+        "expected": "строка 1: пробелы в конце\nстрока 1: длина 15 > 10\nстрока 2: табуляция\nнарушений 3\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Без нарушений",
+        "stdin": "4 80\nint main(void) {\n    return 0;\n}\n",
+        "expected": "нарушений 0\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Пустой файл",
+        "stdin": "4 80\n",
+        "expected": "нарушений 0\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Пустая строка и пробелы",
+        "stdin": "2 80\n\n   \n",
+        "expected": "строка 2: пробелы в конце\nнарушений 1\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Отступ 8",
+        "stdin": "8 10\n        x;\n",
+        "expected": "нарушений 0\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Граница длины",
+        "stdin": "4 10\n0123456789\n01234567890\n",
+        "expected": "строка 2: длина 11 > 10\nнарушений 1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Отступ 3",
+        "stdin": "3 100\n   a\n      b\n    c\n",
+        "expected": "строка 3: отступ 4 не кратен 3\nнарушений 1\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Все нарушения кроме отступа",
+        "stdin": "4 12\n\t   long line with tab \n",
+        "expected": "строка 1: табуляция\nстрока 1: пробелы в конце\nстрока 1: длина 23 > 12\nнарушений 3\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Отступ 1 всегда кратен",
+        "stdin": "1 50\n a\n  b\n",
+        "expected": "нарушений 0\n"
+      }
+    ],
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    int indent = 0;\n    int limit = 0;\n    if (scanf(\"%d %d\", &indent, &limit) != 2) {\n        return 0;\n    }\n    int ch;\n    while ((ch = getchar()) != '\\n' && ch != EOF) {\n    }\n    char line[1024];\n    int number = 0;\n    int total = 0;\n    while (fgets(line, sizeof line, stdin)) {\n        ++number;\n        const size_t len = strcspn(line, \"\\n\");\n        line[len] = '\\0';\n        if (strchr(line, '\\t')) {\n            printf(\"строка %d: табуляция\\n\", number);\n            ++total;\n        } else {\n            const size_t spaces = strspn(line, \" \");\n            if (spaces < len && spaces % (size_t)indent != 0) {\n                printf(\"строка %d: отступ %zu не кратен %d\\n\", number, spaces, indent);\n                ++total;\n            }\n        }\n        if (len > 0 && line[len - 1] == ' ') {\n            printf(\"строка %d: пробелы в конце\\n\", number);\n            ++total;\n        }\n        if (len > (size_t)limit) {\n            printf(\"строка %d: длина %zu > %d\\n\", number, len, limit);\n            ++total;\n        }\n    }\n    printf(\"нарушений %d\\n\", total);\n    return 0;\n}\n",
+    "solutionExplanation": "Настоящий clang-format не проверяет правила по отдельности, а заново раскладывает код по правилам стиля и сравнивает результат с исходным файлом. Но смысл режима `--dry-run --Werror` тот же: найти расхождения со стилем, ничего не меняя, и вернуть ошибку, если они есть, чтобы CI отклонил изменение.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "tooling-ecosystem-task-2",
+      "title": "Подбор версии зависимости",
+      "description": "Менеджеры пакетов выбирают версию зависимости по ограничениям. Первая строка — ограничения через пробел, вторая — доступные версии вида `MAJOR.MINOR.PATCH`. Ограничения:\n\n- `>=V`, `>V`, `<=V`, `<V`, `==V` — сравнение версий покомпонентно;\n- `^V` — совместимые версии: не меньше V и меньше следующей «ломающей» версии — `(MAJOR+1).0.0`, а если MAJOR = 0, то `0.(MINOR+1).0`.\n\nВыведите `выбрана X.Y.Z` — наибольшую версию, удовлетворяющую всем ограничениям, или `нет подходящей версии`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": ">=1.2.0 <2.0.0\n1.0.0 1.2.0 1.9.5 2.0.0 1.10.1\n",
+          "output": "выбрана 1.10.1\n"
+        },
+        {
+          "input": "^0.3.1\n0.3.0 0.3.9 0.4.0\n",
+          "output": "выбрана 0.3.9\n"
+        }
+      ],
+      "constraints": ["Ограничений до 10, версий до 100; компоненты от 0 до 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Храните версию как три числа и сравнивайте функцией, возвращающей −1, 0 или 1 (сначала MAJOR, затем MINOR, затем PATCH).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Ограничение удобно разобрать в структуру {оператор, версия}; ^V превращается в два: >=V и <V′.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": ">=1.2.0 <2.0.0\n1.0.0 1.2.0 1.9.5 2.0.0 1.10.1\n",
+          "expected": "выбрана 1.10.1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "^0.3.1\n0.3.0 0.3.9 0.4.0\n",
+          "expected": "выбрана 0.3.9\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Точная версия",
+          "stdin": "==1.0.0\n1.0.0 1.0.1\n",
+          "expected": "выбрана 1.0.0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Нет подходящей",
+          "stdin": ">2.0.0\n1.0.0 2.0.0\n",
+          "expected": "нет подходящей версии\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Каретка для 1.x",
+          "stdin": "^1.4.0\n1.3.9 1.4.0 1.9.3 2.0.0\n",
+          "expected": "выбрана 1.9.3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Отрезок из одной точки",
+          "stdin": "<=1.5.0 >=1.5.0\n1.4.9 1.5.0 1.5.1\n",
+          "expected": "выбрана 1.5.0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Сравнение чисел, а не строк",
+          "stdin": ">=0.0.0\n3.2.1 10.0.0 9.9.9\n",
+          "expected": "выбрана 10.0.0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Каретка для 0.0.x",
+          "stdin": "^0.0.5\n0.0.4 0.0.9 0.1.0\n",
+          "expected": "выбрана 0.0.9\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Противоречивые ограничения",
+          "stdin": ">=1.0.0 <1.0.0\n1.0.0\n",
+          "expected": "нет подходящей версии\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Большие номера",
+          "stdin": "<1000.0.0 ^999.1.0\n999.0.9 999.1.0 999.999.999\n",
+          "expected": "выбрана 999.999.999\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    int part[3];\n} Version;\n\ntypedef struct {\n    char op[3];\n    Version v;\n} Rule;\n\nstatic int compare(Version a, Version b) {\n    for (int i = 0; i < 3; ++i) {\n        if (a.part[i] != b.part[i]) {\n            return a.part[i] < b.part[i] ? -1 : 1;\n        }\n    }\n    return 0;\n}\n\nstatic bool parse_version(const char *s, Version *v) {\n    return sscanf(s, \"%d.%d.%d\", &v->part[0], &v->part[1], &v->part[2]) == 3;\n}\n\nstatic bool satisfies(Version v, const Rule *r) {\n    const int c = compare(v, r->v);\n    if (strcmp(r->op, \">=\") == 0) return c >= 0;\n    if (strcmp(r->op, \">\") == 0) return c > 0;\n    if (strcmp(r->op, \"<=\") == 0) return c <= 0;\n    if (strcmp(r->op, \"<\") == 0) return c < 0;\n    return c == 0;\n}\n\nint main(void) {\n    char line[1024];\n    if (!fgets(line, sizeof line, stdin)) {\n        return 0;\n    }\n    Rule rules[32];\n    int count = 0;\n    for (char *tok = strtok(line, \" \\n\"); tok; tok = strtok(nullptr, \" \\n\")) {\n        size_t skip = 1;\n        if (tok[0] == '^') {\n            Version v;\n            parse_version(tok + 1, &v);\n            Version upper = {{v.part[0] + 1, 0, 0}};\n            if (v.part[0] == 0) {\n                upper = (Version){{0, v.part[1] + 1, 0}};\n            }\n            rules[count++] = (Rule){\">=\", v};\n            rules[count++] = (Rule){\"<\", upper};\n            continue;\n        }\n        if (tok[1] == '=') {\n            skip = 2;\n        }\n        Rule r = {0};\n        memcpy(r.op, tok, skip);\n        parse_version(tok + skip, &r.v);\n        rules[count++] = r;\n    }\n    bool found = false;\n    Version best = {{0, 0, 0}};\n    char word[64];\n    while (scanf(\"%63s\", word) == 1) {\n        Version v;\n        if (!parse_version(word, &v)) {\n            continue;\n        }\n        bool ok = true;\n        for (int i = 0; i < count && ok; ++i) {\n            ok = satisfies(v, &rules[i]);\n        }\n        if (ok && (!found || compare(v, best) > 0)) {\n            best = v;\n            found = true;\n        }\n    }\n    if (found) {\n        printf(\"выбрана %d.%d.%d\\n\", best.part[0], best.part[1], best.part[2]);\n    } else {\n        printf(\"нет подходящей версии\\n\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Ограничения версий — договор между проектом и библиотекой. Правило `^` («совместимые версии») опирается на семантическое версионирование: изменение MAJOR означает несовместимые изменения API, поэтому `^1.4.0` разрешает `1.9.3`, но не `2.0.0`. Для версий `0.x` API считается нестабильным, и граница проходит по MINOR.\n\nВыбор наибольшей подходящей версии — то же, что делают vcpkg, Conan, Cargo и npm. Чтобы сборка не менялась со временем, выбранные версии дополнительно записывают в файл блокировки.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "tooling-ecosystem-task-3",
+      "title": "Найди ошибку: база команд",
+      "description": "Программа формирует записи базы команд компиляции. Первая строка — каталоги заголовков через пробел (может быть пустой), дальше — исходные файлы. Для каждого файла выводится строка:\n\n```text\n{\"file\": \"src/a.c\", \"command\": \"cc -std=c23 -Iinclude -Ilib -c src/a.c\"}\n```\n\nНа проектах с длинными путями AddressSanitizer сообщает об ошибке. Исправьте программу так, чтобы она работала с любым числом каталогов (до 20) любой длины (до 200 символов).",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char line[1024];\n    if (!fgets(line, sizeof line, stdin)) {\n        return 0;\n    }\n    line[strcspn(line, \"\\n\")] = '\\0';\n\n    char flags[32] = \"\";\n    for (char *dir = strtok(line, \" \"); dir; dir = strtok(nullptr, \" \")) {\n        strcat(flags, \"-I\");\n        strcat(flags, dir);\n        strcat(flags, \" \");\n    }\n\n    char source[256];\n    while (scanf(\"%255s\", source) == 1) {\n        printf(\"{\\\"file\\\": \\\"%s\\\", \\\"command\\\": \\\"cc -std=c23 %s-c %s\\\"}\\n\", source, flags, source);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "include lib\nsrc/a.c\nsrc/b.c\n",
+          "output": "{\"file\": \"src/a.c\", \"command\": \"cc -std=c23 -Iinclude -Ilib -c src/a.c\"}\n{\"file\": \"src/b.c\", \"command\": \"cc -std=c23 -Iinclude -Ilib -c src/b.c\"}\n"
+        },
+        {
+          "input": "third_party/library/include project/include\nmain.c\n",
+          "output": "{\"file\": \"main.c\", \"command\": \"cc -std=c23 -Ithird_party/library/include -Iproject/include -c main.c\"}\n"
+        }
+      ],
+      "constraints": ["До 20 каталогов, каждый до 200 символов; до 100 файлов до 255 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сколько байт нужно буферу flags для двух каталогов по 20 символов?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Не копируйте флаги в буфер фиксированного размера: запомните указатели на каталоги (strtok уже разрезал строку) и печатайте -I для каждого при выводе команды.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "include lib\nsrc/a.c\nsrc/b.c\n",
+          "expected": "{\"file\": \"src/a.c\", \"command\": \"cc -std=c23 -Iinclude -Ilib -c src/a.c\"}\n{\"file\": \"src/b.c\", \"command\": \"cc -std=c23 -Iinclude -Ilib -c src/b.c\"}\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "third_party/library/include project/include\nmain.c\n",
+          "expected": "{\"file\": \"main.c\", \"command\": \"cc -std=c23 -Ithird_party/library/include -Iproject/include -c main.c\"}\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "\nmain.c\n",
+          "expected": "{\"file\": \"main.c\", \"command\": \"cc -std=c23 -c main.c\"}\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "inc\n",
+          "expected": ""
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "a b c d e f g h\nx.c\n",
+          "expected": "{\"file\": \"x.c\", \"command\": \"cc -std=c23 -Ia -Ib -Ic -Id -Ie -If -Ig -Ih -c x.c\"}\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "very/long/path/to/some/include/directory\nsrc/main.c\nsrc/util.c\n",
+          "expected": "{\"file\": \"src/main.c\", \"command\": \"cc -std=c23 -Ivery/long/path/to/some/include/directory -c src/main.c\"}\n{\"file\": \"src/util.c\", \"command\": \"cc -std=c23 -Ivery/long/path/to/some/include/directory -c src/util.c\"}\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "include\nsrc/a.c\n",
+          "expected": "{\"file\": \"src/a.c\", \"command\": \"cc -std=c23 -Iinclude -c src/a.c\"}\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "one/two/three four/five/six seven/eight/nine\nf.c\n",
+          "expected": "{\"file\": \"f.c\", \"command\": \"cc -std=c23 -Ione/two/three -Ifour/five/six -Iseven/eight/nine -c f.c\"}\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "x\na.c b.c c.c\n",
+          "expected": "{\"file\": \"a.c\", \"command\": \"cc -std=c23 -Ix -c a.c\"}\n{\"file\": \"b.c\", \"command\": \"cc -std=c23 -Ix -c b.c\"}\n{\"file\": \"c.c\", \"command\": \"cc -std=c23 -Ix -c c.c\"}\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "external/googletest/googletest/include external/benchmark/include\ntest.c\n",
+          "expected": "{\"file\": \"test.c\", \"command\": \"cc -std=c23 -Iexternal/googletest/googletest/include -Iexternal/benchmark/include -c test.c\"}\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nconstexpr int MAX_DIRS = 20;\n\nint main(void) {\n    char line[1024];\n    if (!fgets(line, sizeof line, stdin)) {\n        return 0;\n    }\n    line[strcspn(line, \"\\n\")] = '\\0';\n\n    const char *dirs[MAX_DIRS];\n    int count = 0;\n    for (char *dir = strtok(line, \" \"); dir && count < MAX_DIRS; dir = strtok(nullptr, \" \")) {\n        dirs[count++] = dir;\n    }\n\n    char source[256];\n    while (scanf(\"%255s\", source) == 1) {\n        printf(\"{\\\"file\\\": \\\"%s\\\", \\\"command\\\": \\\"cc -std=c23 \", source);\n        for (int i = 0; i < count; ++i) {\n            printf(\"-I%s \", dirs[i]);\n        }\n        printf(\"-c %s\\\"}\\n\", source);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Флаги склеиваются в буфер `char flags[32]` через `strcat`, который не знает размера буфера. Два каталога с длинными путями не помещаются, и запись выходит за границу массива на стеке: `stack-buffer-overflow`. Без санитайзера программа могла бы «работать» и портить соседние переменные.\n\nБуфер вообще не нужен: строка с каталогами уже лежит в `line`, и `strtok` разрезал её на отдельные строки. Достаточно запомнить указатели и печатать флаги при выводе каждой команды. Если склейка всё же нужна, используйте `snprintf` с размером буфера и проверяйте результат.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "tooling-ecosystem-task-4",
+      "title": "Матрица CI",
+      "description": "Раскройте матрицу заданий CI. Ввод — строки трёх видов:\n\n- `axis имя значение₁ значение₂ …` — ось матрицы (оси идут в порядке появления);\n- `exclude ключ=значение …` — исключить сочетания, совпадающие по всем указанным ключам;\n- `include ключ=значение …` — дополнительное задание, добавляемое после матрицы как есть.\n\nВыведите задания матрицы в порядке перебора (первая ось меняется медленнее всех, последняя — быстрее), пропуская исключённые, в виде `ось=значение ось=значение …` в порядке осей. Затем выведите дополнительные задания в порядке появления (пары — как во вводе). В конце — `заданий N`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "examples": [
+        {
+          "input": "axis compiler gcc clang\naxis build Debug Release\nexclude compiler=clang build=Release\ninclude compiler=gcc build=Debug sanitizer=valgrind\n",
+          "output": "compiler=gcc build=Debug\ncompiler=gcc build=Release\ncompiler=clang build=Debug\ncompiler=gcc build=Debug sanitizer=valgrind\nзаданий 4\n"
+        },
+        {
+          "input": "axis os linux\n",
+          "output": "os=linux\nзаданий 1\n"
+        }
+      ],
+      "constraints": [
+        "До 5 осей по 5 значений; до 10 строк exclude и до 10 include, в каждой до 5 пар; имена и значения до 31 символа без пробелов и знака «=»."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Перебор сочетаний: массив индексов idx[axes]; после каждого задания увеличьте последний индекс и переносите «единицу» влево, как при счёте.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сочетание исключено, если для какой-нибудь строки exclude каждая её пара ключ=значение совпадает со значением соответствующей оси.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "axis compiler gcc clang\naxis build Debug Release\nexclude compiler=clang build=Release\ninclude compiler=gcc build=Debug sanitizer=valgrind\n",
+          "expected": "compiler=gcc build=Debug\ncompiler=gcc build=Release\ncompiler=clang build=Debug\ncompiler=gcc build=Debug sanitizer=valgrind\nзаданий 4\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "axis os linux\n",
+          "expected": "os=linux\nзаданий 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустой ввод",
+          "stdin": "",
+          "expected": "заданий 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Только include",
+          "stdin": "include only=one\n",
+          "expected": "only=one\nзаданий 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Шесть сочетаний",
+          "stdin": "axis a 1 2 3\naxis b x y\n",
+          "expected": "a=1 b=x\na=1 b=y\na=2 b=x\na=2 b=y\na=3 b=x\na=3 b=y\nзаданий 6\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Исключение по одной оси",
+          "stdin": "axis a 1 2\naxis b x y\nexclude a=1\n",
+          "expected": "a=2 b=x\na=2 b=y\nзаданий 2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Всё исключено",
+          "stdin": "axis a 1 2\nexclude a=1\nexclude a=2\n",
+          "expected": "заданий 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Исключение по несуществующей оси",
+          "stdin": "axis a 1 2\nexclude c=3\n",
+          "expected": "a=1\na=2\nзаданий 2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Три оси",
+          "stdin": "axis c gcc clang\naxis s none asan\naxis b Debug Release\nexclude c=clang s=none\n",
+          "expected": "c=gcc s=none b=Debug\nc=gcc s=none b=Release\nc=gcc s=asan b=Debug\nc=gcc s=asan b=Release\nc=clang s=asan b=Debug\nc=clang s=asan b=Release\nзаданий 6\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Два include",
+          "stdin": "axis os linux macos\ninclude os=windows\ninclude os=freebsd arch=arm\n",
+          "expected": "os=linux\nos=macos\nos=windows\nos=freebsd arch=arm\nзаданий 4\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nconstexpr int MAX_AXES = 5;\nconstexpr int MAX_VALUES = 5;\nconstexpr int MAX_RULES = 10;\nconstexpr int MAX_PAIRS = 5;\n\ntypedef struct {\n    char name[32];\n    char values[MAX_VALUES][32];\n    int count;\n} Axis;\n\ntypedef struct {\n    char key[MAX_PAIRS][32];\n    char value[MAX_PAIRS][32];\n    int count;\n} Rule;\n\nstatic Axis axes[MAX_AXES];\nstatic int axis_count = 0;\nstatic Rule excludes[MAX_RULES];\nstatic int exclude_count = 0;\nstatic Rule includes[MAX_RULES];\nstatic int include_count = 0;\n\nstatic void parse_rule(char *rest, Rule *rule) {\n    rule->count = 0;\n    for (char *tok = strtok(rest, \" \\n\"); tok && rule->count < MAX_PAIRS; tok = strtok(nullptr, \" \\n\")) {\n        char *eq = strchr(tok, '=');\n        if (!eq) {\n            continue;\n        }\n        *eq = '\\0';\n        snprintf(rule->key[rule->count], sizeof rule->key[0], \"%s\", tok);\n        snprintf(rule->value[rule->count], sizeof rule->value[0], \"%s\", eq + 1);\n        ++rule->count;\n    }\n}\n\nstatic bool excluded(const int idx[]) {\n    for (int r = 0; r < exclude_count; ++r) {\n        bool all = true;\n        for (int p = 0; p < excludes[r].count && all; ++p) {\n            bool matched = false;\n            for (int a = 0; a < axis_count; ++a) {\n                if (strcmp(axes[a].name, excludes[r].key[p]) == 0) {\n                    matched = strcmp(axes[a].values[idx[a]], excludes[r].value[p]) == 0;\n                }\n            }\n            all = matched;\n        }\n        if (all) {\n            return true;\n        }\n    }\n    return false;\n}\n\nint main(void) {\n    char line[1024];\n    while (fgets(line, sizeof line, stdin)) {\n        char *kind = strtok(line, \" \\n\");\n        if (!kind) {\n            continue;\n        }\n        char *rest = kind + strlen(kind) + 1;\n        if (strcmp(kind, \"axis\") == 0 && axis_count < MAX_AXES) {\n            Axis *axis = &axes[axis_count++];\n            char *name = strtok(nullptr, \" \\n\");\n            snprintf(axis->name, sizeof axis->name, \"%s\", name ? name : \"\");\n            axis->count = 0;\n            for (char *v = strtok(nullptr, \" \\n\"); v && axis->count < MAX_VALUES; v = strtok(nullptr, \" \\n\")) {\n                snprintf(axis->values[axis->count++], sizeof axis->values[0], \"%s\", v);\n            }\n        } else if (strcmp(kind, \"exclude\") == 0 && exclude_count < MAX_RULES) {\n            parse_rule(rest, &excludes[exclude_count++]);\n        } else if (strcmp(kind, \"include\") == 0 && include_count < MAX_RULES) {\n            parse_rule(rest, &includes[include_count++]);\n        }\n    }\n\n    int jobs = 0;\n    int idx[MAX_AXES] = {0};\n    bool empty = axis_count == 0;\n    for (int a = 0; a < axis_count; ++a) {\n        if (axes[a].count == 0) {\n            empty = true;\n        }\n    }\n    while (!empty) {\n        if (!excluded(idx)) {\n            for (int a = 0; a < axis_count; ++a) {\n                printf(\"%s%s=%s\", a ? \" \" : \"\", axes[a].name, axes[a].values[idx[a]]);\n            }\n            printf(\"\\n\");\n            ++jobs;\n        }\n        int a = axis_count - 1;\n        while (a >= 0 && ++idx[a] == axes[a].count) {\n            idx[a] = 0;\n            --a;\n        }\n        if (a < 0) {\n            break;\n        }\n    }\n    for (int r = 0; r < include_count; ++r) {\n        for (int p = 0; p < includes[r].count; ++p) {\n            printf(\"%s%s=%s\", p ? \" \" : \"\", includes[r].key[p], includes[r].value[p]);\n        }\n        printf(\"\\n\");\n        ++jobs;\n    }\n    printf(\"заданий %d\\n\", jobs);\n    return 0;\n}\n",
+      "solutionExplanation": "Матрица — декартово произведение осей: при двух компиляторах, двух режимах и двух санитайзерах получается восемь заданий, и каждое новое измерение умножает их число. `exclude` убирает бессмысленные или слишком дорогие сочетания, `include` добавляет отдельные — например, проверку Valgrind только для одного компилятора. Именно так раскрывают матрицу GitHub Actions и GitLab CI.\n\nПеребор индексов «как счётчик» обходит все сочетания без рекурсии и для любого числа осей. Строка `exclude` с ключом, которого нет среди осей, не совпадает ни с одним сочетанием.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "tooling-ecosystem-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Зачем clangd и clang-tidy нужен compile_commands.json?",
+        "explanation": "Без базы команд инструменты угадывают флаги и выдают ложные ошибки.",
+        "options": [
+          "Чтобы знать флаги компиляции каждого файла: стандарт, каталоги заголовков, макросы",
+          "Чтобы скомпилировать проект вместо CMake",
+          "Чтобы хранить зависимости",
+          "Он им не нужен"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Какая переменная CMake включает создание compile_commands.json?",
+        "explanation": "cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "type": "text",
+        "answers": [
+          "CMAKE_EXPORT_COMPILE_COMMANDS",
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+          "CMAKE_EXPORT_COMPILE_COMMANDS=ON"
+        ],
+        "placeholder": "Имя переменной"
+      },
+      {
+        "id": "q3",
+        "question": "Что делает clang-format --dry-run --Werror в CI?",
+        "explanation": "Без --dry-run с ключом -i файлы были бы переписаны.",
+        "options": [
+          "Проверяет стиль, ничего не меняя, и завершается ошибкой при нарушениях",
+          "Переформатирует все файлы",
+          "Компилирует с предупреждениями как ошибками",
+          "Ищет ошибки памяти"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Чем статический анализ дополняет санитайзеры?",
+        "explanation": "Зато анализатор может ошибаться: пропускать ошибки и сообщать о несуществующих.",
+        "options": [
+          "Рассуждает обо всех путях выполнения, а не только о выполненных тестами",
+          "Он всегда точнее",
+          "Он находит ошибки только во время выполнения",
+          "Ничем"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какие инструменты управляют зависимостями C и C++? Выберите все.",
+        "explanation": "clang-format отвечает за стиль кода.",
+        "type": "multiple",
+        "options": ["vcpkg", "Conan", "CMake FetchContent", "clang-format"],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q6",
+        "question": "Матрица CI: compiler [gcc, clang, msvc] × build [Debug, Release], исключено msvc + Debug. Сколько заданий?",
+        "explanation": "3 · 2 = 6 сочетаний минус одно исключённое.",
+        "options": ["5", "6", "4", "3"],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что даёт CMakePresets.json?",
+        "explanation": "cmake --preset debug заменяет длинную команду с множеством -D.",
+        "options": [
+          "Именованные наборы настроек сборки, общие для команды, редактора и CI",
+          "Список зависимостей",
+          "Правила форматирования",
+          "Готовые двоичные библиотеки"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Как называется протокол, через который редактор получает от clangd подсказки и переходы к объявлениям? (аббревиатура)",
+        "explanation": "Один языковой сервер работает в любом редакторе с поддержкой LSP.",
+        "type": "text",
+        "answers": ["LSP", "lsp", "Language Server Protocol"],
+        "placeholder": "Аббревиатура"
+      }
+    ]
+  }
+}

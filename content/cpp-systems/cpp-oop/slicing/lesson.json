@@ -1,128 +1,531 @@
 {
   "id": "oop-slicing",
-  "title": "Срезка объекта: потеря производной части",
-  "description": "При копировании производного объекта в отдельное значение базового типа сохраняется только базовая часть. Это object slicing. Новый объект действительно является базой: дополнительное состояние потеряно, виртуальные вызовы используют его базовую реализацию. Это не ошибка виртуальной таблицы и не повод применять cast.",
+  "title": "Срезка объекта",
+  "description": "Что теряется при копировании наследника в объект базового типа; где прячется срезка: параметры и возврат по значению, vector<База>, catch по значению; частичное присваивание через ссылки на базу; защита — ссылки, unique_ptr и удалённое копирование полиморфной базы; виртуальный clone() для полной копии.",
   "moduleId": "cpp-oop",
-  "order": 22,
-  "difficulty": "advanced",
-  "estimatedMinutes": 60,
-  "prerequisites": ["oop-interfaces"],
+  "order": 23,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 40,
+  "prerequisites": ["oop-runtime-polymorphism"],
   "objectives": [
-    "Применить Срезка объекта: потеря производной части в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Находить срезку в передаче, хранении и перехвате исключений",
+    "Защищать иерархию удалённым копированием базы",
+    "Копировать полиморфные объекты через clone()"
   ],
-  "tags": ["C++20", "ООП", "Срезка объекта: потеря производной части"],
+  "tags": ["C++23", "ООП", "Срезка", "clone", "Исключения"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-slicing-exercise",
-    "title": "Практика: Срезка объекта: потеря производной части",
-    "description": "Base возвращает 1 из virtual read() const, имеет virtual destructor. Derived(int) возвращает своё число. Исправьте consumer так, чтобы int consumer(const Base&) сохранял полиморфизм. solve(a,b) создаёт Derived{a} и возвращает consumer(d)+b. Передача базы по значению запрещена контрактом. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Клонирование",
+    "description": "Абстрактный класс `Shape` с удалёнными копирующими операциями и чисто виртуальными `area()`, `name()` и `std::unique_ptr<Shape> clone() const`. Наследники `Square` (`квадрат`) и `Circle` (`круг`).\n\nКоманды: `square s`, `circle r` — добавить фигуру в коллекцию; `copy` — дописать в конец коллекции **копии** всех текущих фигур (через `clone`); `list` — напечатать фигуры `имя площадь` с двумя знаками, по одной в строке, затем `всего N`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(9, 2)",
-        "output": "11\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "square 2\ncircle 1\ncopy\nlist\n",
+        "output": "квадрат 4.00\nкруг 3.14\nквадрат 4.00\nкруг 3.14\nвсего 4\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "copy\nlist\n",
+        "output": "всего 0\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Команд не больше 30; фигур в коллекции не больше 1000."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "clone у квадрата: return std::make_unique<Square>(side_);.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Копируйте в отдельный вектор, а потом перенесите в основной: добавлять в вектор во время обхода его же элементов нельзя.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [9, 2],
-        "expected": "11\n"
+        "stdin": "square 2\ncircle 1\ncopy\nlist\n",
+        "expected": "квадрат 4.00\nкруг 3.14\nквадрат 4.00\nкруг 3.14\nвсего 4\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "copy\nlist\n",
+        "expected": "всего 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [-7, 3],
-        "expected": "-4\n"
+        "id": "hidden-1",
+        "name": "Два копирования",
+        "stdin": "square 1\ncopy\ncopy\nlist\n",
+        "expected": "квадрат 1.00\nквадрат 1.00\nквадрат 1.00\nквадрат 1.00\nвсего 4\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-2",
+        "name": "Без копирования",
+        "stdin": "circle 2\nlist\n",
+        "expected": "круг 12.57\nвсего 1\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "До и после",
+        "stdin": "square 3\nlist\ncopy\nlist\n",
+        "expected": "квадрат 9.00\nвсего 1\nквадрат 9.00\nквадрат 9.00\nвсего 2\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Маленькие",
+        "stdin": "circle 0.5\nsquare 0.5\ncopy\nlist\n",
+        "expected": "круг 0.79\nквадрат 0.25\nкруг 0.79\nквадрат 0.25\nвсего 4\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Добавление после копии",
+        "stdin": "square 10\ncopy\nsquare 1\nlist\n",
+        "expected": "квадрат 100.00\nквадрат 100.00\nквадрат 1.00\nвсего 3\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Пусто",
+        "stdin": "list\n",
+        "expected": "всего 0\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Восемь кругов",
+        "stdin": "circle 1\ncopy\ncopy\ncopy\nlist\n",
+        "expected": "круг 3.14\nкруг 3.14\nкруг 3.14\nкруг 3.14\nкруг 3.14\nкруг 3.14\nкруг 3.14\nкруг 3.14\nвсего 8\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Два вида",
+        "stdin": "square 7\ncircle 7\nlist\n",
+        "expected": "квадрат 49.00\nкруг 153.94\nвсего 2\n"
       }
     ],
-    "referenceSolution": "struct Base { virtual int read() const { return 1; } virtual ~Base() = default; };\nclass Derived : public Base { int value_; public: explicit Derived(int x) : value_(x) {} int read() const override { return value_; } };\nint consumer(const Base& source) { return source.read(); }\nint solve(int a,int b) { Derived d{a}; return consumer(d)+b; }",
-    "solutionExplanation": "Base возвращает 1 из virtual read() const, имеет virtual destructor. Derived(int) возвращает своё число. Исправьте consumer так, чтобы int consumer(const Base&) сохранял полиморфизм. solve(a,b) создаёт Derived{a} и возвращает consumer(d)+b. Передача базы по значению запрещена контрактом. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не пытайтесь восстановить производный объект приведением уже срезанной базы. Дополнительной части в этой копии больше нет. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <numbers>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Shape {\npublic:\n    Shape() = default;\n    virtual ~Shape() = default;\n    Shape(const Shape &) = delete;\n    Shape &operator=(const Shape &) = delete;\n\n    virtual double area() const = 0;\n    virtual std::string name() const = 0;\n    virtual std::unique_ptr<Shape> clone() const = 0;\n};\n\nclass Square final : public Shape {\npublic:\n    explicit Square(double side) : side_(side) {}\n\n    double area() const override {\n        return side_ * side_;\n    }\n\n    std::string name() const override {\n        return \"квадрат\";\n    }\n\n    std::unique_ptr<Shape> clone() const override {\n        return std::make_unique<Square>(side_);\n    }\n\nprivate:\n    double side_;\n};\n\nclass Circle final : public Shape {\npublic:\n    explicit Circle(double r) : r_(r) {}\n\n    double area() const override {\n        return std::numbers::pi * r_ * r_;\n    }\n\n    std::string name() const override {\n        return \"круг\";\n    }\n\n    std::unique_ptr<Shape> clone() const override {\n        return std::make_unique<Circle>(r_);\n    }\n\nprivate:\n    double r_;\n};\n\nint main() {\n    std::vector<std::unique_ptr<Shape>> shapes;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"square\" || command == \"circle\") {\n            double x;\n            std::cin >> x;\n            if (command == \"square\") {\n                shapes.push_back(std::make_unique<Square>(x));\n            } else {\n                shapes.push_back(std::make_unique<Circle>(x));\n            }\n        } else if (command == \"copy\") {\n            std::vector<std::unique_ptr<Shape>> copies;\n            for (const auto &s : shapes) {\n                copies.push_back(s->clone());\n            }\n            for (auto &c : copies) {\n                shapes.push_back(std::move(c));\n            }\n        } else {\n            for (const auto &s : shapes) {\n                std::println(\"{} {:.2f}\", s->name(), s->area());\n            }\n            std::println(\"всего {}\", shapes.size());\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Копирование базы удалено, поэтому скопировать фигуру «как `Shape`» невозможно — ни случайно, ни намеренно. Полная копия создаётся виртуальным `clone()`: каждая фигура знает свой тип и свои поля и создаёт такую же. Вызов `s->clone()` не знает, кто перед ним, но получает правильную копию.\n\nКопии собираются в отдельный вектор: добавление в `shapes` во время обхода по нему же могло бы перевыделить память и испортить цикл. Затем копии переносятся `std::move` — владение переходит к основному вектору.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-slicing-task-2",
+      "title": "Ошибки по ссылке",
+      "description": "Иерархия ошибок: `AppError` — наследник `std::runtime_error` с виртуальной функцией `int code() const` (по умолчанию 500); `NotFound` (код 404, сообщение `нет записи N`) и `Denied` (код 403, сообщение `нет прав у ИМЯ`).\n\nХранилище содержит записи с номерами от 1 до 10. Команды: `get N` — печатает `запись N` или бросает `NotFound`; `delete N имя` — удалять может только `admin` (иначе `Denied`), удаление несуществующей записи — `NotFound`, успех печатает `удалена N`. Удалённые записи больше не существуют. Каждую команду выполняйте в `try` и перехватывайте `const AppError &`, печатая `[код] сообщение`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "get 3\ndelete 3 bob\ndelete 3 admin\nget 3\n",
+          "output": "запись 3\n[403] нет прав у bob\nудалена 3\n[404] нет записи 3\n"
+        },
+        {
+          "input": "get 11\n",
+          "output": "[404] нет записи 11\n"
+        }
+      ],
+      "constraints": ["Команд не больше 50."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "class NotFound : public AppError { public: explicit NotFound(int n) : AppError(\"нет записи \" + std::to_string(n)) {} int code() const override { return 404; } };",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Перехват по ссылке сохраняет и сообщение, и переопределённый code(). По значению оба превратились бы в базовые.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "get 3\ndelete 3 bob\ndelete 3 admin\nget 3\n",
+          "expected": "запись 3\n[403] нет прав у bob\nудалена 3\n[404] нет записи 3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "get 11\n",
+          "expected": "[404] нет записи 11\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Удалить несуществующую",
+          "stdin": "delete 99 admin\n",
+          "expected": "[404] нет записи 99\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Права проверяются первыми",
+          "stdin": "delete 99 bob\n",
+          "expected": "[403] нет прав у bob\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Границы",
+          "stdin": "get 1\nget 10\n",
+          "expected": "запись 1\nзапись 10\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Ноль",
+          "stdin": "get 0\n",
+          "expected": "[404] нет записи 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Двойное удаление",
+          "stdin": "delete 5 admin\ndelete 5 admin\n",
+          "expected": "удалена 5\n[404] нет записи 5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Регистр имени",
+          "stdin": "delete 1 Admin\n",
+          "expected": "[403] нет прав у Admin\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "После удаления",
+          "stdin": "delete 2 admin\nget 2\nget 4\n",
+          "expected": "удалена 2\n[404] нет записи 2\nзапись 4\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Две ошибки",
+          "stdin": "get -1\ndelete 7 guest\n",
+          "expected": "[404] нет записи -1\n[403] нет прав у guest\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <set>\n#include <stdexcept>\n#include <string>\n\nclass AppError : public std::runtime_error {\npublic:\n    using std::runtime_error::runtime_error;\n\n    virtual int code() const {\n        return 500;\n    }\n};\n\nclass NotFound : public AppError {\npublic:\n    explicit NotFound(int n) : AppError(\"нет записи \" + std::to_string(n)) {}\n\n    int code() const override {\n        return 404;\n    }\n};\n\nclass Denied : public AppError {\npublic:\n    explicit Denied(const std::string &user) : AppError(\"нет прав у \" + user) {}\n\n    int code() const override {\n        return 403;\n    }\n};\n\nclass Storage {\npublic:\n    Storage() {\n        for (int i = 1; i <= 10; i++) {\n            records_.insert(i);\n        }\n    }\n\n    void get(int n) const {\n        if (!records_.contains(n)) {\n            throw NotFound(n);\n        }\n        std::println(\"запись {}\", n);\n    }\n\n    void remove(int n, const std::string &user) {\n        if (user != \"admin\") {\n            throw Denied(user);\n        }\n        if (records_.erase(n) == 0) {\n            throw NotFound(n);\n        }\n        std::println(\"удалена {}\", n);\n    }\n\nprivate:\n    std::set<int> records_;\n};\n\nint main() {\n    Storage storage;\n    std::string command;\n    while (std::cin >> command) {\n        int n;\n        std::cin >> n;\n        std::string user;\n        if (command == \"delete\") {\n            std::cin >> user;\n        }\n        try {\n            if (command == \"get\") {\n                storage.get(n);\n            } else {\n                storage.remove(n, user);\n            }\n        } catch (const AppError &e) {\n            std::println(\"[{}] {}\", e.code(), e.what());\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Исключения — тоже полиморфные объекты. Перехват по константной ссылке видит настоящий объект: `code()` вызывается у `NotFound` или `Denied`, а `what()` возвращает их сообщения. При `catch (AppError e)` исключение копировалось бы в объект `AppError`, и код всегда был бы 500.\n\nПроверка прав стоит раньше проверки существования: пользователь без прав не должен узнавать, какие записи есть. `records_.erase(n)` возвращает число удалённых элементов, и ноль означает, что записи не было.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-slicing-task-3",
+      "title": "Найди ошибку: потерянный голос",
+      "description": "Музыканты играют на гитаре (`дзынь`), барабане (`бум`) или «просто инструменте» (`тишина`). Строки ввода: `guitar|drum|other владелец раз`. Функция `perform` печатает `владелец: звук звук …`:\n\n```text\nАда: дзынь дзынь\n```\n\nВсе инструменты звучат как «тишина». Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Instrument {\npublic:\n    explicit Instrument(std::string owner) : owner_(std::move(owner)) {}\n    virtual ~Instrument() = default;\n\n    virtual std::string play() const {\n        return \"тишина\";\n    }\n\n    const std::string &owner() const {\n        return owner_;\n    }\n\nprivate:\n    std::string owner_;\n};\n\nclass Guitar : public Instrument {\npublic:\n    using Instrument::Instrument;\n    std::string play() const override {\n        return \"дзынь\";\n    }\n};\n\nclass Drum : public Instrument {\npublic:\n    using Instrument::Instrument;\n    std::string play() const override {\n        return \"бум\";\n    }\n};\n\nvoid perform(Instrument i, int times) {\n    std::string sound;\n    for (int k = 0; k < times; k++) {\n        sound += (k ? \" \" : \"\") + i.play();\n    }\n    std::println(\"{}: {}\", i.owner(), sound);\n}\n\nint main() {\n    std::string kind, owner;\n    int times;\n    while (std::cin >> kind >> owner >> times) {\n        if (kind == \"guitar\") {\n            perform(Guitar(owner), times);\n        } else if (kind == \"drum\") {\n            perform(Drum(owner), times);\n        } else {\n            perform(Instrument(owner), times);\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "guitar Ада 2\n",
+          "output": "Ада: дзынь дзынь\n"
+        },
+        {
+          "input": "drum Алан 1\nother Грейс 1\n",
+          "output": "Алан: бум\nГрейс: тишина\n"
+        }
+      ],
+      "constraints": ["Строк не больше 20; раз от 1 до 5."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Как функция perform получает инструмент — и что остаётся от гитары в этой копии?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Параметр по значению базового типа обрезает наследника. Принимайте const Instrument &.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "guitar Ада 2\n",
+          "expected": "Ада: дзынь дзынь\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "drum Алан 1\nother Грейс 1\n",
+          "expected": "Алан: бум\nГрейс: тишина\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "drum a 3\n",
+          "expected": "a: бум бум бум\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "guitar b 1\n",
+          "expected": "b: дзынь\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "other c 2\n",
+          "expected": "c: тишина тишина\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "guitar x 5\ndrum y 5\n",
+          "expected": "x: дзынь дзынь дзынь дзынь дзынь\ny: бум бум бум бум бум\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "drum Иван 2\n",
+          "expected": "Иван: бум бум\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "guitar Ольга 3\nother Пётр 1\n",
+          "expected": "Ольга: дзынь дзынь дзынь\nПётр: тишина\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "drum d 1\nguitar g 1\n",
+          "expected": "d: бум\ng: дзынь\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "guitar solo 4\n",
+          "expected": "solo: дзынь дзынь дзынь дзынь\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Instrument {\npublic:\n    explicit Instrument(std::string owner) : owner_(std::move(owner)) {}\n    virtual ~Instrument() = default;\n\n    virtual std::string play() const {\n        return \"тишина\";\n    }\n\n    const std::string &owner() const {\n        return owner_;\n    }\n\nprivate:\n    std::string owner_;\n};\n\nclass Guitar : public Instrument {\npublic:\n    using Instrument::Instrument;\n    std::string play() const override {\n        return \"дзынь\";\n    }\n};\n\nclass Drum : public Instrument {\npublic:\n    using Instrument::Instrument;\n    std::string play() const override {\n        return \"бум\";\n    }\n};\n\nvoid perform(const Instrument &i, int times) {\n    std::string sound;\n    for (int k = 0; k < times; k++) {\n        sound += (k ? \" \" : \"\") + i.play();\n    }\n    std::println(\"{}: {}\", i.owner(), sound);\n}\n\nint main() {\n    std::string kind, owner;\n    int times;\n    while (std::cin >> kind >> owner >> times) {\n        if (kind == \"guitar\") {\n            perform(Guitar(owner), times);\n        } else if (kind == \"drum\") {\n            perform(Drum(owner), times);\n        } else {\n            perform(Instrument(owner), times);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`perform(Instrument i, …)` получает **копию базовой части** гитары: владелец сохраняется (он в базе), а гитарная таблица виртуальных функций — нет. Внутри функции `i` — просто `Instrument`, и `play()` возвращает «тишина». Компилятор не предупреждает: копирование наследника в базу законно.\n\nС параметром `const Instrument &` функция видит сам объект, и виртуальный вызов выбирает версию гитары или барабана. Чтобы такая ошибка стала ошибкой компиляции, в базе можно удалить копирующий конструктор.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-slicing-task-4",
+      "title": "Шаблоны документов",
+      "description": "Реестр хранит **прототипы** документов по имени: `std::map<std::string, std::unique_ptr<Document>>`. Абстрактный `Document` — с удалённым копированием, чисто виртуальными `clone()` и `describe()` и методом `set_number(int)`. Наследники: `Letter` (адресат) — описание `письмо №N для X`; `Invoice` (сумма) — `счёт №N на S руб.`.\n\nКоманды:\n\n- `letter имя адресат`, `invoice имя сумма` — зарегистрировать прототип под именем;\n- `new имя` — создать документ из прототипа через `clone()`, присвоить ему номер (общая нумерация, с 1) и напечатать описание; если прототипа нет — `нет шаблона имя`;\n- `count` — сколько документов создано.\n\nИзменение номера копии не должно затрагивать прототип.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "letter приглашение Ада\ninvoice аренда 50000\nnew приглашение\nnew аренда\nnew приглашение\ncount\n",
+          "output": "письмо №1 для Ада\nсчёт №2 на 50000 руб.\nписьмо №3 для Ада\n3\n"
+        },
+        {
+          "input": "new x\ncount\n",
+          "output": "нет шаблона x\n0\n"
+        }
+      ],
+      "constraints": ["Команд не больше 50; суммы до 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Document хранит номер в закрытом поле с protected-доступом для описаний; clone у письма: auto copy = std::make_unique<Letter>(to_); copy->set_number(number()); return copy;.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Созданные документы храните в векторе unique_ptr — так «count» сводится к size().",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "letter приглашение Ада\ninvoice аренда 50000\nnew приглашение\nnew аренда\nnew приглашение\ncount\n",
+          "expected": "письмо №1 для Ада\nсчёт №2 на 50000 руб.\nписьмо №3 для Ада\n3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "new x\ncount\n",
+          "expected": "нет шаблона x\n0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Два счёта",
+          "stdin": "invoice a 1\nnew a\nnew a\n",
+          "expected": "счёт №1 на 1 руб.\nсчёт №2 на 1 руб.\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Замена шаблона",
+          "stdin": "letter a X\nletter a Y\nnew a\n",
+          "expected": "письмо №1 для Y\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Ничего",
+          "stdin": "count\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Пропуск неизвестного",
+          "stdin": "letter l Bob\nnew l\nnew m\nnew l\n",
+          "expected": "письмо №1 для Bob\nнет шаблона m\nписьмо №2 для Bob\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Большая сумма",
+          "stdin": "invoice big 1000000000\nnew big\n",
+          "expected": "счёт №1 на 1000000000 руб.\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Порядок",
+          "stdin": "letter a A\ninvoice b 5\nnew b\nnew a\ncount\n",
+          "expected": "счёт №1 на 5 руб.\nписьмо №2 для A\n2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Кириллица",
+          "stdin": "letter приказ Отдел\nnew приказ\ncount\n",
+          "expected": "письмо №1 для Отдел\n1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Нулевой счёт",
+          "stdin": "invoice x 0\nnew x\nnew x\nnew x\ncount\n",
+          "expected": "счёт №1 на 0 руб.\nсчёт №2 на 0 руб.\nсчёт №3 на 0 руб.\n3\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Document {\npublic:\n    Document() = default;\n    virtual ~Document() = default;\n    Document(const Document &) = delete;\n    Document &operator=(const Document &) = delete;\n\n    virtual std::unique_ptr<Document> clone() const = 0;\n    virtual std::string describe() const = 0;\n\n    void set_number(int n) {\n        number_ = n;\n    }\n\nprotected:\n    int number() const {\n        return number_;\n    }\n\nprivate:\n    int number_ = 0;\n};\n\nclass Letter final : public Document {\npublic:\n    explicit Letter(std::string to) : to_(std::move(to)) {}\n\n    std::unique_ptr<Document> clone() const override {\n        auto copy = std::make_unique<Letter>(to_);\n        copy->set_number(number());\n        return copy;\n    }\n\n    std::string describe() const override {\n        return \"письмо №\" + std::to_string(number()) + \" для \" + to_;\n    }\n\nprivate:\n    std::string to_;\n};\n\nclass Invoice final : public Document {\npublic:\n    explicit Invoice(long long sum) : sum_(sum) {}\n\n    std::unique_ptr<Document> clone() const override {\n        auto copy = std::make_unique<Invoice>(sum_);\n        copy->set_number(number());\n        return copy;\n    }\n\n    std::string describe() const override {\n        return \"счёт №\" + std::to_string(number()) + \" на \" + std::to_string(sum_) + \" руб.\";\n    }\n\nprivate:\n    long long sum_;\n};\n\nint main() {\n    std::map<std::string, std::unique_ptr<Document>> prototypes;\n    std::vector<std::unique_ptr<Document>> created;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"count\") {\n            std::println(\"{}\", created.size());\n            continue;\n        }\n        std::string name;\n        std::cin >> name;\n        if (command == \"letter\") {\n            std::string to;\n            std::cin >> to;\n            prototypes[name] = std::make_unique<Letter>(to);\n        } else if (command == \"invoice\") {\n            long long sum;\n            std::cin >> sum;\n            prototypes[name] = std::make_unique<Invoice>(sum);\n        } else {\n            auto it = prototypes.find(name);\n            if (it == prototypes.end()) {\n                std::println(\"нет шаблона {}\", name);\n                continue;\n            }\n            auto doc = it->second->clone();\n            doc->set_number(static_cast<int>(created.size()) + 1);\n            std::println(\"{}\", doc->describe());\n            created.push_back(std::move(doc));\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Реестр не знает видов документов: он хранит прототипы через указатель на базу и создаёт новые документы их `clone()`. Каждая копия — самостоятельный объект: номер, присвоенный копии, не меняет прототип, поэтому следующий документ из того же шаблона снова получает только свой номер.\n\nКопирование базы удалено, и случайно скопировать документ «срезкой» невозможно. Повторная регистрация шаблона под тем же именем заменяет прототип: старый `unique_ptr` в словаре удаляет прежний объект.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-slicing-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Можно ли вернуть производную часть cast после Base copy = derived?",
-        "options": ["Нет, в новой копии её не существует", "Да, dynamic_cast восстанавливает поля"],
-        "correct": 0,
-        "explanation": "Такая копия возникает незаметно в параметре Base value, при push_back в vector<Base> или возврате Base по значению. Передавайте полиморфные объекты по ссылке, а владение — через указатель с корректным деструктором. Если требуется независимая полиморфная копия, нужен явный контракт clone; в этом модуле процессор не копируется. Абстрактная база предотвращает часть срезок на этапе компиляции, поскольку отдельное значение базы создать нельзя."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct Base {\n    virtual ~Base() = default;\n    virtual char id() const { return 'B'; }\n};\n\nstruct Derived : Base {\n    char id() const override { return 'D'; }\n};\n\nchar by_value(Base b) { return b.id(); }\nchar by_ref(const Base &b) { return b.id(); }\n\nint main() {\n    Derived d;\n    std::println(\"{}{}\", by_value(d), by_ref(d));\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "По значению передаётся срезанная копия базовой части, по ссылке — сам объект.",
+        "type": "text",
+        "answers": ["BD"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "1 9", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 1 9. При копировании производного объекта в отдельное значение базового типа сохраняется только базовая часть. Это object slicing. Новый объект действительно является базой: дополнительное состояние потеряно, виртуальные вызовы используют его базовую реализацию. Это не ошибка виртуальной таблицы и не повод применять cast."
-      },
-      {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q2",
+        "question": "В каких записях происходит срезка объекта Cat c? Выберите все.",
+        "explanation": "Ссылка на базу указывает на сам объект и ничего не копирует.",
+        "type": "multiple",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Не пытайтесь восстановить производный объект приведением уже срезанной базы. Дополнительной части в этой копии больше нет."
+          "Animal a = c;",
+          "std::vector<Animal> v; v.push_back(c);",
+          "const Animal &r = c;",
+          "void f(Animal a); f(c);"
         ],
-        "correct": 1,
-        "explanation": "Замените локальную срезку передачей Base по значению в функцию и предскажите ту же потерю поведения. Затем используйте const Base&. Срезка сама по себе может быть определённым копированием; дефект в том, что вызывающий код ожидал сохранения производного состояния."
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q3",
+        "question": "Как правильно перехватывать исключения стандартной иерархии?",
+        "explanation": "По значению исключение копируется и обрезается до базы.",
+        "type": "text",
+        "answers": [
+          "catch (const std::exception &e)",
+          "catch(const std::exception& e)",
+          "по константной ссылке"
+        ],
+        "placeholder": "Запись catch"
+      },
+      {
+        "id": "q4",
+        "question": "Что такое частичное присваивание?",
+        "explanation": "Получается «гибрид» двух объектов, которого никто не создавал.",
+        "options": [
+          "Присваивание через ссылки на базу копирует только базовую часть, а производная часть приёмника остаётся старой",
+          "Присваивание одного поля",
+          "Присваивание в конструкторе",
+          "Присваивание константе"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что даёт удаление копирующего конструктора и присваивания в полиморфной базе?",
+        "explanation": "Совет C++ Core Guidelines C.67 для базовых классов иерархий.",
+        "options": [
+          "Срезка становится ошибкой компиляции; передача по ссылке продолжает работать",
+          "Объекты нельзя передавать по ссылке",
+          "Наследников нельзя создать",
+          "Виртуальные функции перестают работать"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Как скопировать полиморфный объект целиком, не зная его настоящего типа?",
+        "explanation": "Шаблон «Прототип»: каждый класс сам создаёт свою копию.",
+        "options": [
+          "Вызвать виртуальную функцию clone(), которая возвращает unique_ptr на копию",
+          "Присвоить его переменной базового типа",
+          "Использовать static_cast",
+          "Это невозможно"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <stdexcept>\n\nstruct NotFound : std::runtime_error {\n    NotFound() : std::runtime_error(\"не найдено\") {}\n};\n\nint main() {\n    try {\n        throw NotFound();\n    } catch (const std::exception &e) {\n        std::println(\"{}\", e.what());\n    }\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "По ссылке what() вызывается у настоящего объекта, и сообщение сохраняется.",
+        "type": "text",
+        "answers": ["не найдено"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q8",
+        "question": "Сколько объектов Dog окажется в std::vector<Animal> после push_back(Dog(\"Рекс\"))?",
+        "explanation": "Вектор хранит объекты Animal — копию базовой части собаки.",
+        "type": "text",
+        "answers": ["0", "ноль"],
+        "placeholder": "Число"
       }
     ]
   }

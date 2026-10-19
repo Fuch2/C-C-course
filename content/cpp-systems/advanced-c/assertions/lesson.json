@@ -1,117 +1,540 @@
 {
   "id": "advanced-assertions",
-  "title": "Assertions",
-  "description": "assert проверяет внутреннее утверждение программы и аварийно завершает её при нарушении в сборке с активными проверками.",
+  "title": "assert и static_assert: проверки предположений",
+  "description": "Ошибки программиста и макрос assert; предусловия, постусловия и инварианты; что проверять assert, а что обрабатывать; NDEBUG и запрет действий внутри assert; abort и потерянный вывод; static_assert для размеров, расположения полей и соответствия таблиц; функции проверки инвариантов.",
   "moduleId": "advanced-c",
   "order": 28,
-  "difficulty": "advanced",
-  "estimatedMinutes": 40,
-  "prerequisites": ["advanced-errno"],
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["advanced-error-handling"],
   "objectives": [
-    "Объяснить: Assertions",
-    "Различать корректный контракт и ошибку: assert(scanf(...) == 1) удалит чтение ввода при NDEBUG.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Проверять предусловия, постусловия и инварианты с помощью assert",
+    "Отличать ошибки программиста от ошибок данных и окружения",
+    "Избегать действий внутри assert и учитывать NDEBUG",
+    "Проверять константные предположения при компиляции через static_assert"
   ],
-  "tags": ["C17", "углублённый C", "Assertions"],
+  "tags": ["assert", "static_assert", "NDEBUG", "Инварианты", "Отладка"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-assertions-exercise",
-    "title": "Практика: Assertions",
-    "description": "Прочитайте n. При n вне 0…20 выведите ОШИБКА обычной проверкой; иначе assert подтвердит инвариант, затем выведите n*n.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-assertions-task-1",
+    "title": "Найди ошибку: действие внутри assert",
+    "description": "Программа управляет стеком на 8 чисел. Команды: `push x` — положить число (если стек полон, напечатать `стек полон`), `pop` — снять и напечатать верхнее число или `пусто`, `size` — напечатать размер.\n\nПрограмма собирается как финальная — с `NDEBUG`, и в этой сборке числа в стек не попадают. Исправьте ошибку, не убирая `#define NDEBUG`.",
+    "difficulty": "intermediate",
+    "starterCode": "#define NDEBUG                      // так программу собирают для пользователей\n#include <assert.h>\n#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    int items[8];\n    int size;\n} Stack;\n\nstatic int stack_push(Stack *s, int value) {\n    if (s->size == 8) {\n        return 0;\n    }\n    s->items[s->size++] = value;\n    return 1;\n}\n\nstatic int stack_pop(Stack *s, int *out) {\n    if (s->size == 0) {\n        return 0;\n    }\n    *out = s->items[--s->size];\n    return 1;\n}\n\nint main(void) {\n    Stack s = {{0}, 0};\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        int value;\n        if (strcmp(command, \"push\") == 0 && scanf(\"%d\", &value) == 1) {\n            assert(stack_push(&s, value));      // «не может не получиться»\n        } else if (strcmp(command, \"pop\") == 0) {\n            if (stack_pop(&s, &value)) {\n                printf(\"%d\\n\", value);\n            } else {\n                printf(\"пусто\\n\");\n            }\n        } else if (strcmp(command, \"size\") == 0) {\n            printf(\"%d\\n\", s.size);\n        }\n    }\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "4",
-        "output": "16\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "push 1\npush 2\npop\nsize\n",
+        "output": "2\n1\n"
       },
       {
-        "input": "20",
-        "output": "400\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "pop\nsize\n",
+        "output": "пусто\n0\n"
       }
     ],
-    "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
-    ],
+    "constraints": ["Команд не больше 50."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "assert — сигнал о нарушении доказанного внутреннего правила; проверка ввода — часть нормального поведения."
+        "text": "Во что превращается assert(…) при определённом NDEBUG? Вычисляется ли выражение внутри?",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "assert(scanf(...) == 1) удалит чтение ввода при NDEBUG."
+        "text": "Вынесите вызов stack_push из assert. Переполнение стека — обычная ситуация, а не ошибка в коде: обработайте результат через if и напечатайте «стек полон».",
+        "order": 2
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "4",
-        "expected": "16\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "push 1\npush 2\npop\nsize\n",
+        "expected": "2\n1\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "20",
-        "expected": "400\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "pop\nsize\n",
+        "expected": "пусто\n0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "-1",
-        "expected": "ОШИБКА\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "push 5\npop\npop\n",
+        "expected": "5\nпусто\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "push 1\npush 2\npush 3\npush 4\npush 5\npush 6\npush 7\npush 8\npush 9\nsize\npop\n",
+        "expected": "стек полон\n8\n8\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "push -1\npush 0\nsize\npop\npop\n",
+        "expected": "2\n0\n-1\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "push 7\npush 7\npush 7\nsize\n",
+        "expected": "3\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "size\npush 100\nsize\n",
+        "expected": "0\n1\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "push 1\npop\npush 2\npop\npush 3\npop\n",
+        "expected": "1\n2\n3\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "push 1\npush 2\npush 3\npush 4\npush 5\npush 6\npush 7\npush 8\npush 9\npush 10\npop\npop\nsize\n",
+        "expected": "стек полон\nстек полон\n8\n7\n6\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "push 2147483647\npop\n",
+        "expected": "2147483647\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n#include <assert.h>\nint main(void) {\n    int n;if(scanf(\"%d\",&n)!=1)return 1;\n    if(n<0 || n>20){puts(\"ОШИБКА\");return 0;}\n    assert(n>=0 && n<=20);printf(\"%d\\n\",n*n);\n    return 0;\n}\n",
-    "solutionExplanation": "assert — сигнал о нарушении доказанного внутреннего правила; проверка ввода — часть нормального поведения.\n\nassert(scanf(...) == 1) удалит чтение ввода при NDEBUG.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '4' → '16\\n'; '20' → '400\\n'; '-1' → 'ОШИБКА\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#define NDEBUG                      // так программу собирают для пользователей\n#include <assert.h>\n#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    int items[8];\n    int size;\n} Stack;\n\nstatic int stack_push(Stack *s, int value) {\n    if (s->size == 8) {\n        return 0;\n    }\n    s->items[s->size++] = value;\n    return 1;\n}\n\nstatic int stack_pop(Stack *s, int *out) {\n    if (s->size == 0) {\n        return 0;\n    }\n    *out = s->items[--s->size];\n    return 1;\n}\n\nint main(void) {\n    Stack s = {{0}, 0};\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        int value;\n        if (strcmp(command, \"push\") == 0 && scanf(\"%d\", &value) == 1) {\n            if (!stack_push(&s, value)) {\n                printf(\"стек полон\\n\");\n            }\n        } else if (strcmp(command, \"pop\") == 0) {\n            if (stack_pop(&s, &value)) {\n                printf(\"%d\\n\", value);\n            } else {\n                printf(\"пусто\\n\");\n            }\n        } else if (strcmp(command, \"size\") == 0) {\n            printf(\"%d\\n\", s.size);\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "С `NDEBUG` макрос `assert(выражение)` заменяется на `((void)0)` — выражение не вычисляется вовсе. Вместе с проверкой исчез и вызов `stack_push`, поэтому в финальной сборке стек всегда пуст. В отладочной сборке ошибка не видна: там `assert` вычисляет выражение, и элемент добавляется.\n\nЕсть и вторая ошибка — смысловая. Неудачный `push` в заполненный стек — нормальная ситуация, которая случается при правильной программе. Для неё `assert` не подходит даже в отладочной сборке: программа упала бы на допустимых данных. Правильное исправление — обычная проверка результата и сообщение пользователю.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-assertions-task-2",
+      "title": "Найди ошибку: assert вместо проверки ввода",
+      "description": "Программа читает поездки — пары «расстояние в километрах, время в часах» — и для каждой печатает `поездка N: S км/ч` со средней скоростью с одним знаком после точки. Если время не положительно или расстояние отрицательно, нужно напечатать `поездка N: ошибка данных` и перейти к следующей поездке.\n\nНа неверных данных программа аварийно завершается. Исправьте её.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <assert.h>\n#include <stdio.h>\n\nint main(void) {\n    double distance, hours;\n    int trip = 0;\n    while (scanf(\"%lf %lf\", &distance, &hours) == 2) {\n        trip++;\n        assert(hours > 0 && distance >= 0);\n        printf(\"поездка %d: %.1f км/ч\\n\", trip, distance / hours);\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "120 2\n90 1.5\n",
+          "output": "поездка 1: 60.0 км/ч\nпоездка 2: 60.0 км/ч\n"
+        },
+        {
+          "input": "100 0\n50 2\n",
+          "output": "поездка 1: ошибка данных\nпоездка 2: 25.0 км/ч\n"
+        }
+      ],
+      "constraints": ["Поездок не больше 30; числа — действительные, по модулю до 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что делает assert, когда условие ложно? Подходит ли это для данных, которые ввёл пользователь?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Неверный ввод возможен при правильной программе. Замените assert обычной проверкой: напечатайте сообщение об ошибке и continue.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "120 2\n90 1.5\n",
+          "expected": "поездка 1: 60.0 км/ч\nпоездка 2: 60.0 км/ч\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "100 0\n50 2\n",
+          "expected": "поездка 1: ошибка данных\nпоездка 2: 25.0 км/ч\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "10 -1\n",
+          "expected": "поездка 1: ошибка данных\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "-5 1\n",
+          "expected": "поездка 1: ошибка данных\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "0 1\n",
+          "expected": "поездка 1: 0.0 км/ч\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "1000000 0.5\n",
+          "expected": "поездка 1: 2000000.0 км/ч\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "30 0.25\n0 0\n15 1\n",
+          "expected": "поездка 1: 120.0 км/ч\nпоездка 2: ошибка данных\nпоездка 3: 15.0 км/ч\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "100 3\n",
+          "expected": "поездка 1: 33.3 км/ч\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "42 0.0001\n",
+          "expected": "поездка 1: 420000.0 км/ч\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "1 1\n2 -2\n3 3\n",
+          "expected": "поездка 1: 1.0 км/ч\nпоездка 2: ошибка данных\nпоездка 3: 1.0 км/ч\n"
+        }
+      ],
+      "referenceSolution": "#include <assert.h>\n#include <stdio.h>\n\nint main(void) {\n    double distance, hours;\n    int trip = 0;\n    while (scanf(\"%lf %lf\", &distance, &hours) == 2) {\n        trip++;\n        if (hours <= 0 || distance < 0) {\n            printf(\"поездка %d: ошибка данных\\n\", trip);\n            continue;\n        }\n        printf(\"поездка %d: %.1f км/ч\\n\", trip, distance / hours);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`assert` проверяет предположения о **коде** и при нарушении аварийно завершает программу. Но время поездки ввёл пользователь, и ноль или отрицательное число — ожидаемая ситуация, а не ошибка программиста. Программа, которая падает от неверной строки во входных данных, теряет и все результаты после неё.\n\nЕсть и обратная опасность: в финальной сборке с `NDEBUG` такая проверка исчезнет, и программа поделит на ноль или напечатает бессмысленную отрицательную скорость. Ввод проверяют всегда, явно, с сообщением о проблеме — а `assert` оставляют для условий, которые при правильном коде не нарушаются никогда.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-assertions-task-3",
+      "title": "Найди ошибку: таблица и перечисление",
+      "description": "Программа читает номера дней недели (0 — понедельник, …, 6 — воскресенье) и для каждого печатает `номер: название, выходной|рабочий`, а для номера вне диапазона — `номер: нет такого дня`.\n\nСборка останавливается: срабатывает `static_assert`. Найдите причину и исправьте программу, не удаляя проверку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <assert.h>\n#include <stdio.h>\n\nenum Weekday { MON, TUE, WED, THU, FRI, SAT, SUN, DAY_COUNT };\n\nstatic const char *const DAY_NAMES[] = {\n    \"понедельник\", \"вторник\", \"среда\", \"четверг\", \"пятница\", \"воскресенье\",\n};\n\nstatic_assert(sizeof DAY_NAMES / sizeof DAY_NAMES[0] == DAY_COUNT,\n              \"таблица названий не совпадает с перечислением дней\");\n\nint main(void) {\n    int day;\n    while (scanf(\"%d\", &day) == 1) {\n        if (day < 0 || day >= DAY_COUNT) {\n            printf(\"%d: нет такого дня\\n\", day);\n            continue;\n        }\n        printf(\"%d: %s, %s\\n\", day, DAY_NAMES[day], day >= SAT ? \"выходной\" : \"рабочий\");\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "0\n5\n6\n",
+          "output": "0: понедельник, рабочий\n5: суббота, выходной\n6: воскресенье, выходной\n"
+        },
+        {
+          "input": "7\n-1\n",
+          "output": "7: нет такого дня\n-1: нет такого дня\n"
+        }
+      ],
+      "constraints": ["Номеров не больше 30."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "static_assert сравнивает число элементов таблицы DAY_NAMES с числом дней в перечислении. Пересчитайте названия.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "В таблице нет субботы. Вставьте \"суббота\" между пятницей и воскресеньем — порядок названий должен совпадать с порядком перечисления.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "0\n5\n6\n",
+          "expected": "0: понедельник, рабочий\n5: суббота, выходной\n6: воскресенье, выходной\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "7\n-1\n",
+          "expected": "7: нет такого дня\n-1: нет такого дня\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1\n",
+          "expected": "1: вторник, рабочий\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "2\n3\n4\n",
+          "expected": "2: среда, рабочий\n3: четверг, рабочий\n4: пятница, рабочий\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "5\n",
+          "expected": "5: суббота, выходной\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "6\n",
+          "expected": "6: воскресенье, выходной\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "0 1 2 3 4 5 6\n",
+          "expected": "0: понедельник, рабочий\n1: вторник, рабочий\n2: среда, рабочий\n3: четверг, рабочий\n4: пятница, рабочий\n5: суббота, выходной\n6: воскресенье, выходной\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "10\n",
+          "expected": "10: нет такого дня\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "4 5\n",
+          "expected": "4: пятница, рабочий\n5: суббота, выходной\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "-100\n3\n",
+          "expected": "-100: нет такого дня\n3: четверг, рабочий\n"
+        }
+      ],
+      "referenceSolution": "#include <assert.h>\n#include <stdio.h>\n\nenum Weekday { MON, TUE, WED, THU, FRI, SAT, SUN, DAY_COUNT };\n\nstatic const char *const DAY_NAMES[] = {\n    \"понедельник\", \"вторник\", \"среда\", \"четверг\", \"пятница\", \"суббота\", \"воскресенье\",\n};\n\nstatic_assert(sizeof DAY_NAMES / sizeof DAY_NAMES[0] == DAY_COUNT,\n              \"таблица названий не совпадает с перечислением дней\");\n\nint main(void) {\n    int day;\n    while (scanf(\"%d\", &day) == 1) {\n        if (day < 0 || day >= DAY_COUNT) {\n            printf(\"%d: нет такого дня\\n\", day);\n            continue;\n        }\n        printf(\"%d: %s, %s\\n\", day, DAY_NAMES[day], day >= SAT ? \"выходной\" : \"рабочий\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Таблица названий и перечисление должны описывать одни и те же дни в одном порядке. В таблице пропущена суббота — без `static_assert` программа собралась бы и печатала для субботы «воскресенье», а для воскресенья читала бы за границей массива. Проверка при компиляции превращает эту тихую ошибку в понятное сообщение ещё до запуска.\n\nИсправлять нужно таблицу, а не проверку: удалив `static_assert`, вы вернули бы скрытую ошибку. Название вставляется на своё место — индекс в таблице должен совпадать со значением константы перечисления. Назначенные инициализаторы (`[SAT] = \"суббота\"`) сделали бы это соответствие явным.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-assertions-task-4",
+      "title": "Двоичная куча с проверкой инварианта",
+      "description": "Двоичная **max-куча** — массив, в котором каждый элемент не больше своего родителя: для всех `i > 0` выполняется `a[(i − 1) / 2] ≥ a[i]`. Наибольший элемент — всегда `a[0]`.\n\nКоманды до конца ввода:\n- `check n a₀ … aₙ₋₁` — проверить массив и напечатать `куча` или `нарушение: позиция i, родитель p` для первого (наименьшего) `i`, где элемент больше родителя;\n- `push x` — вставить число в свою кучу: поставить в конец и «поднимать» обменом с родителем, пока он меньше; напечатать кучу через пробел;\n- `pop` — извлечь наибольший: напечатать его (или `пусто`), поставить последний элемент в корень и «опускать» обменом с большим из детей, пока ребёнок больше.\n\nНапишите функцию `int heap_check(const int *a, int n, int *bad)` и используйте её **дважды**: для команды `check` и в `assert(heap_check(...))` в конце `push` и `pop` — как проверку инварианта собственной кучи.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "push 5\npush 9\npush 3\npush 7\npop\n",
+          "output": "5\n9 5\n9 5 3\n9 7 3 5\n9\n"
+        },
+        {
+          "input": "check 4 9 7 3 8\ncheck 3 5 5 5\n",
+          "output": "нарушение: позиция 3, родитель 1\nкуча\n"
+        }
+      ],
+      "constraints": ["В куче не больше 100 элементов; в check n от 0 до 100; числа — int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "heap_check перебирает i от 1 до n − 1 и при a[(i − 1) / 2] < a[i] записывает i в *bad и возвращает 0.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Подъём: while (i > 0 && a[(i − 1) / 2] < a[i]) { обмен; i = (i − 1) / 2; }. Спуск: выберите большего из детей 2i + 1 и 2i + 2 (если они есть) и меняйте, пока он больше текущего.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "В assert передавайте вызов функции проверки без побочных эффектов: int bad; assert(heap_check(h, n, &bad)); — запись в bad не влияет на программу, даже если assert исчезнет.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "push 5\npush 9\npush 3\npush 7\npop\n",
+          "expected": "5\n9 5\n9 5 3\n9 7 3 5\n9\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "check 4 9 7 3 8\ncheck 3 5 5 5\n",
+          "expected": "нарушение: позиция 3, родитель 1\nкуча\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "pop\ncheck 0\n",
+          "expected": "пусто\nкуча\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Короткие массивы",
+          "stdin": "check 1 42\ncheck 2 1 2\n",
+          "expected": "куча\nнарушение: позиция 1, родитель 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Возрастающие вставки",
+          "stdin": "push 1\npush 2\npush 3\npush 4\npush 5\npop\npop\npop\npop\npop\npop\n",
+          "expected": "1\n2 1\n3 1 2\n4 3 2 1\n5 4 2 1 3\n5\n4\n3\n2\n1\nпусто\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Равные элементы",
+          "stdin": "push 5\npush 5\npush 5\npop\n",
+          "expected": "5\n5 5\n5 5 5\n5\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Отрицательные",
+          "stdin": "push -3\npush -1\npush -2\npop\npop\n",
+          "expected": "-3\n-1 -3\n-1 -3 -2\n-1\n-2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Нарушение в последнем элементе",
+          "stdin": "check 7 10 9 8 7 6 5 11\n",
+          "expected": "нарушение: позиция 6, родитель 2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смешанные операции",
+          "stdin": "push 10\npush 20\npush 15\npush 30\npush 40\npop\npush 25\npop\npop\n",
+          "expected": "10\n20 10\n20 10 15\n30 20 15 10\n40 30 15 10 20\n40\n30 25 15 10 20\n30\n25\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Куча и нарушение",
+          "stdin": "check 6 50 30 40 10 20 35\ncheck 6 50 30 40 31 20 35\n",
+          "expected": "куча\nнарушение: позиция 3, родитель 1\n"
+        }
+      ],
+      "referenceSolution": "#include <assert.h>\n#include <stdio.h>\n#include <string.h>\n\nstatic int heap[100];\nstatic int heap_size;\n\nstatic int heap_check(const int *a, int n, int *bad) {\n    for (int i = 1; i < n; i++) {\n        if (a[(i - 1) / 2] < a[i]) {\n            *bad = i;\n            return 0;\n        }\n    }\n    return 1;\n}\n\nstatic void swap(int *x, int *y) {\n    int t = *x;\n    *x = *y;\n    *y = t;\n}\n\nstatic void print_heap(void) {\n    for (int i = 0; i < heap_size; i++) {\n        printf(i + 1 < heap_size ? \"%d \" : \"%d\", heap[i]);\n    }\n    printf(\"\\n\");\n}\n\nstatic void push(int value) {\n    int i = heap_size++;\n    heap[i] = value;\n    while (i > 0 && heap[(i - 1) / 2] < heap[i]) {\n        swap(&heap[(i - 1) / 2], &heap[i]);\n        i = (i - 1) / 2;\n    }\n    int bad;\n    assert(heap_check(heap, heap_size, &bad));\n    (void)bad;\n}\n\nstatic int pop(int *out) {\n    if (heap_size == 0) {\n        return 0;\n    }\n    *out = heap[0];\n    heap[0] = heap[--heap_size];\n    int i = 0;\n    for (;;) {\n        int largest = i;\n        int left = 2 * i + 1, right = 2 * i + 2;\n        if (left < heap_size && heap[left] > heap[largest]) {\n            largest = left;\n        }\n        if (right < heap_size && heap[right] > heap[largest]) {\n            largest = right;\n        }\n        if (largest == i) {\n            break;\n        }\n        swap(&heap[i], &heap[largest]);\n        i = largest;\n    }\n    int bad;\n    assert(heap_check(heap, heap_size, &bad));\n    (void)bad;\n    return 1;\n}\n\nint main(void) {\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"check\") == 0) {\n            int n, a[100];\n            if (scanf(\"%d\", &n) != 1 || n < 0 || n > 100) {\n                break;\n            }\n            for (int i = 0; i < n; i++) {\n                if (scanf(\"%d\", &a[i]) != 1) {\n                    return 0;\n                }\n            }\n            int bad = 0;\n            if (heap_check(a, n, &bad)) {\n                printf(\"куча\\n\");\n            } else {\n                printf(\"нарушение: позиция %d, родитель %d\\n\", bad, (bad - 1) / 2);\n            }\n        } else if (strcmp(command, \"push\") == 0) {\n            int value;\n            if (scanf(\"%d\", &value) != 1 || heap_size == 100) {\n                break;\n            }\n            push(value);\n            print_heap();\n        } else if (strcmp(command, \"pop\") == 0) {\n            int value;\n            if (pop(&value)) {\n                printf(\"%d\\n\", value);\n            } else {\n                printf(\"пусто\\n\");\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Функция проверки инварианта работает в двух ролях. Для команды `check` она — обычная функция, результат которой печатается: чужой массив может и не быть кучей, это данные. А в конце `push` и `pop` её вызов стоит в `assert`: собственная куча программы **обязана** оставаться кучей, и если подъём или спуск написан с ошибкой, отладочная сборка остановится сразу после неправильной операции — с указанием строки.\n\nВнутри `assert` — только проверка: `heap_check` ничего не меняет, кроме локальной переменной `bad`. С `NDEBUG` вызов исчезнет вместе с проверкой, а поведение программы не изменится — поэтому `(void)bad;` нужен лишь для того, чтобы компилятор не предупреждал о переменной, которая в финальной сборке не используется.\n\nПроверка стоит O(n) на каждую операцию — дороже самой вставки за O(log n). В отладочной сборке это приемлемая цена за уверенность; в финальной с `NDEBUG` она исчезает.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-assertions-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Что происходит с выражением assert при NDEBUG?",
-        "options": ["Оно не вычисляется", "Оно всегда выполняется, но молча"],
-        "correct": 0,
-        "explanation": "assert проверяет внутреннее утверждение программы и аварийно завершает её при нарушении в сборке с активными проверками. При определённом NDEBUG выражение не вычисляется. Поэтому обязательные операции, ввод и изменение состояния нельзя прятать в assert."
-      },
-      {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q1",
+        "question": "Что делает assert(x > 0), если x равно нулю и NDEBUG не определён?",
+        "explanation": "assert аварийно завершает программу: нарушено предположение о коде, и продолжать работу бессмысленно.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "assert(scanf(...) == 1) удалит чтение ввода при NDEBUG."
+          "Печатает в stderr выражение, файл, строку и функцию и вызывает abort",
+          "Возвращает 0 из текущей функции",
+          "Печатает предупреждение и продолжает работу",
+          "Устанавливает errno"
         ],
-        "correct": 1,
-        "explanation": "assert — сигнал о нарушении доказанного внутреннего правила; проверка ввода — часть нормального поведения."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["3", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: int count=3;assert(count>=0);printf(\"%d\\n\",count); Ожидаемый результат: 3"
+        "id": "q2",
+        "question": "Для каких ситуаций уместен assert? Выберите все.",
+        "explanation": "assert — для ошибок в коде. Неверный ввод, нехватка памяти и отсутствие файла возможны при правильной программе — их обрабатывают явно.",
+        "type": "multiple",
+        "options": [
+          "Своя внутренняя функция получила NULL вопреки договору",
+          "Инвариант структуры данных нарушен после изменения",
+          "Пользователь ввёл отрицательный возраст",
+          "malloc вернул NULL",
+          "Файл настроек не найден"
+        ],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#define NDEBUG\n#include <assert.h>\n#include <stdio.h>\n\nint main(void) {\n    int count = 5;\n    assert(--count > 0);\n    assert(count++ < 100);\n    printf(\"%d\\n\", count);\n    return 0;\n}",
+        "explanation": "С NDEBUG assert превращается в ((void)0), и выражения внутри не вычисляются: count остаётся 5. Без NDEBUG программа напечатала бы тоже 5, но по другой причине: 5 → 4 → 5.",
+        "type": "text",
+        "answers": ["5"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Почему вывод printf, сделанный перед сработавшим assert, может не появиться?",
+        "explanation": "Когда вывод идёт в файл или канал, stdout буферизуется блоками. abort не вызывает обработчиков завершения и не сбрасывает буферы. stderr не буферизуется, поэтому сообщение assert видно.",
+        "options": [
+          "abort завершает процесс, не сбрасывая буферы stdout",
+          "assert очищает экран",
+          "printf не работает в функциях с assert",
+          "stdout закрывается перед проверкой"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какое выражение можно проверить через static_assert? Выберите все.",
+        "explanation": "static_assert проверяет константные выражения при компиляции. Значение переменной известно только во время работы — для него нужен обычный assert.",
+        "type": "multiple",
+        "options": [
+          "sizeof(struct Header) == 16",
+          "offsetof(struct Header, crc) == 12",
+          "CHAR_BIT == 8",
+          "count > 0, где count — переменная"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q6",
+        "question": "Что произойдёт при компиляции строки static_assert(sizeof(int) == 2, \"нужен 16-битный int\"); на x86-64?",
+        "explanation": "Ложное условие static_assert останавливает компиляцию. NDEBUG на static_assert не влияет.",
+        "options": [
+          "Ошибка компиляции с сообщением «нужен 16-битный int»",
+          "Программа соберётся, а при запуске вызовется abort",
+          "Предупреждение, программа соберётся",
+          "Ничего: static_assert проверяется только с флагом -DDEBUG"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Как переписать assert(list_append(&list, item)); чтобы финальная сборка с NDEBUG продолжала добавлять элементы и сообщала о неудаче?",
+        "explanation": "Действие выносится из assert. А раз неудача добавления возможна при правильной программе (кончилось место), её обрабатывают явно.",
+        "options": [
+          "if (!list_append(&list, item)) { сообщить об ошибке }",
+          "assert(list_append(&list, item) == 1);",
+          "#undef NDEBUG перед строкой",
+          "static_assert(list_append(&list, item), \"\");"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какой код завершения получит программа в Linux, если сработал assert (сигнал SIGABRT)?",
+        "explanation": "Оболочка сообщает о завершении сигналом как 128 + номер сигнала; SIGABRT — 6, итого 134.",
+        "type": "text",
+        "answers": ["134"],
+        "placeholder": "Код"
       }
     ]
   }

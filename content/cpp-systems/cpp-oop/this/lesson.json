@@ -1,131 +1,532 @@
 {
   "id": "oop-this",
-  "title": "this: получатель вызова",
-  "description": "В нестатическом методе this указывает на объект, для которого вызван метод. Запись this->value_ явно выбирает его поле. Она помогает различить поле и параметр с одинаковыми именами. Выражение *this обозначает сам объект; возврат Type& позволяет цепочку вызовов без создания копий.",
+  "title": "this, константные методы и deducing this",
+  "description": "this — скрытый указатель на получателя; тип this в обычном и const-методе; возврат *this и цепочки вызовов; проверка this == &other для операций объекта с самим собой; перегрузка метода по const; явный параметр объекта this auto &self из C++23 и рекурсивные лямбды.",
   "moduleId": "cpp-oop",
-  "order": 8,
-  "difficulty": "advanced",
+  "order": 7,
+  "difficulty": "intermediate",
   "estimatedMinutes": 45,
   "prerequisites": ["oop-destructor"],
   "objectives": [
-    "Применить this: получатель вызова в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Объяснять, как метод получает доступ к своему объекту",
+    "Строить цепочки вызовов, возвращая *this по ссылке",
+    "Обрабатывать операцию объекта с самим собой",
+    "Заменять перегрузку по const явным параметром объекта C++23"
   ],
-  "tags": ["C++20", "ООП", "this: получатель вызова"],
+  "tags": ["C++23", "ООП", "this", "deducing this", "const"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-this-exercise",
-    "title": "Практика: this: получатель вызова",
-    "description": "Создайте Accumulator с private int value{} и public Accumulator& add(int value), прибавляющим параметр к полю через this. get() const возвращает поле. solve(a,b) выполняет x.add(a).add(b) и возвращает x.get(). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Строка по шагам",
+    "description": "Опишите класс `Line` с методами, которые возвращают `Line &`, чтобы их можно было соединять в цепочку:\n\n- `text(const std::string &s)` — дописать слово;\n- `number(long long n)` — дописать число;\n- `repeat(char c, int k)` — дописать символ `c` `k` раз;\n- `space()` — дописать пробел.\n\nМетод `const std::string &str() const` возвращает результат. Команды ввода: `text слово`, `number n`, `repeat c k`, `space`. После всех команд напечатайте результат в квадратных скобках.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(2, 3)",
-        "output": "5\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "text Итого:\nspace\nnumber 42\nrepeat ! 3\n",
+        "output": "[Итого: 42!!!]\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "",
+        "output": "[]\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Команд не больше 50; k от 0 до 100."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "Каждый метод заканчивается строкой return *this;, а тип результата — Line &.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "repeat: text_.append(k, c) — дописывает k копий символа. number: std::to_string(n).",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [2, 3],
-        "expected": "5\n"
+        "stdin": "text Итого:\nspace\nnumber 42\nrepeat ! 3\n",
+        "expected": "[Итого: 42!!!]\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "",
+        "expected": "[]\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [-8, 2],
-        "expected": "-6\n"
+        "id": "hidden-1",
+        "name": "Линия",
+        "stdin": "repeat - 10\n",
+        "expected": "[----------]\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-2",
+        "name": "Ноль повторов",
+        "stdin": "repeat * 0\n",
+        "expected": "[]\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Числа",
+        "stdin": "number -7\nspace\nnumber 0\n",
+        "expected": "[-7 0]\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Слова подряд",
+        "stdin": "text a\ntext b\ntext c\n",
+        "expected": "[abc]\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Пробелы",
+        "stdin": "space\nspace\n",
+        "expected": "[  ]\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Большое число",
+        "stdin": "number 9223372036854775807\n",
+        "expected": "[9223372036854775807]\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скобки",
+        "stdin": "text [\nrepeat = 5\ntext ]\n",
+        "expected": "[[=====]]\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Фраза",
+        "stdin": "text Привет\nspace\ntext мир\nrepeat . 3\n",
+        "expected": "[Привет мир...]\n"
       }
     ],
-    "referenceSolution": "class Accumulator { int value{}; public: Accumulator& add(int value) { this->value += value; return *this; } int get() const { return value; } };\nint solve(int a,int b) { Accumulator x; x.add(a).add(b); return x.get(); }",
-    "solutionExplanation": "Создайте Accumulator с private int value{} и public Accumulator& add(int value), прибавляющим параметр к полю через this. get() const возвращает поле. solve(a,b) выполняет x.add(a).add(b) и возвращает x.get(). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Запись value = value меняет только параметр при совпадении имён. Возврат *this по значению копирует объект и может незаметно направить следующий вызов к копии. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nclass Line {\npublic:\n    Line &text(const std::string &s) {\n        text_ += s;\n        return *this;\n    }\n\n    Line &number(long long n) {\n        text_ += std::to_string(n);\n        return *this;\n    }\n\n    Line &repeat(char c, int k) {\n        text_.append(static_cast<std::size_t>(k), c);\n        return *this;\n    }\n\n    Line &space() {\n        return text(\" \");\n    }\n\n    const std::string &str() const {\n        return text_;\n    }\n\nprivate:\n    std::string text_;\n};\n\nint main() {\n    Line line;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"text\") {\n            std::string s;\n            std::cin >> s;\n            line.text(s);\n        } else if (command == \"number\") {\n            long long n;\n            std::cin >> n;\n            line.number(n);\n        } else if (command == \"repeat\") {\n            char c;\n            int k;\n            std::cin >> c >> k;\n            line.repeat(c, k);\n        } else {\n            line.space();\n        }\n    }\n    std::println(\"[{}]\", line.str());\n    return 0;\n}\n",
+    "solutionExplanation": "Все изменяющие методы возвращают ссылку на свой объект, поэтому их можно соединять: `line.text(\"a\").space().number(5)`. Здесь команды приходят по одной, и цепочка не нужна, но тот же класс без изменений поддерживает оба стиля.\n\n`space` выражен через `text` и тоже возвращает `*this` — результат `text(\" \")` и есть ссылка на тот же объект.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-this-task-2",
+      "title": "Поле для игры",
+      "description": "Ввод начинается с размеров поля `r c` (все клетки — 0). Опишите класс `Board` с **одним** методом доступа к клетке через явный параметр объекта C++23:\n\n```cpp\nauto &at(this auto &self, int row, int col);\n```\n\nОн должен работать и для изменения клетки, и для чтения через `const Board &`. Команды:\n\n- `put i j v` — записать значение;\n- `row i` — сумма строки (вычисляйте функцией, принимающей `const Board &`);\n- `col j` — сумма столбца (тоже через `const Board &`).\n\nИндексы считаются с 0 и всегда корректны.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2 3\nput 1 0 1\nput 1 2 7\nrow 1\ncol 2\n",
+          "output": "8\n7\n"
+        },
+        {
+          "input": "1 1\nrow 0\n",
+          "output": "0\n"
+        }
+      ],
+      "constraints": ["1 ≤ r, c ≤ 50; команд не больше 100; значения по модулю до 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Внутри метода нет неявного доступа к полям — всё через self: return self.cells_[row * self.cols_ + col];.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Функции суммы: long long row_sum(const Board &b, int i) — вызов b.at(i, j) выберет константную версию автоматически. Понадобятся методы rows() const и cols() const.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2 3\nput 1 0 1\nput 1 2 7\nrow 1\ncol 2\n",
+          "expected": "8\n7\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 1\nrow 0\n",
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Перезапись",
+          "stdin": "3 3\nput 0 0 5\nput 0 0 6\nrow 0\n",
+          "expected": "6\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Отрицательные",
+          "stdin": "2 2\nput 0 0 -1000000\nput 1 1 1000000\ncol 0\ncol 1\n",
+          "expected": "-1000000\n1000000\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Большое поле",
+          "stdin": "50 50\nput 49 49 9\nrow 49\ncol 49\n",
+          "expected": "9\n9\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Одна строка",
+          "stdin": "1 5\nput 0 0 1\nput 0 1 2\nput 0 2 3\nput 0 3 4\nput 0 4 5\nrow 0\n",
+          "expected": "15\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Один столбец",
+          "stdin": "5 1\nput 0 0 1\nput 4 0 1\ncol 0\n",
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Пустое поле",
+          "stdin": "3 4\nrow 2\ncol 3\n",
+          "expected": "0\n0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смесь",
+          "stdin": "2 2\nput 0 1 3\nput 1 1 4\ncol 1\nrow 0\nrow 1\n",
+          "expected": "7\n3\n4\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Большие суммы",
+          "stdin": "3 3\nput 1 1 1000000\nput 1 0 1000000\nput 1 2 1000000\nrow 1\n",
+          "expected": "3000000\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Board {\npublic:\n    Board(int rows, int cols) : rows_(rows), cols_(cols), cells_(static_cast<std::size_t>(rows * cols)) {}\n\n    auto &at(this auto &self, int row, int col) {\n        return self.cells_[static_cast<std::size_t>(row * self.cols_ + col)];\n    }\n\n    int rows() const {\n        return rows_;\n    }\n\n    int cols() const {\n        return cols_;\n    }\n\nprivate:\n    int rows_;\n    int cols_;\n    std::vector<long long> cells_;\n};\n\nlong long row_sum(const Board &b, int i) {\n    long long s = 0;\n    for (int j = 0; j < b.cols(); j++) {\n        s += b.at(i, j);\n    }\n    return s;\n}\n\nlong long col_sum(const Board &b, int j) {\n    long long s = 0;\n    for (int i = 0; i < b.rows(); i++) {\n        s += b.at(i, j);\n    }\n    return s;\n}\n\nint main() {\n    int r, c;\n    std::cin >> r >> c;\n    Board board(r, c);\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"put\") {\n            int i, j;\n            long long v;\n            std::cin >> i >> j >> v;\n            board.at(i, j) = v;\n        } else if (command == \"row\") {\n            int i;\n            std::cin >> i;\n            std::println(\"{}\", row_sum(board, i));\n        } else {\n            int j;\n            std::cin >> j;\n            std::println(\"{}\", col_sum(board, j));\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Один метод `at` обслуживает оба случая. В `board.at(i, j) = v` получатель изменяемый, `self` — `Board &`, и метод возвращает `long long &`. В `row_sum` получатель — `const Board &`, `self` выводится как константная ссылка, и результат — `const long long &`: читать можно, менять нельзя.\n\nБез C++23 понадобились бы две перегрузки — с одинаковыми телами и риском, что они однажды разойдутся. Функции сумм принимают `const Board &`: они только читают поле, и это видно из сигнатуры.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-this-task-3",
+      "title": "Найди ошибку: цепочка из копий",
+      "description": "Каждая строка ввода — три слова: каталог, пользователь и файл. Программа собирает из них путь цепочкой вызовов `path.add(root).add(user).add(file)` и печатает его:\n\n```text\n/home/ada/notes.txt\n```\n\nНо печатается только первая часть пути. Найдите и исправьте ошибку в классе `Path`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n\nclass Path {\npublic:\n    Path add(const std::string &part) {\n        text_ += \"/\" + part;\n        return *this;\n    }\n\n    const std::string &str() const {\n        return text_;\n    }\n\nprivate:\n    std::string text_;\n};\n\nint main() {\n    std::string root, user, file;\n    while (std::cin >> root >> user >> file) {\n        Path path;\n        path.add(root).add(user).add(file);\n        std::println(\"{}\", path.str());\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "home ada notes.txt\n",
+          "output": "/home/ada/notes.txt\n"
+        },
+        {
+          "input": "var log syslog\n",
+          "output": "/var/log/syslog\n"
+        }
+      ],
+      "constraints": ["Строк не больше 20; слова без пробелов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что именно возвращает add? С каким объектом работает второй вызов в цепочке?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "add возвращает Path по значению — копию. Второй и третий add меняют временные копии. Тип результата должен быть Path &.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "home ada notes.txt\n",
+          "expected": "/home/ada/notes.txt\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "var log syslog\n",
+          "expected": "/var/log/syslog\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "a b c\n",
+          "expected": "/a/b/c\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "usr local bin\n",
+          "expected": "/usr/local/bin\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "tmp x y\nopt app run\n",
+          "expected": "/tmp/x/y\n/opt/app/run\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "дом папка файл.txt\n",
+          "expected": "/дом/папка/файл.txt\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "srv www index.html\n",
+          "expected": "/srv/www/index.html\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "etc nginx nginx.conf\n",
+          "expected": "/etc/nginx/nginx.conf\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "1 2 3\n",
+          "expected": "/1/2/3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "mnt usb photo.jpg\n",
+          "expected": "/mnt/usb/photo.jpg\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nclass Path {\npublic:\n    Path & add(const std::string &part) {\n        text_ += \"/\" + part;\n        return *this;\n    }\n\n    const std::string &str() const {\n        return text_;\n    }\n\nprivate:\n    std::string text_;\n};\n\nint main() {\n    std::string root, user, file;\n    while (std::cin >> root >> user >> file) {\n        Path path;\n        path.add(root).add(user).add(file);\n        std::println(\"{}\", path.str());\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`return *this;` в методе с типом результата `Path` создаёт **копию** объекта. Первый `add` меняет `path`, а возвращает копию; второй `add` дописывает пользователя к этой временной копии, которая исчезает в конце строки; третий — к другой копии. В `path` остаётся только `/home`.\n\nОдного символа `&` в типе результата достаточно: метод возвращает ссылку на сам `path`, и каждое звено цепочки работает с ним. Компилятор не предупреждает — оба варианта корректны, просто означают разное.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-this-task-4",
+      "title": "Переводы между счетами",
+      "description": "Первая строка — число счетов `n` и их начальные балансы. Опишите класс `Account` с методом `bool transfer(Account &to, long long amount)`. Перевод берёт комиссию — 1% суммы, округлённый вниз; с отправителя списывается сумма плюс комиссия, получатель получает сумму. Перевод отклоняется, если:\n\n- это перевод самому себе (проверьте `this == &to`);\n- сумма не положительна;\n- у отправителя не хватает средств на сумму с комиссией.\n\nКоманды: `transfer i j amount` — напечатайте `ок`, `отказ` или `нет счёта` (номера с 0); `show` — все балансы через пробел.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2 1000 0\ntransfer 0 1 500\ntransfer 0 0 10\nshow\n",
+          "output": "ок\nотказ\n495 500\n"
+        },
+        {
+          "input": "1 100\ntransfer 0 1 10\nshow\n",
+          "output": "нет счёта\n100\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 20; балансы и суммы по модулю до 10¹²; команд не больше 50."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Счета храните в std::vector<Account>; проверку номеров делайте в main до вызова transfer.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Комиссия — amount / 100. Порядок в transfer: сначала все проверки, затем balance_ -= amount + fee; to.balance_ += amount;.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2 1000 0\ntransfer 0 1 500\ntransfer 0 0 10\nshow\n",
+          "expected": "ок\nотказ\n495 500\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 100\ntransfer 0 1 10\nshow\n",
+          "expected": "нет счёта\n100\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Не хватает на комиссию",
+          "stdin": "2 100 0\ntransfer 0 1 100\nshow\n",
+          "expected": "отказ\n100 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Ровно хватает",
+          "stdin": "2 101 0\ntransfer 0 1 100\nshow\n",
+          "expected": "ок\n0 100\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Неположительные",
+          "stdin": "2 50 50\ntransfer 0 1 0\ntransfer 0 1 -5\nshow\n",
+          "expected": "отказ\nотказ\n50 50\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Без комиссии",
+          "stdin": "3 1000 1000 1000\ntransfer 0 1 99\ntransfer 1 2 99\nshow\n",
+          "expected": "ок\nок\n901 1000 1099\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Большие суммы",
+          "stdin": "2 1000000000000 0\ntransfer 0 1 990000000000\nshow\n",
+          "expected": "ок\n100000000 990000000000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Ошибочные номера",
+          "stdin": "2 10 10\ntransfer 1 1 1\ntransfer -1 0 1\ntransfer 0 2 1\n",
+          "expected": "отказ\nнет счёта\nнет счёта\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Цепочка переводов",
+          "stdin": "3 300 0 0\ntransfer 0 1 200\ntransfer 1 2 200\ntransfer 1 2 197\nshow\n",
+          "expected": "ок\nотказ\nок\n98 2 197\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Один счёт",
+          "stdin": "1 5\nshow\n",
+          "expected": "5\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Account {\npublic:\n    explicit Account(long long balance) : balance_(balance) {}\n\n    bool transfer(Account &to, long long amount) {\n        long long fee = amount / 100;\n        if (this == &to || amount <= 0 || amount + fee > balance_) {\n            return false;\n        }\n        balance_ -= amount + fee;\n        to.balance_ += amount;\n        return true;\n    }\n\n    long long balance() const {\n        return balance_;\n    }\n\nprivate:\n    long long balance_;\n};\n\nint main() {\n    int n;\n    std::cin >> n;\n    std::vector<Account> accounts;\n    for (int i = 0; i < n; i++) {\n        long long b;\n        std::cin >> b;\n        accounts.emplace_back(b);\n    }\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"show\") {\n            std::string line;\n            for (const Account &a : accounts) {\n                line += (line.empty() ? \"\" : \" \") + std::to_string(a.balance());\n            }\n            std::println(\"{}\", line);\n            continue;\n        }\n        int i, j;\n        long long amount;\n        std::cin >> i >> j >> amount;\n        if (i < 0 || j < 0 || i >= n || j >= n) {\n            std::println(\"нет счёта\");\n        } else if (accounts[static_cast<std::size_t>(i)].transfer(accounts[static_cast<std::size_t>(j)], amount)) {\n            std::println(\"ок\");\n        } else {\n            std::println(\"отказ\");\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`this == &to` сравнивает адреса: отправитель и получатель — один и тот же объект в векторе. Без этой проверки перевод самому себе с комиссией тихо «съедал» бы деньги: сумма списывалась бы и тут же возвращалась, а комиссия терялась. Отказ здесь — явное решение, а не случайность.\n\nВсе проверки выполняются до изменения балансов, поэтому отклонённый перевод ничего не меняет. Метод `transfer` обращается к закрытому полю `to.balance_` другого объекта — это разрешено: доступ проверяется по классу.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-this-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Зачем add возвращает Accumulator&?",
-        "options": [
-          "Чтобы следующий вызов работал с тем же объектом",
-          "Чтобы каждый вызов создавал новый счётчик"
-        ],
-        "correct": 0,
-        "explanation": "В const методе через this нельзя изменять обычные поля. Статические методы не имеют this, поскольку не привязаны к экземпляру. Возвращаемая ссылка живёт столько, сколько исходный объект: цепочка корректна для существующего объекта, но сохранять ссылку на временный результат опасно. API с цепочками имеет смысл для последовательной настройки; это не обязательная форма каждого setter."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nclass Acc {\npublic:\n    Acc &add(int x) { sum_ += x; return *this; }\n    int sum() const { return sum_; }\n\nprivate:\n    int sum_ = 0;\n};\n\nint main() {\n    Acc a;\n    a.add(1).add(2).add(3);\n    std::println(\"{}\", a.sum());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Каждый add возвращает ссылку на тот же объект, и цепочка работает с a.",
+        "type": "text",
+        "answers": ["6"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "1 8", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 1 8. В нестатическом методе this указывает на объект, для которого вызван метод. Запись this->value_ явно выбирает его поле. Она помогает различить поле и параметр с одинаковыми именами. Выражение *this обозначает сам объект; возврат Type& позволяет цепочку вызовов без создания копий."
+        "id": "q2",
+        "question": "Что выведет та же программа, если add объявить как Acc add(int x) (без &)?",
+        "explanation": "add(1) меняет a и возвращает копию; add(2) и add(3) меняют временные копии.",
+        "type": "text",
+        "answers": ["1"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q3",
+        "question": "Какой тип у this внутри метода int get() const класса Counter?",
+        "explanation": "В const-методе this указывает на константу — через него можно только читать поля.",
+        "options": ["const Counter *", "Counter *", "Counter &", "const Counter &"],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Чему равна запись value_ внутри метода класса?",
+        "explanation": "Обращение к полю без this-> — сокращение.",
+        "type": "text",
+        "answers": ["this->value_", "this->value_;", "(*this).value_"],
+        "placeholder": "Выражение"
+      },
+      {
+        "id": "q5",
+        "question": "Зачем методу transfer(Account &to, …) проверка this == &to?",
+        "explanation": "Операции, которые читают один объект и меняют другой, ломаются, если это один и тот же объект.",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Запись value = value меняет только параметр при совпадении имён. Возврат *this по значению копирует объект и может незаметно направить следующий вызов к копии."
+          "Чтобы распознать перевод самому себе — операцию, где один объект выступает под двумя именами",
+          "Чтобы проверить, что to не равен nullptr",
+          "Чтобы сравнить балансы",
+          "Без неё код не скомпилируется"
         ],
-        "correct": 1,
-        "explanation": "Сравните возвращение Setting&, Setting и void. Первый вариант поддерживает цепочку на исходном объекте, второй создаёт копию, третий запрещает цепочку. Определите, должен ли ваш интерфейс позволять настройку временного объекта и последующее сохранение ссылки на него."
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct Box {\n    int v = 1;\n    int &get() { return v; }\n    const int &get() const { return v; }\n};\n\nint main() {\n    Box b;\n    const Box &c = b;\n    b.get() = 10;\n    std::println(\"{}\", c.get() + 1);\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Для b выбирается неконстантная версия и запись проходит; c — ссылка на тот же объект.",
+        "type": "text",
+        "answers": ["11"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Что означает первый параметр this auto &self в методе C++23?",
+        "explanation": "Для константного получателя self — константная ссылка, для изменяемого — обычная. Одно тело вместо двух перегрузок.",
+        "options": [
+          "Явный параметр объекта: получатель передаётся как self, его тип выводит компилятор",
+          "Метод принимает копию объекта",
+          "Метод становится статическим",
+          "Метод нельзя вызвать у константы"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nint main() {\n    auto fib = [](this auto self, int n) -> int {\n        return n < 2 ? n : self(n - 1) + self(n - 2);\n    };\n    std::println(\"{}\", fib(10));\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Лямбда с явным параметром объекта может вызвать сама себя: десятое число Фибоначчи — 55.",
+        "type": "text",
+        "answers": ["55"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q9",
+        "question": "Почему в статической функции класса нельзя обратиться к обычному полю?",
+        "explanation": "Статическая функция принадлежит классу, а не объекту.",
+        "options": [
+          "У статической функции нет получателя и нет this",
+          "Статические функции не видят закрытых членов",
+          "Поля доступны только в конструкторе",
+          "Можно — через this"
+        ],
+        "correct": 0
       }
     ]
   }

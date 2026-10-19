@@ -1,117 +1,445 @@
 {
   "id": "advanced-const",
-  "title": "const",
-  "description": "const ограничивает изменение через квалифицированное выражение.",
+  "title": "const: константы в C",
+  "description": "Почему const-переменная в C — не константное выражение: case, размеры массивов, массивы переменной длины; constexpr из C23 и его правила; enum как целая константа; выбор между constexpr, enum, #define и static const; константы в программе из нескольких файлов; таблицы только для чтения; const и typedef указателя; бессмысленный const; const-поля структур; квалификатор restrict.",
   "moduleId": "advanced-c",
   "order": 12,
-  "difficulty": "advanced",
-  "estimatedMinutes": 40,
-  "prerequisites": ["advanced-linkage"],
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
+  "prerequisites": ["advanced-conditional-compilation"],
   "objectives": [
-    "Объяснить: const",
-    "Различать корректный контракт и ошибку: Приведение типа не делает законной запись в объект, который был определён const.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Отличать объект только для чтения от константного выражения",
+    "Выбирать между constexpr, enum, #define и static const для разных констант",
+    "Размещать константы и таблицы в программе из нескольких файлов",
+    "Объяснять смысл restrict и ловушку const при typedef указателя"
   ],
-  "tags": ["C17", "углублённый C", "const"],
+  "tags": ["const", "constexpr", "C23", "enum", "Константное выражение", "restrict"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-const-exercise",
-    "title": "Практика: const",
-    "description": "Напишите sum(const int *values, size_t count). Ввод n 0…20 и n целых −1000…1000. Выведите сумму без изменения массива.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-const-task-1",
+    "title": "Найди ошибку: const, который ничего не защищает",
+    "description": "Программа читает `n` и `n` целых чисел, печатает их медиану (средний элемент в отсортированном порядке; при чётном `n` — левый из двух средних), а затем — числа в **исходном** порядке.\n\nАвтор функции `median` хотел гарантировать, что она не изменит массив, и написал `const` у параметра. Тем не менее программа печатает «исходный порядок» уже отсортированным, а компилятор молчит. Найдите причину и исправьте функцию так, чтобы `const` действительно защищал данные, а медиана считалась верно.",
+    "difficulty": "intermediate",
+    "starterCode": "#include <stdio.h>\n\ntypedef int *IntArray;\n\n// Медиана — средний элемент в отсортированном порядке (при чётном n — левый из двух средних).\n// Функция не должна менять переданный массив.\nint median(const IntArray values, int n) {\n    for (int i = 1; i < n; i++) {                 // сортировка вставками\n        int key = values[i];\n        int j = i - 1;\n        while (j >= 0 && values[j] > key) {\n            values[j + 1] = values[j];\n            j--;\n        }\n        values[j + 1] = key;\n    }\n    return values[(n - 1) / 2];\n}\n\nint main(void) {\n    int n, data[100];\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 100) {\n        return 0;\n    }\n    for (int i = 0; i < n; i++) {\n        if (scanf(\"%d\", &data[i]) != 1) {\n            return 0;\n        }\n    }\n    printf(\"медиана: %d\\n\", median(data, n));\n    printf(\"исходный порядок:\");\n    for (int i = 0; i < n; i++) {\n        printf(\" %d\", data[i]);\n    }\n    printf(\"\\n\");\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "3 1 -2 5",
-        "output": "4\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "5\n5 1 4 2 3\n",
+        "output": "медиана: 3\nисходный порядок: 5 1 4 2 3\n"
       },
       {
-        "input": "0",
-        "output": "0\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "1\n42\n",
+        "output": "медиана: 42\nисходный порядок: 42\n"
       }
     ],
-    "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
-    ],
+    "constraints": ["1 ≤ n ≤ 100; числа — int."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "const — разрешение на конкретном пути доступа, а не универсальная заморозка всех путей."
+        "text": "Во что раскрывается const IntArray, если IntArray — это int *? К чему относится const?",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Приведение типа не делает законной запись в объект, который был определён const."
+        "text": "const IntArray — это int *const: константен указатель, а не числа. Объявите параметр как const int *values — компилятор сразу покажет строки, которые меняют массив.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Медиану нельзя искать сортировкой самого входного массива: скопируйте числа в локальный массив и сортируйте копию.",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "3 1 -2 5",
-        "expected": "4\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "5\n5 1 4 2 3\n",
+        "expected": "медиана: 3\nисходный порядок: 5 1 4 2 3\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "0",
-        "expected": "0\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1\n42\n",
+        "expected": "медиана: 42\nисходный порядок: 42\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "1 -1000",
-        "expected": "-1000\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "2\n9 1\n",
+        "expected": "медиана: 1\nисходный порядок: 9 1\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "4\n4 3 2 1\n",
+        "expected": "медиана: 2\nисходный порядок: 4 3 2 1\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "3\n1 2 3\n",
+        "expected": "медиана: 2\nисходный порядок: 1 2 3\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "6\n10 -10 20 -20 30 -30\n",
+        "expected": "медиана: -10\nисходный порядок: 10 -10 20 -20 30 -30\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "5\n7 7 7 7 7\n",
+        "expected": "медиана: 7\nисходный порядок: 7 7 7 7 7\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "7\n3 9 1 8 2 7 4\n",
+        "expected": "медиана: 4\nисходный порядок: 3 9 1 8 2 7 4\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "3\n2147483647 -2147483648 0\n",
+        "expected": "медиана: 0\nисходный порядок: 2147483647 -2147483648 0\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "8\n1 3 5 7 2 4 6 8\n",
+        "expected": "медиана: 4\nисходный порядок: 1 3 5 7 2 4 6 8\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\nstatic int sum(const int *values, size_t count) { int result=0; for(size_t i=0;i<count;++i) result+=values[i]; return result; }\nint main(void) {\n    int data[20]; size_t n;\n    if(scanf(\"%zu\", &n)!=1 || n>20) return 1;\n    for(size_t i=0;i<n;++i) if(scanf(\"%d\", &data[i])!=1) return 1;\n    printf(\"%d\\n\", sum(data,n));\n    return 0;\n}\n",
-    "solutionExplanation": "const — разрешение на конкретном пути доступа, а не универсальная заморозка всех путей.\n\nПриведение типа не делает законной запись в объект, который был определён const.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '3 1 -2 5' → '4\\n'; '0' → '0\\n'; '1 -1000' → '-1000\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <stdio.h>\n\n// Медиана — средний элемент в отсортированном порядке (при чётном n — левый из двух средних).\n// Функция не должна менять переданный массив.\nint median(const int *values, int n) {\n    int sorted[100];\n    for (int i = 0; i < n; i++) {\n        sorted[i] = values[i];\n    }\n    for (int i = 1; i < n; i++) {                 // сортировка вставками\n        int key = sorted[i];\n        int j = i - 1;\n        while (j >= 0 && sorted[j] > key) {\n            sorted[j + 1] = sorted[j];\n            j--;\n        }\n        sorted[j + 1] = key;\n    }\n    return sorted[(n - 1) / 2];\n}\n\nint main(void) {\n    int n, data[100];\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 100) {\n        return 0;\n    }\n    for (int i = 0; i < n; i++) {\n        if (scanf(\"%d\", &data[i]) != 1) {\n            return 0;\n        }\n    }\n    printf(\"медиана: %d\\n\", median(data, n));\n    printf(\"исходный порядок:\");\n    for (int i = 0; i < n; i++) {\n        printf(\" %d\", data[i]);\n    }\n    printf(\"\\n\");\n    return 0;\n}\n",
+    "solutionExplanation": "`typedef int *IntArray;` делает синонимом весь тип «указатель на int». `const` перед синонимом относится к этому типу целиком, то есть к указателю: `const IntArray values` — это `int *const values`. Функции запрещено перенаправить `values`, но менять числа можно, и сортировка вставками переставляет элементы массива вызывающего кода.\n\nС параметром `const int *values` компилятор отвергнет каждую запись `values[...] = ...` — обещание стало проверяемым. Медиану тогда приходится искать на копии: функция, обещающая не менять входные данные, работает со своей памятью. Отсюда общее правило — не прятать указатели за `typedef`: читатель (и автор) перестаёт видеть, к чему относится `const`.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-const-task-2",
+      "title": "Римские числа",
+      "description": "Каждая строка ввода — либо целое число от 1 до 3999, либо римское число. Для целого напечатайте его римскую запись, для римского — значение.\n\nРимские цифры: `I` = 1, `V` = 5, `X` = 10, `L` = 50, `C` = 100, `D` = 500, `M` = 1000. Запись строится от больших значений к меньшим; вычитание используется только в шести сочетаниях: `IV` = 4, `IX` = 9, `XL` = 40, `XC` = 90, `CD` = 400, `CM` = 900. Одна цифра повторяется не больше трёх раз подряд.\n\nРимское число, записанное не по этим правилам (`IIII`, `IC`, `VX`, `MMMM`, `IIV`), посторонние символы или целое вне диапазона — ошибка: напечатайте `ошибка`.\n\nИспользуйте две константные таблицы на 13 элементов: значения `1000, 900, 500, …, 1` и соответствующие им обозначения `\"M\", \"CM\", \"D\", …, \"I\"`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "1994\nMCMXCIV\n",
+          "output": "MCMXCIV\n1994\n"
+        },
+        {
+          "input": "IIII\n0\n3999\n",
+          "output": "ошибка\nошибка\nMMMCMXCIX\n"
+        }
+      ],
+      "constraints": ["Строк не больше 30, каждая — одно слово до 20 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Перевод числа в римское — жадный: пока число не меньше VALUES[i], печатайте SYMBOLS[i] и вычитайте VALUES[i].",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Перевод римского в число: идите по строке и на каждом шаге ищите в таблице (по порядку) обозначение, с которого начинается остаток строки; прибавьте его значение. Если не нашлось — ошибка.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Проверка правильности записи: переведите полученное значение обратно в римское и сравните со входной строкой. Неправильные записи вроде IIII или IC при обратном переводе изменятся.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1994\nMCMXCIV\n",
+          "expected": "MCMXCIV\n1994\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "IIII\n0\n3999\n",
+          "expected": "ошибка\nошибка\nMMMCMXCIX\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Вычитательные сочетания",
+          "stdin": "1\n4\n9\n14\n40\n90\n400\n900\n",
+          "expected": "I\nIV\nIX\nXIV\nXL\nXC\nCD\nCM\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Обратно",
+          "stdin": "I\nIV\nIX\nXL\nXC\nCD\nCM\n",
+          "expected": "1\n4\n9\n40\n90\n400\n900\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Неправильные записи",
+          "stdin": "IC\nVX\nIIV\nMMMM\n",
+          "expected": "ошибка\nошибка\nошибка\nошибка\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Посторонние символы",
+          "stdin": "ABC\nXIZ\nmcm\n",
+          "expected": "ошибка\nошибка\nошибка\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Ошибки в числах",
+          "stdin": "4000\n12a\n",
+          "expected": "ошибка\nошибка\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Текущий год",
+          "stdin": "2024\nMMXXIV\n",
+          "expected": "MMXXIV\n2024\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Длинная запись",
+          "stdin": "LXXXVIII\n888\n",
+          "expected": "88\nDCCCLXXXVIII\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Лишние повторы",
+          "stdin": "XIIII\nCCCC\nDD\nLL\n",
+          "expected": "ошибка\nошибка\nошибка\nошибка\n"
+        }
+      ],
+      "referenceSolution": "#include <ctype.h>\n#include <stdio.h>\n#include <string.h>\n\nstatic const int VALUES[13] = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};\nstatic const char *const SYMBOLS[13] = {\"M\", \"CM\", \"D\", \"CD\", \"C\", \"XC\", \"L\",\n                                        \"XL\", \"X\", \"IX\", \"V\", \"IV\", \"I\"};\n\nstatic void to_roman(int value, char *out) {\n    out[0] = '\\0';\n    for (int i = 0; i < 13; i++) {\n        while (value >= VALUES[i]) {\n            strcat(out, SYMBOLS[i]);\n            value -= VALUES[i];\n        }\n    }\n}\n\n// Возвращает значение или -1, если в строке встретилось неизвестное обозначение.\nstatic int from_roman(const char *text) {\n    int value = 0;\n    while (*text != '\\0') {\n        int found = 0;\n        for (int i = 0; i < 13 && !found; i++) {\n            size_t len = strlen(SYMBOLS[i]);\n            if (strncmp(text, SYMBOLS[i], len) == 0) {\n                value += VALUES[i];\n                text += len;\n                found = 1;\n            }\n        }\n        if (!found) {\n            return -1;\n        }\n    }\n    return value;\n}\n\nint main(void) {\n    char word[32];\n    while (scanf(\"%31s\", word) == 1) {\n        char roman[32];\n        if (isdigit((unsigned char)word[0])) {\n            int value;\n            if (sscanf(word, \"%d\", &value) != 1 || value < 1 || value > 3999 ||\n                strspn(word, \"0123456789\") != strlen(word)) {\n                printf(\"ошибка\\n\");\n                continue;\n            }\n            to_roman(value, roman);\n            printf(\"%s\\n\", roman);\n        } else {\n            int value = from_roman(word);\n            if (value < 1 || value > 3999) {\n                printf(\"ошибка\\n\");\n                continue;\n            }\n            to_roman(value, roman);\n            if (strcmp(roman, word) != 0) {\n                printf(\"ошибка\\n\");\n            } else {\n                printf(\"%d\\n\", value);\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Обе таблицы описывают правила записи целиком: шесть вычитательных сочетаний стоят прямо в таблице рядом с обычными цифрами, поэтому жадный алгоритм не нуждается в особых случаях. `static const` защищает таблицы от случайного изменения и позволяет компилятору поместить их в память только для чтения. Таблица указателей объявлена с двумя `const`: нельзя заменить ни строку, ни её символы.\n\nПроверку правильности римской записи удобно свести к обратному преобразованию: у каждого числа от 1 до 3999 ровно одна каноническая запись. `IIII` разбирается как 4, но обратно превращается в `IV`; `IC` даёт 99, а канонически это `XCIX`. Если строки не совпали — запись неправильная. Такой приём «разобрать и собрать обратно» часто используют для проверки форматов.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-const-task-3",
+      "title": "Распознаватель чисел",
+      "description": "Определите, является ли каждое слово ввода числом в записи C. Слова разделены пробелами и переводами строк. Для каждого напечатайте `слово: целое`, `слово: вещественное` или `слово: не число`.\n\nЗапись числа:\n- необязательный знак `+` или `-`;\n- цифры, затем, возможно, точка и ещё цифры; цифры обязательны хотя бы с одной стороны от точки (`5`, `5.`, `.5`, `5.25` — числа, `.` — нет);\n- необязательная экспонента: `e` или `E`, возможно знак, и хотя бы одна цифра.\n\nЧисло без точки и экспоненты — `целое`, с точкой или экспонентой — `вещественное`.\n\nРешите задачу **конечным автоматом**: опишите состояния перечислением, классы символов (цифра, знак, точка, буква e, прочее) — тоже, а переходы — константной таблицей `static const` размером «число состояний × число классов».",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "42 -3.5 1e10 abc\n",
+          "output": "42: целое\n-3.5: вещественное\n1e10: вещественное\nabc: не число\n"
+        },
+        {
+          "input": "5. .5 . +\n",
+          "output": "5.: вещественное\n.5: вещественное\n.: не число\n+: не число\n"
+        }
+      ],
+      "constraints": ["Слов не больше 50, каждое не длиннее 40 символов, только ASCII."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Состояния: START, SIGN, INT, DOT_FIRST (точка без цифр перед ней), INT_DOT, FRAC, EXP, EXP_SIGN, EXP_DIGITS, ERROR. Последнее — «ловушка», из которой не выйти.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Функция char_class(c) возвращает номер класса. Тогда шаг автомата — state = NEXT[state][char_class(c)].",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "После прохода по слову: INT — целое; INT_DOT, FRAC, EXP_DIGITS — вещественное; остальные состояния — не число.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "42 -3.5 1e10 abc\n",
+          "expected": "42: целое\n-3.5: вещественное\n1e10: вещественное\nabc: не число\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5. .5 . +\n",
+          "expected": "5.: вещественное\n.5: вещественное\n.: не число\n+: не число\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Целые со знаком и нулями",
+          "stdin": "+7 -0 007\n",
+          "expected": "+7: целое\n-0: целое\n007: целое\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Экспонента",
+          "stdin": "1e 1e+ 1e+5 1E-2\n",
+          "expected": "1e: не число\n1e+: не число\n1e+5: вещественное\n1E-2: вещественное\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Повторы",
+          "stdin": "1.2.3 --5 +-5\n",
+          "expected": "1.2.3: не число\n--5: не число\n+-5: не число\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Точка и экспонента",
+          "stdin": ".e5 5.e3 .5e-1\n",
+          "expected": ".e5: не число\n5.e3: вещественное\n.5e-1: вещественное\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Посторонние символы",
+          "stdin": "12a a12 1_000\n",
+          "expected": "12a: не число\na12: не число\n1_000: не число\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Несколько строк",
+          "stdin": "3.14159\n2.71828\n",
+          "expected": "3.14159: вещественное\n2.71828: вещественное\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Начинается с e",
+          "stdin": "e5 E -e5\n",
+          "expected": "e5: не число\nE: не число\n-e5: не число\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Нули",
+          "stdin": "0.0 -0.0e-0 +.0\n",
+          "expected": "0.0: вещественное\n-0.0e-0: вещественное\n+.0: вещественное\n"
+        }
+      ],
+      "referenceSolution": "#include <ctype.h>\n#include <stdio.h>\n\nenum State {\n    START, SIGN, INT, DOT_FIRST, INT_DOT, FRAC, EXP, EXP_SIGN, EXP_DIGITS, ERROR, STATE_COUNT\n};\nenum CharClass { DIGIT, SIGN_CHAR, DOT, EXP_CHAR, OTHER, CLASS_COUNT };\n\nstatic const unsigned char NEXT[STATE_COUNT][CLASS_COUNT] = {\n    //             цифра       знак      точка      e        прочее\n    [START]      = {INT,        SIGN,     DOT_FIRST, ERROR,   ERROR},\n    [SIGN]       = {INT,        ERROR,    DOT_FIRST, ERROR,   ERROR},\n    [INT]        = {INT,        ERROR,    INT_DOT,   EXP,     ERROR},\n    [DOT_FIRST]  = {FRAC,       ERROR,    ERROR,     ERROR,   ERROR},\n    [INT_DOT]    = {FRAC,       ERROR,    ERROR,     EXP,     ERROR},\n    [FRAC]       = {FRAC,       ERROR,    ERROR,     EXP,     ERROR},\n    [EXP]        = {EXP_DIGITS, EXP_SIGN, ERROR,     ERROR,   ERROR},\n    [EXP_SIGN]   = {EXP_DIGITS, ERROR,    ERROR,     ERROR,   ERROR},\n    [EXP_DIGITS] = {EXP_DIGITS, ERROR,    ERROR,     ERROR,   ERROR},\n    [ERROR]      = {ERROR,      ERROR,    ERROR,     ERROR,   ERROR},\n};\n\nstatic enum CharClass char_class(char c) {\n    if (isdigit((unsigned char)c)) {\n        return DIGIT;\n    }\n    if (c == '+' || c == '-') {\n        return SIGN_CHAR;\n    }\n    if (c == '.') {\n        return DOT;\n    }\n    if (c == 'e' || c == 'E') {\n        return EXP_CHAR;\n    }\n    return OTHER;\n}\n\nint main(void) {\n    char word[64];\n    while (scanf(\"%63s\", word) == 1) {\n        enum State state = START;\n        for (const char *p = word; *p != '\\0'; p++) {\n            state = (enum State)NEXT[state][char_class(*p)];\n        }\n        const char *kind = \"не число\";\n        if (state == INT) {\n            kind = \"целое\";\n        } else if (state == INT_DOT || state == FRAC || state == EXP_DIGITS) {\n            kind = \"вещественное\";\n        }\n        printf(\"%s: %s\\n\", word, kind);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Конечный автомат отделяет **данные** (таблицу переходов) от **кода** (одной строки `state = NEXT[state][class]`). Чтобы изменить грамматику — например, запретить запись `5.`, — достаточно поменять одну ячейку таблицы, не трогая цикл.\n\nТаблица объявлена `static const`: это неизменяемые данные программы, и компилятор поместит их в память только для чтения. Размеры заданы константами перечисления `STATE_COUNT` и `CLASS_COUNT` — они константные выражения, поэтому подходят для размеров массива вне функций (`const int` здесь не подошёл бы). Назначенные инициализаторы `[START] = {…}` связывают строку таблицы с состоянием по имени, и перестановка состояний в `enum` не сломает таблицу.\n\nСостояние `ERROR` — ловушка: из него все переходы ведут в него же, поэтому после первой ошибки дальнейшие символы ничего не меняют.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-const-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Что запрещает const int *p?",
-        "options": ["Изменение int через p", "Присваивание другого адреса самому p"],
-        "correct": 0,
-        "explanation": "const ограничивает изменение через квалифицированное выражение. const int *p запрещает запись в int через p, но разрешает менять сам указатель; int *const p фиксирует указатель. Интерфейс чтения массива должен принимать const int *, чтобы компилятор обнаруживал случайную запись."
-      },
-      {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q1",
+        "question": "Почему GCC не компилирует метку case LIMIT:, если выше написано const int LIMIT = 3;?",
+        "explanation": "Метке case нужно значение, известное при компиляции по правилам языка. const int им не считается (в отличие от C++). Подойдут constexpr (C23), enum или #define.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "Приведение типа не делает законной запись в объект, который был определён const."
+          "В C const-переменная — объект только для чтения, а не константное выражение, которое требуется в case",
+          "Метки case должны быть отрицательными",
+          "LIMIT нужно объявить как static",
+          "Имя метки должно быть написано строчными буквами"
         ],
-        "correct": 1,
-        "explanation": "const — разрешение на конкретном пути доступа, а не универсальная заморозка всех путей."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["6", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: int sample=5;const int *view=&sample;sample=6;printf(\"%d\\n\",*view); Ожидаемый результат: 6"
+        "id": "q2",
+        "question": "Что можно использовать как размер массива, объявленного вне функций? Выберите все.",
+        "explanation": "Размер массива вне функций — константное выражение: константа перечисления, constexpr-объект, подставленное число и sizeof подходят, const-переменная — нет.",
+        "type": "multiple",
+        "options": [
+          "Константу N из enum { N = 10 };",
+          "Макрос N из #define N 10",
+          "Переменную N из const int N = 10;",
+          "Выражение sizeof(double) * 4",
+          "Константу N из constexpr int N = 10;"
+        ],
+        "correct": [0, 1, 3, 4]
+      },
+      {
+        "id": "q3",
+        "question": "Заголовок с определением const double TAX = 0.2; подключают файлы a.c и b.c. Что произойдёт при сборке программы на C?",
+        "explanation": "В C++ такой заголовок работал бы, а в C — нет. Выход: constexpr (C23) или static const в заголовке, либо extern const в заголовке и одно определение в .c.",
+        "options": [
+          "multiple definition of TAX: const на уровне файла в C имеет внешнее связывание",
+          "Всё соберётся: const подразумевает внутреннее связывание",
+          "Ошибка компиляции a.c",
+          "Каждый файл получит свою копию без ошибок"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что означает const в объявлении const IntPtr p = &x; если typedef int *IntPtr;?",
+        "explanation": "const относится к типу целиком, а тип IntPtr — указатель. Получается int *const p. Для указателя на константу нужен отдельный тип: typedef const int *ConstIntPtr;.",
+        "options": [
+          "Константен указатель p: его нельзя перенаправить, а *p менять можно",
+          "Константно значение *p",
+          "Константно и то, и другое",
+          "Объявление не компилируется"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\nstatic const int PRICES[] = {50, 120, 80, 200};\nenum { ITEM_COUNT = sizeof PRICES / sizeof PRICES[0] };\n\nint main(void) {\n    int basket[] = {1, 3, 3, 0};\n    int total = 0;\n    for (int i = 0; i < ITEM_COUNT; i++) {\n        total += PRICES[basket[i]];\n    }\n    printf(\"%d %d\\n\", ITEM_COUNT, total);\n    return 0;\n}",
+        "explanation": "sizeof — константное выражение, поэтому его можно положить в enum: ITEM_COUNT = 4. Сумма: 120 + 200 + 200 + 50 = 570.",
+        "type": "text",
+        "answers": ["4 570"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Что обещает квалификатор restrict у параметра int *restrict out?",
+        "explanation": "restrict — обещание программиста, которое компилятор не проверяет и использует для оптимизации. Поэтому memcpy с пересекающимися областями — неопределённое поведение.",
+        "options": [
+          "Пока жив указатель, к объекту обращаются только через него — области не пересекаются с другими указателями",
+          "Через указатель нельзя менять данные",
+          "Указатель нельзя перенаправить",
+          "Компилятор проверит, что аргументы не пересекаются"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что создаёт строка int buffer[n]; внутри функции, если выше написано const int n = 16;?",
+        "explanation": "n — не константное выражение, поэтому компилятор создаёт массив переменной длины. Инициализатор {0} у него запрещён; C23 разрешает только пустой {}. С constexpr int n = 16; массив был бы обычным.",
+        "options": [
+          "Массив переменной длины (VLA): его нельзя инициализировать через = {0}",
+          "Обычный массив из 16 элементов",
+          "Ошибку компиляции",
+          "Указатель на 16 элементов"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какое значение получит переменная после int x = answer(); x++;, если функция объявлена как const int answer(void) и возвращает 41?",
+        "explanation": "const у возвращаемого скалярного значения ничего не значит: x — обычная копия. GCC с -Wextra предупреждает: type qualifiers ignored on function return type.",
+        "type": "text",
+        "answers": ["42"],
+        "placeholder": "Значение x"
       }
     ]
   }

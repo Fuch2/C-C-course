@@ -13,9 +13,9 @@
     "Возвращать блок из функции и освобождать его в вызывающем коде",
     "Выбирать между стеком и кучей и размещать таблицу в одном блоке"
   ],
-  "tags": ["C17", "Память", "Куча", "malloc", "free"],
+  "tags": ["C23", "Память", "Куча", "malloc", "free"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-heap-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -134,7 +134,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint *make_range(int from, int to, int *length) {\n    // Выделите массив, заполните его и запишите длину в *length.\n    return NULL;\n}\n\nint main(void) {\n    int from, to;\n    scanf(\"%d %d\", &from, &to);\n    int length = 0;\n    int *range = make_range(from, to, &length);\n    if (range == NULL) {\n        return 1;\n    }\n    printf(\"%d\\n\", length);\n    for (int i = 0; i < length; i++) {\n        printf(i + 1 < length ? \"%d \" : \"%d\\n\", range[i]);\n    }\n    free(range);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -243,7 +243,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint *merge(const int *a, int n, const int *b, int m) {\n    // Выделите новый блок и слейте a и b.\n    return NULL;\n}\n\nint *read_array(int *length) {\n    scanf(\"%d\", length);\n    int *a = malloc(*length * sizeof *a);\n    if (a == NULL) {\n        return NULL;\n    }\n    for (int i = 0; i < *length; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    return a;\n}\n\nint main(void) {\n    int n, m;\n    int *a = read_array(&n);\n    int *b = read_array(&m);\n    int *c = (a && b) ? merge(a, n, b, m) : NULL;\n    if (c != NULL) {\n        for (int i = 0; i < n + m; i++) {\n            printf(i + 1 < n + m ? \"%d \" : \"%d\\n\", c[i]);\n        }\n    }\n    free(a);\n    free(b);\n    free(c);\n    return c == NULL;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -352,7 +352,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

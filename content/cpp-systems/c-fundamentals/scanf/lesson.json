@@ -14,9 +14,9 @@
     "Понимать, что возвращает scanf и что происходит при неверном вводе",
     "Читать символ с помощью %c и \" %c\""
   ],
-  "tags": ["C17", "scanf", "Ввод", "stdin"],
+  "tags": ["C23", "scanf", "Ввод", "stdin"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-scanf-task-1",
@@ -25,7 +25,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -117,7 +117,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -208,7 +208,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -306,7 +306,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -398,7 +398,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -476,7 +476,7 @@
         }
       ],
       "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    int x, y;\n    scanf(\"x=%d y=%d\", &x, &y);\n    printf(\"%d\\n\", abs(x) + abs(y));\n    return 0;\n}\n",
-      "solutionExplanation": "Текст `x=` и `y=` в строке формата должен в точности совпасть с вводом — тогда `scanf` пропустит его и прочитает числа. Пробел в формате между `%d` и `y=` пропускает пробел во вводе.\n\n`abs` — первая встреченная нами функция стандартной библиотеки, кроме ввода-вывода. Она объявлена в `<stdlib.h>`, и без этого `#include` компилятор выдаст предупреждение о неявном объявлении.",
+      "solutionExplanation": "Текст `x=` и `y=` в строке формата должен в точности совпасть с вводом — тогда `scanf` пропустит его и прочитает числа. Пробел в формате между `%d` и `y=` пропускает пробел во вводе.\n\n`abs` — первая встреченная нами функция стандартной библиотеки, кроме ввода-вывода. Она объявлена в `<stdlib.h>`, и без этого `#include` компилятор выдаст ошибку `implicit declaration of function 'abs'`.",
       "checking": {
         "type": "stdout",
         "comparison": "exact"

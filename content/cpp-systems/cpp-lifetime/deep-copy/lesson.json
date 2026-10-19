@@ -1,146 +1,528 @@
 {
   "id": "lifetime-deep-copy",
-  "title": "Глубокое копирование — Deep copy",
-  "description": "Глубокая копия создаёт независимые ресурсы там, где этого требует семантика значения: для буфера это новый массив и поэлементное копирование.",
+  "title": "Глубокое копирование",
+  "description": "Глубокая копия создаёт собственные копии всех ресурсов: конструктор копирования и присваивание для класса с владеющим указателем; рекурсивное копирование деревьев; копия графа с общими узлами и циклами через таблицу соответствия; цена глубокой копии и альтернативы — ссылки, перемещение, copy-on-write, clone().",
   "moduleId": "cpp-lifetime",
   "order": 9,
-  "difficulty": "advanced",
+  "difficulty": "intermediate",
   "estimatedMinutes": 55,
   "prerequisites": ["lifetime-shallow-copy"],
   "objectives": [
-    "Определять, какие поля требуют дублирования, по семантике владения типа.",
-    "Проследить на MemoryDiagram независимость двух буферов после копирования.",
-    "Реализовать Buffer с независимой копией и объяснить стоимость глубокого копирования."
+    "Писать глубокое копирование для класса, владеющего памятью",
+    "Копировать рекурсивные структуры целиком",
+    "Сохранять связи при копировании графа",
+    "Оценивать цену глубокой копии"
   ],
-  "tags": ["C++20", "время жизни", "управление ресурсами", "Глубокое копирование — Deep copy"],
+  "tags": ["C++23", "Время жизни", "Копирование", "Деревья", "Графы"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "lifetime-deep-copy-exercise",
-    "title": "Практика: Глубокое копирование — Deep copy",
-    "description": "Создайте Buffer с vector<int>. solve заполняет original значениями {a, b}, копирует Buffer, заменяет первый элемент копии на b и возвращает original[0] + copy[0]. Не используйте общий динамический массив для двух Buffer.",
-    "difficulty": "advanced",
+    "title": "Матрица",
+    "description": "Класс `Matrix` хранит размеры и массив `long long` в куче (`new[]`). Напишите конструктор `Matrix(rows, cols)` (заполнен нулями), глубокий конструктор копирования, оператор присваивания (copy-and-swap) и деструктор.\n\nМатрицы хранятся в `std::map<std::string, Matrix>`. Команды:\n\n- `new X r c` — создать (пересоздать) нулевую матрицу;\n- `set X i j v` — элемент (с нуля);\n- `copy X Y` — X становится копией Y (X может не существовать или совпадать с Y);\n- `add X Y` — прибавить Y к X поэлементно (размеры совпадают);\n- `print X` — строка `X:`, затем строки матрицы через пробел.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 7)",
-        "output": "10\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "new A 2 2\nset A 0 1 5\ncopy B A\nset B 0 1 7\nadd A B\nprint A\nprint B\n",
+        "output": "A:\n0 12\n0 0\nB:\n0 7\n0 0\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "new M 1 3\nprint M\n",
+        "output": "M:\n0 0 0\n"
       }
     ],
-    "constraints": [
-      "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Команд не больше 200; 1 ≤ r, c ≤ 20; |v| ≤ 10⁹."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Проверьте копию на двух уровнях: изменился ли оригинал при записи в копию и совпадают ли адреса буферов."
+        "id": "hint-1",
+        "text": "Matrix(const Matrix &o) : rows_(o.rows_), cols_(o.cols_), data_(new long long[o.rows_ * o.cols_]) { std::copy_n(…); }",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "Копирование буфера из n элементов стоит O(n) времени и O(n) памяти — при необходимой независимости это неизбежно. При неуспехе на середине частично заполненный буфер должен очищаться: vector гарантирует это сам. Если элементы vector — shared_ptr, копируется участие в владении, а объекты за указателями остаются общими: vector не гарантирует независимость всего графа. Для графов с общими подграфами и циклами нужен словарь соответствия старых узлов новым; для полиморфных объектов — виртуальный clone.\n\nПобайтовый memcpy класса с vector или string разрушает инварианты владельца: копируются внутренние адреса представления. Копируйте объекты их операциями, а не сырыми байтами.\n\nЗамените vector<int> на vector<shared_ptr<int>> и предскажите, изменится ли объект через копию. Объясните, какой уровень структуры стал независимым, а какой остался общим."
+        "id": "hint-2",
+        "text": "insert_or_assign(name, matrix) копирует матрицу конструктором копирования (новое имя) или оператором присваивания (существующее).",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 7],
-        "expected": "10\n"
+        "stdin": "new A 2 2\nset A 0 1 5\ncopy B A\nset B 0 1 7\nadd A B\nprint A\nprint B\n",
+        "expected": "A:\n0 12\n0 0\nB:\n0 7\n0 0\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "new M 1 3\nprint M\n",
+        "expected": "M:\n0 0 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный случай 1",
-        "arguments": [-8, 3],
-        "expected": "-5\n"
+        "id": "hidden-1",
+        "name": "Сложение с собой",
+        "stdin": "new A 1 1\nset A 0 0 3\nadd A A\nprint A\n",
+        "expected": "A:\n6\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный случай 2",
-        "arguments": [5, -9],
-        "expected": "-4\n"
+        "id": "hidden-2",
+        "name": "Копия в себя",
+        "stdin": "new A 2 1\nset A 1 0 9\ncopy A A\nprint A\n",
+        "expected": "A:\n0\n9\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный случай 3",
-        "arguments": [-1000, 1000],
-        "expected": "0\n"
+        "id": "hidden-3",
+        "name": "Копия другого размера",
+        "stdin": "new A 2 2\nnew B 3 3\ncopy A B\nset A 2 2 1\nprint A\nprint B\n",
+        "expected": "A:\n0 0 0\n0 0 0\n0 0 1\nB:\n0 0 0\n0 0 0\n0 0 0\n"
       },
       {
-        "id": "case-6",
-        "name": "Граничный случай 4",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-4",
+        "name": "Большие числа",
+        "stdin": "new A 1 2\nset A 0 0 1000000000\nadd A A\nadd A A\nprint A\n",
+        "expected": "A:\n4000000000 0\n"
       },
       {
-        "id": "case-7",
-        "name": "Граничный случай 5",
-        "arguments": [4, 4],
-        "expected": "8\n"
+        "id": "hidden-5",
+        "name": "Цепочка копий",
+        "stdin": "new A 1 1\nset A 0 0 -5\ncopy B A\ncopy C B\nadd C A\nprint C\nprint A\n",
+        "expected": "C:\n-10\nA:\n-5\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Пересоздание",
+        "stdin": "new A 2 2\nset A 0 0 1\nnew A 1 1\nprint A\n",
+        "expected": "A:\n0\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Высокая матрица",
+        "stdin": "new X 20 1\nset X 19 0 7\nprint X\n",
+        "expected": "X:\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n7\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Двойное сложение",
+        "stdin": "new A 1 2\nnew B 1 2\nset B 0 1 4\nadd A B\nadd A B\nprint A\n",
+        "expected": "A:\n0 8\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct Buffer { std::vector<int> values; };\nint solve(int a, int b) { Buffer original{{a, b}}; Buffer copy = original; copy.values[0] = b; return original.values[0] + copy.values[0]; }",
-    "solutionExplanation": "Копирование буфера из n элементов стоит O(n) времени и O(n) памяти — при необходимой независимости это неизбежно. При неуспехе на середине частично заполненный буфер должен очищаться: vector гарантирует это сам. Если элементы vector — shared_ptr, копируется участие в владении, а объекты за указателями остаются общими: vector не гарантирует независимость всего графа. Для графов с общими подграфами и циклами нужен словарь соответствия старых узлов новым; для полиморфных объектов — виртуальный clone.\n\nПобайтовый memcpy класса с vector или string разрушает инварианты владельца: копируются внутренние адреса представления. Копируйте объекты их операциями, а не сырыми байтами.\n\nЗамените vector<int> на vector<shared_ptr<int>> и предскажите, изменится ли объект через копию. Объясните, какой уровень структуры стал независимым, а какой остался общим.",
+    "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Matrix {\npublic:\n    Matrix(int rows, int cols) : rows_(rows), cols_(cols), data_(new long long[rows * cols]()) {}\n    Matrix(const Matrix &other)\n        : rows_(other.rows_), cols_(other.cols_), data_(new long long[other.rows_ * other.cols_]) {\n        std::copy_n(other.data_, rows_ * cols_, data_);\n    }\n    Matrix &operator=(const Matrix &other) {\n        Matrix copy(other);\n        std::swap(rows_, copy.rows_);\n        std::swap(cols_, copy.cols_);\n        std::swap(data_, copy.data_);\n        return *this;\n    }\n    ~Matrix() {\n        delete[] data_;\n    }\n\n    long long &at(int i, int j) {\n        return data_[i * cols_ + j];\n    }\n\n    void add(const Matrix &other) {\n        for (int k = 0; k < rows_ * cols_; ++k) {\n            data_[k] += other.data_[k];\n        }\n    }\n\n    void print(const std::string &name) const {\n        std::println(\"{}:\", name);\n        for (int i = 0; i < rows_; ++i) {\n            std::string row;\n            for (int j = 0; j < cols_; ++j) {\n                row += (j ? \" \" : \"\") + std::to_string(data_[i * cols_ + j]);\n            }\n            std::println(\"{}\", row);\n        }\n    }\n\nprivate:\n    int rows_;\n    int cols_;\n    long long *data_;\n};\n\nint main() {\n    std::map<std::string, Matrix> m;\n    std::string command, x;\n    while (std::cin >> command >> x) {\n        if (command == \"new\") {\n            int r, c;\n            std::cin >> r >> c;\n            m.insert_or_assign(x, Matrix(r, c));\n        } else if (command == \"set\") {\n            int i, j;\n            long long v;\n            std::cin >> i >> j >> v;\n            m.at(x).at(i, j) = v;\n        } else if (command == \"copy\") {\n            std::string y;\n            std::cin >> y;\n            m.insert_or_assign(x, m.at(y));\n        } else if (command == \"add\") {\n            std::string y;\n            std::cin >> y;\n            m.at(x).add(m.at(y));\n        } else {\n            m.at(x).print(x);\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Каждая матрица владеет своим массивом: конструктор копирования выделяет новый и копирует элементы, присваивание строит полную копию и обменивается с ней. Поэтому `copy B A` и последующие `set` в одной из матриц не влияют на другую, `add X X` (сложение с собой) корректно удваивает элементы, а при пересоздании старый массив освобождается.\n\n`new long long[n]()` — круглые скобки после размера заполняют массив нулями.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "lifetime-deep-copy-task-2",
+      "title": "Копия дерева",
+      "description": "Двоичное дерево поиска `Tree` хранит узлы `Node { int value; Node *left; Node *right; }`, выделенные `new`. Напишите рекурсивные `clone` и `destroy`, глубокий конструктор копирования, присваивание (copy-and-swap) и деструктор.\n\nДеревья хранятся в `std::map<std::string, Tree>` (`operator[]` создаёт пустое). Команды:\n\n- `insert T x` — вставить x (равные — в правое поддерево);\n- `copy T2 T1` — T2 становится копией T1;\n- `print T` — `T: значения по возрастанию` или `T: пусто`;\n- `height T` — `T: высота H` (пустое — 0, один узел — 1).",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "insert A 5\ninsert A 3\ninsert A 8\ncopy B A\ninsert B 1\nprint A\nprint B\nheight B\n",
+          "output": "A: 3 5 8\nB: 1 3 5 8\nB: высота 3\n"
+        },
+        {
+          "input": "print X\nheight X\n",
+          "output": "X: пусто\nX: высота 0\n"
+        }
+      ],
+      "constraints": ["Команд не больше 300; значения по модулю до 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Node *clone(const Node *n) { return n ? new Node{n->value, clone(n->left), clone(n->right)} : nullptr; }",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Обход по возрастанию — симметричный: левое поддерево, узел, правое поддерево.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "insert A 5\ninsert A 3\ninsert A 8\ncopy B A\ninsert B 1\nprint A\nprint B\nheight B\n",
+          "expected": "A: 3 5 8\nB: 1 3 5 8\nB: высота 3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "print X\nheight X\n",
+          "expected": "X: пусто\nX: высота 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Вырожденное дерево",
+          "stdin": "insert A 1\ninsert A 2\ninsert A 3\ninsert A 4\nheight A\n",
+          "expected": "A: высота 4\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Копия в себя",
+          "stdin": "insert A 5\ncopy A A\nprint A\n",
+          "expected": "A: 5\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Копия заменяет",
+          "stdin": "insert A 5\ninsert B 9\ncopy B A\nprint B\n",
+          "expected": "B: 5\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Равные значения",
+          "stdin": "insert A 2\ninsert A 2\ninsert A 2\nprint A\nheight A\n",
+          "expected": "A: 2 2 2\nA: высота 3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Полное дерево",
+          "stdin": "insert A 4\ninsert A 2\ninsert A 6\ninsert A 1\ninsert A 3\ninsert A 5\ninsert A 7\ncopy B A\ncopy C B\ninsert C 8\nprint A\nprint C\nheight C\n",
+          "expected": "A: 1 2 3 4 5 6 7\nC: 1 2 3 4 5 6 7 8\nC: высота 4\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Копия пустого",
+          "stdin": "copy A B\nprint A\n",
+          "expected": "A: пусто\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Крайние значения",
+          "stdin": "insert A -1000000\ninsert A 1000000\nprint A\n",
+          "expected": "A: -1000000 1000000\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Независимые изменения",
+          "stdin": "insert A 3\ncopy B A\ninsert A 1\ninsert B 9\nprint A\nprint B\n",
+          "expected": "A: 1 3\nB: 3 9\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Node {\n    int value;\n    Node *left = nullptr;\n    Node *right = nullptr;\n};\n\nNode *clone(const Node *n) {\n    return n ? new Node{n->value, clone(n->left), clone(n->right)} : nullptr;\n}\n\nvoid destroy(Node *n) {\n    if (n) {\n        destroy(n->left);\n        destroy(n->right);\n        delete n;\n    }\n}\n\nclass Tree {\npublic:\n    Tree() = default;\n    Tree(const Tree &other) : root_(clone(other.root_)) {}\n    Tree &operator=(const Tree &other) {\n        Tree copy(other);\n        std::swap(root_, copy.root_);\n        return *this;\n    }\n    ~Tree() {\n        destroy(root_);\n    }\n\n    void insert(int v) {\n        Node **slot = &root_;\n        while (*slot) {\n            slot = v < (*slot)->value ? &(*slot)->left : &(*slot)->right;\n        }\n        *slot = new Node{v};\n    }\n\n    std::string text() const {\n        std::string s;\n        walk(root_, s);\n        return s.empty() ? \"пусто\" : s;\n    }\n\n    int height() const {\n        return height(root_);\n    }\n\nprivate:\n    static void walk(const Node *n, std::string &s) {\n        if (n) {\n            walk(n->left, s);\n            s += (s.empty() ? \"\" : \" \") + std::to_string(n->value);\n            walk(n->right, s);\n        }\n    }\n\n    static int height(const Node *n) {\n        return n ? 1 + std::max(height(n->left), height(n->right)) : 0;\n    }\n\n    Node *root_ = nullptr;\n};\n\nint main() {\n    std::map<std::string, Tree> trees;\n    std::string command, t;\n    while (std::cin >> command >> t) {\n        if (command == \"insert\") {\n            int x;\n            std::cin >> x;\n            trees[t].insert(x);\n        } else if (command == \"copy\") {\n            std::string from;\n            std::cin >> from;\n            trees[t] = trees[from];\n        } else if (command == \"print\") {\n            std::println(\"{}: {}\", t, trees[t].text());\n        } else {\n            std::println(\"{}: высота {}\", t, trees[t].height());\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`clone` повторяет форму дерева: для каждого узла оригинала создаётся новый, и его указатели ведут на новые копии поддеревьев. После копирования деревья не имеют общих узлов, поэтому вставка в одно не влияет на другое, а два деструктора освобождают каждый свои узлы.\n\n`trees[t] = trees[from]` при совпадающих именах — самоприсваивание, и copy-and-swap справляется с ним без особых проверок.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-deep-copy-task-3",
+      "title": "Найди ошибку: забытое присваивание",
+      "description": "Два плейлиста `A` и `B`. Команды: `add X песня`, `assign X Y` — X становится копией Y, `print X` — песни через запятую или `пусто`. Класс `Playlist` сам владеет массивом строк в куче.\n\nПосле `assign` плейлисты начинают влиять друг на друга, а AddressSanitizer сообщает об ошибках памяти. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <algorithm>\n#include <cstddef>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Playlist {\npublic:\n    Playlist() = default;\n    Playlist(const Playlist &other) : size_(other.size_), songs_(new std::string[other.size_]) {\n        std::copy_n(other.songs_, size_, songs_);\n    }\n    ~Playlist() {\n        delete[] songs_;\n    }\n\n    void add(const std::string &song) {\n        auto *bigger = new std::string[size_ + 1];\n        std::copy_n(songs_, size_, bigger);\n        bigger[size_] = song;\n        delete[] songs_;\n        songs_ = bigger;\n        ++size_;\n    }\n\n    std::string text() const {\n        std::string s;\n        for (std::size_t i = 0; i < size_; ++i) {\n            s += (i ? \", \" : \"\") + songs_[i];\n        }\n        return s.empty() ? \"пусто\" : s;\n    }\n\nprivate:\n    std::size_t size_ = 0;\n    std::string *songs_ = nullptr;\n};\n\nint main() {\n    Playlist a, b;\n    auto pick = [&](char name) -> Playlist & { return name == 'A' ? a : b; };\n    std::string command;\n    char x;\n    while (std::cin >> command >> x) {\n        if (command == \"add\") {\n            std::string song;\n            std::cin >> song;\n            pick(x).add(song);\n        } else if (command == \"assign\") {\n            char y;\n            std::cin >> y;\n            pick(x) = pick(y);\n        } else {\n            std::println(\"{}: {}\", x, pick(x).text());\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "add A раз\nadd B два\nassign A B\nadd A три\nprint A\nprint B\n",
+          "output": "A: два, три\nB: два\n"
+        },
+        {
+          "input": "add A x\nprint A\nprint B\n",
+          "output": "A: x\nB: пусто\n"
+        }
+      ],
+      "constraints": ["Команд не больше 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какие специальные функции написаны в Playlist, а какие компилятор создаёт сам?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Неявный operator= копирует указатель. Напишите присваивание по идиоме copy-and-swap на основе уже готового конструктора копирования.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add A раз\nadd B два\nassign A B\nadd A три\nprint A\nprint B\n",
+          "expected": "A: два, три\nB: два\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "add A x\nprint A\nprint B\n",
+          "expected": "A: x\nB: пусто\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "add B a\nassign A B\nprint A\n",
+          "expected": "A: a\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "add A a\nassign A B\nprint A\nprint B\n",
+          "expected": "A: пусто\nB: пусто\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "add A a\nadd B b\nassign A B\nassign B A\nadd B c\nprint A\nprint B\n",
+          "expected": "A: b\nB: b, c\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "add A one\nassign A A\nprint A\n",
+          "expected": "A: one\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "add B x\nadd B y\nassign A B\nadd B z\nprint A\nprint B\n",
+          "expected": "A: x, y\nB: x, y, z\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "assign A B\nadd A q\nprint B\n",
+          "expected": "B: пусто\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "add A 1\nadd A 2\nadd B 3\nassign B A\nprint B\n",
+          "expected": "B: 1, 2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "add A песня\nassign B A\nassign A B\nprint A\n",
+          "expected": "A: песня\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <cstddef>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Playlist {\npublic:\n    Playlist() = default;\n    Playlist(const Playlist &other) : size_(other.size_), songs_(new std::string[other.size_]) {\n        std::copy_n(other.songs_, size_, songs_);\n    }\n    Playlist &operator=(const Playlist &other) {\n        Playlist copy(other);\n        std::swap(size_, copy.size_);\n        std::swap(songs_, copy.songs_);\n        return *this;\n    }\n    ~Playlist() {\n        delete[] songs_;\n    }\n\n    void add(const std::string &song) {\n        auto *bigger = new std::string[size_ + 1];\n        std::copy_n(songs_, size_, bigger);\n        bigger[size_] = song;\n        delete[] songs_;\n        songs_ = bigger;\n        ++size_;\n    }\n\n    std::string text() const {\n        std::string s;\n        for (std::size_t i = 0; i < size_; ++i) {\n            s += (i ? \", \" : \"\") + songs_[i];\n        }\n        return s.empty() ? \"пусто\" : s;\n    }\n\nprivate:\n    std::size_t size_ = 0;\n    std::string *songs_ = nullptr;\n};\n\nint main() {\n    Playlist a, b;\n    auto pick = [&](char name) -> Playlist & { return name == 'A' ? a : b; };\n    std::string command;\n    char x;\n    while (std::cin >> command >> x) {\n        if (command == \"add\") {\n            std::string song;\n            std::cin >> song;\n            pick(x).add(song);\n        } else if (command == \"assign\") {\n            char y;\n            std::cin >> y;\n            pick(x) = pick(y);\n        } else {\n            std::println(\"{}: {}\", x, pick(x).text());\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Конструктор копирования и деструктор написаны правильно, а копирующее присваивание компилятор создал сам — поверхностное. После `A = B` старый массив `A` потерян (утечка), а массив `B` принадлежит обоим плейлистам. Следующий `add` в одном из них удаляет общий массив, и второй указывает в освобождённую память; в конце — двойное освобождение.\n\nКласс, которому понадобились свой деструктор и свой конструктор копирования, почти наверняка нуждается и в своём присваивании. Это правило трёх — тема следующего урока.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-deep-copy-task-4",
+      "title": "Копия графа",
+      "description": "Граф `Graph` владеет узлами `Node { std::string name; std::vector<Node *> out; }`, выделенными `new` и перечисленными в `std::vector<Node *> nodes_`. Рёбра — указатели на узлы **этого же** графа; возможны циклы и несколько рёбер в один узел.\n\nНапишите глубокий конструктор копирования: новые узлы для каждого старого и рёбра, переведённые на новые узлы через таблицу `std::unordered_map<const Node *, Node *>`. Присваивание — copy-and-swap, деструктор удаляет все узлы.\n\nГрафы хранятся в `std::map<std::string, Graph>`. Команды:\n\n- `node G имя` — добавить узел (имена в графе уникальны);\n- `edge G a b` — ребро a → b (узлы существуют);\n- `copy H G` — H становится копией G;\n- `rename G старое новое` — переименовать узел;\n- `print G` — строка `G:`, затем для каждого узла в порядке добавления `имя → цели через пробел` или `имя → —`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "node G a\nnode G b\nedge G a b\nedge G b a\ncopy H G\nrename H a x\nprint G\nprint H\n",
+          "output": "G:\na → b\nb → a\nH:\nx → b\nb → x\n"
+        },
+        {
+          "input": "node G solo\nprint G\n",
+          "output": "G:\nsolo → —\n"
+        }
+      ],
+      "constraints": ["Команд не больше 300; узлов в графе до 50."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Первый проход создаёт копии узлов и заполняет таблицу; второй для каждого старого узла переводит его рёбра: copy->out.push_back(map.at(target)).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Переименование в копии не должно менять оригинал: если рёбра копии указывают на узлы оригинала, print копии покажет новые имена и в оригинале — так проверяется глубина копии.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "node G a\nnode G b\nedge G a b\nedge G b a\ncopy H G\nrename H a x\nprint G\nprint H\n",
+          "expected": "G:\na → b\nb → a\nH:\nx → b\nb → x\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "node G solo\nprint G\n",
+          "expected": "G:\nsolo → —\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустой граф",
+          "stdin": "print E\n",
+          "expected": "E:\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Петля",
+          "stdin": "node G a\nedge G a a\ncopy H G\nrename H a b\nprint G\nprint H\n",
+          "expected": "G:\na → a\nH:\nb → b\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Общая цель",
+          "stdin": "node G a\nnode G b\nnode G c\nedge G a c\nedge G b c\ncopy H G\nrename H c d\nprint H\nprint G\n",
+          "expected": "H:\na → d\nb → d\nd → —\nG:\na → c\nb → c\nc → —\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Кратные рёбра",
+          "stdin": "node G a\nnode G b\nedge G a b\nedge G a b\ncopy H G\nprint H\n",
+          "expected": "H:\na → b b\nb → —\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Копия в себя",
+          "stdin": "node G a\ncopy G G\nprint G\n",
+          "expected": "G:\na → —\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Расширение копии",
+          "stdin": "node G a\nnode G b\nedge G a b\ncopy H G\nnode H c\nedge H c a\nprint G\nprint H\n",
+          "expected": "G:\na → b\nb → —\nH:\na → b\nb → —\nc → a\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Копия копии",
+          "stdin": "node G a\ncopy H G\ncopy K H\nrename K a z\nprint G\nprint H\nprint K\n",
+          "expected": "G:\na → —\nH:\na → —\nK:\nz → —\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Цикл из трёх",
+          "stdin": "node G p\nnode G q\nnode G r\nedge G p q\nedge G q r\nedge G r p\ncopy H G\nrename G q Q\nprint G\nprint H\n",
+          "expected": "G:\np → Q\nQ → r\nr → p\nH:\np → q\nq → r\nr → p\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <unordered_map>\n#include <utility>\n#include <vector>\n\nstruct Node {\n    std::string name;\n    std::vector<Node *> out;\n};\n\nclass Graph {\npublic:\n    Graph() = default;\n\n    Graph(const Graph &other) {\n        std::unordered_map<const Node *, Node *> twin;\n        nodes_.reserve(other.nodes_.size());\n        for (const Node *n : other.nodes_) {\n            nodes_.push_back(new Node{n->name, {}});\n            twin[n] = nodes_.back();\n        }\n        for (const Node *n : other.nodes_) {\n            for (const Node *target : n->out) {\n                twin.at(n)->out.push_back(twin.at(target));\n            }\n        }\n    }\n\n    Graph &operator=(const Graph &other) {\n        Graph copy(other);\n        std::swap(nodes_, copy.nodes_);\n        return *this;\n    }\n\n    ~Graph() {\n        for (Node *n : nodes_) {\n            delete n;\n        }\n    }\n\n    void add_node(const std::string &name) {\n        nodes_.push_back(new Node{name, {}});\n    }\n\n    void add_edge(const std::string &a, const std::string &b) {\n        find(a)->out.push_back(find(b));\n    }\n\n    void rename(const std::string &from, const std::string &to) {\n        find(from)->name = to;\n    }\n\n    void print(const std::string &title) const {\n        std::println(\"{}:\", title);\n        for (const Node *n : nodes_) {\n            std::string targets;\n            for (const Node *t : n->out) {\n                targets += (targets.empty() ? \"\" : \" \") + t->name;\n            }\n            std::println(\"{} → {}\", n->name, targets.empty() ? \"—\" : targets);\n        }\n    }\n\nprivate:\n    Node *find(const std::string &name) const {\n        for (Node *n : nodes_) {\n            if (n->name == name) {\n                return n;\n            }\n        }\n        return nullptr;\n    }\n\n    std::vector<Node *> nodes_;\n};\n\nint main() {\n    std::map<std::string, Graph> graphs;\n    std::string command, g;\n    while (std::cin >> command >> g) {\n        if (command == \"node\") {\n            std::string name;\n            std::cin >> name;\n            graphs[g].add_node(name);\n        } else if (command == \"edge\") {\n            std::string a, b;\n            std::cin >> a >> b;\n            graphs[g].add_edge(a, b);\n        } else if (command == \"copy\") {\n            std::string from;\n            std::cin >> from;\n            graphs[g] = graphs[from];\n        } else if (command == \"rename\") {\n            std::string a, b;\n            std::cin >> a >> b;\n            graphs[g].rename(a, b);\n        } else {\n            graphs[g].print(g);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Наивная рекурсия «скопировать узел и всех, на кого он указывает» не годится для графа: узел, на который ведут два ребра, скопировался бы дважды, а цикл зациклил бы копирование. Таблица соответствия решает обе проблемы: каждый старый узел получает ровно одного двойника, а рёбра переводятся по таблице во втором проходе.\n\nПереименование проверяет глубину копии: рёбра копии ведут на её собственные узлы, поэтому новое имя видно только в ней. Если бы хоть одно ребро осталось указывать на узел оригинала, изменения смешались бы, а деструкторы двух графов удалили бы этот узел дважды.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "lifetime-deep-copy-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Какова обычная стоимость глубокой копии буфера из n элементов?",
-        "options": ["O(1) времени независимо от n", "O(n) времени и O(n) новой памяти"],
-        "correct": 1,
-        "explanation": "Копирование буфера из n элементов стоит O(n) времени и O(n) памяти — при необходимой независимости это неизбежно. При неуспехе на середине частично заполненный буфер должен очищаться: vector гарантирует это сам. Если элементы vector — shared_ptr, копируется участие в владении, а объекты за указателями остаются общими: vector не гарантирует независимость всего графа. Для графов с общими подграфами и циклами нужен словарь соответствия старых узлов новым; для полиморфных объектов — виртуальный clone."
-      },
-      {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["1 99 3", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "original → буфер A: 1 2 3\ncopy → буфер B: 1 2 3; адреса A и B различаются\ncopy[0] = 99 → B: 99 2 3\nA остаётся 1 2 3 — значения независимы"
-      },
-      {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q1",
+        "question": "Что отличает глубокую копию от поверхностной?",
+        "explanation": "Поэтому каждый объект освобождает только своё.",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Побайтовый memcpy класса с vector или string разрушает инварианты владельца: копируются внутренние адреса представления. Копируйте объекты их операциями, а не сырыми байтами."
+          "Копия получает собственные экземпляры всех ресурсов, общих данных нет",
+          "Копия быстрее",
+          "Копируется только верхний уровень объекта",
+          "Копия ссылается на оригинал"
         ],
-        "correct": 1,
-        "explanation": "Замените vector<int> на vector<shared_ptr<int>> и предскажите, изменится ли объект через копию. Объясните, какой уровень структуры стал независимым, а какой остался общим."
+        "correct": 0
+      },
+      {
+        "id": "q2",
+        "question": "Класс владеет int *value_. Какой конструктор копирования делает глубокую копию?",
+        "explanation": "Новый блок и копия значения в него.",
+        "options": [
+          "Box(const Box &o) : value_(new int(*o.value_)) {}",
+          "Box(const Box &o) : value_(o.value_) {}",
+          "Box(const Box &o) = default;",
+          "Box(const Box &o) : value_(nullptr) {}"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Конструктор копирования глубокий, а оператор присваивания неявный. Что будет после b = a; и выхода из блока?",
+        "explanation": "Неявное присваивание копирует адрес: старый блок b потерян, а блок a теперь у двоих.",
+        "options": [
+          "Утечка старого блока b и двойное освобождение блока a",
+          "Всё корректно",
+          "Ошибка компиляции",
+          "Только утечка"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <string>\n#include <vector>\n\nint main() {\n    std::vector<std::string> a{\"x\", \"y\"};\n    std::vector<std::string> b = a;\n    b[0] += \"!\";\n    b.push_back(\"z\");\n    std::println(\"{} {} {}\", a.size(), a[0], b[0]);\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Вектор копирует элементы глубоко: у b свои строки.",
+        "type": "text",
+        "answers": ["2 x x!"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Почему при копировании графа с общими узлами нужна таблица «старый узел → новый узел»?",
+        "explanation": "Без неё узел, на который ведут два ребра, раздвоится, а цикл зациклит обход.",
+        "options": [
+          "Чтобы общий узел скопировать один раз, а циклы не привели к бесконечной рекурсии",
+          "Для сортировки узлов",
+          "Чтобы освободить старый граф",
+          "Таблица не нужна"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Как сделать полную копию полиморфного объекта, известного по ссылке на базу?",
+        "explanation": "Копирование через базу срезает наследника.",
+        "options": [
+          "Виртуальной функцией clone()",
+          "Конструктором копирования базы",
+          "memcpy",
+          "Присваиванием базе"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Чем стоит заменить глубокую копию, если оригинал больше не нужен?",
+        "explanation": "Перемещение забирает ресурсы, а не копирует их — об этом следующие уроки.",
+        "options": ["Перемещением", "Поверхностной копией", "Ещё одной копией", "Ничем"],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Как называется приём, при котором копии разделяют данные, пока одна из них не захочет их изменить? (англ.)",
+        "explanation": "Обычно делается через std::shared_ptr<const T> и копию при первом изменении.",
+        "type": "text",
+        "answers": ["copy-on-write", "copy on write", "COW", "копирование при записи"],
+        "placeholder": "Термин"
       }
     ]
   }

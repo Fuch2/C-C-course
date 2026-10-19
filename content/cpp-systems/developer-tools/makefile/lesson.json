@@ -15,7 +15,7 @@
   ],
   "tags": ["Make", "Makefile", "Сборка", "Зависимости", "Автоматизация"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "advanced-makefile-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "intermediate",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -141,12 +141,12 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
-          "input": "3\nCC = gcc\nWARN = -Wall -Wextra\nCFLAGS = -std=c17 $(WARN) -g\nbuild/lexer.o: src/lexer.c include/lexer.h\n1\n\t$(CC) $(CFLAGS) -c $< -o $@\n",
-          "output": "gcc -std=c17 -Wall -Wextra -g -c src/lexer.c -o build/lexer.o\n"
+          "input": "3\nCC = gcc\nWARN = -Wall -Wextra\nCFLAGS = -std=c23 $(WARN) -g\nbuild/lexer.o: src/lexer.c include/lexer.h\n1\n\t$(CC) $(CFLAGS) -c $< -o $@\n",
+          "output": "gcc -std=c23 -Wall -Wextra -g -c src/lexer.c -o build/lexer.o\n"
         },
         {
           "input": "1\nCC = clang\ncalc: main.o lexer.o main.o\n2\n\t@mkdir -p build\n\t$(CC) $^ -o $@ $(LDLIBS)\n",
@@ -178,8 +178,8 @@
         {
           "id": "case-1",
           "name": "Пример 1",
-          "stdin": "3\nCC = gcc\nWARN = -Wall -Wextra\nCFLAGS = -std=c17 $(WARN) -g\nbuild/lexer.o: src/lexer.c include/lexer.h\n1\n\t$(CC) $(CFLAGS) -c $< -o $@\n",
-          "expected": "gcc -std=c17 -Wall -Wextra -g -c src/lexer.c -o build/lexer.o\n"
+          "stdin": "3\nCC = gcc\nWARN = -Wall -Wextra\nCFLAGS = -std=c23 $(WARN) -g\nbuild/lexer.o: src/lexer.c include/lexer.h\n1\n\t$(CC) $(CFLAGS) -c $< -o $@\n",
+          "expected": "gcc -std=c23 -Wall -Wextra -g -c src/lexer.c -o build/lexer.o\n"
         },
         {
           "id": "case-2",
@@ -258,7 +258,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

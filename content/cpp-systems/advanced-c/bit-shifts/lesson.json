@@ -1,123 +1,538 @@
 {
   "id": "advanced-bit-shifts",
-  "title": "Bit shifts",
-  "description": "Сдвиг перемещает разряды, но допустимость зависит от продвинутого типа левого операнда и величины сдвига.",
+  "title": "Сдвиги",
+  "description": "Сдвиги << и >> как перенос битов; умножение и деление на степени двойки; тип результата и продвижение маленьких типов; три случая неопределённого поведения, 1 << 31 и 64-битные маски; сдвиг вправо отрицательных чисел; приоритет сдвигов; извлечение и упаковка полей; циклический сдвиг.",
   "moduleId": "advanced-c",
-  "order": 20,
-  "difficulty": "advanced",
-  "estimatedMinutes": 40,
+  "order": 19,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
   "prerequisites": ["advanced-xor"],
   "objectives": [
-    "Объяснить: Bit shifts",
-    "Различать корректный контракт и ошибку: 1 << 31 опасен для обычного 32-битного int; signed и unsigned нельзя считать взаимозаменяемыми.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Сдвигать биты и предсказывать тип и значение результата",
+    "Избегать неопределённого поведения при сдвигах",
+    "Извлекать и упаковывать поля чисел сдвигами и масками",
+    "Реализовывать циклический сдвиг без неопределённого поведения"
   ],
-  "tags": ["C17", "углублённый C", "Bit shifts"],
+  "tags": ["Биты", "<<", ">>", "Неопределённое поведение", "Циклический сдвиг"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-bit-shifts-exercise",
-    "title": "Практика: Bit shifts",
-    "description": "Ввод k. Если k вне 0…7, выведите ОШИБКА. Иначе выведите 1u << k.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-bit-shifts-task-1",
+    "title": "Циклический сдвиг",
+    "description": "Каждая строка ввода — команда `rol X N` или `ror X N`: циклический сдвиг 32-битного беззнакового числа `X` влево или вправо на `N` позиций. Биты, выходящие за один край, возвращаются с другого. Напечатайте результат восемью шестнадцатеричными цифрами (заглавными).\n\n`N` может быть любым неотрицательным числом: сдвиг на 32 позиции возвращает исходное число.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "3",
-        "output": "8\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "rol 305419896 8\nror 305419896 8\n",
+        "output": "34567812\n78123456\n"
       },
       {
-        "input": "7",
-        "output": "128\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "rol 1 31\nror 1 1\n",
+        "output": "80000000\n80000000\n"
       }
     ],
-    "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
-    ],
+    "constraints": ["0 ≤ X ≤ 4294967295; 0 ≤ N ≤ 1000; строк не больше 30."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сдвиг — движение в ленте фиксированной ширины; сначала проверьте размер ленты и шаг."
+        "text": "Сначала оставьте от N остаток от деления на 32: n &= 31.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "1 << 31 опасен для обычного 32-битного int; signed и unsigned нельзя считать взаимозаменяемыми."
+        "text": "Влево: (x << n) | (x >> ((32 - n) & 31)). Маска во втором сдвиге нужна для n = 0: иначе получится сдвиг на 32 — неопределённое поведение.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Вправо — то же с переставленными направлениями, или rotl(x, (32 - n) & 31).",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "3",
-        "expected": "8\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "rol 305419896 8\nror 305419896 8\n",
+        "expected": "34567812\n78123456\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "7",
-        "expected": "128\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "rol 1 31\nror 1 1\n",
+        "expected": "80000000\n80000000\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "8",
-        "expected": "ОШИБКА\n"
+        "id": "hidden-1",
+        "name": "Сдвиг на 0 и 32",
+        "stdin": "rol 305419896 0\nror 305419896 32\n",
+        "expected": "12345678\n12345678\n"
       },
       {
-        "id": "test-4",
-        "name": "Граничный сценарий 3",
-        "stdin": "-1",
-        "expected": "ОШИБКА\n"
+        "id": "hidden-2",
+        "name": "Старший бит по кругу",
+        "stdin": "rol 2147483648 1\n",
+        "expected": "00000001\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Все единицы и ноль",
+        "stdin": "rol 4294967295 13\nror 0 5\n",
+        "expected": "FFFFFFFF\n00000000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Большая величина сдвига",
+        "stdin": "rol 305419896 1000\n",
+        "expected": "34567812\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Равные сдвиги",
+        "stdin": "ror 305419896 4\nrol 305419896 28\n",
+        "expected": "81234567\n81234567\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Чередование",
+        "stdin": "rol 2863311530 1\n",
+        "expected": "55555555\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Больше ширины",
+        "stdin": "ror 1 33\nrol 1 64\n",
+        "expected": "80000000\n00000001\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Обмен половин",
+        "stdin": "rol 3735928559 16\n",
+        "expected": "BEEFDEAD\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n\nint main(void) {\n    int k;if(scanf(\"%d\",&k)!=1)return 1;\n    if(k<0 || k>7){puts(\"ОШИБКА\");return 0;}\n    printf(\"%u\\n\",1u << (unsigned)k);\n    return 0;\n}\n",
-    "solutionExplanation": "Сдвиг — движение в ленте фиксированной ширины; сначала проверьте размер ленты и шаг.\n\n1 << 31 опасен для обычного 32-битного int; signed и unsigned нельзя считать взаимозаменяемыми.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '3' → '8\\n'; '7' → '128\\n'; '8' → 'ОШИБКА\\n'; '-1' → 'ОШИБКА\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <inttypes.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <string.h>\n\nstatic uint32_t rotl32(uint32_t x, unsigned n) {\n    n &= 31;\n    return (x << n) | (x >> ((32 - n) & 31));\n}\n\nstatic uint32_t rotr32(uint32_t x, unsigned n) {\n    n &= 31;\n    return (x >> n) | (x << ((32 - n) & 31));\n}\n\nint main(void) {\n    char command[8];\n    uint32_t x;\n    unsigned n;\n    while (scanf(\"%7s %\" SCNu32 \" %u\", command, &x, &n) == 3) {\n        uint32_t result = strcmp(command, \"rol\") == 0 ? rotl32(x, n) : rotr32(x, n);\n        printf(\"%08\" PRIX32 \"\\n\", result);\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Циклический сдвиг собирается из двух обычных: биты, ушедшие за левый край при `x << n`, возвращаются справа сдвигом `x >> (32 − n)`, и `|` объединяет обе части — они не пересекаются.\n\nГлавная ловушка — граничные значения. Сдвиг на 32 и больше позиций не определён, поэтому величина сначала приводится к диапазону 0…31, а во втором сдвиге стоит маска `& 31`: при `n = 0` выражение `32 − n` равно 32, а `(32 − 0) & 31 = 0` — сдвиг на ноль, и результат верный. GCC и Clang распознают такую запись и генерируют одну инструкцию процессора.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-bit-shifts-task-2",
+      "title": "Цвета RGB и RGB565",
+      "description": "В графике цвет часто хранят в 24 битах (`#RRGGBB`, по 8 бит на канал), а в экранах микроконтроллеров — в 16 битах формата RGB565: 5 бит красного (биты 11–15), 6 бит зелёного (5–10) и 5 бит синего (0–4).\n\nКоманды до конца ввода:\n- `pack R G B` — напечатать `#RRGGBB 565:0xHHHH`: цвет в 24-битной записи и в RGB565, где каждый канал — старшие биты 8-битного значения (`R >> 3`, `G >> 2`, `B >> 3`);\n- `unpack #RRGGBB` — напечатать три числа `R G B`;\n- `expand 0xHHHH` — перевести RGB565 обратно в 8 бит на канал и напечатать `R G B`. Расширение повторяет старшие биты в младших: для 5-битного `r` — `(r << 3) | (r >> 2)`, для 6-битного `g` — `(g << 2) | (g >> 4)`.\n\nШестнадцатеричные цифры печатайте заглавными.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "pack 255 128 16\nunpack #FF8010\n",
+          "output": "#FF8010 565:0xFC02\n255 128 16\n"
+        },
+        {
+          "input": "expand 0xFFFF\nexpand 0x0000\n",
+          "output": "255 255 255\n0 0 0\n"
+        }
+      ],
+      "constraints": ["0 ≤ R, G, B ≤ 255; команд не больше 30."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "RGB565: (r >> 3) << 11 | (g >> 2) << 5 | (b >> 3). Печать — printf(\"0x%04X\").",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Разбор #RRGGBB: прочитайте число форматом scanf(\" #%x\", &value), затем каналы — (value >> 16) & 0xFF и так далее.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "В expand сначала извлеките поля: r = (v >> 11) & 0x1F, g = (v >> 5) & 0x3F, b = v & 0x1F.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "pack 255 128 16\nunpack #FF8010\n",
+          "expected": "#FF8010 565:0xFC02\n255 128 16\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "expand 0xFFFF\nexpand 0x0000\n",
+          "expected": "255 255 255\n0 0 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Чёрный и белый",
+          "stdin": "pack 0 0 0\npack 255 255 255\n",
+          "expected": "#000000 565:0x0000\n#FFFFFF 565:0xFFFF\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Основные цвета",
+          "stdin": "pack 255 0 0\npack 0 255 0\npack 0 0 255\n",
+          "expected": "#FF0000 565:0xF800\n#00FF00 565:0x07E0\n#0000FF 565:0x001F\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Строчные цифры",
+          "stdin": "unpack #000000\nunpack #abcdef\n",
+          "expected": "0 0 0\n171 205 239\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Чистые каналы",
+          "stdin": "expand 0xF800\nexpand 0x07E0\nexpand 0x001F\n",
+          "expected": "255 0 0\n0 255 0\n0 0 255\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Отбрасывание младших битов",
+          "stdin": "pack 7 3 7\n",
+          "expected": "#070307 565:0x0000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Туда и обратно",
+          "stdin": "pack 200 100 50\nexpand 0xCB26\n",
+          "expected": "#C86432 565:0xCB26\n206 101 49\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Разбор и упаковка",
+          "stdin": "unpack #102030\npack 16 32 48\n",
+          "expected": "16 32 48\n#102030 565:0x1106\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Серый",
+          "stdin": "expand 0x8410\n",
+          "expected": "132 130 132\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"pack\") == 0) {\n            unsigned r, g, b;\n            if (scanf(\"%u %u %u\", &r, &g, &b) != 3) {\n                break;\n            }\n            unsigned rgb = r << 16 | g << 8 | b;\n            unsigned rgb565 = (r >> 3) << 11 | (g >> 2) << 5 | (b >> 3);\n            printf(\"#%06X 565:0x%04X\\n\", rgb, rgb565);\n        } else if (strcmp(command, \"unpack\") == 0) {\n            unsigned value;\n            if (scanf(\" #%x\", &value) != 1) {\n                break;\n            }\n            printf(\"%u %u %u\\n\", (value >> 16) & 0xFFu, (value >> 8) & 0xFFu, value & 0xFFu);\n        } else if (strcmp(command, \"expand\") == 0) {\n            unsigned v;\n            if (scanf(\"%x\", &v) != 1) {\n                break;\n            }\n            unsigned r = (v >> 11) & 0x1Fu, g = (v >> 5) & 0x3Fu, b = v & 0x1Fu;\n            printf(\"%u %u %u\\n\", (r << 3) | (r >> 2), (g << 2) | (g >> 4), (b << 3) | (b >> 2));\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Каждый формат — набор полей фиксированной ширины в известных позициях. Упаковка сдвигает каждое поле на его место и объединяет через `|`, распаковка сдвигает поле в младшие биты и отрезает маской. Переход 8 → 5 бит отбрасывает младшие биты (`r >> 3`), поэтому RGB565 хранит цвет приблизительно.\n\nОбратное расширение повторением старших битов подбирает 8-битное значение так, что крайние значения сохраняются: 5-битное 31 становится 255, а не 248, и белый остаётся белым. Простое `r << 3` дало бы максимум 248 — экран показал бы чуть серый «белый».\n\nСдвиги выполняются в `unsigned`: каналы не больше 255, поэтому `r << 16` не выходит за 32 бита.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-bit-shifts-task-3",
+      "title": "Найди ошибку: старший канал",
+      "description": "Пульт управляет 32 каналами — бит `K` числа `channels` означает, что канал `K` включён. Команды: `on K` и `off K` (`0 ≤ K ≤ 31`, другие значения пропускаются) и `show` — печать маски восемью шестнадцатеричными цифрами и числа включённых каналов.\n\nБез санитайзеров программа, похоже, работает, но при проверке с UBSan падает, как только используется канал 31. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    unsigned channels = 0;              // бит K — включён ли канал K\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        int k;\n        if (strcmp(command, \"on\") == 0 && scanf(\"%d\", &k) == 1 && k >= 0 && k < 32) {\n            channels |= 1 << k;\n        } else if (strcmp(command, \"off\") == 0 && scanf(\"%d\", &k) == 1 && k >= 0 && k < 32) {\n            channels &= ~(1 << k);\n        } else if (strcmp(command, \"show\") == 0) {\n            int count = 0;\n            for (int i = 0; i < 32; i++) {\n                count += (channels >> i) & 1u;\n            }\n            printf(\"%08X, включено: %d\\n\", channels, count);\n        }\n    }\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "on 0\non 4\nshow\n",
+          "output": "00000011, включено: 2\n"
+        },
+        {
+          "input": "on 31\nshow\noff 31\nshow\n",
+          "output": "80000000, включено: 1\n00000000, включено: 0\n"
+        }
+      ],
+      "constraints": ["Команд не больше 50."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какой тип у литерала 1 и что происходит при сдвиге единицы этого типа на 31 позицию?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "1 — это int, и 1 << 31 переполняет знаковый тип: неопределённое поведение. Нужна беззнаковая единица 1u — и в on, и в off.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "on 0\non 4\nshow\n",
+          "expected": "00000011, включено: 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "on 31\nshow\noff 31\nshow\n",
+          "expected": "80000000, включено: 1\n00000000, включено: 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "show\n",
+          "expected": "00000000, включено: 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "on 31\non 30\non 0\nshow\n",
+          "expected": "C0000001, включено: 3\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "on 5\non 5\noff 6\nshow\n",
+          "expected": "00000020, включено: 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "on 32\non -1\non 31\nshow\n",
+          "expected": "80000000, включено: 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "on 1\non 2\non 3\noff 2\nshow\n",
+          "expected": "0000000A, включено: 2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "on 31\noff 0\nshow\n",
+          "expected": "80000000, включено: 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "on 16\non 31\noff 16\nshow\n",
+          "expected": "80000000, включено: 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "on 0\non 31\noff 31\noff 0\nshow\n",
+          "expected": "00000000, включено: 0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    unsigned channels = 0;              // бит K — включён ли канал K\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        int k;\n        if (strcmp(command, \"on\") == 0 && scanf(\"%d\", &k) == 1 && k >= 0 && k < 32) {\n            channels |= 1u << k;\n        } else if (strcmp(command, \"off\") == 0 && scanf(\"%d\", &k) == 1 && k >= 0 && k < 32) {\n            channels &= ~(1u << k);\n        } else if (strcmp(command, \"show\") == 0) {\n            int count = 0;\n            for (int i = 0; i < 32; i++) {\n                count += (channels >> i) & 1u;\n            }\n            printf(\"%08X, включено: %d\\n\", channels, count);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Литерал `1` имеет тип `int`. Сдвиг `1 << 31` помещает единицу в знаковый бит, и результат не представим в `int` — по стандарту C17 это неопределённое поведение. На x86 без санитайзеров обычно получается ожидаемое `0x80000000`, поэтому ошибка долго живёт незамеченной; но оптимизатор вправе считать, что такого сдвига не бывает, и выбросить «невозможные» ветки. UBSan сообщает: `left shift of 1 by 31 places cannot be represented in type 'int'`.\n\nС `1u` сдвиг выполняется в `unsigned int`, и бит 31 — обычный бит. Исправлять нужно оба места: `~(1 << 31)` в `off` содержит ту же ошибку.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-bit-shifts-task-4",
+      "title": "Base64",
+      "description": "Base64 записывает произвольные байты печатными символами — так передают двоичные данные в почте, JSON и URL. Каждые 3 байта (24 бита) превращаются в 4 символа по 6 бит из алфавита `A–Z`, `a–z`, `0–9`, `+`, `/` (значения 0–63 по порядку). Если в конце остался 1 байт, он даёт 2 символа и `==`, если 2 байта — 3 символа и `=`.\n\nКаждая строка ввода — команда:\n- `e ТЕКСТ` — закодировать текст (все байты после первого пробела до конца строки; текст может быть пустым);\n- `d КОД` — декодировать и напечатать текст или `ошибка`, если код некорректен: длина не кратна 4, есть символы вне алфавита, `=` стоит не в конце или их больше двух.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "e Man\ne Ma\ne M\n",
+          "output": "TWFu\nTWE=\nTQ==\n"
+        },
+        {
+          "input": "d SGVsbG8sIHdvcmxkIQ==\nd abc\n",
+          "output": "Hello, world!\nошибка\n"
+        }
+      ],
+      "constraints": [
+        "Строки не длиннее 200 символов; тексты — печатные символы ASCII и пробелы.",
+        "Декодированные тексты в тестах печатные."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Кодирование: для трёх байтов v = b0 << 16 | b1 << 8 | b2, символы — ALPHABET[(v >> 18) & 63], ALPHABET[(v >> 12) & 63], ALPHABET[(v >> 6) & 63], ALPHABET[v & 63]. Для неполной группы недостающие байты считайте нулями и замените лишние символы на =.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Декодирование: значение символа — его позиция в алфавите (strchr) или −1. Четыре значения по 6 бит собираются в 24 бита: v = a << 18 | b << 12 | c << 6 | d.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Проверку = сделайте до декодирования: считайте их число в конце строки (не больше двух) и убедитесь, что раньше их нет.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "e Man\ne Ma\ne M\n",
+          "expected": "TWFu\nTWE=\nTQ==\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "d SGVsbG8sIHdvcmxkIQ==\nd abc\n",
+          "expected": "Hello, world!\nошибка\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустой текст",
+          "stdin": "e \n",
+          "expected": "\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Текст с пробелом",
+          "stdin": "e hello world\n",
+          "expected": "aGVsbG8gd29ybGQ=\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Длинный текст",
+          "stdin": "e Base64 encoding!\n",
+          "expected": "QmFzZTY0IGVuY29kaW5nIQ==\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Декодирование",
+          "stdin": "d TWFu\nd TWE=\nd TQ==\n",
+          "expected": "Man\nMa\nM\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Некорректные коды",
+          "stdin": "d TW=u\nd TQ===\nd TQ$=\n",
+          "expected": "ошибка\nошибка\nошибка\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Символы + и /",
+          "stdin": "e ~~~???>>>\n",
+          "expected": "fn5+Pz8/Pj4+\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Обратно с + и /",
+          "stdin": "d fn5+Pz8/Pj4+\n",
+          "expected": "~~~???>>>\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Туда и обратно",
+          "stdin": "e a\nd YQ==\ne ab\nd YWI=\n",
+          "expected": "YQ==\na\nYWI=\nab\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstatic const char ALPHABET[] = \"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/\";\n\nstatic void encode(const unsigned char *data, size_t len) {\n    for (size_t i = 0; i < len; i += 3) {\n        size_t rest = len - i;\n        unsigned long v = (unsigned long)data[i] << 16;\n        if (rest > 1) {\n            v |= (unsigned long)data[i + 1] << 8;\n        }\n        if (rest > 2) {\n            v |= data[i + 2];\n        }\n        putchar(ALPHABET[(v >> 18) & 63]);\n        putchar(ALPHABET[(v >> 12) & 63]);\n        putchar(rest > 1 ? ALPHABET[(v >> 6) & 63] : '=');\n        putchar(rest > 2 ? ALPHABET[v & 63] : '=');\n    }\n    putchar('\\n');\n}\n\nstatic int value_of(char c) {\n    const char *p = c != '\\0' ? strchr(ALPHABET, c) : NULL;\n    return p != NULL ? (int)(p - ALPHABET) : -1;\n}\n\nstatic int decode(const char *code, size_t len) {\n    if (len % 4 != 0) {\n        return 0;\n    }\n    size_t pad = 0;\n    while (pad < len && code[len - 1 - pad] == '=') {\n        pad++;\n    }\n    if (pad > 2) {\n        return 0;\n    }\n    for (size_t i = 0; i < len - pad; i++) {\n        if (value_of(code[i]) < 0) {\n            return 0;\n        }\n    }\n    char out[200];\n    size_t n = 0;\n    for (size_t i = 0; i < len; i += 4) {\n        unsigned long v = 0;\n        for (size_t k = 0; k < 4; k++) {\n            int part = code[i + k] == '=' ? 0 : value_of(code[i + k]);\n            v = v << 6 | (unsigned long)part;\n        }\n        out[n++] = (char)((v >> 16) & 0xFF);\n        out[n++] = (char)((v >> 8) & 0xFF);\n        out[n++] = (char)(v & 0xFF);\n    }\n    n -= pad;\n    printf(\"%.*s\\n\", (int)n, out);\n    return 1;\n}\n\nint main(void) {\n    char line[256];\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        size_t len = strcspn(line, \"\\r\\n\");\n        line[len] = '\\0';\n        if (len < 1) {\n            continue;\n        }\n        const char *arg = len > 1 ? line + 2 : line + len;\n        size_t arg_len = len > 1 ? len - 2 : 0;\n        if (line[0] == 'e') {\n            encode((const unsigned char *)arg, arg_len);\n        } else if (line[0] == 'd' && !decode(arg, arg_len)) {\n            printf(\"ошибка\\n\");\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Base64 — упражнение на перегруппировку битов: 3 байта по 8 бит и 4 символа по 6 бит — это одни и те же 24 бита. Сдвиги влево собирают байты в одно число, а сдвиги вправо с маской `& 63` нарезают его по шесть битов. Декодирование — та же работа в обратную сторону.\n\nНеполная последняя группа дополняется нулевыми байтами, а символы, которые получились только из дополнения, заменяются на `=` — так декодер узнаёт, сколько байтов настоящих: каждый `=` отнимает один байт из последней тройки.\n\nСдвиги выполняются в `unsigned long` (не меньше 32 бит), а байты приводятся к нему до сдвига: `data[i] << 16` в `int` было бы безопасно, но привычка приводить байт перед сдвигом избавляет от ошибок при сдвиге на 24. Проверка корректности кода отделена от декодирования: сначала формат, затем вычисления — частичный результат при ошибке не печатается.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-bit-shifts-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Когда проверять величину сдвига?",
-        "options": ["До выполнения сдвига", "После получения результата"],
-        "correct": 0,
-        "explanation": "Сдвиг перемещает разряды, но допустимость зависит от продвинутого типа левого операнда и величины сдвига. Отрицательная величина или величина не меньше ширины типа даёт неопределённое поведение. Для битовых алгоритмов используйте unsigned: его левый сдвиг имеет модульную семантику при допустимой величине; правый заполняет старшие разряды нулями."
+        "id": "q1",
+        "question": "Чему равно 5u << 3?",
+        "explanation": "Сдвиг беззнакового числа влево на 3 — умножение на 2³ = 8: 5 · 8 = 40.",
+        "type": "text",
+        "answers": ["40"],
+        "placeholder": "Число"
       },
       {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q2",
+        "question": "Какие сдвиги — неопределённое поведение для 32-битных int и unsigned? Выберите все.",
+        "explanation": "1 << 31 переполняет знаковый int, 1u << 32 сдвигает на ширину типа, -1 << 2 сдвигает влево отрицательное число. 1u << 31 и сдвиг беззнакового вправо определены.",
+        "type": "multiple",
+        "options": ["1 << 31", "1u << 31", "1u << 32", "x >> 3 для unsigned x", "-1 << 2"],
+        "correct": [0, 2, 4]
+      },
+      {
+        "id": "q3",
+        "question": "Что напечатает printf(\"%d %d\\n\", -7 >> 1, -7 / 2); при компиляции GCC?",
+        "explanation": "GCC выполняет арифметический сдвиг вправо (это поведение определяется реализацией), он округляет вниз: −4. Деление округляет к нулю: −3.",
+        "type": "text",
+        "answers": ["-4 -3"],
+        "placeholder": "Вывод"
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <stdint.h>\n#include <stdio.h>\n\nint main(void) {\n    uint8_t b = 0xC0;\n    int wide = b << 2;\n    uint8_t narrow = (uint8_t)(b << 2);\n    printf(\"%d %d\\n\", wide, narrow);\n    return 0;\n}",
+        "explanation": "uint8_t продвигается до int, и 0xC0 << 2 = 0x300 = 768 без потерь. Приведение к uint8_t оставляет младшие 8 бит — 0x00.",
+        "type": "text",
+        "answers": ["768 0"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Как компилятор понимает выражение 1u << n - 1?",
+        "explanation": "Сдвиг слабее сложения и вычитания. Маску из n единиц записывают со скобками: (1u << n) - 1u.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "1 << 31 опасен для обычного 32-битного int; signed и unsigned нельзя считать взаимозаменяемыми."
+          "1u << (n - 1)",
+          "(1u << n) - 1",
+          "Ошибка компиляции",
+          "Зависит от компилятора"
         ],
-        "correct": 1,
-        "explanation": "Сдвиг — движение в ленте фиксированной ширины; сначала проверьте размер ленты и шаг."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["8", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: printf(\"%u\\n\",32u >> 2); Ожидаемый результат: 8"
+        "id": "q6",
+        "question": "Чему равен циклический сдвиг влево на 8 битов числа 0x12345678? Запишите в шестнадцатеричном виде.",
+        "explanation": "Старший байт 0x12 уходит за левый край и возвращается справа.",
+        "type": "text",
+        "answers": ["0x34567812", "34567812"],
+        "placeholder": "0x…"
+      },
+      {
+        "id": "q7",
+        "question": "Какое выражение извлекает биты 16–23 (третий байт снизу) из uint32_t x?",
+        "explanation": "Сдвиг вправо на 16 переносит нужный байт в младшие биты, маска 0xFF отрезает старшие. x & 0xFF0000u оставляет байт на месте — это число в 65536 раз больше.",
+        "options": [
+          "(x >> 16) & 0xFFu",
+          "(x << 16) & 0xFFu",
+          "x & 0xFF0000u",
+          "x >> 16 & 0xFF0000u"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Почему при сборке числа из байтов пишут (uint32_t)bytes[0] << 24, а не bytes[0] << 24?",
+        "explanation": "Сдвиг выполняется в продвинутом типе. Приведение к uint32_t делает его беззнаковым и достаточно широким.",
+        "options": [
+          "unsigned char продвигается до int, и для байтов от 128 сдвиг на 24 переполняет int — неопределённое поведение",
+          "Без приведения байты сложатся в обратном порядке",
+          "Сдвиг unsigned char не компилируется",
+          "Приведение ускоряет сдвиг"
+        ],
+        "correct": 0
       }
     ]
   }

@@ -1,120 +1,459 @@
 {
   "id": "advanced-conditional-compilation",
-  "title": "Conditional compilation",
-  "description": "#if, #ifdef и #elif выбирают код при сборке.",
+  "title": "Условная компиляция",
+  "description": "Зачем выбирать код при сборке; #if, #elif, #else, #endif и правила вычисления условий; неопределённые имена равны нулю и флаг -Wundef; #ifdef, #ifndef и defined; отладочный код, платформа, компилятор, версия стандарта, #error и #if 0; цена условной компиляции и if с константой.",
   "moduleId": "advanced-c",
-  "order": 8,
-  "difficulty": "advanced",
-  "estimatedMinutes": 40,
+  "order": 11,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
   "prerequisites": ["advanced-macro-hazards"],
   "objectives": [
-    "Объяснить: Conditional compilation",
-    "Различать корректный контракт и ошибку: #ifdef FEATURE включает ветвь даже при -DFEATURE=0.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Писать цепочки #if/#elif/#else и предсказывать, какая ветка останется",
+    "Отличать проверку факта определения (#ifdef) от проверки значения (#if)",
+    "Определять платформу, компилятор и версию стандарта по предопределённым макросам",
+    "Оценивать риски условной компиляции и заменять её обычным if там, где возможно"
   ],
-  "tags": ["C17", "углублённый C", "Conditional compilation"],
+  "tags": ["#if", "#ifdef", "defined", "Условная компиляция", "Платформа"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-conditional-compilation-exercise",
-    "title": "Практика: Conditional compilation",
-    "description": "Задайте SENSOR_FAST=0 по умолчанию и выберите коэффициент 2 при #if SENSOR_FAST, иначе 1. В тестируемой конфигурации без внешних флагов ввод x −100…100 и вывод x.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-conditional-compilation-task-1",
+    "title": "Найди ошибку: молчаливая отладка",
+    "description": "Программа читает целые числа до конца ввода и печатает их сумму. Уровень отладки задаётся макросом `DEBUG_LEVEL`: при уровне 1 и выше она печатает число шагов, а при уровне 2 — ещё и каждый шаг строкой `шаг K: +X, сумма S` (у числа всегда печатается знак).\n\nВ программе `DEBUG_LEVEL` равен 2, но строки шагов не печатаются. Компилятор не выдаёт ни ошибок, ни предупреждений. Найдите и исправьте ошибку.",
+    "difficulty": "intermediate",
+    "starterCode": "#include <stdio.h>\n\n#define DEBUG_LEVEL 2          // 0 — без отладки, 1 — число шагов, 2 — каждый шаг\n\nint main(void) {\n    int value, steps = 0;\n    long long sum = 0;\n    while (scanf(\"%d\", &value) == 1) {\n        steps++;\n        sum += value;\n#if DEBUG_LEVL >= 2\n        printf(\"шаг %d: %+d, сумма %lld\\n\", steps, value, sum);\n#endif\n    }\n#if DEBUG_LEVEL >= 1\n    printf(\"шагов: %d\\n\", steps);\n#endif\n    printf(\"сумма: %lld\\n\", sum);\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "5",
-        "output": "5\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "5 -2 10\n",
+        "output": "шаг 1: +5, сумма 5\nшаг 2: -2, сумма 3\nшаг 3: +10, сумма 13\nшагов: 3\nсумма: 13\n"
       },
       {
-        "input": "-9",
-        "output": "-9\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "",
+        "output": "шагов: 0\nсумма: 0\n",
+        "explanation": "Пустой ввод: шагов нет."
       }
     ],
-    "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
-    ],
+    "constraints": ["Чисел не больше 30, каждое по модулю не больше 10⁶."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Конфигурация сборки выбирает один чертёж; runtime if выбирает действие уже собранного устройства."
+        "text": "Сравните имена макросов во всех директивах #if с именем в #define.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "#ifdef FEATURE включает ветвь даже при -DFEATURE=0."
+        "text": "Неопределённое имя в #if молчаливо равно нулю, поэтому условие оказалось ложным. Исправьте опечатку — а в своих проектах включайте флаг -Wundef.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "5",
-        "expected": "5\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "5 -2 10\n",
+        "expected": "шаг 1: +5, сумма 5\nшаг 2: -2, сумма 3\nшаг 3: +10, сумма 13\nшагов: 3\nсумма: 13\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "-9",
-        "expected": "-9\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "",
+        "expected": "шагов: 0\nсумма: 0\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "0",
-        "expected": "0\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "7\n",
+        "expected": "шаг 1: +7, сумма 7\nшагов: 1\nсумма: 7\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "0 0\n",
+        "expected": "шаг 1: +0, сумма 0\nшаг 2: +0, сумма 0\nшагов: 2\nсумма: 0\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "-1 -1 -1\n",
+        "expected": "шаг 1: -1, сумма -1\nшаг 2: -1, сумма -2\nшаг 3: -1, сумма -3\nшагов: 3\nсумма: -3\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "1000000 1000000 1000000\n",
+        "expected": "шаг 1: +1000000, сумма 1000000\nшаг 2: +1000000, сумма 2000000\nшаг 3: +1000000, сумма 3000000\nшагов: 3\nсумма: 3000000\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "1 2 3 4 5 6\n",
+        "expected": "шаг 1: +1, сумма 1\nшаг 2: +2, сумма 3\nшаг 3: +3, сумма 6\nшаг 4: +4, сумма 10\nшаг 5: +5, сумма 15\nшаг 6: +6, сумма 21\nшагов: 6\nсумма: 21\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "-1000000 999999\n",
+        "expected": "шаг 1: -1000000, сумма -1000000\nшаг 2: +999999, сумма -1\nшагов: 2\nсумма: -1\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "42 -42\n",
+        "expected": "шаг 1: +42, сумма 42\nшаг 2: -42, сумма 0\nшагов: 2\nсумма: 0\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "3\n4\n",
+        "expected": "шаг 1: +3, сумма 3\nшаг 2: +4, сумма 7\nшагов: 2\nсумма: 7\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n#ifndef SENSOR_FAST\n#define SENSOR_FAST 0\n#endif\n#if SENSOR_FAST\nstatic const int gain = 2;\n#else\nstatic const int gain = 1;\n#endif\nint main(void) {\n    int x;\n    if (scanf(\"%d\", &x) != 1) return 1;\n    printf(\"%d\\n\", x * gain);\n    return 0;\n}\n",
-    "solutionExplanation": "Конфигурация сборки выбирает один чертёж; runtime if выбирает действие уже собранного устройства.\n\n#ifdef FEATURE включает ветвь даже при -DFEATURE=0.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '5' → '5\\n'; '-9' → '-9\\n'; '0' → '0\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <stdio.h>\n\n#define DEBUG_LEVEL 2          // 0 — без отладки, 1 — число шагов, 2 — каждый шаг\n\nint main(void) {\n    int value, steps = 0;\n    long long sum = 0;\n    while (scanf(\"%d\", &value) == 1) {\n        steps++;\n        sum += value;\n#if DEBUG_LEVEL >= 2\n        printf(\"шаг %d: %+d, сумма %lld\\n\", steps, value, sum);\n#endif\n    }\n#if DEBUG_LEVEL >= 1\n    printf(\"шагов: %d\\n\", steps);\n#endif\n    printf(\"сумма: %lld\\n\", sum);\n    return 0;\n}\n",
+    "solutionExplanation": "В условии `#if DEBUG_LEVL >= 2` пропущена буква. Препроцессор не знает макроса `DEBUG_LEVL` и по правилам языка заменяет его нулём: условие `0 >= 2` ложно, и вывод шагов выброшен из программы ещё до компиляции. Ни компилятор, ни линковщик об этом не узнают — выброшенного кода для них не существует.\n\nФлаг `-Wundef` заставляет GCC и Clang предупреждать о каждом неопределённом имени в `#if`: `\"DEBUG_LEVL\" is not defined, evaluates to 0`. В проектах, где много условной компиляции, его включают вместе с `-Wall -Wextra`.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-conditional-compilation-task-2",
+      "title": "Какие строки попадут в программу",
+      "description": "Смоделируйте условную компиляцию. На вход подаются строки программы до конца ввода. Строка, первый непробельный символ которой `#`, а за ним (возможно, после пробелов) одно из слов `define`, `undef`, `ifdef`, `ifndef`, `else`, `endif`, — директива; остальные строки, включая другие директивы, — обычный текст.\n\n- `#define ИМЯ …` и `#undef ИМЯ` определяют и удаляют макрос (значение не важно) — но **только в оставленной части** текста;\n- `#ifdef ИМЯ` / `#ifndef ИМЯ` начинают блок, который остаётся, если макрос определён / не определён; `#else` переключает ветку; `#endif` закрывает блок. Блоки вкладываются; вложенный блок внутри выброшенной части выброшен целиком, включая его `#else`.\n\nНапечатайте оставленные обычные строки без изменений или `(нет строк)`, если их нет.\n\nЕсли структура блоков нарушена, напечатайте **только** сообщение о первой ошибке:\n- `ошибка: #else без #if` и `ошибка: #endif без #if` — директива вне блока;\n- `ошибка: повторный #else` — второй `#else` в одном блоке;\n- `ошибка: не хватает #endif` — в конце ввода остались незакрытые блоки.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "#define LINUX\n#ifdef LINUX\nopen_linux();\n#else\nopen_windows();\n#endif\n#ifndef DEBUG\nfast_path();\n#endif\n",
+          "output": "open_linux();\nfast_path();\n"
+        },
+        {
+          "input": "#ifdef A\nx\n#else\ny\n#else\nz\n#endif\n",
+          "output": "ошибка: повторный #else\n"
+        }
+      ],
+      "constraints": [
+        "Строк не больше 100, каждая не длиннее 200 символов; макросов не больше 50."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Храните стек блоков: для каждого — было ли активно окружение (outer), выбрана ли сейчас ветка (taking) и встречался ли #else. Строка активна, если стек пуст или у вершины outer && taking.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "#ifdef/#ifndef кладут в стек { текущая активность, условие, 0 }; #else меняет taking на противоположное; #endif снимает вершину.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Оставленные строки накапливайте в буфере и печатайте в конце: при ошибке выводится только её сообщение.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "#define LINUX\n#ifdef LINUX\nopen_linux();\n#else\nopen_windows();\n#endif\n#ifndef DEBUG\nfast_path();\n#endif\n",
+          "expected": "open_linux();\nfast_path();\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "#ifdef A\nx\n#else\ny\n#else\nz\n#endif\n",
+          "expected": "ошибка: повторный #else\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "define в выброшенной части",
+          "stdin": "#ifdef A\n#define B\n#ifdef B\nx\n#endif\n#endif\n#ifdef B\ny\n#endif\n",
+          "expected": "(нет строк)\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Вложенный else в выброшенном блоке",
+          "stdin": "#ifdef A\n#ifdef B\nx\n#else\ny\n#endif\n#else\nz\n#endif\n",
+          "expected": "z\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "undef",
+          "stdin": "#define X\n#undef X\n#ifdef X\na\n#else\nb\n#endif\n",
+          "expected": "b\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "endif без if",
+          "stdin": "line1\n#endif\nline2\n",
+          "expected": "ошибка: #endif без #if\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "else без if",
+          "stdin": "#else\n",
+          "expected": "ошибка: #else без #if\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Не хватает endif",
+          "stdin": "#ifndef GUARD_H\n#define GUARD_H\nint f(void);\n",
+          "expected": "ошибка: не хватает #endif\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Защита заголовка",
+          "stdin": "#ifndef GUARD_H\n#define GUARD_H\nint f(void);\n#endif\n#ifndef GUARD_H\n#define GUARD_H\nint f(void);\n#endif\n",
+          "expected": "int f(void);\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Пробелы и другие директивы",
+          "stdin": "#include <stdio.h>\n  #  ifdef   NOPE\nhidden\n  # endif\n#pragma once\n",
+          "expected": "#include <stdio.h>\n#pragma once\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Нет строк",
+          "stdin": "#ifdef NOTHING\nonly\n#endif\n",
+          "expected": "(нет строк)\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    int outer;\n    int taking;\n    int seen_else;\n} Block;\n\nstatic char macros[50][32];\nstatic int macro_count;\nstatic Block stack[100];\nstatic int depth;\nstatic char kept[100][256];\nstatic int kept_count;\n\nstatic int defined(const char *name) {\n    for (int i = 0; i < macro_count; i++) {\n        if (strcmp(macros[i], name) == 0) {\n            return 1;\n        }\n    }\n    return 0;\n}\n\nstatic void define(const char *name) {\n    if (!defined(name) && macro_count < 50) {\n        strcpy(macros[macro_count++], name);\n    }\n}\n\nstatic void undef(const char *name) {\n    for (int i = 0; i < macro_count; i++) {\n        if (strcmp(macros[i], name) == 0) {\n            macro_count--;\n            if (i != macro_count) {\n                strcpy(macros[i], macros[macro_count]);\n            }\n            return;\n        }\n    }\n}\n\nstatic int active(void) {\n    return depth == 0 || (stack[depth - 1].outer && stack[depth - 1].taking);\n}\n\nint main(void) {\n    char line[256];\n    const char *error = NULL;\n    while (error == NULL && fgets(line, sizeof line, stdin) != NULL) {\n        char word[16] = \"\", name[32] = \"\";\n        const char *p = line;\n        while (*p == ' ' || *p == '\\t') {\n            p++;\n        }\n        int directive = 0;\n        if (*p == '#' && sscanf(p + 1, \" %15s %31s\", word, name) >= 1) {\n            directive = strcmp(word, \"define\") == 0 || strcmp(word, \"undef\") == 0 ||\n                        strcmp(word, \"ifdef\") == 0 || strcmp(word, \"ifndef\") == 0 ||\n                        strcmp(word, \"else\") == 0 || strcmp(word, \"endif\") == 0;\n        }\n        if (!directive) {\n            if (active() && kept_count < 100) {\n                strcpy(kept[kept_count++], line);\n            }\n            continue;\n        }\n        if (strcmp(word, \"define\") == 0) {\n            if (active()) {\n                define(name);\n            }\n        } else if (strcmp(word, \"undef\") == 0) {\n            if (active()) {\n                undef(name);\n            }\n        } else if (strcmp(word, \"ifdef\") == 0 || strcmp(word, \"ifndef\") == 0) {\n            int condition = defined(name);\n            Block block = {active(), strcmp(word, \"ifdef\") == 0 ? condition : !condition, 0};\n            stack[depth++] = block;\n        } else if (strcmp(word, \"else\") == 0) {\n            if (depth == 0) {\n                error = \"ошибка: #else без #if\";\n            } else if (stack[depth - 1].seen_else) {\n                error = \"ошибка: повторный #else\";\n            } else {\n                stack[depth - 1].taking = !stack[depth - 1].taking;\n                stack[depth - 1].seen_else = 1;\n            }\n        } else if (depth == 0) {\n            error = \"ошибка: #endif без #if\";\n        } else {\n            depth--;\n        }\n    }\n    if (error == NULL && depth > 0) {\n        error = \"ошибка: не хватает #endif\";\n    }\n    if (error != NULL) {\n        printf(\"%s\\n\", error);\n    } else if (kept_count == 0) {\n        printf(\"(нет строк)\\n\");\n    } else {\n        for (int i = 0; i < kept_count; i++) {\n            fputs(kept[i], stdout);\n            if (strchr(kept[i], '\\n') == NULL) {\n                putchar('\\n');\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Ключ к задаче — стек блоков с двумя признаками у каждого: было ли активно окружение и выбрана ли текущая ветка. Строка попадает в программу, только если активны все вложенные уровни — достаточно проверить вершину, потому что `outer` уже содержит активность всех уровней ниже.\n\nВажная деталь: `#ifdef` внутри выброшенной части всё равно кладётся в стек (со значением `outer = 0`), иначе её `#else` и `#endif` закрыли бы чужой блок. По той же причине `#define` и `#undef` в выброшенной части не выполняются — для препроцессора этих строк нет.\n\nОшибки структуры настоящий препроцессор тоже обнаруживает: `#else after #else`, `#endif without #if`, `unterminated #ifdef`. Сборка при этом прекращается, поэтому и здесь печатается только сообщение.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-conditional-compilation-task-3",
+      "title": "Вычисление условий #if",
+      "description": "Вычислите условия `#if` так, как это делает препроцессор. В первой строке — число макросов `n`, далее `n` строк `ИМЯ значение` (значение — целое число). Затем до конца ввода идут выражения, по одному в строке.\n\nВыражение состоит из целых чисел, имён, оператора `defined` (в форме `defined ИМЯ` или `defined(ИМЯ)`), скобок и операций в порядке убывания приоритета:\n- унарные `!`, `-`, `+`;\n- `*`, `/`, `%`;\n- `+`, `-`;\n- `<`, `>`, `<=`, `>=`;\n- `==`, `!=`;\n- `&&`;\n- `||`.\n\nДвуместные операции одного уровня выполняются слева направо. Имя макроса заменяется его значением, любое другое имя — нулём; `defined` даёт 1 или 0. Сравнения и логические операции дают 1 или 0. `&&` и `||` не вычисляют правую часть, если результат ясен по левой. Деление целочисленное, как в C.\n\nДля каждого выражения напечатайте `V: блок остаётся`, если его значение V не равно нулю, `0: блок выброшен` — если равно, или `ошибка: деление на ноль`, если при вычислении встретилось деление или остаток от деления на ноль.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\nDEBUG 1\nLEVEL 2\nZERO 0\ndefined(DEBUG) && LEVEL >= 2\n!defined RELEASE || ZERO\nLEVEL / ZERO\n",
+          "output": "1: блок остаётся\n1: блок остаётся\nошибка: деление на ноль\n"
+        },
+        {
+          "input": "1\nLEVEL 2\nLEVEL * 10 - 5\nUNKNOWN + 5 == 5\nLEVEL > 5\n",
+          "output": "15: блок остаётся\n1: блок остаётся\n0: блок выброшен\n"
+        }
+      ],
+      "constraints": [
+        "0 ≤ n ≤ 20; значения и все промежуточные результаты по модулю не больше 10¹²; выражения корректны.",
+        "Строки не длиннее 200 символов, выражений не больше 30."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Рекурсивный спуск: по функции на уровень приоритета — parse_or, parse_and, parse_equality, parse_relational, parse_additive, parse_term, parse_unary, parse_primary.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Короткое вычисление: передавайте во все функции флаг eval. В parse_and при левом значении 0 разбирайте правую часть с eval = 0 — синтаксис нужно пройти, но деление на ноль там не считается ошибкой.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "В parse_primary после имени defined пропустите пробелы и необязательную скобку, прочитайте имя и, если была скобка, закрывающую.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\nDEBUG 1\nLEVEL 2\nZERO 0\ndefined(DEBUG) && LEVEL >= 2\n!defined RELEASE || ZERO\nLEVEL / ZERO\n",
+          "expected": "1: блок остаётся\n1: блок остаётся\nошибка: деление на ноль\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nLEVEL 2\nLEVEL * 10 - 5\nUNKNOWN + 5 == 5\nLEVEL > 5\n",
+          "expected": "15: блок остаётся\n1: блок остаётся\n0: блок выброшен\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Короткое вычисление",
+          "stdin": "1\nZERO 0\nZERO && 1 / ZERO\n1 || 1 / ZERO\n",
+          "expected": "0: блок выброшен\n1: блок остаётся\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Приоритеты и деление",
+          "stdin": "0\n2 + 3 * 4\n(2 + 3) * 4\n-7 / 2\n-7 % 2\n",
+          "expected": "14: блок остаётся\n20: блок остаётся\n-3: блок остаётся\n-1: блок остаётся\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Формы defined",
+          "stdin": "0\ndefined X\n!defined(X)\ndefined ( X )\n",
+          "expected": "0: блок выброшен\n1: блок остаётся\n0: блок выброшен\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Определён со значением 0",
+          "stdin": "1\nX 0\ndefined(X)\nX\n",
+          "expected": "1: блок остаётся\n0: блок выброшен\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Сравнения",
+          "stdin": "0\n1 < 2 == 1\n3 >= 3 != 0\n2 <= 1\n",
+          "expected": "1: блок остаётся\n1: блок остаётся\n0: блок выброшен\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Отрицательное значение",
+          "stdin": "1\nV -5\nV < 0 && -V == 5\n!V\n!!V\n",
+          "expected": "1: блок остаётся\n0: блок выброшен\n1: блок остаётся\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Приоритет && над ||",
+          "stdin": "0\n1 || 0 && 0\n(1 || 0) && 0\n",
+          "expected": "1: блок остаётся\n0: блок выброшен\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Остаток",
+          "stdin": "2\nA 10\nB 3\nA % B\nA / B * B + A % B == A\n",
+          "expected": "1: блок остаётся\n1: блок остаётся\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Ошибка при умножении на ноль",
+          "stdin": "0\n10 % 0\n0 * (1 / 0)\n",
+          "expected": "ошибка: деление на ноль\nошибка: деление на ноль\n"
+        },
+        {
+          "id": "hidden-10",
+          "name": "Проверка версии",
+          "stdin": "2\nMAJOR 2\nMINOR 14\nMAJOR > 2 || MAJOR == 2 && MINOR >= 10\n",
+          "expected": "1: блок остаётся\n"
+        }
+      ],
+      "referenceSolution": "#include <ctype.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstatic char names[20][32];\nstatic long long values[20];\nstatic int macro_count;\nstatic const char *pos;\nstatic int failed;\n\nstatic void skip(void) {\n    while (*pos == ' ' || *pos == '\\t') {\n        pos++;\n    }\n}\n\nstatic int match(const char *op) {\n    skip();\n    size_t len = strlen(op);\n    if (strncmp(pos, op, len) == 0) {\n        pos += len;\n        return 1;\n    }\n    return 0;\n}\n\nstatic void read_name(char *out) {\n    skip();\n    int len = 0;\n    while ((isalnum((unsigned char)*pos) || *pos == '_') && len < 31) {\n        out[len++] = *pos++;\n    }\n    out[len] = '\\0';\n}\n\nstatic int find(const char *name) {\n    for (int i = 0; i < macro_count; i++) {\n        if (strcmp(names[i], name) == 0) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nstatic long long parse_or(int eval);\n\nstatic long long parse_primary(int eval) {\n    skip();\n    if (match(\"(\")) {\n        long long value = parse_or(eval);\n        match(\")\");\n        return value;\n    }\n    if (isdigit((unsigned char)*pos)) {\n        char *end;\n        long long value = strtoll(pos, &end, 10);\n        pos = end;\n        return value;\n    }\n    char name[32];\n    read_name(name);\n    if (strcmp(name, \"defined\") == 0) {\n        int paren = match(\"(\");\n        read_name(name);\n        if (paren) {\n            match(\")\");\n        }\n        return find(name) >= 0;\n    }\n    int index = find(name);\n    return index >= 0 ? values[index] : 0;\n}\n\nstatic long long parse_unary(int eval) {\n    if (match(\"!\")) {\n        return !parse_unary(eval);\n    }\n    if (match(\"-\")) {\n        return -parse_unary(eval);\n    }\n    if (match(\"+\")) {\n        return parse_unary(eval);\n    }\n    return parse_primary(eval);\n}\n\nstatic long long parse_term(int eval) {\n    long long value = parse_unary(eval);\n    for (;;) {\n        char op;\n        if (match(\"*\")) {\n            op = '*';\n        } else if (match(\"/\")) {\n            op = '/';\n        } else if (match(\"%\")) {\n            op = '%';\n        } else {\n            return value;\n        }\n        long long right = parse_unary(eval);\n        if (op == '*') {\n            value *= right;\n        } else if (right == 0) {\n            if (eval) {\n                failed = 1;\n            }\n            value = 0;\n        } else {\n            value = op == '/' ? value / right : value % right;\n        }\n    }\n}\n\nstatic long long parse_additive(int eval) {\n    long long value = parse_term(eval);\n    for (;;) {\n        if (match(\"+\")) {\n            value += parse_term(eval);\n        } else if (match(\"-\")) {\n            value -= parse_term(eval);\n        } else {\n            return value;\n        }\n    }\n}\n\nstatic long long parse_relational(int eval) {\n    long long value = parse_additive(eval);\n    for (;;) {\n        if (match(\"<=\")) {\n            value = value <= parse_additive(eval);\n        } else if (match(\">=\")) {\n            value = value >= parse_additive(eval);\n        } else if (match(\"<\")) {\n            value = value < parse_additive(eval);\n        } else if (match(\">\")) {\n            value = value > parse_additive(eval);\n        } else {\n            return value;\n        }\n    }\n}\n\nstatic long long parse_equality(int eval) {\n    long long value = parse_relational(eval);\n    for (;;) {\n        if (match(\"==\")) {\n            value = value == parse_relational(eval);\n        } else if (match(\"!=\")) {\n            value = value != parse_relational(eval);\n        } else {\n            return value;\n        }\n    }\n}\n\nstatic long long parse_and(int eval) {\n    long long value = parse_equality(eval);\n    while (match(\"&&\")) {\n        long long right = parse_equality(eval && value != 0);\n        value = value != 0 && right != 0;\n    }\n    return value;\n}\n\nstatic long long parse_or(int eval) {\n    long long value = parse_and(eval);\n    while (match(\"||\")) {\n        long long right = parse_and(eval && value == 0);\n        value = value != 0 || right != 0;\n    }\n    return value;\n}\n\nint main(void) {\n    char line[256];\n    if (fgets(line, sizeof line, stdin) == NULL || sscanf(line, \"%d\", &macro_count) != 1) {\n        return 0;\n    }\n    for (int i = 0; i < macro_count; i++) {\n        if (fgets(line, sizeof line, stdin) == NULL ||\n            sscanf(line, \"%31s %lld\", names[i], &values[i]) != 2) {\n            return 0;\n        }\n    }\n    while (fgets(line, sizeof line, stdin) != NULL) {\n        pos = line;\n        skip();\n        if (*pos == '\\n' || *pos == '\\0') {\n            continue;\n        }\n        failed = 0;\n        long long value = parse_or(1);\n        if (failed) {\n            printf(\"ошибка: деление на ноль\\n\");\n        } else if (value != 0) {\n            printf(\"%lld: блок остаётся\\n\", value);\n        } else {\n            printf(\"0: блок выброшен\\n\");\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Грамматика повторяет приоритеты C, поэтому решение — рекурсивный спуск с функцией на каждый уровень. Операции из двух символов проверяются раньше односимвольных (`<=` раньше `<`), иначе `<=` разобралось бы как `<` и непонятный `=`.\n\nКороткое вычисление требует внимания: правую часть `0 && …` нужно **разобрать** (чтобы дойти до конца выражения), но не **вычислять** её побочные эффекты — здесь единственный такой эффект — ошибка деления на ноль. Флаг `eval` передаётся вниз по рекурсии и выключается для правой части, результат которой не нужен. Настоящий препроцессор GCC поступает так же: `#if 0 && (1 / 0)` компилируется без ошибки.\n\nПодстановка нуля вместо неизвестного имени — то самое правило, из-за которого опечатка в `#if` проходит незамеченной: `UNKNOWN + 5 == 5` истинно.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-conditional-compilation-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Макрос FEATURE определён как 0. Что проверяет #ifdef FEATURE?",
+        "id": "q1",
+        "question": "В файле написано #define DEBUG 0. Попадёт ли в программу код между #ifdef DEBUG и #endif?",
+        "explanation": "#ifdef DEBUG — это #if defined(DEBUG), а макрос определён, пусть и со значением 0. Значение проверяет #if DEBUG.",
         "options": [
-          "Наличие определения, поэтому ветвь включается",
-          "Числовой ноль, поэтому ветвь исключается"
+          "Да: #ifdef проверяет только то, что макрос определён",
+          "Нет: значение 0 означает «выключено»",
+          "Это ошибка компиляции",
+          "Зависит от компилятора"
         ],
-        "correct": 0,
-        "explanation": "#if, #ifdef и #elif выбирают код при сборке. defined(NAME) отвечает, определён ли макрос, а #if NAME проверяет его числовое значение. Макрос, определённый как 0, всё ещё проходит #ifdef. Это различие особенно важно для флагов возможностей."
+        "correct": 0
       },
       {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q2",
+        "question": "Чему равно имя NOT_DEFINED_ANYWHERE в условии #if NOT_DEFINED_ANYWHERE > 1?",
+        "explanation": "Препроцессор молча заменяет нулём любой идентификатор, который не оказался макросом. О таких именах предупреждает флаг -Wundef.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "#ifdef FEATURE включает ветвь даже при -DFEATURE=0."
+          "Нулю — оставшиеся после раскрытия идентификаторы заменяются на 0",
+          "Это ошибка: неизвестное имя",
+          "Единице",
+          "Условие считается истинным"
         ],
-        "correct": 1,
-        "explanation": "Конфигурация сборки выбирает один чертёж; runtime if выбирает действие уже собранного устройства."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["Работа", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: puts(LABEL); Ожидаемый результат: Работа"
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\n#define VERSION 3\n\nint main(void) {\n#if VERSION > 4\n    puts(\"новая\");\n#elif VERSION > 2\n    puts(\"средняя\");\n#elif VERSION > 1\n    puts(\"старая\");\n#else\n    puts(\"древняя\");\n#endif\n    return 0;\n}",
+        "explanation": "Препроцессор оставляет первую ветку с истинным условием: 3 > 4 ложно, 3 > 2 истинно. Остальные ветки выброшены, хотя 3 > 1 тоже истинно.",
+        "type": "text",
+        "answers": ["средняя"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Почему не компилируется #if sizeof(long) == 8?",
+        "explanation": "Препроцессор работает до компилятора и не знает типов. Размеры проверяют макросами из limits.h или static_assert.",
+        "options": [
+          "Препроцессор не знает sizeof: имя sizeof для него — неопределённый идентификатор, а за ним стоит непонятная скобка",
+          "sizeof нельзя сравнивать с числом",
+          "Нужно писать sizeof long без скобок",
+          "Условие #if должно быть в скобках"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Какой макрос однозначно говорит, что программу компилирует именно Clang, а не GCC?",
+        "explanation": "Clang определяет и __GNUC__ ради совместимости с кодом для GCC. Поэтому при выборе компилятора __clang__ проверяют первым.",
+        "options": ["__clang__", "__GNUC__", "__STDC__", "__linux__"],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Чем #if 0 … #endif лучше, чем закомментировать блок /* … */?",
+        "explanation": "Комментарии /* */ не вкладываются: первый же */ внутри блока закроет внешний комментарий. Код внутри #if 0 не компилируется — так же, как закомментированный.",
+        "options": [
+          "Внутри блока могут быть свои комментарии /* */, а блоки #if 0 вкладываются друг в друга",
+          "Код внутри #if 0 всё равно компилируется и проверяется",
+          "Код внутри #if 0 выполняется только в отладке",
+          "Ничем, это одно и то же"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Запишите #ifndef CONFIG_H через #if и defined.",
+        "explanation": "#ifndef ИМЯ — сокращение для #if !defined(ИМЯ). Форма с defined позволяет комбинировать условия.",
+        "type": "text",
+        "answers": ["#if !defined(CONFIG_H)", "#if !defined CONFIG_H"],
+        "placeholder": "Директива"
+      },
+      {
+        "id": "q8",
+        "question": "Что можно использовать в условии #if? Выберите все.",
+        "explanation": "Препроцессор знает только макросы и литералы. Константа enum в #if превратится в 0, а sizeof — в синтаксическую ошибку.",
+        "type": "multiple",
+        "options": [
+          "Макросы",
+          "Целые числа и символьные константы",
+          "defined(ИМЯ)",
+          "Константы enum по их значению",
+          "sizeof(тип)"
+        ],
+        "correct": [0, 1, 2]
       }
     ]
   }

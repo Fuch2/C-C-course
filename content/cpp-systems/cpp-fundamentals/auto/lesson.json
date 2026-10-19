@@ -1,126 +1,524 @@
 {
   "id": "cpp20-auto",
-  "title": "auto",
-  "description": "auto убирает повтор типа и следует фактическому инициализатору. Он снижает шум, но auto без & неожиданно создаёт копию.",
+  "title": "auto и лямбда-выражения",
+  "description": "Вывод типа auto и его ловушки: строковые литералы, целые литералы, отбрасывание ссылок и const; где auto уместен; лямбда-выражения; лямбды в std::sort, std::count_if, std::for_each; захват переменных по значению и по ссылке.",
   "moduleId": "cpp-fundamentals",
-  "order": 8,
+  "order": 10,
   "difficulty": "intermediate",
   "estimatedMinutes": 50,
-  "prerequisites": ["cpp20-const-references"],
+  "prerequisites": ["cpp23-string-view"],
   "objectives": [
-    "Объяснить, зачем появился auto и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Объявлять переменные с auto и предсказывать выведенный тип",
+    "Получать ссылку через auto & и const auto &",
+    "Писать лямбда-выражения и передавать их в алгоритмы",
+    "Захватывать переменные в лямбду по значению и по ссылке"
   ],
-  "tags": ["C++20", "основы C++", "auto"],
+  "tags": ["C++", "auto", "Лямбды", "algorithm"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-auto-exercise",
-    "title": "Копия и псевдоним измерения",
-    "description": "Ввод: value и delta, целые −1000…1000. Создайте auto copy = value и auto& alias = value. Прибавьте delta к alias, затем 1 к copy. Выведите value, copy и alias через пробел.",
-    "difficulty": "intermediate",
+    "id": "cpp20-auto-task-1",
+    "title": "Сортировка по правилу",
+    "description": "Первая строка — `n`, вторая — `n` целых чисел. Отсортируйте их по возрастанию **модуля**, а при равных модулях — по возрастанию самого числа (`-3` раньше `3`). Напечатайте результат через пробел.\n\nИспользуйте `std::sort` с лямбда-выражением.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "10 3",
-        "output": "13 11 13\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "5\n3 -1 -3 2 0\n",
+        "output": "0 -1 2 -3 3\n"
       },
       {
-        "input": "0 0",
-        "output": "0 1 0\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "1\n-7\n",
+        "output": "-7\n"
       }
     ],
-    "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
-    ],
+    "constraints": ["1 ≤ n ≤ 1000; |числа| ≤ 10⁹."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "std::sort(v.begin(), v.end(), [](long long a, long long b) { … }); — лямбда отвечает «должно ли a стоять раньше b».",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "Сравнивайте сначала модули (std::llabs из <cstdlib> или a < 0 ? -a : a), при равенстве — сами числа. Только строгие сравнения.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "10 3",
-        "expected": "13 11 13\n"
+        "stdin": "5\n3 -1 -3 2 0\n",
+        "expected": "0 -1 2 -3 3\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "0 0",
-        "expected": "0 1 0\n"
+        "stdin": "1\n-7\n",
+        "expected": "-7\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "-5 -2",
-        "expected": "-7 -4 -7\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "2\n5 -5\n",
+        "expected": "-5 5\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "1000 -1000",
-        "expected": "0 1001 0\n"
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "2\n-5 5\n",
+        "expected": "-5 5\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "4\n4 3 2 1\n",
+        "expected": "1 2 3 4\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "4\n-1 -2 -3 -4\n",
+        "expected": "-1 -2 -3 -4\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "3\n7 7 7\n",
+        "expected": "7 7 7\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "3\n1000000000 -1000000000 0\n",
+        "expected": "0 -1000000000 1000000000\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "6\n-2 2 -1 1 0 0\n",
+        "expected": "0 0 -1 1 -2 2\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "5\n10 -20 30 -40 50\n",
+        "expected": "10 -20 30 -40 50\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n\n\nint main() {\n    int value{}, delta{};\n    if (!(std::cin >> value >> delta)) return 1;\n    auto copy = value;\n    auto& alias = value;\n    alias += delta;\n    ++copy;\n    std::cout << value << ' ' << copy << ' ' << alias << '\\n';\n}\n",
-    "solutionExplanation": "auto выводит int, auto& — int&. alias изменяет value, инкремент copy — отдельный объект. Вывод типа происходит при компиляции. Копирование int дёшево; auto copy для большого контейнера могло бы означать линейное копирование всех элементов.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <algorithm>\n#include <cstdlib>\n#include <iostream>\n#include <vector>\n\nint main() {\n    int n;\n    if (!(std::cin >> n) || n < 1) {\n        return 0;\n    }\n    std::vector<long long> v(static_cast<std::size_t>(n));\n    for (auto &x : v) {\n        std::cin >> x;\n    }\n    std::sort(v.begin(), v.end(), [](long long a, long long b) {\n        if (std::llabs(a) != std::llabs(b)) {\n            return std::llabs(a) < std::llabs(b);\n        }\n        return a < b;\n    });\n    for (std::size_t i = 0; i < v.size(); i++) {\n        std::cout << v[i] << (i + 1 < v.size() ? ' ' : '\\n');\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Лямбда — функция сравнения «должно ли `a` стоять раньше `b`», написанная прямо в вызове `std::sort`. Порядок по двум ключам: сначала модуль, при равенстве — само число. Оба сравнения строгие, поэтому для равных чисел лямбда возвращает `false` в обе стороны — это требование `std::sort`.\n\nЧисла хранятся в `long long`, потому что модуль `int` может не поместиться в `int` (`-2147483648`), а `std::llabs` работает с `long long`. Чтение организовано циклом `for (auto &x : v)` — ссылка на каждый элемент.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-auto-task-2",
+      "title": "Порог",
+      "description": "Первая строка — `n` и порог `t`, вторая — `n` баллов. Напечатайте, сколько баллов не меньше порога, а на второй строке — номер (с 1) первого балла меньше порога или `все сдали`.\n\nИспользуйте `std::count_if` и `std::find_if` с лямбдами, захватывающими `t`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5 70\n55 72 90 41 88\n",
+          "output": "3\n1\n"
+        },
+        {
+          "input": "3 50\n50 60 70\n",
+          "output": "3\nвсе сдали\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; 0 ≤ баллы, t ≤ 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "auto passed = std::count_if(v.begin(), v.end(), [t](int s) { return s >= t; });",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "std::find_if возвращает итератор на первый подходящий элемент или v.end(), если такого нет. Номер элемента — it − v.begin() + 1.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5 70\n55 72 90 41 88\n",
+          "expected": "3\n1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3 50\n50 60 70\n",
+          "expected": "3\nвсе сдали\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 0\n0\n",
+          "expected": "1\nвсе сдали\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1 100\n99\n",
+          "expected": "0\n1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "4 60\n60 61 59 100\n",
+          "expected": "3\n3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "3 10\n0 0 0\n",
+          "expected": "0\n1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "5 50\n100 100 100 100 49\n",
+          "expected": "4\n5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "2 1\n1 0\n",
+          "expected": "1\n2\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "6 75\n80 85 90 95 100 75\n",
+          "expected": "6\nвсе сдали\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "3 100\n100 100 100\n",
+          "expected": "3\nвсе сдали\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <vector>\n\nint main() {\n    int n, t;\n    if (!(std::cin >> n >> t) || n < 1) {\n        return 0;\n    }\n    std::vector<int> scores(static_cast<std::size_t>(n));\n    for (auto &s : scores) {\n        std::cin >> s;\n    }\n    auto passed = std::count_if(scores.begin(), scores.end(), [t](int s) { return s >= t; });\n    auto failed = std::find_if(scores.begin(), scores.end(), [t](int s) { return s < t; });\n    std::cout << passed << '\\n';\n    if (failed == scores.end()) {\n        std::cout << \"все сдали\\n\";\n    } else {\n        std::cout << failed - scores.begin() + 1 << '\\n';\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Порог `t` — локальная переменная `main`, и лямбда получает её копию через захват `[t]`. Без захвата лямбда не видит локальных переменных: `[](int s) { return s >= t; }` не скомпилируется.\n\n`std::find_if` возвращает **итератор** — «указатель» на найденный элемент — или `scores.end()`, если ничего не нашлось. Это аналог `npos` у строк: результат обязательно сравнивают с `end()`. Разность итераторов вектора — расстояние между элементами, как разность указателей в C. Подробно об итераторах — в следующем уроке.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-auto-task-3",
+      "title": "Найди ошибку: копия элемента",
+      "description": "Программа читает `n` и `n` чисел, затем пары `i d` до конца ввода: к элементу с индексом `i` (с нуля) нужно прибавить `d`; некорректные индексы пропускаются. В конце печатается массив.\n\nПрибавления не применяются. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <vector>\n\nint main() {\n    int n;\n    if (!(std::cin >> n) || n < 1) {\n        return 0;\n    }\n    std::vector<long long> values(static_cast<std::size_t>(n));\n    for (auto &v : values) {\n        std::cin >> v;\n    }\n    int index;\n    long long delta;\n    while (std::cin >> index >> delta) {\n        if (index < 0 || index >= n) {\n            continue;\n        }\n        auto item = values[static_cast<std::size_t>(index)];\n        item += delta;\n    }\n    for (std::size_t i = 0; i < values.size(); i++) {\n        std::cout << values[i] << (i + 1 < values.size() ? ' ' : '\\n');\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\n1 2 3\n0 10\n2 -3\n",
+          "output": "11 2 0\n"
+        },
+        {
+          "input": "2\n5 5\n",
+          "output": "5 5\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; |числа|, |d| ≤ 10⁹; пар не больше 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какой тип выводит auto item = values[i]? Ссылку или копию?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "auto отбрасывает ссылку: item — копия элемента, и изменение копии не попадает в вектор. Нужно auto &item = values[i];.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\n1 2 3\n0 10\n2 -3\n",
+          "expected": "11 2 0\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\n5 5\n",
+          "expected": "5 5\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1\n0\n0 1\n0 1\n0 1\n",
+          "expected": "3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "3\n1 1 1\n5 100\n-1 100\n1 7\n",
+          "expected": "1 8 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "2\n1000000000 -1000000000\n0 1000000000\n1 -1000000000\n",
+          "expected": "2000000000 -2000000000\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "4\n0 0 0 0\n3 4\n2 3\n1 2\n0 1\n",
+          "expected": "1 2 3 4\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "2\n10 20\n1 -20\n",
+          "expected": "10 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "5\n1 2 3 4 5\n4 -5\n",
+          "expected": "1 2 3 4 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "3\n7 8 9\n1 0\n",
+          "expected": "7 8 9\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "2\n-1 -1\n0 2\n1 2\n",
+          "expected": "1 1\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <vector>\n\nint main() {\n    int n;\n    if (!(std::cin >> n) || n < 1) {\n        return 0;\n    }\n    std::vector<long long> values(static_cast<std::size_t>(n));\n    for (auto &v : values) {\n        std::cin >> v;\n    }\n    int index;\n    long long delta;\n    while (std::cin >> index >> delta) {\n        if (index < 0 || index >= n) {\n            continue;\n        }\n        auto &item = values[static_cast<std::size_t>(index)];\n        item += delta;\n    }\n    for (std::size_t i = 0; i < values.size(); i++) {\n        std::cout << values[i] << (i + 1 < values.size() ? ' ' : '\\n');\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`values[i]` возвращает ссылку на элемент, но `auto` при выводе типа отбрасывает ссылки: `auto item = values[i]` создаёт новую переменную `long long` со значением элемента. Прибавление меняет эту копию, и она исчезает в конце итерации. Компилятор не предупреждает: код корректен, просто делает не то.\n\n`auto &item` выводит ссылку на элемент, и изменения попадают в вектор. Правило стоит запомнить: если через переменную нужно менять объект — `auto &`, если только читать без копии — `const auto &`, если нужна независимая копия — `auto`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-auto-task-4",
+      "title": "Рейтинг",
+      "description": "Первая строка — `n`, дальше `n` строк `имя очки время`. Постройте рейтинг: больше очков — выше; при равных очках выше тот, у кого меньше время; при равенстве и очков, и времени — по имени в алфавитном порядке. Напечатайте строки `место. имя очки время`.\n\nХраните участников в `std::vector` структур и сортируйте `std::sort` с лямбдой.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\nAnn 10 50\nBob 12 70\nCid 10 40\n",
+          "output": "1. Bob 12 70\n2. Cid 10 40\n3. Ann 10 50\n"
+        },
+        {
+          "input": "2\nZoe 5 5\nAmy 5 5\n",
+          "output": "1. Amy 5 5\n2. Zoe 5 5\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 1000; имена — латинские буквы, различны; 0 ≤ очки ≤ 10 000; 0 ≤ время ≤ 10⁶."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "struct Entry { std::string name; int points; int time; }; Лямбда принимает два const Entry &.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сравнивайте по очереди: если очки различны — return a.points > b.points; иначе если время различно — return a.time < b.time; иначе — return a.name < b.name.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\nAnn 10 50\nBob 12 70\nCid 10 40\n",
+          "expected": "1. Bob 12 70\n2. Cid 10 40\n3. Ann 10 50\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\nZoe 5 5\nAmy 5 5\n",
+          "expected": "1. Amy 5 5\n2. Zoe 5 5\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Один участник",
+          "stdin": "1\nSolo 0 0\n",
+          "expected": "1. Solo 0 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "По очкам",
+          "stdin": "3\nA 1 1\nB 2 1\nC 3 1\n",
+          "expected": "1. C 3 1\n2. B 2 1\n3. A 1 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "По времени",
+          "stdin": "3\nA 5 3\nB 5 2\nC 5 1\n",
+          "expected": "1. C 5 1\n2. B 5 2\n3. A 5 3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "По имени",
+          "stdin": "3\nc 5 5\nb 5 5\na 5 5\n",
+          "expected": "1. a 5 5\n2. b 5 5\n3. c 5 5\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Крайние значения",
+          "stdin": "4\nX 10000 1000000\nY 10000 0\nZ 0 0\nW 0 1000000\n",
+          "expected": "1. Y 10000 0\n2. X 10000 1000000\n3. Z 0 0\n4. W 0 1000000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Смешанные",
+          "stdin": "4\nAa 3 9\nAb 3 9\nB 4 100\nC 3 8\n",
+          "expected": "1. B 4 100\n2. C 3 8\n3. Aa 3 9\n4. Ab 3 9\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Регистр в именах",
+          "stdin": "2\nlower 1 1\nUpper 1 1\n",
+          "expected": "1. Upper 1 1\n2. lower 1 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Обратный порядок",
+          "stdin": "5\nE 1 5\nD 2 4\nC 3 3\nB 4 2\nA 5 1\n",
+          "expected": "1. A 5 1\n2. B 4 2\n3. C 3 3\n4. D 2 4\n5. E 1 5\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <string>\n#include <vector>\n\nstruct Entry {\n    std::string name;\n    int points;\n    int time;\n};\n\nint main() {\n    int n;\n    if (!(std::cin >> n) || n < 1) {\n        return 0;\n    }\n    std::vector<Entry> entries(static_cast<std::size_t>(n));\n    for (auto &e : entries) {\n        std::cin >> e.name >> e.points >> e.time;\n    }\n    std::sort(entries.begin(), entries.end(), [](const Entry &a, const Entry &b) {\n        if (a.points != b.points) {\n            return a.points > b.points;\n        }\n        if (a.time != b.time) {\n            return a.time < b.time;\n        }\n        return a.name < b.name;\n    });\n    int place = 1;\n    for (const auto &e : entries) {\n        std::cout << place++ << \". \" << e.name << ' ' << e.points << ' ' << e.time << '\\n';\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Лямбда задаёт лексикографический порядок по трём ключам: следующий ключ сравнивается, только если предыдущие равны. Направление ключа задаёт знак сравнения: «больше очков — выше» — это `a.points > b.points`. Имена различны, поэтому порядок полный.\n\nПараметры лямбды — `const Entry &`: сортировка вызывает сравнение много раз, и копирование структуры со строкой на каждом вызове было бы заметным. Сравните с пузырьком из модуля «Алгоритмы»: там тот же порядок задавала отдельная функция, а сортировку приходилось писать самим; `std::sort` работает за `O(n log n)`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-auto-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «auto»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "auto убирает повтор типа и следует фактическому инициализатору. Он снижает шум, но auto без & неожиданно создаёт копию."
+        "id": "q1",
+        "question": "Какой тип у переменной s в объявлении auto s = \"hello\";?",
+        "explanation": "Строковый литерал — массив const char, и при выводе типа он превращается в указатель. Для std::string нужен явный тип или суффикс s.",
+        "options": ["const char *", "std::string", "char[6]", "auto"],
+        "correct": 0
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
-        "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
-        ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> v = {5, 6};\n    auto a = v[0];\n    auto &b = v[1];\n    a = 50;\n    b = 60;\n    std::cout << v[0] + v[1] << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "a — копия, изменение не попадает в вектор; b — ссылка. Вектор: 5 и 60.",
+        "type": "text",
+        "answers": ["65"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n\nint main() {\n    int base = 10;\n    auto add = [base](int x) { return x + base; };\n    base = 100;\n    std::cout << add(1) << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Захват по значению копирует base в момент создания лямбды — 10. Последующее изменение base на неё не влияет.",
+        "type": "text",
+        "answers": ["11"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n\nint main() {\n    int counter = 0;\n    auto tick = [&counter]() { counter++; };\n    tick();\n    tick();\n    tick();\n    std::cout << counter << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "[&counter] — захват по ссылке: лямбда меняет саму переменную.",
+        "type": "text",
+        "answers": ["3"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Почему функция сравнения для std::sort не должна использовать <=?",
+        "explanation": "std::sort требует строгого слабого порядка. Нарушение может привести к выходу сортировки за границы массива.",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "Сравнение должно означать «строго раньше»; с <= для равных элементов получается true в обе стороны — неопределённое поведение",
+          "Оператор <= медленнее",
+          "std::sort принимает только функции с <",
+          "Это не важно"
         ],
-        "correct": 0,
-        "explanation": "Используйте auto как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <algorithm>\n#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> v = {3, -1, 4, -1, 5, -9};\n    auto negatives = std::count_if(v.begin(), v.end(), [](int x) { return x < 0; });\n    std::sort(v.begin(), v.end(), [](int a, int b) { return a > b; });\n    std::cout << negatives << ' ' << v[0] << ' ' << v[5] << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Отрицательных три. Сортировка с a > b — по убыванию: первым 5, последним −9.",
+        "type": "text",
+        "answers": ["3 5 -9"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Какие объявления дают ссылку на элемент v[0] (v — std::vector<int>)?",
+        "explanation": "auto без & отбрасывает ссылку и создаёт копию. С & — ссылка, с const auto & — ссылка только для чтения.",
+        "type": "multiple",
+        "options": ["auto &x = v[0];", "const auto &x = v[0];", "auto x = v[0];", "int &x = v[0];"],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q8",
+        "question": "Когда лучше НЕ использовать auto?",
+        "explanation": "auto хорош, когда тип очевиден или неважен. Лямбду вообще нельзя сохранить иначе: у её типа нет имени.",
+        "options": [
+          "Когда тип важен для понимания кода и не виден из правой части",
+          "Для итераторов контейнеров",
+          "Для хранения лямбды",
+          "Когда справа явно написан тип, например std::string(\"x\")"
+        ],
+        "correct": 0
       }
     ]
   }

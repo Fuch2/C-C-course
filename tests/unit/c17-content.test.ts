@@ -16,7 +16,7 @@ describe('Модуль «Основы языка C»', () => {
     expect(lessons).toHaveLength(45);
     for (const [i, l] of lessons.entries()) {
       expect(l.order).toBe(i + 1);
-      expect(l.standard).toBe('c17');
+      expect(l.standard).toBe('c23');
       if (i > 0) {
         expect(l.previousLessonId).toBe(lessons[i - 1]!.id);
         expect(l.prerequisites).toEqual([lessons[i - 1]!.id]);

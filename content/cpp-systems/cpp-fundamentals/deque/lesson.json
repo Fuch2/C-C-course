@@ -1,120 +1,530 @@
 {
   "id": "cpp20-deque",
-  "title": "std::deque",
-  "description": "deque даёт быстрые операции с обоих концов. Сегментированное хранение обычно менее cache-friendly, чем vector, зато не требует сдвига при push_front.",
+  "title": "Двусторонняя очередь std::deque",
+  "description": "std::deque: быстрые операции на обоих концах и доступ по индексу; устройство блоками и что из этого следует; сдвиг индексов при push_front; адаптеры std::stack и std::queue; дек в алгоритмах скользящего окна.",
   "moduleId": "cpp-fundamentals",
-  "order": 14,
-  "difficulty": "advanced",
-  "estimatedMinutes": 50,
-  "prerequisites": ["cpp20-array"],
+  "order": 19,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 40,
+  "prerequisites": ["cpp23-ranges"],
   "objectives": [
-    "Объяснить, зачем появился std::deque и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Использовать std::deque для операций на обоих концах",
+    "Объяснять, чем deque отличается от vector по устройству и стоимости операций",
+    "Пользоваться адаптерами std::stack и std::queue",
+    "Применять дек в алгоритмах"
   ],
-  "tags": ["C++20", "основы C++", "std::deque"],
+  "tags": ["C++", "deque", "stack", "queue"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-deque-exercise",
-    "title": "Двусторонняя очередь команд",
-    "description": "Ввод q и команды L x, R x, O. L/R добавляют число на левый/правый конец std::deque<int>, O извлекает слева или печатает ПУСТО.",
-    "difficulty": "advanced",
+    "id": "cpp20-deque-task-1",
+    "title": "Палиндромы",
+    "description": "Каждая строка ввода — фраза. Напечатайте `да`, если её латинские буквы без учёта регистра читаются одинаково слева направо и справа налево (остальные символы игнорируются), иначе `нет`. Строка без букв считается палиндромом.\n\nСложите буквы в `std::deque<char>` и сравнивайте концы, снимая их.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "4 R 1 L 2 O O",
-        "output": "2\n1\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "A man, a plan, a canal: Panama\n",
+        "output": "да\n"
       },
       {
-        "input": "1 O",
-        "output": "ПУСТО\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "C++\nNever odd or even\n",
+        "output": "да\nда\n"
       }
     ],
-    "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
-    ],
+    "constraints": ["Строк не больше 30, длиной до 200 символов ASCII."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "Для каждой буквы добавьте в дек её строчную версию: для заглавной c − 'A' + 'a'.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "Пока в деке больше одного элемента: если front() != back() — не палиндром; иначе pop_front() и pop_back().",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "4 R 1 L 2 O O",
-        "expected": "2\n1\n"
+        "stdin": "A man, a plan, a canal: Panama\n",
+        "expected": "да\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "1 O",
-        "expected": "ПУСТО\n"
+        "stdin": "C++\nNever odd or even\n",
+        "expected": "да\nда\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "0",
-        "expected": ""
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "abc\n",
+        "expected": "нет\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "\n",
+        "expected": "да\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "!!!\n",
+        "expected": "да\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "ab\n",
+        "expected": "нет\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "Aa\n",
+        "expected": "да\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "Was it a car or a cat I saw?\n",
+        "expected": "да\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "No lemon, no melon\nHello\n",
+        "expected": "да\nнет\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "abca\n",
+        "expected": "нет\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <deque>\n\n\nint main() {\n    int q{}; if(!(std::cin>>q)||q<0||q>100)return 1; std::deque<int> d; for(int i=0;i<q;++i){char c{};std::cin>>c;if(c=='O'){if(d.empty())std::cout<<\"ПУСТО\\n\";else{std::cout<<d.front()<<'\\n';d.pop_front();}}else{int x{};std::cin>>x;if(c=='L')d.push_front(x);else if(c=='R')d.push_back(x);else return 1;}}\n}\n",
-    "solutionExplanation": "deque поддерживает быстрые операции на обоих концах. Внутреннее представление сегментированное, поэтому случайный доступ обычно чуть менее локален, чем vector; удаление спереди не требует сдвига всех элементов.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <deque>\n#include <iostream>\n#include <string>\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        std::deque<char> letters;\n        for (char c : line) {\n            if (c >= 'a' && c <= 'z') {\n                letters.push_back(c);\n            } else if (c >= 'A' && c <= 'Z') {\n                letters.push_back(static_cast<char>(c - 'A' + 'a'));\n            }\n        }\n        bool palindrome = true;\n        while (letters.size() > 1) {\n            if (letters.front() != letters.back()) {\n                palindrome = false;\n                break;\n            }\n            letters.pop_front();\n            letters.pop_back();\n        }\n        std::cout << (palindrome ? \"да\" : \"нет\") << '\\n';\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Палиндром проверяется сравнением крайних букв: если они равны, их можно отбросить и проверять оставшуюся середину. Дек удаляет элементы с обоих концов за `O(1)` — у вектора удаление из начала стоило бы `O(n)`, а вся проверка — `O(n²)`.\n\nЦикл продолжается, пока букв больше одной: средняя буква фразы нечётной длины ни с чем не сравнивается. Строка без букв даёт пустой дек, и цикл не выполняется ни разу — фраза считается палиндромом.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-deque-task-2",
+      "title": "Считалка",
+      "description": "По кругу стоят `n` человек с номерами от 1 до `n`. Считая с первого, выбывает каждый `k`-й; счёт продолжается со следующего. Напечатайте номера в порядке выбывания через пробел.\n\nМоделируйте круг очередью `std::queue<int>`: чтобы «пропустить» человека, переставьте его из начала очереди в конец.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "7 3\n",
+          "output": "3 6 2 7 5 1 4\n"
+        },
+        {
+          "input": "5 1\n",
+          "output": "1 2 3 4 5\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; 1 ≤ k ≤ 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Положите в очередь 1, 2, …, n. Пока она не пуста: k − 1 раз переставьте q.front() в конец (push, затем pop), затем выведите q.front() и удалите его.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сначала прочитайте front(), потом вызовите pop(): pop() значение не возвращает.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "7 3\n",
+          "expected": "3 6 2 7 5 1 4\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5 1\n",
+          "expected": "1 2 3 4 5\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 1\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1 5\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "2 2\n",
+          "expected": "2 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "5 2\n",
+          "expected": "2 4 1 5 3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "6 6\n",
+          "expected": "6 1 3 2 5 4\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "10 3\n",
+          "expected": "3 6 9 2 7 1 8 5 10 4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "4 100\n",
+          "expected": "4 1 3 2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "8 5\n",
+          "expected": "5 2 8 7 1 4 6 3\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <queue>\n\nint main() {\n    int n, k;\n    if (!(std::cin >> n >> k) || n < 1 || k < 1) {\n        return 0;\n    }\n    std::queue<int> circle;\n    for (int i = 1; i <= n; i++) {\n        circle.push(i);\n    }\n    bool first = true;\n    while (!circle.empty()) {\n        for (int i = 1; i < k; i++) {\n            circle.push(circle.front());\n            circle.pop();\n        }\n        std::cout << (first ? \"\" : \" \") << circle.front();\n        first = false;\n        circle.pop();\n    }\n    std::cout << '\\n';\n    return 0;\n}\n",
+      "solutionExplanation": "Очередь моделирует круг: начало очереди — тот, с кого сейчас идёт счёт. Пересчитанный человек уходит в конец и снова окажется впереди через полный круг. После `k − 1` перестановок в начале стоит `k`-й — он выбывает.\n\nКаждое выбывание стоит `O(k)` операций, весь алгоритм — `O(n · k)`, для `n = k = 1000` — миллион операций. Эта задача — знаменитая задача Иосифа Флавия; номер последнего выбывшего вычисляется и рекуррентной формулой за `O(n)`, но моделирование очередью нагляднее.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-deque-task-3",
+      "title": "Найди ошибку: плейлист",
+      "description": "Первая строка ввода — название первого трека; он сейчас играет. Дальше команды:\n\n- `add_back имя`, `add_front имя` — добавить трек в конец или начало плейлиста;\n- `next`, `prev` — перейти к следующему или предыдущему треку (на краю ничего не происходит);\n- `now` — напечатать играющий трек.\n\nПлейлист — `std::deque<std::string>`, играющий трек — индекс. После добавления в начало программа «перескакивает» на другой трек. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <deque>\n#include <iostream>\n#include <string>\n\nint main() {\n    std::string first;\n    if (!(std::cin >> first)) {\n        return 0;\n    }\n    std::deque<std::string> playlist = {first};\n    std::size_t current = 0;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"add_back\" || command == \"add_front\") {\n            std::string name;\n            std::cin >> name;\n            if (command == \"add_back\") {\n                playlist.push_back(name);\n            } else {\n                playlist.push_front(name);\n            }\n        } else if (command == \"next\") {\n            if (current + 1 < playlist.size()) {\n                current++;\n            }\n        } else if (command == \"prev\") {\n            if (current > 0) {\n                current--;\n            }\n        } else if (command == \"now\") {\n            std::cout << playlist[current] << '\\n';\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "song1\nadd_back song2\nnext\nnow\n",
+          "output": "song2\n"
+        },
+        {
+          "input": "b\nadd_front a\nnow\nprev\nnow\n",
+          "output": "b\na\n"
+        }
+      ],
+      "constraints": ["Команд не больше 1000; имена без пробелов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что происходит с индексами всех элементов дека после push_front?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Новый трек получает индекс 0, все остальные сдвигаются на единицу. Чтобы индекс по-прежнему указывал на играющий трек, после push_front увеличьте current.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "song1\nadd_back song2\nnext\nnow\n",
+          "expected": "song2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "b\nadd_front a\nnow\nprev\nnow\n",
+          "expected": "b\na\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "x\nnow\n",
+          "expected": "x\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "b\nadd_front a\nadd_front z\nnow\n",
+          "expected": "b\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "a\nadd_back b\nadd_back c\nnext\nnext\nnext\nnow\nadd_front z\nnow\n",
+          "expected": "c\nc\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "m\nadd_front l\nadd_back n\nnext\nnow\nprev\nprev\nprev\nnow\n",
+          "expected": "n\nl\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "one\nprev\nnow\nnext\nnow\n",
+          "expected": "one\none\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "c\nadd_front b\nadd_front a\nprev\nprev\nnow\n",
+          "expected": "a\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "q\nadd_back r\nadd_front p\nnext\nnow\n",
+          "expected": "r\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "k\nadd_front j\nadd_front i\nadd_front h\nnow\nnext\nnow\n",
+          "expected": "k\nk\n"
+        }
+      ],
+      "referenceSolution": "#include <deque>\n#include <iostream>\n#include <string>\n\nint main() {\n    std::string first;\n    if (!(std::cin >> first)) {\n        return 0;\n    }\n    std::deque<std::string> playlist = {first};\n    std::size_t current = 0;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"add_back\" || command == \"add_front\") {\n            std::string name;\n            std::cin >> name;\n            if (command == \"add_back\") {\n                playlist.push_back(name);\n            } else {\n                playlist.push_front(name);\n                current++;\n            }\n        } else if (command == \"next\") {\n            if (current + 1 < playlist.size()) {\n                current++;\n            }\n        } else if (command == \"prev\") {\n            if (current > 0) {\n                current--;\n            }\n        } else if (command == \"now\") {\n            std::cout << playlist[current] << '\\n';\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Играющий трек хранится индексом `current`. `push_front` ставит новый трек на позицию 0 и сдвигает все прежние элементы на одну позицию вправо — индекс играющего трека увеличивается на единицу, а переменная `current` остаётся прежней и теперь указывает на соседний трек.\n\nДобавление в конец индексы не меняет, поэтому ошибка видна только после `add_front`. Индекс в контейнере — это не «имя» элемента, а его текущая позиция; любая операция, которая сдвигает элементы, обязана обновлять сохранённые индексы.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-deque-task-4",
+      "title": "Сломать меньше стен",
+      "description": "Первая строка — `R` и `C`, дальше `R` строк карты: `.` — проход, `#` — стена. Нужно попасть из левого верхнего угла в правый нижний, двигаясь по сторонам клеток. Пройти через стену можно, сломав её. Напечатайте наименьшее число стен, которые придётся сломать (если стена стоит в стартовой или конечной клетке, её тоже нужно сломать).\n\nРешите задачу **поиском в ширину 0-1** на `std::deque`: переход в клетку-проход стоит 0, в клетку-стену — 1.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3 3\n.#.\n.#.\n.#.\n",
+          "output": "1\n"
+        },
+        {
+          "input": "2 3\n...\n##.\n",
+          "output": "0\n"
+        }
+      ],
+      "constraints": ["1 ≤ R, C ≤ 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "В обычном BFS все рёбра стоят 1. Если рёбра стоят 0 или 1, клетку, в которую попали по ребру 0, кладут в начало дека (push_front), а по ребру 1 — в конец (push_back). Тогда дек всегда упорядочен по расстоянию.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Храните dist для каждой клетки (начально — очень большое число). Улучшили dist[v] — положите v в дек. Клетка может попасть в дек несколько раз; при извлечении её можно обработать повторно — это не ломает ответ.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Стартовое расстояние — 1, если в старте стена, иначе 0.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 3\n.#.\n.#.\n.#.\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2 3\n...\n##.\n",
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна клетка",
+          "stdin": "1 1\n.\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Одна стена",
+          "stdin": "1 1\n#\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Коридор стен",
+          "stdin": "1 5\n.###.\n",
+          "expected": "3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Все стены",
+          "stdin": "3 3\n###\n###\n###\n",
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Обход дешевле",
+          "stdin": "3 4\n.#..\n.#.#\n...#\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Лабиринт стен",
+          "stdin": "4 4\n.###\n###.\n.###\n###.\n",
+          "expected": "4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Стены в углах",
+          "stdin": "2 2\n#.\n.#\n",
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Змейка без стен",
+          "stdin": "5 5\n.....\n####.\n.....\n.####\n.....\n",
+          "expected": "0\n"
+        }
+      ],
+      "referenceSolution": "#include <deque>\n#include <iostream>\n#include <string>\n#include <vector>\n\nint main() {\n    int rows, cols;\n    if (!(std::cin >> rows >> cols) || rows < 1 || cols < 1) {\n        return 0;\n    }\n    std::vector<std::string> map(static_cast<std::size_t>(rows));\n    for (auto &line : map) {\n        std::cin >> line;\n    }\n    auto cost = [&map](int r, int c) {\n        return map[static_cast<std::size_t>(r)][static_cast<std::size_t>(c)] == '#' ? 1 : 0;\n    };\n    const int infinity = 1 << 30;\n    std::vector<int> dist(static_cast<std::size_t>(rows * cols), infinity);\n    std::deque<int> cells;\n    dist[0] = cost(0, 0);\n    cells.push_back(0);\n    const int dr[] = {-1, 1, 0, 0}, dc[] = {0, 0, -1, 1};\n    while (!cells.empty()) {\n        int u = cells.front();\n        cells.pop_front();\n        int r = u / cols, c = u % cols;\n        for (int d = 0; d < 4; d++) {\n            int nr = r + dr[d], nc = c + dc[d];\n            if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) {\n                continue;\n            }\n            int v = nr * cols + nc, w = cost(nr, nc);\n            if (dist[static_cast<std::size_t>(u)] + w < dist[static_cast<std::size_t>(v)]) {\n                dist[static_cast<std::size_t>(v)] = dist[static_cast<std::size_t>(u)] + w;\n                if (w == 0) {\n                    cells.push_front(v);\n                } else {\n                    cells.push_back(v);\n                }\n            }\n        }\n    }\n    std::cout << dist[static_cast<std::size_t>(rows * cols - 1)] << '\\n';\n    return 0;\n}\n",
+      "solutionExplanation": "Обычный поиск в ширину находит кратчайшие пути, когда все рёбра стоят одинаково: очередь всегда содержит вершины с расстоянием `d`, за ними — `d + 1`. Если рёбра стоят 0 или 1, этот порядок сохраняется, если вершину, достигнутую по ребру веса 0, класть **в начало** — у неё то же расстояние, что у текущей, — а по ребру веса 1 — **в конец**. Для этого нужна структура с быстрыми операциями на обоих концах — дек.\n\nВершина может попасть в дек несколько раз, если её расстояние улучшилось, но каждое улучшение уменьшает расстояние, а расстояния ограничены, поэтому работа остаётся `O(R · C)`. Это частный случай алгоритма Дейкстры, где очередь с приоритетом заменена деком.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-deque-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «std::deque»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "deque даёт быстрые операции с обоих концов. Сегментированное хранение обычно менее cache-friendly, чем vector, зато не требует сдвига при push_front."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <deque>\n#include <iostream>\n\nint main() {\n    std::deque<int> d;\n    d.push_back(1);\n    d.push_front(2);\n    d.push_back(3);\n    d.push_front(4);\n    std::cout << d[0] << d[1] << d[2] << d[3] << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Добавления в начало ставят элементы слева: 1 → 2 1 → 2 1 3 → 4 2 1 3.",
+        "type": "text",
+        "answers": ["4213"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
-        "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
-        ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "id": "q2",
+        "question": "Какие операции std::deque выполняются за O(1)?",
+        "explanation": "Вставка в середину сдвигает элементы — O(n), как у вектора.",
+        "type": "multiple",
+        "options": ["push_front", "pop_back", "Доступ d[i]", "Вставка в середину"],
+        "correct": [0, 1, 2]
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Почему std::deque нельзя передать функции C, ожидающей указатель на массив элементов?",
+        "explanation": "Непрерывное хранение гарантирует std::vector — у него есть data(). У дека такой гарантии нет.",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "Элементы дека хранятся в нескольких блоках, а не одним непрерывным массивом",
+          "Дек хранит элементы в обратном порядке",
+          "У дека нет метода size",
+          "Можно, это безопасно"
         ],
-        "correct": 0,
-        "explanation": "Используйте std::deque как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <stack>\n\nint main() {\n    std::stack<int> s;\n    s.push(1);\n    s.push(2);\n    s.push(3);\n    s.pop();\n    s.push(4);\n    std::cout << s.top() << ' ' << s.size() << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "После pop стек 1 2, затем push(4): вершина 4, элементов три.",
+        "type": "text",
+        "answers": ["4 3"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Почему строка int x = q.pop(); не компилируется для std::queue<int> q?",
+        "explanation": "Сначала читают q.front(), затем вызывают q.pop().",
+        "options": [
+          "pop() возвращает void — он только удаляет элемент",
+          "pop() нельзя вызывать у очереди",
+          "Нужно писать q.pop_front()",
+          "pop() возвращает ссылку, которую нельзя присвоить"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что произойдёт с индексом элемента \"x\" в деке {\"a\", \"x\"} после push_front(\"b\")?",
+        "explanation": "Новый элемент получает индекс 0, и все прежние сдвигаются на единицу.",
+        "options": [
+          "Был 1, станет 2",
+          "Останется 1",
+          "Станет 0",
+          "Станет недействительным навсегда"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <queue>\n\nint main() {\n    std::queue<int> q;\n    for (int i = 1; i <= 5; i++) {\n        q.push(i);\n    }\n    q.push(q.front());\n    q.pop();\n    q.push(q.front());\n    q.pop();\n    std::cout << q.front() << ' ' << q.back() << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Дважды первый элемент уходит в конец: 1 2 3 4 5 → 2 3 4 5 1 → 3 4 5 1 2.",
+        "type": "text",
+        "answers": ["3 2"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q8",
+        "question": "Какой контейнер по умолчанию лежит в основе std::stack и std::queue?",
+        "explanation": "По умолчанию адаптеры используют std::deque; другой контейнер можно указать вторым параметром шаблона.",
+        "type": "text",
+        "answers": ["std::deque", "deque"],
+        "placeholder": "Контейнер"
       }
     ]
   }

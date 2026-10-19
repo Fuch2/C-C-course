@@ -1,120 +1,532 @@
 {
   "id": "cpp20-unordered-map",
-  "title": "std::unordered_map",
-  "description": "unordered_map использует хеширование и даёт ожидаемое O(1). Порядок не определён, а плохие хеши дают O(n).",
+  "title": "Хеш-таблица std::unordered_map",
+  "description": "std::unordered_map как хеш-таблица стандартной библиотеки; общий с map интерфейс; неопределённый порядок обхода и упорядоченный вывод; сложность, коэффициент заполнения и reserve; требования к ключу; выбор между map и unordered_map.",
   "moduleId": "cpp-fundamentals",
-  "order": 16,
-  "difficulty": "advanced",
-  "estimatedMinutes": 50,
+  "order": 24,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
   "prerequisites": ["cpp20-map"],
   "objectives": [
-    "Объяснить, зачем появился std::unordered_map и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Пользоваться std::unordered_map для быстрого поиска по ключу",
+    "Получать упорядоченный вывод из неупорядоченного контейнера",
+    "Объяснять сложность операций и роль коэффициента заполнения",
+    "Выбирать между std::map и std::unordered_map"
   ],
-  "tags": ["C++20", "основы C++", "std::unordered_map"],
+  "tags": ["C++", "unordered_map", "Хеш-таблица"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-unordered-map-exercise",
-    "title": "Частоты событий",
-    "description": "Ввод n имён, затем q запросов. Подсчитайте частоты в std::unordered_map и выведите частоту каждого запроса; отсутствующий ключ — 0.",
-    "difficulty": "advanced",
+    "id": "cpp20-unordered-map-task-1",
+    "title": "Первый повтор",
+    "description": "До конца ввода идут целые числа. Найдите первое число, которое встретилось повторно (то, чьё второе появление раньше всех остальных повторов), и напечатайте `значение V, позиции I J` — номера первого и второго появления (с 1). Если повторов нет, напечатайте `повторов нет`.\n\nРешите задачу за `O(n)` в среднем с `std::unordered_map`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "3 a b a 3 a c b",
-        "output": "2\n0\n1\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "3 1 4 1 5 9 2 6 5\n",
+        "output": "значение 1, позиции 2 4\n"
       },
       {
-        "input": "0 2 x y",
-        "output": "0\n0\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "1 2 3\n",
+        "output": "повторов нет\n"
       }
     ],
-    "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
-    ],
+    "constraints": ["Чисел не больше 10⁴; |числа| ≤ 10¹⁸."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "Храните для каждого значения позицию первого появления: std::unordered_map<long long, int> first.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "Для очередного числа: если оно уже есть в first — это ответ, печатайте и завершайте программу; иначе запомните позицию.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "3 a b a 3 a c b",
-        "expected": "2\n0\n1\n"
+        "stdin": "3 1 4 1 5 9 2 6 5\n",
+        "expected": "значение 1, позиции 2 4\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "0 2 x y",
-        "expected": "0\n0\n"
+        "stdin": "1 2 3\n",
+        "expected": "повторов нет\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "4 x x x x 1 x",
-        "expected": "4\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "",
+        "expected": "повторов нет\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "7 7\n",
+        "expected": "значение 7, позиции 1 2\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "1 2 3 2 1\n",
+        "expected": "значение 2, позиции 2 4\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "5 6 7 8 5 6\n",
+        "expected": "значение 5, позиции 1 5\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "1000000000000000000 -1 1000000000000000000\n",
+        "expected": "значение 1000000000000000000, позиции 1 3\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "0 1 2 3 4 5 6 7 8 9 0\n",
+        "expected": "значение 0, позиции 1 11\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "-3 3 -3 3\n",
+        "expected": "значение -3, позиции 1 3\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "9 8 7 8 9\n",
+        "expected": "значение 8, позиции 2 4\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <unordered_map>\n#include <string>\n\n\nint main() {\n    int n{};if(!(std::cin>>n)||n<0||n>100)return 1;std::unordered_map<std::string,int> m;for(int i=0;i<n;++i){std::string s;std::cin>>s;++m[s];}int q{};std::cin>>q;for(int i=0;i<q;++i){std::string s;std::cin>>s;auto it=m.find(s);std::cout<<(it==m.end()?0:it->second)<<'\\n';}\n}\n",
-    "solutionExplanation": "Хеш-таблица даёт ожидаемое O(1), но не гарантирует порядок и имеет худший O(n). find не создаёт отсутствующий ключ, в отличие от operator[].",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <iostream>\n#include <unordered_map>\n\nint main() {\n    std::unordered_map<long long, int> first;\n    long long x;\n    int position = 0;\n    while (std::cin >> x) {\n        position++;\n        auto it = first.find(x);\n        if (it != first.end()) {\n            std::cout << \"значение \" << x << \", позиции \" << it->second << ' ' << position << '\\n';\n            return 0;\n        }\n        first[x] = position;\n    }\n    std::cout << \"повторов нет\\n\";\n    return 0;\n}\n",
+    "solutionExplanation": "Первый повтор — первое число, которое уже есть в таблице в момент чтения. Поиск `find` в хеш-таблице — `O(1)` в среднем, весь проход — `O(n)`. Без таблицы пришлось бы сравнивать каждое число со всеми предыдущими — `O(n²)`.\n\nПорядок обхода таблицы здесь не нужен: таблица только отвечает на вопрос «встречалось ли значение и где». Числа до 10¹⁸ — ключи `long long`; прямая адресация из модуля «Алгоритмы» на таком диапазоне невозможна.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-unordered-map-task-2",
+      "title": "Анаграммы",
+      "description": "До конца ввода идут слова из строчных латинских букв. Сгруппируйте анаграммы — слова из одних и тех же букв — и напечатайте каждую группу в отдельной строке: слова группы в алфавитном порядке через пробел (повторы слов сохраняются). Группы упорядочьте по первому слову.\n\nИспользуйте `std::unordered_map<std::string, std::vector<std::string>>`, где ключ — буквы слова, отсортированные по алфавиту.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "listen silent enlist google tinsel cat act\n",
+          "output": "act cat\nenlist listen silent tinsel\ngoogle\n"
+        },
+        {
+          "input": "a\n",
+          "output": "a\n"
+        }
+      ],
+      "constraints": ["Слов не больше 1000; длина слова до 20."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Ключ группы: std::string key = word; std::sort(key.begin(), key.end()); — у анаграмм ключи совпадают. groups[key].push_back(word).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Порядок групп в unordered_map не определён: переложите группы в вектор, отсортируйте слова внутри каждой группы, затем сами группы — по первому слову.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "listen silent enlist google tinsel cat act\n",
+          "expected": "act cat\nenlist listen silent tinsel\ngoogle\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "a\n",
+          "expected": "a\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-2",
+          "name": "Повтор слова",
+          "stdin": "ab ba ab\n",
+          "expected": "ab ab ba\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Без анаграмм",
+          "stdin": "abc def ghi\n",
+          "expected": "abc\ndef\nghi\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Большая группа",
+          "stdin": "stop pots tops opts post spot\n",
+          "expected": "opts post pots spot stop tops\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Разные длины",
+          "stdin": "z y x zz\n",
+          "expected": "x\ny\nz\nzz\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Две группы",
+          "stdin": "dusty study night thing\n",
+          "expected": "dusty study\nnight thing\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Похожие наборы",
+          "stdin": "aab aba baa abb\n",
+          "expected": "aab aba baa\nabb\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "С одиночкой",
+          "stdin": "evil vile live veil a\n",
+          "expected": "a\nevil live veil vile\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <string>\n#include <unordered_map>\n#include <vector>\n\nint main() {\n    std::unordered_map<std::string, std::vector<std::string>> groups;\n    std::string word;\n    while (std::cin >> word) {\n        std::string key = word;\n        std::sort(key.begin(), key.end());\n        groups[key].push_back(word);\n    }\n    std::vector<std::vector<std::string>> result;\n    for (auto &[key, words] : groups) {\n        std::sort(words.begin(), words.end());\n        result.push_back(words);\n    }\n    std::sort(result.begin(), result.end());\n    for (const auto &group : result) {\n        for (std::size_t i = 0; i < group.size(); i++) {\n            std::cout << (i ? \" \" : \"\") << group[i];\n        }\n        std::cout << '\\n';\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Анаграммы — слова с одинаковым набором букв, а набор букв удобно представить отсортированной строкой: `listen` и `silent` дают одинаковый ключ `eilnst`. Значение в таблице — вектор слов группы, и `groups[key].push_back(word)` создаёт пустой вектор для новой группы — здесь создание по `operator[]` полезно.\n\nТаблица группирует за `O(1)` на слово (плюс сортировка букв), но порядок групп в ней случаен. Поэтому группы перекладываются в вектор и сортируются: векторы строк сравниваются лексикографически, то есть по первому слову, затем по второму. Так вывод одинаков на любом компиляторе.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-unordered-map-task-3",
+      "title": "Найди ошибку: отчёт по словам",
+      "description": "Программа читает слова до конца ввода и печатает каждое различное слово и число его вхождений **в алфавитном порядке**.\n\nСлова печатаются не по алфавиту. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <string>\n#include <unordered_map>\n\nint main() {\n    std::unordered_map<std::string, int> count;\n    std::string word;\n    while (std::cin >> word) {\n        ++count[word];\n    }\n    for (const auto &[w, c] : count) {\n        std::cout << w << ' ' << c << '\\n';\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "to be or not to be\n",
+          "output": "be 2\nnot 1\nor 1\nto 2\n"
+        },
+        {
+          "input": "z\n",
+          "output": "z 1\n"
+        }
+      ],
+      "constraints": ["Слов не больше 1000; слова из латинских букв."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "В каком порядке обход std::unordered_map выдаёт элементы?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Порядок обхода хеш-таблицы не определён. Используйте std::map — он обходит ключи по возрастанию, — или отсортируйте пары перед печатью.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "to be or not to be\n",
+          "expected": "be 2\nnot 1\nor 1\nto 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "z\n",
+          "expected": "z 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "banana apple cherry\n",
+          "expected": "apple 1\nbanana 1\ncherry 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "d c b a\n",
+          "expected": "a 1\nb 1\nc 1\nd 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "one two three four five six seven\n",
+          "expected": "five 1\nfour 1\none 1\nseven 1\nsix 1\nthree 1\ntwo 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "x y z x y z\n",
+          "expected": "x 2\ny 2\nz 2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "alpha beta gamma delta epsilon\n",
+          "expected": "alpha 1\nbeta 1\ndelta 1\nepsilon 1\ngamma 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "zeta eta theta iota kappa lambda mu\n",
+          "expected": "eta 1\niota 1\nkappa 1\nlambda 1\nmu 1\ntheta 1\nzeta 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "b a\n",
+          "expected": "a 1\nb 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "red green blue red green red\n",
+          "expected": "blue 1\ngreen 2\nred 3\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <string>\n\nint main() {\n    std::map<std::string, int> count;\n    std::string word;\n    while (std::cin >> word) {\n        ++count[word];\n    }\n    for (const auto &[w, c] : count) {\n        std::cout << w << ' ' << c << '\\n';\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`std::unordered_map` — хеш-таблица, и обход идёт по корзинам, а не по ключам. Порядок зависит от хеш-функции, числа корзин и истории вставок; стандарт его не определяет. На одних данных он может случайно совпасть с алфавитным, на других — нет, а на другом компиляторе — оказаться иным.\n\nЕсли вывод должен быть упорядоченным, проще всего взять `std::map`: интерфейс тот же, а обход идёт по возрастанию ключей. Если данных много и важна скорость подсчёта, считают в `unordered_map`, а перед печатью перекладывают пары в вектор и сортируют.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-unordered-map-task-4",
+      "title": "Отрезки с заданной суммой",
+      "description": "Первая строка — `n` и `k`, вторая — `n` целых чисел (возможно отрицательных). Напечатайте, сколько существует отрезков подряд идущих элементов с суммой ровно `k`.\n\nПеребор всех отрезков — `O(n²)`; решите задачу за `O(n)` в среднем: префиксные суммы и хеш-таблица.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5 3\n1 2 1 2 1\n",
+          "output": "4\n"
+        },
+        {
+          "input": "4 0\n1 -1 1 -1\n",
+          "output": "4\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 10⁵; |числа| ≤ 10⁴; |k| ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сумма отрезка (i, j] — это prefix[j] − prefix[i]. Отрезок, кончающийся в j, имеет сумму k, если prefix[i] = prefix[j] − k для некоторого i < j.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Идите по массиву, поддерживая текущую префиксную сумму и таблицу «значение префиксной суммы → сколько раз встречалось». Перед первым элементом встречалась сумма 0.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Для каждого j прибавьте к ответу count[prefix − k], затем увеличьте count[prefix]. Ответ бывает до n²/2 — long long.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5 3\n1 2 1 2 1\n",
+          "expected": "4\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "4 0\n1 -1 1 -1\n",
+          "expected": "4\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Один элемент",
+          "stdin": "1 5\n5\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Нет отрезков",
+          "stdin": "1 5\n4\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Все нули",
+          "stdin": "5 0\n0 0 0 0 0\n",
+          "expected": "15\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Единицы",
+          "stdin": "6 2\n1 1 1 1 1 1\n",
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Отрицательная сумма",
+          "stdin": "5 -3\n-1 -2 3 -3 0\n",
+          "expected": "5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Недостижимая сумма",
+          "stdin": "4 1000000000\n1 2 3 4\n",
+          "expected": "0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смешанные",
+          "stdin": "6 5\n2 3 -1 4 1 -2\n",
+          "expected": "3\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Чередование",
+          "stdin": "7 0\n3 -3 3 -3 3 -3 3\n",
+          "expected": "12\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <unordered_map>\n\nint main() {\n    int n;\n    long long k;\n    if (!(std::cin >> n >> k) || n < 1) {\n        return 0;\n    }\n    std::unordered_map<long long, long long> count;\n    count.reserve(static_cast<std::size_t>(n) + 1);\n    count[0] = 1;\n    long long prefix = 0, answer = 0;\n    for (int j = 0; j < n; j++) {\n        long long x;\n        std::cin >> x;\n        prefix += x;\n        auto it = count.find(prefix - k);\n        if (it != count.end()) {\n            answer += it->second;\n        }\n        ++count[prefix];\n    }\n    std::cout << answer << '\\n';\n    return 0;\n}\n",
+      "solutionExplanation": "Отрезок с суммой `k`, кончающийся в позиции `j`, — это более ранняя префиксная сумма, равная `prefix_j − k`. Если таблица помнит, сколько раз каждое значение префиксной суммы уже встречалось, то число таких отрезков — одно обращение к таблице. Пустой префикс (сумма 0 до первого элемента) записан заранее: он отвечает за отрезки, начинающиеся с первого элемента.\n\nС отрицательными числами двух указателей из модуля «Алгоритмы» не хватит: сумма окна не монотонна. Хеш-таблица решает задачу за `O(n)` в среднем; поиск идёт через `find`, чтобы не создавать ключи для каждой проверки — иначе таблица разрасталась бы вдвое. `reserve` выделяет корзины сразу под все префиксные суммы.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-unordered-map-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «std::unordered_map»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "unordered_map использует хеширование и даёт ожидаемое O(1). Порядок не определён, а плохие хеши дают O(n)."
+        "id": "q1",
+        "question": "Какова средняя сложность поиска по ключу в std::unordered_map?",
+        "explanation": "Это хеш-таблица: в среднем O(1). В худшем случае, если ключи попали в одну корзину, — O(n).",
+        "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+        "correct": 0
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
+        "id": "q2",
+        "question": "В каком порядке обход std::unordered_map выдаёт элементы?",
+        "explanation": "Стандарт порядок не задаёт. Для упорядоченного вывода ключи сортируют или используют std::map.",
         "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
+          "В неопределённом порядке, зависящем от хеш-функции и числа корзин",
+          "По возрастанию ключей",
+          "В порядке вставки",
+          "По убыванию значений"
         ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "correct": 0
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <string>\n#include <unordered_map>\n\nint main() {\n    std::unordered_map<std::string, int> m;\n    m[\"a\"] = 1;\n    if (m[\"b\"] == 0) {\n        m[\"c\"] = 3;\n    }\n    std::cout << m.size() << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Проверка через m[\"b\"] создала ключ b со значением 0, затем добавился c: всего три элемента.",
+        "type": "text",
+        "answers": ["3"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Какие типы можно использовать как ключ std::unordered_map без дополнительного кода?",
+        "explanation": "Для std::pair стандартной хеш-функции нет. Для чисел, символов и строк — есть.",
+        "type": "multiple",
+        "options": ["int", "std::string", "std::pair<int, int>", "char"],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q5",
+        "question": "Когда лучше выбрать std::map, а не std::unordered_map?",
+        "explanation": "Порядок, диапазоны и ключи без хеша — для дерева. Чистый поиск по ключу обычно быстрее в хеш-таблице.",
+        "type": "multiple",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "Нужен обход в порядке ключей",
+          "Нужны запросы «все ключи от a до b»",
+          "Нужен только быстрый поиск по строковому ключу среди миллиона элементов",
+          "Ключ — пара чисел, и писать хеш-функцию не хочется"
         ],
-        "correct": 0,
-        "explanation": "Используйте std::unordered_map как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q6",
+        "question": "Зачем вызывать reserve(n) перед вставкой n элементов?",
+        "explanation": "Каждая перестройка перераспределяет все элементы. reserve делает это один раз заранее.",
+        "options": [
+          "Чтобы заранее выделить корзины и избежать перестроек таблицы при росте",
+          "Чтобы элементы обходились по порядку",
+          "Чтобы ограничить размер таблицы n элементами",
+          "Без reserve вставка невозможна"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <unordered_map>\n\nint main() {\n    std::unordered_map<int, int> seen;\n    int data[] = {5, 3, 5, 7, 3, 5};\n    for (int x : data) {\n        ++seen[x];\n    }\n    std::cout << seen.size() << ' ' << seen[5] << ' ' << seen.count(9) << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Различных значений три (5, 3, 7); пятёрка встретилась трижды; count не создаёт ключ 9 и возвращает 0.",
+        "type": "text",
+        "answers": ["3 3 0"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q8",
+        "question": "Что делает таблица, когда load_factor() превышает max_load_factor()?",
+        "explanation": "Это рост с перераспределением из урока о хеш-таблицах: амортизированно O(1) на вставку.",
+        "options": [
+          "Увеличивает число корзин и перераспределяет все элементы",
+          "Отказывается вставлять новые элементы",
+          "Удаляет старые элементы",
+          "Ничего"
+        ],
+        "correct": 0
       }
     ]
   }

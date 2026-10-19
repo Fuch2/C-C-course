@@ -1,121 +1,523 @@
 {
   "id": "cpp20-vector",
-  "title": "std::vector",
-  "description": "vector — плотный растущий массив с отличной locality. Он быстрее списка для обхода, но вставка в середину сдвигает элементы.",
+  "title": "Динамический массив std::vector",
+  "description": "std::vector как готовый динамический массив; способы создания и разница круглых и фигурных скобок; push_back, pop_back, front, back, at; размер и ёмкость, reserve и resize; insert и erase по итератору; вектор векторов; передача в функции и возврат по значению.",
   "moduleId": "cpp-fundamentals",
-  "order": 12,
+  "order": 15,
   "difficulty": "intermediate",
   "estimatedMinutes": 50,
-  "prerequisites": ["cpp20-default-arguments"],
+  "prerequisites": ["cpp20-enum-class"],
   "objectives": [
-    "Объяснить, зачем появился std::vector и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Создавать векторы и выбирать подходящий конструктор",
+    "Добавлять, читать и удалять элементы, понимая стоимость операций",
+    "Различать размер и ёмкость, reserve и resize",
+    "Работать с двумерными векторами и возвращать векторы из функций"
   ],
-  "tags": ["C++20", "основы C++", "std::vector"],
+  "tags": ["C++", "vector", "Контейнеры"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-vector-exercise",
-    "title": "Очистка отрицательных измерений",
-    "description": "Прочитайте n (0…100) и n целых значений. Сохраните их в std::vector<int>, удалите отрицательные через std::erase_if и выведите оставшиеся через пробел.",
-    "difficulty": "intermediate",
+    "id": "cpp20-vector-task-1",
+    "title": "Чётные и нечётные",
+    "description": "До конца ввода идут целые числа. Разложите их в два вектора — чётные и нечётные, сохраняя порядок, — и напечатайте две строки: `чётные: …` и `нечётные: …`. Если в группе нет чисел, вместо списка напечатайте `нет`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "4 3 -1 0 -2",
-        "output": "3 0\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "3 8 -2 7 0\n",
+        "output": "чётные: 8 -2 0\nнечётные: 3 7\n"
       },
       {
-        "input": "0",
-        "output": "\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "",
+        "output": "чётные: нет\nнечётные: нет\n"
       }
     ],
-    "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
-    ],
+    "constraints": ["Чисел не больше 1000; |числа| ≤ 10⁹."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "Два вектора и push_back в нужный. Чётность — x % 2 == 0 (для отрицательных нечётных остаток равен −1, поэтому проверяйте именно равенство нулю).",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "Печать удобно вынести в функцию void print(const std::string &title, const std::vector<long long> &v).",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "4 3 -1 0 -2",
-        "expected": "3 0\n"
+        "stdin": "3 8 -2 7 0\n",
+        "expected": "чётные: 8 -2 0\nнечётные: 3 7\n"
       },
-      { "id": "case-2", "name": "Пример 2", "stdin": "0", "expected": "\n" }
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "",
+        "expected": "чётные: нет\nнечётные: нет\n"
+      }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "3 -1 -2 -3",
-        "expected": "\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "1 3 5\n",
+        "expected": "чётные: нет\nнечётные: 1 3 5\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "3 1 2 3",
-        "expected": "1 2 3\n"
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "2 4 6\n",
+        "expected": "чётные: 2 4 6\nнечётные: нет\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "-1 -2 -3\n",
+        "expected": "чётные: -2\nнечётные: -1 -3\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "0\n",
+        "expected": "чётные: 0\nнечётные: нет\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "1000000000 -999999999\n",
+        "expected": "чётные: 1000000000\nнечётные: -999999999\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "7\n",
+        "expected": "чётные: нет\nнечётные: 7\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "10 11 12 13 14 15\n",
+        "expected": "чётные: 10 12 14\nнечётные: 11 13 15\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "-4 4 -5 5\n",
+        "expected": "чётные: -4 4\nнечётные: -5 5\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <vector>\n#include <algorithm>\n\n\nint main() {\n    int n{}; if (!(std::cin>>n)||n<0||n>100) return 1; std::vector<int> v; for(int i=0,x;i<n;++i){if(!(std::cin>>x))return 1;v.push_back(x);} std::erase_if(v,[](int x){return x<0;}); for(std::size_t i=0;i<v.size();++i) std::cout<<(i?\" \":\"\")<<v[i]; std::cout<<'\\n';\n}\n",
-    "solutionExplanation": "erase_if уплотняет вектор, сохраняя порядок. Доступ к элементам плотный и обычно хорошо использует кеш. Фильтрация O(n), память контейнера O(n).",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <iostream>\n#include <string>\n#include <vector>\n\nvoid print(const std::string &title, const std::vector<long long> &v) {\n    std::cout << title << ':';\n    if (v.empty()) {\n        std::cout << \" нет\";\n    }\n    for (long long x : v) {\n        std::cout << ' ' << x;\n    }\n    std::cout << '\\n';\n}\n\nint main() {\n    std::vector<long long> even, odd;\n    long long x;\n    while (std::cin >> x) {\n        (x % 2 == 0 ? even : odd).push_back(x);\n    }\n    print(\"чётные\", even);\n    print(\"нечётные\", odd);\n    return 0;\n}\n",
+    "solutionExplanation": "Векторы растут сами, поэтому заранее знать, сколько будет чётных чисел, не нужно — в C пришлось бы выделять массивы с запасом или считать дважды. Выражение `(x % 2 == 0 ? even : odd)` выбирает **ссылку** на один из векторов, и `push_back` добавляет в него.\n\nПроверка чётности — именно `x % 2 == 0`: для отрицательного нечётного числа остаток в C++ равен −1, и условие `x % 2 == 1` ошибочно отнесло бы его к чётным.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-vector-task-2",
+      "title": "Транспонирование",
+      "description": "Первая строка — `R` и `C`, дальше `R` строк по `C` целых чисел. Напечатайте транспонированную матрицу: `C` строк по `R` чисел через пробел (строка `j` результата — столбец `j` исходной матрицы).\n\nХраните матрицу в `std::vector<std::vector<int>>`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2 3\n1 2 3\n4 5 6\n",
+          "output": "1 4\n2 5\n3 6\n"
+        },
+        {
+          "input": "1 1\n7\n",
+          "output": "7\n"
+        }
+      ],
+      "constraints": ["1 ≤ R, C ≤ 100; числа int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Создайте матрицу нужного размера: std::vector<std::vector<int>> m(R, std::vector<int>(C)); и прочитайте m[r][c].",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "При печати внешний цикл идёт по столбцам c, внутренний — по строкам r: печатается m[r][c].",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2 3\n1 2 3\n4 5 6\n",
+          "expected": "1 4\n2 5\n3 6\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1 1\n7\n",
+          "expected": "7\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 4\n1 2 3 4\n",
+          "expected": "1\n2\n3\n4\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "4 1\n1\n2\n3\n4\n",
+          "expected": "1 2 3 4\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "2 2\n1 2\n3 4\n",
+          "expected": "1 3\n2 4\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "3 3\n1 2 3\n4 5 6\n7 8 9\n",
+          "expected": "1 4 7\n2 5 8\n3 6 9\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "2 2\n-1 -2\n-3 -4\n",
+          "expected": "-1 -3\n-2 -4\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "3 2\n2147483647 0\n0 -2147483648\n5 5\n",
+          "expected": "2147483647 0 5\n0 -2147483648 5\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "2 5\n1 1 1 1 1\n2 2 2 2 2\n",
+          "expected": "1 2\n1 2\n1 2\n1 2\n1 2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "3 4\n1 2 3 4\n5 6 7 8\n9 10 11 12\n",
+          "expected": "1 5 9\n2 6 10\n3 7 11\n4 8 12\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <vector>\n\nint main() {\n    int rows, cols;\n    if (!(std::cin >> rows >> cols) || rows < 1 || cols < 1) {\n        return 0;\n    }\n    std::vector<std::vector<int>> m(static_cast<std::size_t>(rows), std::vector<int>(static_cast<std::size_t>(cols)));\n    for (auto &row : m) {\n        for (int &x : row) {\n            std::cin >> x;\n        }\n    }\n    for (int c = 0; c < cols; c++) {\n        for (int r = 0; r < rows; r++) {\n            std::cout << m[static_cast<std::size_t>(r)][static_cast<std::size_t>(c)] << (r + 1 < rows ? ' ' : '\\n');\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Вектор векторов создаётся сразу нужного размера: `R` копий строки из `C` нулей. Чтение идёт вложенными циклами по ссылкам — `auto &row` и `int &x`, — поэтому числа попадают прямо в матрицу.\n\nТранспонирование меняет роли индексов: элемент `(r, c)` становится элементом `(c, r)`. Строить новую матрицу не нужно — достаточно печатать в другом порядке. Размеры задаются во время выполнения, что с двумерным массивом C потребовало бы ручного `malloc` и аккуратной арифметики индексов.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-vector-task-3",
+      "title": "Найди ошибку: разности соседей",
+      "description": "Программа читает целые числа до конца ввода и печатает разности соседних элементов: `v[1] − v[0]`, `v[2] − v[1]`, … Если чисел меньше двух, печатается `нет`.\n\nAddressSanitizer сообщает о чтении за границей вектора. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<long long> v;\n    long long x;\n    while (std::cin >> x) {\n        v.push_back(x);\n    }\n    if (v.size() < 2) {\n        std::cout << \"нет\\n\";\n        return 0;\n    }\n    for (std::size_t i = 0; i < v.size(); i++) {\n        std::cout << v[i + 1] - v[i] << (i + 2 < v.size() ? ' ' : '\\n');\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "1 4 9 16\n",
+          "output": "3 5 7\n"
+        },
+        {
+          "input": "5\n",
+          "output": "нет\n"
+        }
+      ],
+      "constraints": ["Чисел не больше 1000; |числа| ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Какой наибольший индекс читает тело цикла при последней итерации?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Тело читает v[i + 1], поэтому i должно оставаться меньше v.size() − 1. Запишите условие как i + 1 < v.size() — оно не ломается и для беззнаковых чисел.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "1 4 9 16\n",
+          "expected": "3 5 7\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "5\n",
+          "expected": "нет\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "1 2\n",
+          "expected": "1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "10 5\n",
+          "expected": "-5\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "0 0 0\n",
+          "expected": "0 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "-1000000000 1000000000\n",
+          "expected": "2000000000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "1 3 6 10 15\n",
+          "expected": "2 3 4 5\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "7 7 7 7 7 7\n",
+          "expected": "0 0 0 0 0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "100 50 25 12\n",
+          "expected": "-50 -25 -13\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "-5 5 -5 5\n",
+          "expected": "10 -10 10\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<long long> v;\n    long long x;\n    while (std::cin >> x) {\n        v.push_back(x);\n    }\n    if (v.size() < 2) {\n        std::cout << \"нет\\n\";\n        return 0;\n    }\n    for (std::size_t i = 0; i + 1 < v.size(); i++) {\n        std::cout << v[i + 1] - v[i] << (i + 2 < v.size() ? ' ' : '\\n');\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Разностей на одну меньше, чем элементов. Цикл с условием `i < v.size()` делает лишнюю итерацию с `i = size − 1` и читает `v[size]` — элемент за концом. `operator[]` вектора индекс не проверяет, как и массив C, поэтому это неопределённое поведение; AddressSanitizer сообщает `heap-buffer-overflow`, ведь элементы вектора лежат в куче.\n\nУсловие `i + 1 < v.size()` точно описывает «существует следующий элемент» и безопасно для беззнаковых чисел, в отличие от `i < v.size() − 1`. Для отладки можно временно заменить `v[i + 1]` на `v.at(i + 1)` — ошибка проявится понятным исключением `std::out_of_range`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-vector-task-4",
+      "title": "Недавние файлы",
+      "description": "Редактор хранит список недавно открытых файлов: самый свежий — первым, не больше `k` записей. Первая строка — `k`, дальше команды:\n\n- `open имя` — открыть файл: если он уже есть в списке, перенести его в начало, иначе добавить в начало; если записей стало больше `k`, удалить последнюю;\n- `list` — напечатать список через пробел или `пусто`.\n\nХраните список в `std::vector<std::string>`; используйте `std::find`, `erase` и `insert`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\nopen a\nopen b\nopen c\nlist\nopen a\nlist\nopen d\nlist\n",
+          "output": "c b a\na c b\nd a c\n"
+        },
+        {
+          "input": "2\nlist\n",
+          "output": "пусто\n"
+        }
+      ],
+      "constraints": ["1 ≤ k ≤ 20; команд не больше 1000; имена без пробелов до 30 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "auto it = std::find(files.begin(), files.end(), name); если it != files.end() — files.erase(it).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Затем files.insert(files.begin(), name); и, если files.size() > k, files.pop_back().",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\nopen a\nopen b\nopen c\nlist\nopen a\nlist\nopen d\nlist\n",
+          "expected": "c b a\na c b\nd a c\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "2\nlist\n",
+          "expected": "пусто\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "k = 1",
+          "stdin": "1\nopen x\nopen y\nlist\n",
+          "expected": "y\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Повторное открытие",
+          "stdin": "3\nopen a\nopen a\nopen a\nlist\n",
+          "expected": "a\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Перенос в начало",
+          "stdin": "2\nopen a\nopen b\nopen a\nlist\n",
+          "expected": "a b\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Вытеснение",
+          "stdin": "3\nopen a\nlist\nopen b\nlist\nopen c\nlist\nopen d\nlist\n",
+          "expected": "a\nb a\nc b a\nd c b\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Имена с точками",
+          "stdin": "4\nopen main.cpp\nopen util.h\nopen main.cpp\nopen README.md\nlist\n",
+          "expected": "README.md main.cpp util.h\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Вытесненный не возвращается",
+          "stdin": "2\nopen a\nopen b\nopen c\nopen b\nlist\n",
+          "expected": "b c\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Последний в начало",
+          "stdin": "5\nopen e\nopen d\nopen c\nopen b\nopen a\nopen e\nlist\n",
+          "expected": "e a b c d\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Без команд",
+          "stdin": "3\n",
+          "expected": ""
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <string>\n#include <vector>\n\nint main() {\n    std::size_t k;\n    if (!(std::cin >> k)) {\n        return 0;\n    }\n    std::vector<std::string> files;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"open\") {\n            std::string name;\n            std::cin >> name;\n            auto it = std::find(files.begin(), files.end(), name);\n            if (it != files.end()) {\n                files.erase(it);\n            }\n            files.insert(files.begin(), name);\n            if (files.size() > k) {\n                files.pop_back();\n            }\n        } else if (command == \"list\") {\n            if (files.empty()) {\n                std::cout << \"пусто\";\n            }\n            for (std::size_t i = 0; i < files.size(); i++) {\n                std::cout << (i ? \" \" : \"\") << files[i];\n            }\n            std::cout << '\\n';\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Каждое открытие — поиск, возможное удаление и вставка в начало. `std::find` возвращает итератор на найденное имя или `end()`; `erase` и `insert` принимают итераторы позиций. Порядок важен: сначала удалить старую запись, потом вставить новую — после `insert` итератор `it` был бы уже недействителен.\n\nВсе три операции — `O(k)`, но `k` не больше 20, и вектор здесь — лучший выбор: элементы лежат подряд и сдвигаются очень быстро. Для тысяч записей с частыми перемещениями в начало подошёл бы список с таблицей «имя → узел», как LRU-кэш из модуля «Алгоритмы».",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-vector-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «std::vector»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "vector — плотный растущий массив с отличной locality. Он быстрее списка для обхода, но вставка в середину сдвигает элементы."
+        "id": "q1",
+        "question": "Сколько элементов в std::vector<int> a(4) и в std::vector<int> b{4}?",
+        "explanation": "Круглые скобки — размер (четыре нуля), фигурные — список элементов (один элемент 4).",
+        "options": ["4 и 1", "1 и 4", "4 и 4", "0 и 4"],
+        "correct": 0
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
-        "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
-        ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> v = {1, 2, 3};\n    v.push_back(4);\n    v.pop_back();\n    v.pop_back();\n    v.push_back(9);\n    std::cout << v.size() << ' ' << v.back() << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "1 2 3 → 1 2 3 4 → 1 2 3 → 1 2 → 1 2 9: три элемента, последний 9.",
+        "type": "text",
+        "answers": ["3 9"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Чем v.reserve(10) отличается от v.resize(10) для пустого вектора?",
+        "explanation": "После reserve обращение v[0] — выход за границу: элементов ещё нет.",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "reserve выделяет память, но размер остаётся 0; resize создаёт 10 элементов",
+          "Ничем",
+          "reserve создаёт 10 нулей, resize — только выделяет память",
+          "reserve работает только для строк"
         ],
-        "correct": 0,
-        "explanation": "Используйте std::vector как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> v = {5, 6, 7, 8};\n    v.erase(v.begin() + 1);\n    v.insert(v.begin(), 0);\n    for (int x : v) {\n        std::cout << x;\n    }\n    std::cout << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "erase удаляет элемент с индексом 1 (6): 5 7 8. insert в начало добавляет 0: 0 5 7 8.",
+        "type": "text",
+        "answers": ["0578"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Какова стоимость v.insert(v.begin(), x) для вектора из n элементов?",
+        "explanation": "Все n элементов сдвигаются на одну позицию вправо.",
+        "options": ["O(n)", "O(1)", "O(log n)", "Амортизированное O(1)"],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Чем опасен цикл for (std::size_t i = 0; i < v.size() - 1; i++) для пустого вектора?",
+        "explanation": "size() возвращает беззнаковое значение: 0 − 1 переполняется до SIZE_MAX. Пишите i + 1 < v.size().",
+        "options": [
+          "v.size() − 1 — огромное беззнаковое число, и цикл выйдет за границу",
+          "Цикл не выполнится ни разу — это безопасно",
+          "Ошибка компиляции",
+          "Цикл выполнится один раз"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Как лучше вернуть из функции вектор с результатами?",
+        "explanation": "Компилятор передаёт возвращаемый вектор вызывающему без копирования. Указатель или ссылка на локальный вектор повиснут.",
+        "options": [
+          "По значению: std::vector<int> f()",
+          "Указателем на локальный вектор",
+          "Ссылкой на локальный вектор",
+          "Через глобальную переменную"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<std::vector<int>> t(2, std::vector<int>(3, 1));\n    t[1][2] = 5;\n    int sum = 0;\n    for (const auto &row : t) {\n        for (int x : row) {\n            sum += x;\n        }\n    }\n    std::cout << t.size() << ' ' << t[0].size() << ' ' << sum << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Две строки по три единицы, одна единица заменена на 5: 5 + 5 = 10.",
+        "type": "text",
+        "answers": ["2 3 10"],
+        "placeholder": "Вывод программы"
       }
     ]
   }

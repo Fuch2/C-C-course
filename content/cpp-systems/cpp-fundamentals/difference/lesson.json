@@ -1,126 +1,533 @@
 {
   "id": "cpp20-difference",
-  "title": "Чем C++ отличается от C",
-  "description": "В C++ типы и классы позволяют связывать данные с операциями, а RAII — автоматически завершать владение ресурсами. Это меняет вопрос с «как освободить память» на «кто владеет объектом».",
+  "title": "От C к C++",
+  "description": "Откуда взялся C++ и чем он отличается от C; первая программа, файлы .cpp и компилятор g++; сравнение кода на C и C++; void *, bool, nullptr, имена структур и символьные литералы; заголовки библиотеки C в C++.",
   "moduleId": "cpp-fundamentals",
   "order": 1,
   "difficulty": "beginner",
   "estimatedMinutes": 35,
-  "prerequisites": ["advanced-sanitizers"],
+  "prerequisites": [],
   "objectives": [
-    "Объяснить, зачем появился Чем C++ отличается от C и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Компилировать и запускать программы на C++",
+    "Объяснять, что C++ берёт на себя по сравнению с C",
+    "Узнавать отличия C++ от C: void *, bool, nullptr, имена структур",
+    "Подключать библиотеку C в программе на C++"
   ],
-  "tags": ["C++20", "основы C++", "Чем C++ отличается от C"],
+  "tags": ["C++", "Отличия от C", "Первая программа"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-difference-exercise",
-    "title": "Независимая копия имени устройства",
-    "description": "Прочитайте одну ASCII-строку длиной 0…200, включая пробелы. Скопируйте её в отдельный std::string и добавьте к копии суффикс \" [копия]\". Выведите исходную строку и изменённую копию на отдельных строках. Пустой stdin — пустая строка. Не используйте ручное выделение памяти.",
+    "id": "cpp20-difference-task-1",
+    "title": "Сумма двух чисел",
+    "description": "Каждая строка ввода — два целых числа. Для каждой строки напечатайте их сумму.\n\nЧитайте числа так: `while (std::cin >> a >> b)` — цикл закончится, когда ввод кончится. Подробно ввод разобран в уроке о `std::cin`.",
     "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "sensor A\n",
-        "output": "sensor A\nsensor A [копия]\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "2 3\n",
+        "output": "5\n"
       },
       {
-        "input": "\n",
-        "output": "\n [копия]\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "-7 7\n100 1\n",
+        "output": "0\n101\n"
       }
     ],
-    "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
-    ],
+    "constraints": ["Числа по модулю не больше 10¹⁸; строк не больше 30."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "Сумма двух чисел до 10¹⁸ — до 2·10¹⁸, это помещается в long long (до 9,2·10¹⁸).",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "Печать: std::cout << a + b << '\\n';. Выражение a + b вычисляется до вывода.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "sensor A\n",
-        "expected": "sensor A\nsensor A [копия]\n"
+        "stdin": "2 3\n",
+        "expected": "5\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "stdin": "\n",
-        "expected": "\n [копия]\n"
+        "stdin": "-7 7\n100 1\n",
+        "expected": "0\n101\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "",
-        "expected": "\n [копия]\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "1000000000000000000 1000000000000000000\n",
+        "expected": "2000000000000000000\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "  x  \n",
-        "expected": "  x  \n  x   [копия]\n"
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "-1000000000000000000 -1000000000000000000\n",
+        "expected": "-2000000000000000000\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "0 0\n",
+        "expected": "0\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "2147483647 1\n",
+        "expected": "2147483648\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "-5 -6\n",
+        "expected": "-11\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "1 2\n3 4\n5 6\n",
+        "expected": "3\n7\n11\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "999999999999999999 1\n",
+        "expected": "1000000000000000000\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "123456789 987654321\n",
+        "expected": "1111111110\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <string>\n\n\nint main() {\n    std::string original;\n    std::getline(std::cin, original);\n    auto copy = original;\n    copy += \" [копия]\";\n    std::cout << original << '\\n' << copy << '\\n';\n}\n",
-    "solutionExplanation": "getline сохраняет пробелы. Инициализация copy создаёт владеющую строку с независимым значением. Оба объекта освобождают ресурсы при выходе из области видимости. Копирование и приписывание требуют O(n) времени в общей оценке, две строки — O(n) памяти.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <iostream>\n\nint main() {\n    long long a, b;\n    while (std::cin >> a >> b) {\n        std::cout << a + b << '\\n';\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "`std::cin >> a >> b` читает два числа и возвращает сам поток; в условии цикла поток «истинен», пока чтение удаётся. Когда ввод кончился, чтение не удаётся и цикл останавливается — это аналог `while (scanf(\"%lld %lld\", &a, &b) == 2)`.\n\nФормат вывода не нужен: поток сам знает, как печатать `long long`. Тип важен: числа до 10¹⁸ требуют `long long`, иначе сумма переполнится.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-difference-task-2",
+      "title": "Счётчик и максимум",
+      "description": "До конца ввода идут целые числа. Напечатайте их количество и наибольшее через пробел. Если чисел нет, напечатайте `пусто`.\n\nИспользуйте переменную `bool` для признака «максимум уже есть» — не особое число вроде `-1`.",
+      "difficulty": "beginner",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3 8 -2 8 5\n",
+          "output": "5 8\n"
+        },
+        {
+          "input": "",
+          "output": "пусто\n"
+        }
+      ],
+      "constraints": ["Чисел не больше 1000; числа int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Заведите bool found = false; int best; и счётчик. Для каждого x: если !found или x > best — best = x и found = true.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Любое число может быть максимумом — даже INT_MIN, поэтому особое значение-признак не подходит, а bool подходит.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3 8 -2 8 5\n",
+          "expected": "5 8\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "пусто\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "-5 -3 -9\n",
+          "expected": "3 -3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "7\n",
+          "expected": "1 7\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "-2147483648\n",
+          "expected": "1 -2147483648\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "2147483647 -2147483648\n",
+          "expected": "2 2147483647\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "0 0 0 0\n",
+          "expected": "4 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "1\n2\n3\n4\n5\n",
+          "expected": "5 5\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "5 4 3 2 1\n",
+          "expected": "5 5\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "-1 -1 -2\n",
+          "expected": "3 -1\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n\nint main() {\n    bool found = false;\n    int best = 0;\n    int count = 0;\n    int x;\n    while (std::cin >> x) {\n        count++;\n        if (!found || x > best) {\n            best = x;\n            found = true;\n        }\n    }\n    if (found) {\n        std::cout << count << ' ' << best << '\\n';\n    } else {\n        std::cout << \"пусто\\n\";\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`bool` в C++ — встроенный тип со значениями `true` и `false`, подключать ничего не нужно. Флаг `found` честно отвечает на вопрос «видели ли мы хоть одно число» — в отличие от начального `best = -1`, которое сломалось бы на входе из одних отрицательных чисел.\n\nИнвариант цикла тот же, что в уроке о поиске максимума: после каждого прочитанного числа `best` — наибольшее из прочитанных, если `found`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-difference-task-3",
+      "title": "Найди ошибку: код из C",
+      "description": "Программа читает `n` и `n` целых чисел и печатает их в обратном порядке. Её перенесли из C, и в C++ она не компилируется. Исправьте её — лучше всего так, как принято в C++.",
+      "difficulty": "beginner",
+      "starterCode": "#include <cstdlib>\n#include <iostream>\n\nint main() {\n    int n;\n    if (!(std::cin >> n) || n < 1) {\n        return 0;\n    }\n    int *values = malloc(n * sizeof *values);\n    for (int i = 0; i < n; i++) {\n        std::cin >> values[i];\n    }\n    for (int i = n - 1; i >= 0; i--) {\n        std::cout << values[i] << (i > 0 ? ' ' : '\\n');\n    }\n    free(values);\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5\n1 2 3 4 5\n",
+          "output": "5 4 3 2 1\n"
+        },
+        {
+          "input": "1\n-7\n",
+          "output": "-7\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 1000; числа int."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Прочитайте сообщение компилятора: invalid conversion from void* to int*. Что возвращает malloc?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "В C++ void * не превращается в int * неявно. Можно написать static_cast<int *>(malloc(…)), но лучше заменить массив на std::vector<int> values(n); — тогда не нужен и free.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5\n1 2 3 4 5\n",
+          "expected": "5 4 3 2 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n-7\n",
+          "expected": "-7\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "2\n1 2\n",
+          "expected": "2 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "3\n0 0 0\n",
+          "expected": "0 0 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "4\n-1 -2 -3 -4\n",
+          "expected": "-4 -3 -2 -1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "3\n2147483647 0 -2147483648\n",
+          "expected": "-2147483648 0 2147483647\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "6\n10 20 30 40 50 60\n",
+          "expected": "60 50 40 30 20 10\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "5\n5 4 3 2 1\n",
+          "expected": "1 2 3 4 5\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "7\n1 3 5 7 9 11 13\n",
+          "expected": "13 11 9 7 5 3 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "8\n8 6 7 5 3 0 9 1\n",
+          "expected": "1 9 0 3 5 7 6 8\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <vector>\n\nint main() {\n    int n;\n    if (!(std::cin >> n) || n < 1) {\n        return 0;\n    }\n    std::vector<int> values(n);\n    for (int i = 0; i < n; i++) {\n        std::cin >> values[i];\n    }\n    for (int i = n - 1; i >= 0; i--) {\n        std::cout << values[i] << (i > 0 ? ' ' : '\\n');\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "В C результат `malloc` — `void *` — молча превращается в любой указатель. В C++ это преобразование нужно писать явно, поэтому строка с `malloc` даёт ошибку компиляции `invalid conversion from 'void*' to 'int*'`.\n\nЯвное приведение `static_cast<int *>` исправило бы компиляцию, но оставило бы ручное управление памятью: нужно проверять `NULL`, не забывать `free`, а при раннем выходе из функции — освобождать память на каждом пути. `std::vector<int> values(n)` создаёт массив из `n` нулей, обращение `values[i]` выглядит так же, а память освобождается сама, когда `values` выходит из области видимости.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-difference-task-4",
+      "title": "Самое длинное слово",
+      "description": "До конца ввода идут слова из латинских букв, разделённые пробелами и переводами строк. Напечатайте число слов, а на следующей строке — самое длинное слово и его длину через пробел; если таких несколько — первое из них. Если слов нет, напечатайте `0`.\n\nСлово может быть длиной до 1000 символов — используйте `std::string`, а не массив `char` фиксированного размера.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "the quick brown fox\n",
+          "output": "4\nquick 5\n"
+        },
+        {
+          "input": "",
+          "output": "0\n"
+        }
+      ],
+      "constraints": ["Слов не больше 1000; суммарно не больше 15 000 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "std::string word; while (std::cin >> word) — оператор >> читает слово до пробела, сам выделяя нужную память.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Длина — word.size(). Строки присваиваются как числа: longest = word; копирует символы.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "the quick brown fox\n",
+          "expected": "4\nquick 5\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна буква",
+          "stdin": "a\n",
+          "expected": "1\na 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Равные длины",
+          "stdin": "ab cd ef\n",
+          "expected": "3\nab 2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "По одному в строке",
+          "stdin": "one\ntwo\nthree\n",
+          "expected": "3\nthree 5\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Слово из 1000 букв",
+          "stdin": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx y\n",
+          "expected": "2\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 1000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Длинное в середине",
+          "stdin": "short longer longest lo\n",
+          "expected": "4\nlongest 7\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Лишние пробелы",
+          "stdin": "  spaced   words  \n",
+          "expected": "2\nspaced 6\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Растущие длины",
+          "stdin": "A Bb Ccc Dddd Eeeee\n",
+          "expected": "5\nEeeee 5\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Убывающие длины",
+          "stdin": "zzzz yyy xx w\n",
+          "expected": "4\nzzzz 4\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <string>\n\nint main() {\n    std::string word, longest;\n    int count = 0;\n    while (std::cin >> word) {\n        count++;\n        if (word.size() > longest.size()) {\n            longest = word;\n        }\n    }\n    std::cout << count << '\\n';\n    if (count > 0) {\n        std::cout << longest << ' ' << longest.size() << '\\n';\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`std::cin >> word` читает очередное слово в `std::string`, и строка сама увеличивает свой буфер, если слово длинное. В C пришлось бы угадывать размер массива и ограничивать ширину в `scanf(\"%999s\", …)`, рискуя обрезать или переполнить.\n\nПрисваивание `longest = word` копирует символы — это не копирование указателя, как было бы с `char *`. Пустая строка `longest` имеет длину 0, поэтому первое же слово её заменит; строгое `>` сохраняет первое из самых длинных слов.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-difference-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «Чем C++ отличается от C»?",
+        "id": "q1",
+        "question": "Какой командой правильно скомпилировать main.cpp как программу на C++23?",
+        "explanation": "Компилятор C++ — g++ (или clang++), стандарт — c++23. gcc с -std=c17 собирал бы программу как C.",
         "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
+          "g++ -std=c++23 main.cpp -o main",
+          "gcc -std=c17 main.cpp -o main",
+          "g++ -std=c17 main.cpp -o main",
+          "cc main.cpp"
         ],
-        "correct": 0,
-        "explanation": "В C++ типы и классы позволяют связывать данные с операциями, а RAII — автоматически завершать владение ресурсами. Это меняет вопрос с «как освободить память» на «кто владеет объектом»."
+        "correct": 0
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
-        "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
-        ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "id": "q2",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n\nint main() {\n    std::cout << sizeof('x') << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "В C++ символьный литерал имеет тип char, и sizeof(char) всегда 1. В C было бы sizeof(int).",
+        "type": "text",
+        "answers": ["1"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Почему строка int *p = malloc(40); не компилируется в C++?",
+        "explanation": "malloc есть и в C++ (заголовок <cstdlib>), но его результат — void *, и для присваивания int * нужно явное приведение. Обычно же вместо malloc используют std::vector.",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "В C++ void * не преобразуется в другой тип указателя неявно",
+          "В C++ нет функции malloc",
+          "malloc нельзя вызывать с числом",
+          "В C++ указатели запрещены"
         ],
-        "correct": 0,
-        "explanation": "Используйте Чем C++ отличается от C как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Какие утверждения о C++ верны?",
+        "explanation": "Библиотека C доступна в C++ целиком; заголовки <cxxx> объявляют её функции и в пространстве имён std.",
+        "type": "multiple",
+        "options": [
+          "bool, true и false встроены в язык",
+          "После struct Point { … }; можно объявить переменную Point p;",
+          "Функции библиотеки C доступны через заголовки вида <cstdio>",
+          "Код на C++ нельзя смешивать с вызовами функций библиотеки C"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q5",
+        "question": "Чем nullptr лучше NULL?",
+        "explanation": "При перегрузках f(int) и f(int *) вызов f(NULL) обычно выберет f(int). У nullptr собственный тип, который преобразуется только в указатели.",
+        "options": [
+          "nullptr — всегда пустой указатель, а NULL может оказаться целым числом 0 и выбрать не ту перегрузку функции",
+          "nullptr быстрее",
+          "nullptr занимает меньше памяти",
+          "NULL в C++ запрещён"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <string>\n\nint main() {\n    std::string a = \"C\", b = \"++\";\n    std::string c = a + b + b;\n    std::cout << c << ' ' << c.size() << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Оператор + склеивает строки: \"C\" + \"++\" + \"++\" = \"C++++\", пять символов.",
+        "type": "text",
+        "answers": ["C++++ 5"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Как в C++ называется заголовок с функцией sqrt?",
+        "explanation": "Заголовки библиотеки C в C++: буква c в начале и без .h — <cmath> вместо <math.h>.",
+        "type": "text",
+        "answers": ["<cmath>", "cmath"],
+        "placeholder": "Заголовок"
+      },
+      {
+        "id": "q8",
+        "question": "Что берёт на себя std::string по сравнению со строками C?",
+        "explanation": "std::string сам выделяет память нужного размера, освобождает её и хранит длину — не нужен ни strlen, ни free.",
+        "type": "multiple",
+        "options": [
+          "Выделение и освобождение памяти под символы",
+          "Хранение длины строки",
+          "Проверку орфографии",
+          "Перевод строки в верхний регистр при выводе"
+        ],
+        "correct": [0, 1]
       }
     ]
   }

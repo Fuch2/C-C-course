@@ -21,7 +21,7 @@ describe('Модуль «Память и указатели в C»', () => {
     for (const dir of sourceDirs) expect(existsSync(`${dir}/lesson.src.mjs`), dir).toBe(true);
     for (const [i, l] of lessons.entries()) {
       expect(l.order).toBe(i + 1);
-      expect(l.standard).toBe('c17');
+      expect(l.standard).toBe('c23');
       if (i) {
         expect(l.previousLessonId).toBe(lessons[i - 1]!.id);
         expect(l.prerequisites).toEqual([lessons[i - 1]!.id]);
@@ -80,7 +80,7 @@ describe('Модуль «Память и указатели в C»', () => {
   it('разрешает только фиксированный режим внутреннего запроса и запрещает его ученику', () => {
     const base = {
       source: 'int main(void){return 0;}',
-      standard: 'c17',
+      standard: 'c23',
       compiler: 'clang',
       stdin: '',
     };

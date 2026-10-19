@@ -1,128 +1,543 @@
 {
   "id": "oop-struct",
-  "title": "struct в C++",
-  "description": "В C++ struct объявляет полноценный пользовательский тип: у него бывают методы, конструкторы и правила доступа. По умолчанию его члены открыты. Для измерения, координаты или результата расчёта это удобный тип значения: смысл имеет совокупность полей, а копирование создаёт самостоятельный объект. Метод вызывается для конкретного объекта и может читать его поля без повторной передачи каждого аргумента.",
+  "title": "Структуры с методами",
+  "description": "От C-структуры и отдельных функций к типу с поведением: методы и получатель вызова; const-методы и константные ссылки; значения полей по умолчанию и именованная инициализация; определение методов вне структуры через ::; структуры в контейнерах; почему структура не защищает свои данные.",
   "moduleId": "cpp-oop",
   "order": 1,
-  "difficulty": "advanced",
-  "estimatedMinutes": 45,
-  "prerequisites": ["cpp20-exceptions"],
+  "difficulty": "intermediate",
+  "estimatedMinutes": 40,
+  "prerequisites": ["cpp23-expected"],
   "objectives": [
-    "Применить struct в C++ в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Объявлять методы в структуре и вызывать их через точку",
+    "Помечать const методы, которые не меняют объект",
+    "Задавать значения полей по умолчанию и пользоваться именованной инициализацией",
+    "Определять методы вне структуры"
   ],
-  "tags": ["C++20", "ООП", "struct в C++"],
+  "tags": ["C++23", "ООП", "struct", "Методы", "const"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-struct-exercise",
-    "title": "Практика: struct в C++",
-    "description": "Создайте struct Measurement с открытыми int value, offset и методом int calibrated() const. Он возвращает value + offset. solve(a,b) создаёт const Measurement{a,b} и возвращает calibrated(). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Прямоугольники",
+    "description": "Каждая строка ввода — ширина и высота прямоугольника. Опишите структуру `Rect` с полями `width`, `height` и методами `area() const`, `perimeter() const` и `is_square() const`. Для каждого прямоугольника напечатайте:\n\n```text\nплощадь 12.00, периметр 14.00, квадрат: нет\n```",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 2)",
-        "output": "5\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "3 4\n5 5\n",
+        "output": "площадь 12.00, периметр 14.00, квадрат: нет\nплощадь 25.00, периметр 20.00, квадрат: да\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "2.5 0.5\n",
+        "output": "площадь 1.25, периметр 6.00, квадрат: нет\n"
       }
     ],
     "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
+      "Стороны — положительные числа до 10 000 с не более чем двумя знаками после точки; строк не больше 20."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "Все три метода только читают поля — помечайте их const.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Числа печатайте через {:.2f}, а ответ про квадрат — через тернарный оператор: r.is_square() ? \"да\" : \"нет\".",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 2],
-        "expected": "5\n"
+        "stdin": "3 4\n5 5\n",
+        "expected": "площадь 12.00, периметр 14.00, квадрат: нет\nплощадь 25.00, периметр 20.00, квадрат: да\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "2.5 0.5\n",
+        "expected": "площадь 1.25, периметр 6.00, квадрат: нет\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [-10, 3],
-        "expected": "-7\n"
+        "id": "hidden-1",
+        "name": "Единичный квадрат",
+        "stdin": "1 1\n",
+        "expected": "площадь 1.00, периметр 4.00, квадрат: да\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-2",
+        "name": "Большой квадрат",
+        "stdin": "10000 10000\n",
+        "expected": "площадь 100000000.00, периметр 40000.00, квадрат: да\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Вытянутый",
+        "stdin": "0.01 10000\n",
+        "expected": "площадь 100.00, периметр 20000.02, квадрат: нет\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Повёрнутый",
+        "stdin": "7 3\n3 7\n",
+        "expected": "площадь 21.00, периметр 20.00, квадрат: нет\nплощадь 21.00, периметр 20.00, квадрат: нет\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Дробный квадрат",
+        "stdin": "1.5 1.5\n",
+        "expected": "площадь 2.25, периметр 6.00, квадрат: да\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Пустой ввод",
+        "stdin": "",
+        "expected": ""
+      },
+      {
+        "id": "hidden-7",
+        "name": "Дробные стороны",
+        "stdin": "12.34 5.67\n",
+        "expected": "площадь 69.97, периметр 36.02, квадрат: нет\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Три прямоугольника",
+        "stdin": "2 2\n2 3\n3 3\n",
+        "expected": "площадь 4.00, периметр 8.00, квадрат: да\nплощадь 6.00, периметр 10.00, квадрат: нет\nплощадь 9.00, периметр 12.00, квадрат: да\n"
       }
     ],
-    "referenceSolution": "struct Measurement { int value{}; int offset{}; int calibrated() const { return value + offset; } };\nint solve(int a, int b) { const Measurement m{a,b}; return m.calibrated(); }",
-    "solutionExplanation": "Создайте struct Measurement с открытыми int value, offset и методом int calibrated() const. Он возвращает value + offset. solve(a,b) создаёт const Measurement{a,b} и возвращает calibrated(). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не считайте struct урезанной версией class. Отличаются значения доступа по умолчанию; возможности методов одинаковы. Не возвращайте ссылку на локальное измерение. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n\nstruct Rect {\n    double width = 0;\n    double height = 0;\n\n    double area() const {\n        return width * height;\n    }\n\n    double perimeter() const {\n        return 2 * (width + height);\n    }\n\n    bool is_square() const {\n        return width == height;\n    }\n};\n\nint main() {\n    Rect r;\n    while (std::cin >> r.width >> r.height) {\n        std::println(\"площадь {:.2f}, периметр {:.2f}, квадрат: {}\", r.area(), r.perimeter(),\n                     r.is_square() ? \"да\" : \"нет\");\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Все вычисления о прямоугольнике живут внутри `Rect`: `main` только читает данные и печатает ответы. Методы помечены `const` — они не меняют прямоугольник, и их можно было бы вызвать через `const Rect &`.\n\nПоля читаются прямо в объект: `std::cin >> r.width >> r.height`. Значения по умолчанию `= 0` гарантируют, что объект никогда не содержит мусора, даже до первого чтения.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-struct-task-2",
+      "title": "Маршрут",
+      "description": "Ввод: число `n`, затем `n` точек — пары целых координат. Опишите структуру `Point` с методами `double distance_to(Point other) const` и `double from_origin() const` (расстояние до начала координат). Напечатайте:\n\n```text\nдлина маршрута 10.000\nдальше всех (6, 8)\n```\n\nДлина маршрута — сумма расстояний между соседними точками в порядке ввода. Дальняя точка — самая удалённая от начала координат; при равенстве — та, что встретилась раньше.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\n0 0\n3 4\n6 8\n",
+          "output": "длина маршрута 10.000\nдальше всех (6, 8)\n"
+        },
+        {
+          "input": "1\n-2 0\n",
+          "output": "длина маршрута 0.000\nдальше всех (-2, 0)\n"
+        }
+      ],
+      "constraints": ["1 ≤ n ≤ 100; координаты по модулю до 10⁴."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Расстояние — std::hypot(x - other.x, y - other.y) из <cmath>.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Храните точки в std::vector<Point> и пройдите по соседним парам индексов i - 1 и i.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\n0 0\n3 4\n6 8\n",
+          "expected": "длина маршрута 10.000\nдальше всех (6, 8)\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\n-2 0\n",
+          "expected": "длина маршрута 0.000\nдальше всех (-2, 0)\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Одна точка дважды",
+          "stdin": "2\n0 0\n0 0\n",
+          "expected": "длина маршрута 0.000\nдальше всех (0, 0)\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Квадрат",
+          "stdin": "4\n1 1\n-1 1\n-1 -1\n1 -1\n",
+          "expected": "длина маршрута 6.000\nдальше всех (1, 1)\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Равные расстояния",
+          "stdin": "3\n5 0\n0 5\n-5 0\n",
+          "expected": "длина маршрута 14.142\nдальше всех (5, 0)\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Большие координаты",
+          "stdin": "2\n10000 10000\n-10000 -10000\n",
+          "expected": "длина маршрута 28284.271\nдальше всех (10000, 10000)\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Замкнутый путь",
+          "stdin": "5\n0 0\n1 0\n1 1\n0 1\n0 0\n",
+          "expected": "длина маршрута 4.000\nдальше всех (1, 1)\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "По прямой",
+          "stdin": "3\n0 1\n0 2\n0 3\n",
+          "expected": "длина маршрута 2.000\nдальше всех (0, 3)\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Пифагоров отрезок",
+          "stdin": "2\n1 2\n4 6\n",
+          "expected": "длина маршрута 5.000\nдальше всех (4, 6)\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Смесь",
+          "stdin": "4\n7 7\n0 0\n-3 9\n2 -8\n",
+          "expected": "длина маршрута 37.106\nдальше всех (7, 7)\n"
+        }
+      ],
+      "referenceSolution": "#include <cmath>\n#include <iostream>\n#include <print>\n#include <vector>\n\nstruct Point {\n    int x = 0;\n    int y = 0;\n\n    double distance_to(Point other) const {\n        return std::hypot(x - other.x, y - other.y);\n    }\n\n    double from_origin() const {\n        return distance_to(Point{});\n    }\n};\n\nint main() {\n    int n;\n    std::cin >> n;\n    std::vector<Point> points(static_cast<std::size_t>(n));\n    for (Point &p : points) {\n        std::cin >> p.x >> p.y;\n    }\n    double length = 0;\n    std::size_t farthest = 0;\n    for (std::size_t i = 0; i < points.size(); i++) {\n        if (i > 0) {\n            length += points[i - 1].distance_to(points[i]);\n        }\n        if (points[i].from_origin() > points[farthest].from_origin()) {\n            farthest = i;\n        }\n    }\n    std::println(\"длина маршрута {:.3f}\", length);\n    std::println(\"дальше всех ({}, {})\", points[farthest].x, points[farthest].y);\n    return 0;\n}\n",
+      "solutionExplanation": "`from_origin` выражен через `distance_to`: начало координат — это `Point{}`, точка со значениями по умолчанию. Один метод опирается на другой, и формула расстояния написана один раз.\n\n`std::hypot` вычисляет `√(dx² + dy²)` без переполнения промежуточных квадратов. Сравнение `>` (а не `>=`) оставляет при равенстве первую точку.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-struct-task-3",
+      "title": "Найди ошибку: вклад, который не зачисляется",
+      "description": "Программа ведёт счёт: каждая строка ввода — операция `+ сумма` (вклад) или `- сумма` (снятие). Снятие больше остатка отклоняется. В конце печатается остаток и число отклонённых снятий:\n\n```text\nбаланс 70, отказов 1\n```\n\nВклады почему-то не зачисляются. Найдите и исправьте ошибку в структуре `Account`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n\nstruct Account {\n    long long balance = 0;\n    int rejected = 0;\n\n    void deposit(long long balance) {\n        balance += balance;\n    }\n\n    void withdraw(long long amount) {\n        if (amount > balance) {\n            rejected++;\n            return;\n        }\n        balance -= amount;\n    }\n};\n\nint main() {\n    Account account;\n    char operation;\n    long long amount;\n    while (std::cin >> operation >> amount) {\n        if (operation == '+') {\n            account.deposit(amount);\n        } else {\n            account.withdraw(amount);\n        }\n    }\n    std::println(\"баланс {}, отказов {}\", account.balance, account.rejected);\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "+ 100\n- 30\n- 500\n",
+          "output": "баланс 70, отказов 1\n"
+        },
+        {
+          "input": "- 1\n",
+          "output": "баланс 0, отказов 1\n"
+        }
+      ],
+      "constraints": ["Операций не больше 50, суммы от 1 до 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Посмотрите на метод deposit: какую переменную он увеличивает?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Параметр назван так же, как поле, и внутри метода имя balance означает параметр. Переименуйте параметр, например в amount.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "+ 100\n- 30\n- 500\n",
+          "expected": "баланс 70, отказов 1\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "- 1\n",
+          "expected": "баланс 0, отказов 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "+ 1\n",
+          "expected": "баланс 1, отказов 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "+ 1000000000\n+ 1000000000\n- 1\n",
+          "expected": "баланс 1999999999, отказов 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "+ 50\n- 50\n- 1\n",
+          "expected": "баланс 0, отказов 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "+ 10\n+ 20\n+ 30\n",
+          "expected": "баланс 60, отказов 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "- 5\n+ 5\n- 5\n",
+          "expected": "баланс 0, отказов 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "+ 100\n- 99\n- 2\n- 1\n",
+          "expected": "баланс 0, отказов 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "+ 7\n- 8\n+ 1\n- 8\n",
+          "expected": "баланс 0, отказов 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "+ 3\n",
+          "expected": "баланс 3, отказов 0\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n\nstruct Account {\n    long long balance = 0;\n    int rejected = 0;\n\n    void deposit(long long amount) {\n        balance += amount;\n    }\n\n    void withdraw(long long amount) {\n        if (amount > balance) {\n            rejected++;\n            return;\n        }\n        balance -= amount;\n    }\n};\n\nint main() {\n    Account account;\n    char operation;\n    long long amount;\n    while (std::cin >> operation >> amount) {\n        if (operation == '+') {\n            account.deposit(amount);\n        } else {\n            account.withdraw(amount);\n        }\n    }\n    std::println(\"баланс {}, отказов {}\", account.balance, account.rejected);\n    return 0;\n}\n",
+      "solutionExplanation": "Внутри `deposit` имя `balance` относится к **параметру**: параметр — более близкое объявление, и оно скрывает поле с тем же именем. Строка `balance += balance` удваивает копию аргумента, которая исчезает при выходе из метода, а поле счёта не меняется. Компилятор не предупреждает: код корректен, просто делает не то.\n\nИсправление — дать параметру другое имя. Иногда поля помечают особым образом (`balance_`, `m_balance`), чтобы такая путаница была невозможна, — так поступают многие руководства по стилю. Обратиться к полю явно можно и через `this->balance`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-struct-task-4",
+      "title": "Расписание",
+      "description": "Первая строка ввода — время начала `ЧЧ:ММ`. Каждая следующая — дело: название (одно слово) и длительность в минутах. Дела идут подряд без перерывов. Напечатайте для каждого дела строку `ЧЧ:ММ-ЧЧ:ММ название`, а в конце — `итого N мин`.\n\nВремя идёт по кругу: после `23:59` наступает `00:00`. Опишите структуру `Time` с полями `hours`, `minutes` и методом `Time after(int duration) const`, который возвращает время через `duration` минут.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "09:00\nзарядка 15\nзавтрак 30\n",
+          "output": "09:00-09:15 зарядка\n09:15-09:45 завтрак\nитого 45 мин\n"
+        },
+        {
+          "input": "23:50\nфильм 20\n",
+          "output": "23:50-00:10 фильм\nитого 20 мин\n"
+        }
+      ],
+      "constraints": ["Дел не больше 30; длительность от 1 до 1440 минут."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Внутри after удобно перейти к минутам от полуночи: total = hours * 60 + minutes + duration, затем взять остаток от деления на 1440.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Время читается так: char colon; std::cin >> t.hours >> colon >> t.minutes; печать с ведущими нулями — {:02}:{:02}.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "09:00\nзарядка 15\nзавтрак 30\n",
+          "expected": "09:00-09:15 зарядка\n09:15-09:45 завтрак\nитого 45 мин\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "23:50\nфильм 20\n",
+          "expected": "23:50-00:10 фильм\nитого 20 мин\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Без дел",
+          "stdin": "00:00\n",
+          "expected": "итого 0 мин\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Ровно сутки",
+          "stdin": "00:00\nсутки 1440\n",
+          "expected": "00:00-00:00 сутки\nитого 1440 мин\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "По минуте",
+          "stdin": "12:34\na 1\nb 1\nc 1\n",
+          "expected": "12:34-12:35 a\n12:35-12:36 b\n12:36-12:37 c\nитого 3 мин\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Полночь",
+          "stdin": "23:59\nшаг 1\n",
+          "expected": "23:59-00:00 шаг\nитого 1 мин\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Рабочий день",
+          "stdin": "07:05\nдорога 55\nработа 480\nобед 60\n",
+          "expected": "07:05-08:00 дорога\n08:00-16:00 работа\n16:00-17:00 обед\nитого 595 мин\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Через полночь надолго",
+          "stdin": "18:00\nсон 720\n",
+          "expected": "18:00-06:00 сон\nитого 720 мин\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Границы часа",
+          "stdin": "01:01\nx 59\ny 61\n",
+          "expected": "01:01-02:00 x\n02:00-03:01 y\nитого 120 мин\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Долгое дело",
+          "stdin": "22:30\nигра 1000\nчтение 45\n",
+          "expected": "22:30-15:10 игра\n15:10-15:55 чтение\nитого 1045 мин\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nstruct Time {\n    int hours = 0;\n    int minutes = 0;\n\n    Time after(int duration) const {\n        int total = (hours * 60 + minutes + duration) % (24 * 60);\n        return {total / 60, total % 60};\n    }\n};\n\nint main() {\n    Time now;\n    char colon;\n    std::cin >> now.hours >> colon >> now.minutes;\n    std::string name;\n    int duration;\n    int sum = 0;\n    while (std::cin >> name >> duration) {\n        Time end = now.after(duration);\n        std::println(\"{:02}:{:02}-{:02}:{:02} {}\", now.hours, now.minutes, end.hours, end.minutes, name);\n        now = end;\n        sum += duration;\n    }\n    std::println(\"итого {} мин\", sum);\n    return 0;\n}\n",
+      "solutionExplanation": "`after` не меняет время, а возвращает новое — поэтому он `const` и его удобно применять к текущему моменту в цикле: `now = now.after(…)`. Переход через полночь решается одним остатком от деления на 1440 — количеством минут в сутках.\n\nПеревод «часы и минуты → минуты от полуночи → часы и минуты» — обычный приём для времени: считать в одной единице проще, чем переносить минуты в часы вручную. Ведущие нули даёт спецификация `{:02}`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-struct-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Что происходит при auto copy = p для показанного Point?",
-        "options": ["Создаётся независимое значение", "Оба имени всегда ссылаются на один объект"],
-        "correct": 0,
-        "explanation": "Сначала отделите данные измерения от устройства, которое их получает. Measurement можно свободно копировать и хранить в vector. Sensor позднее будет иметь поведение и собственное время жизни. Суффикс const у метода обещает не менять обычные поля через этот вызов. Инициализаторы полей защищают от неопределённых начальных значений, но не проверяют физическую корректность данных. Не добавляйте наследование только потому, что два объекта содержат одинаковое поле value."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct Box {\n    int w = 1, h = 1, d = 1;\n    int volume() const { return w * h * d; }\n    void grow() { w++; h++; d++; }\n};\n\nint main() {\n    Box b{2, 3};\n    b.grow();\n    std::println(\"{}\", b.volume());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "b{2, 3} задаёт w = 2, h = 3, а d остаётся 1. После grow — 3, 4, 2: объём 24.",
+        "type": "text",
+        "answers": ["24"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "11 9", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 11 9. В C++ struct объявляет полноценный пользовательский тип: у него бывают методы, конструкторы и правила доступа. По умолчанию его члены открыты. Для измерения, координаты или результата расчёта это удобный тип значения: смысл имеет совокупность полей, а копирование создаёт самостоятельный объект. Метод вызывается для конкретного объекта и может читать его поля без повторной передачи каждого аргумента."
-      },
-      {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q2",
+        "question": "Что означает const после списка параметров метода — int get() const?",
+        "explanation": "Это обещание компилятору: внутри метода поля только читаются.",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Не считайте struct урезанной версией class. Отличаются значения доступа по умолчанию; возможности методов одинаковы. Не возвращайте ссылку на локальное измерение."
+          "Метод не меняет объект; его можно вызывать у констант и через const &",
+          "Метод возвращает константу",
+          "Метод нельзя переопределить",
+          "Метод вычисляется при компиляции"
         ],
-        "correct": 1,
-        "explanation": "Добавьте третье поле единиц. Объясните, почему одинаковые численные value не гарантируют сопоставимости измерений. Проверьте независимость копий после изменения одного поля. Стоимость копирования определяется полями: для двух int она постоянна, для vector внутри структуры могла бы стать линейной."
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Функция принимает const Counter &c. Какие вызовы скомпилируются, если get() const, а increment() — без const? Выберите все.",
+        "explanation": "Через константную ссылку можно читать поля и вызывать только const-методы.",
+        "type": "multiple",
+        "options": ["c.get()", "c.increment()", "c.value (чтение поля)", "c.value = 5"],
+        "correct": [0, 2]
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct Score {\n    int points = 10;\n    void add(int points) { points += points; }\n};\n\nint main() {\n    Score s;\n    s.add(5);\n    std::println(\"{}\", s.points);\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Внутри add имя points означает параметр: метод удваивает свою копию аргумента, а поле не меняется.",
+        "type": "text",
+        "answers": ["10"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct Options {\n    int width = 80;\n    int height = 24;\n    bool color = true;\n};\n\nint main() {\n    Options o{.height = 50};\n    std::println(\"{} {} {}\", o.width, o.height, o.color);\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Именованная инициализация задаёт только height; остальные поля получают значения по умолчанию.",
+        "type": "text",
+        "answers": ["80 50 true"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Как правильно определить вне структуры метод, объявленный в ней как double area() const;?",
+        "explanation": "Имя структуры и :: указывают, чей это метод; const повторяется — это часть типа метода.",
+        "options": [
+          "double Rect::area() const { … }",
+          "double area() const { … }",
+          "double Rect.area() const { … }",
+          "Rect::double area() { … }"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Почему метод Point moved(double dx, double dy) const удобнее, чем void move(double dx, double dy)?",
+        "explanation": "Оба варианта полезны; moved не трогает получателя и годится для const-объектов.",
+        "options": [
+          "Он не меняет исходную точку и работает даже у константы — результат возвращается новым объектом",
+          "Он быстрее, потому что ничего не копирует",
+          "Методы с void нельзя вызывать через точку",
+          "moved можно вызвать без объекта"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Чего не умеет структура с открытыми полями?",
+        "explanation": "Любой код может присвоить полю что угодно. Защиту правил даёт класс с закрытыми полями.",
+        "options": [
+          "Защитить свои данные от изменения в обход правил",
+          "Иметь методы",
+          "Храниться в std::vector",
+          "Иметь значения полей по умолчанию"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q9",
+        "question": "Чему равно поле count в объекте Tally t; если структура объявлена как struct Tally { int count; };?",
+        "explanation": "Без значения по умолчанию локальный объект содержит то, что осталось в памяти. Пишите int count = 0;.",
+        "options": [
+          "Неопределённому значению — мусору",
+          "Нулю",
+          "Единице",
+          "Программа не скомпилируется"
+        ],
+        "correct": 0
       }
     ]
   }

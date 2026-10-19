@@ -1,0 +1,249 @@
+## Свой тип не печатается
+
+Для чисел и строк `std::println("{}", x)` работает сразу. Для своего типа — нет:
+
+```cpp
+#include <print>
+
+struct Point {
+    int x;
+    int y;
+};
+
+int main() {
+    Point p{3, -4};
+    std::println("{}", p);          // Ошибка компиляции: std::formatter<Point> не определён
+    return 0;
+}
+```
+
+`std::format` не знает, как превращать `Point` в текст, — и не должен знать: это решение автора типа. Его можно сообщить двумя способами. Старый — оператор `<<` для потоков; новый — специализация `std::formatter` для `std::format` и `std::print`. В современном коде нужен второй, а первый — чтобы читать и поддерживать существующий код. Часто тип поддерживает оба.
+
+## `std::formatter`
+
+```cpp
+#include <format>
+#include <print>
+#include <string>
+
+struct Point {
+    int x;
+    int y;
+};
+
+template <>
+struct std::formatter<Point> {
+    constexpr auto parse(std::format_parse_context &ctx) {
+        return ctx.begin();
+    }
+
+    auto format(const Point &p, std::format_context &ctx) const {
+        return std::format_to(ctx.out(), "({}, {})", p.x, p.y);
+    }
+};
+
+int main() {
+    Point p{3, -4};
+    std::println("{} и {}", p, Point{0, 0});
+    std::string text = std::format("точка {}", p);
+    std::println("{} ({} байт)", text, text.size());
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+(3, -4) и (0, 0)
+точка (3, -4) (18 байт)
+```
+
+Строки `template <> struct std::formatter<Point>` объявляют **специализацию** — версию стандартного шаблона `std::formatter` для нашего типа. Шаблоны подробно не нужны, достаточно схемы: у специализации два метода.
+
+- `parse` разбирает спецификацию после двоеточия в `{…}`. Если тип не поддерживает настроек, метод просто возвращает `ctx.begin()`: «ничего не прочитал».
+- `format` пишет текст. `std::format_to(ctx.out(), …)` — тот же `std::format`, но результат дописывается в вывод, а не в новую строку. Метод возвращает позицию, где закончилась запись, — её и возвращает `format_to`.
+
+После этого `Point` работает везде: в `std::println`, `std::format`, внутри других форматтеров. Проверка шаблона при компиляции тоже работает: `std::println("{:d}", p)` — ошибка, ведь `parse` не принимает никакой спецификации.
+
+## Ширина и выравнивание даром
+
+Часто текст своего типа удобно сначала собрать, а дальше пусть ширину, выравнивание и заполнитель обработает готовый форматтер строк. Для этого специализацию **наследуют** от `std::formatter<std::string>`:
+
+```cpp
+#include <format>
+#include <print>
+#include <string>
+
+class Money {
+public:
+    explicit Money(long long kopecks) : kopecks_(kopecks) {}
+
+    long long kopecks() const {
+        return kopecks_;
+    }
+
+private:
+    long long kopecks_;
+};
+
+template <>
+struct std::formatter<Money> : std::formatter<std::string> {
+    auto format(const Money &m, std::format_context &ctx) const {
+        std::string text = std::format("{}.{:02} руб.", m.kopecks() / 100, m.kopecks() % 100);
+        return std::formatter<std::string>::format(text, ctx);
+    }
+};
+
+int main() {
+    std::println("[{:>14}]", Money(123456));
+    std::println("[{:<14}]", Money(5));
+    std::println("[{:*^16}]", Money(9990));
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+[  1234.56 руб.]
+[0.05 руб.     ]
+[***99.90 руб.***]
+```
+
+`parse` унаследован: он понимает всё, что понимает строка, — `>`, `<`, `^`, ширину, заполнитель. Наш `format` только готовит текст и передаёт его базовому `format`. Слово `: std::formatter<std::string>` означает наследование — его подробно разберём в части модуля о наследовании, а здесь достаточно знать приём.
+
+## Своя спецификация
+
+Можно придумать и собственные буквы после двоеточия. Например, температура, которая печатается в Цельсиях по умолчанию и в Фаренгейтах по `{:F}`:
+
+```cpp
+#include <format>
+#include <print>
+
+struct Temperature {
+    double celsius;
+};
+
+template <>
+struct std::formatter<Temperature> {
+    char unit = 'C';
+
+    constexpr auto parse(std::format_parse_context &ctx) {
+        auto it = ctx.begin();
+        if (it != ctx.end() && (*it == 'C' || *it == 'F')) {
+            unit = *it++;
+        }
+        if (it != ctx.end() && *it != '}') {
+            throw std::format_error("ожидается C или F");
+        }
+        return it;
+    }
+
+    auto format(const Temperature &t, std::format_context &ctx) const {
+        double value = unit == 'C' ? t.celsius : t.celsius * 9 / 5 + 32;
+        return std::format_to(ctx.out(), "{:.1f}°{}", value, unit);
+    }
+};
+
+int main() {
+    Temperature boiling{100};
+    std::println("{} {:F} {:C}", boiling, boiling, Temperature{-40});
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+100.0°C 212.0°F -40.0°C
+```
+
+`parse` читает символы спецификации — от позиции `ctx.begin()` до закрывающей `}` — и запоминает настройку в поле `unit`. Затем `format` её использует. `parse` выполняется **при компиляции** (поэтому он `constexpr`), и исключение `std::format_error` в нём превращается в ошибку компиляции: `std::println("{:K}", t)` не соберётся.
+
+## Оператор `<<` для потоков
+
+Потоки печатают свои типы через оператор `<<`. Его объявляют, как правило, скрытым другом:
+
+```cpp
+#include <iostream>
+
+class Money {
+public:
+    explicit Money(long long kopecks) : kopecks_(kopecks) {}
+
+    friend std::ostream &operator<<(std::ostream &out, const Money &m) {
+        return out << m.kopecks_ / 100 << '.' << m.kopecks_ % 100 / 10 << m.kopecks_ % 10 << " руб.";
+    }
+
+private:
+    long long kopecks_;
+};
+
+int main() {
+    Money a(123456), b(7);
+    std::cout << a << " и " << b << '\n';
+    return 0;
+}
+```
+
+Вывод:
+
+```text
+1234.56 руб. и 0.07 руб.
+```
+
+Оператор получает поток по неконстантной ссылке, пишет в него и **возвращает тот же поток** — поэтому `<<` можно соединять в цепочку, как метод, возвращающий `*this`. Минус потоков вы уже знаете: ширина `std::setw` применяется не ко всему тексту объекта, а только к первому выведенному значению, и работает в байтах. Поэтому в новом коде основной способ — `std::formatter`.
+
+<Concept title="Печать своих типов">
+
+Чтобы свой тип печатался через `std::format` и `std::print`, специализируют `std::formatter<T>` с методами `parse` (разбор спецификации, выполняется при компиляции) и `format` (запись текста через `std::format_to(ctx.out(), …)`). Наследование от `std::formatter<std::string>` даёт ширину и выравнивание без собственного разбора. Для потоков определяют `std::ostream &operator<<(std::ostream &, const T &)`, возвращающий поток.
+
+</Concept>
+
+## Частые ошибки
+
+<CommonMistake title="format без const">
+
+Метод `format` специализации должен быть `const` — стандартная библиотека вызывает его у константного форматтера. Без `const` компилятор выдаст длинное сообщение о неудовлетворённых требованиях.
+
+</CommonMistake>
+
+<CommonMistake title="parse, который ничего не возвращает">
+
+`parse` обязан вернуть позицию, на которой закончил разбор. Даже если настроек нет — `return ctx.begin();`.
+
+</CommonMistake>
+
+<CommonMistake title="operator<<, который не возвращает поток">
+
+`void operator<<(std::ostream &out, const Money &m)` печатает, но ломает цепочку `std::cout << a << b`. Возвращайте `std::ostream &`.
+
+</CommonMistake>
+
+<CommonMistake title="Метод print вместо форматтера">
+
+Метод `void print() const` печатает только целую строку и только в `stdout`. Форматтер позволяет вставить объект в любой текст, записать в строку, в файл или в `stderr`.
+
+</CommonMistake>
+
+## Попробуйте сами
+
+1. Уберите `const` у метода `format` в специализации для `Point`. Прочитайте сообщение компилятора.
+2. Вызовите `std::println("{:K}", boiling)`. На каком этапе произойдёт ошибка?
+3. Напечатайте `Money` через `std::cout << std::setw(16) << a`. Почему выравнивание получилось не таким, как через `{:>16}`?
+
+## Практика
+
+1. **Точки и отрезки** — форматтер для простой структуры.
+2. **Чек в рублях** — наследование от форматтера строк и выравнивание.
+3. **Найди ошибку: потерянная цепочка** — `operator<<` не возвращает поток.
+4. **Время со спецификацией** — свои буквы после двоеточия.
+
+<CodingExercise />
+
+## Итоги
+
+- Свой тип становится печатаемым через `std::format`/`std::print` специализацией `std::formatter<T>`.
+- `parse` разбирает спецификацию (при компиляции) и возвращает позицию; `format` пишет текст через `std::format_to(ctx.out(), …)` и должен быть `const`.
+- Наследование от `std::formatter<std::string>` даёт ширину, выравнивание и заполнитель бесплатно.
+- Для потоков определяют `operator<<`, возвращающий `std::ostream &`.

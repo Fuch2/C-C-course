@@ -5,7 +5,7 @@ LLDB — отладчик из того же проекта, что и Clang. Н
 Всё, что вы узнали о GDB, переносится сюда целиком: точки останова, шаги, стек вызовов, точки наблюдения. Отличается только язык команд. Как и раньше, программу собирают с `-g -O0`:
 
 ```text
-$ clang -std=c17 -Wall -Wextra -g -O0 search.c -o search
+$ clang -std=c23 -Wall -Wextra -g -O0 search.c -o search
 $ lldb ./search
 (lldb) target create "./search"
 Current executable set to '/Users/u/search' (arm64).

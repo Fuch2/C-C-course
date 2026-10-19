@@ -1,84 +1,128 @@
 {
   "id": "advanced-callbacks",
-  "title": "Callbacks",
-  "description": "Callback передаёт выбор действия вызывающему коду, а алгоритм сохраняет контроль над обходом.",
+  "title": "Функции обратного вызова",
+  "description": "Callback и функции высшего порядка; передача данных через контекст void *ctx вместо глобальных переменных; изменяемый контекст как замыкание; досрочная остановка обхода; регистрация обработчиков и время жизни контекста; atexit; почему у qsort нет контекста; договор обратного вызова.",
   "moduleId": "advanced-c",
-  "order": 15,
-  "difficulty": "advanced",
-  "estimatedMinutes": 100,
+  "order": 14,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 60,
   "prerequisites": ["advanced-function-pointers"],
   "objectives": [
-    "Объяснить: Callbacks",
-    "Различать корректный контракт и ошибку: Сохранение адреса локального контекста для будущего вызова создаёт dangling pointer.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Писать функции высшего порядка, принимающие callback",
+    "Передавать в callback данные через контекст void * вместо глобальных переменных",
+    "Использовать соглашение о досрочной остановке обхода",
+    "Регистрировать обработчики и следить за временем жизни их контекста"
   ],
-  "tags": ["C17", "углублённый C", "Callbacks"],
+  "tags": ["Callback", "Контекст", "void *", "atexit", "Функции высшего порядка"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-callbacks-exercise",
-    "title": "Практика: Callbacks",
-    "description": "Ввод n 0…20, порог t −1000…1000 и n значений того же диапазона. Через callback и контекст подсчитайте значения строго больше t.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-callbacks-task-1",
+    "title": "Фильтр с контекстом",
+    "description": "Прочитайте `n` и `n` целых чисел, затем до конца ввода — запросы фильтрации:\n- `gt X` — числа больше `X`;\n- `lt X` — числа меньше `X`;\n- `range A B` — числа от `A` до `B` включительно;\n- `div K` — числа, делящиеся на `K` (`K ≠ 0`);\n- `odd` — нечётные числа.\n\nДля каждого запроса напечатайте подходящие числа в исходном порядке через пробел или `нет`.\n\nНапишите одну функцию\n\n```c\nsize_t filter(const int *in, size_t n, int *out, Predicate *keep, void *ctx);\n```\n\nгде `typedef int Predicate(int value, void *ctx);`, и по предикату на каждый вид запроса. Данные запроса (порог, границы, делитель) передавайте через `ctx`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "4 5 4 5 6 9",
-        "output": "2\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "7\n12 5 40 7 25 3 18\ngt 10\nrange 5 12\nodd\n",
+        "output": "12 40 25 18\n12 5 7\n5 7 25 3\n"
       },
       {
-        "input": "0 0",
-        "output": "0\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "3\n2 4 6\nodd\nlt 2\ndiv 2\n",
+        "output": "нет\nнет\n2 4 6\n"
       }
     ],
     "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+      "1 ≤ n ≤ 100; числа и параметры по модулю не больше 10⁹; запросов не больше 20."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Алгоритм задаёт маршрут, callback — действие на каждой остановке, context — переносимый блокнот."
+        "text": "Для gt, lt и div контекст — указатель на int; для range — на структуру { int low, high; }; для odd контекст не нужен, передайте NULL.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Сохранение адреса локального контекста для будущего вызова создаёт dangling pointer."
+        "text": "filter копирует в out элементы, для которых keep(in[i], ctx) не равен нулю, и возвращает их количество.",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Проверка нечётности для отрицательных чисел: value % 2 != 0 (остаток может быть равен −1).",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "4 5 4 5 6 9",
-        "expected": "2\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "7\n12 5 40 7 25 3 18\ngt 10\nrange 5 12\nodd\n",
+        "expected": "12 40 25 18\n12 5 7\n5 7 25 3\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "0 0",
-        "expected": "0\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "3\n2 4 6\nodd\nlt 2\ndiv 2\n",
+        "expected": "нет\nнет\n2 4 6\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "3 -2 -3 -2 -1",
-        "expected": "1\n"
+        "id": "hidden-1",
+        "name": "Отрицательные нечётные",
+        "stdin": "5\n-3 -2 -1 0 1\nodd\n",
+        "expected": "-3 -1 1\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Пустой диапазон",
+        "stdin": "4\n10 20 30 40\nrange 40 10\n",
+        "expected": "нет\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Отрицательный делитель",
+        "stdin": "6\n-9 -6 -3 3 6 9\ndiv -3\n",
+        "expected": "-9 -6 -3 3 6 9\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Большие числа",
+        "stdin": "1\n1000000000\ngt 999999999\nlt 1000000000\n",
+        "expected": "1000000000\nнет\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Равные числа",
+        "stdin": "5\n5 5 5 5 5\nrange 5 5\ngt 5\n",
+        "expected": "5 5 5 5 5\nнет\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Несколько запросов",
+        "stdin": "8\n1 2 3 4 5 6 7 8\ngt 2\nlt 7\ndiv 4\nodd\n",
+        "expected": "3 4 5 6 7 8\n1 2 3 4 5 6\n4 8\n1 3 5 7\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Широкий диапазон",
+        "stdin": "3\n-1000000000 0 1000000000\nrange -1000000000 1000000000\n",
+        "expected": "-1000000000 0 1000000000\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Делимость",
+        "stdin": "2\n7 14\ndiv 7\ndiv 14\ndiv 28\n",
+        "expected": "7 14\n14\nнет\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\ntypedef struct { int threshold; int count; } Context;\nstatic void count_above(int x,void *opaque){Context *c=opaque;if(x>c->threshold)++c->count;}\nint main(void) {\n    int n; Context context={0,0};\n    if(scanf(\"%d%d\", &n, &context.threshold)!=2 || n<0 || n>20) return 1;\n    void (*visit)(int,void*)=count_above;\n    for(int i=0;i<n;++i){int x;if(scanf(\"%d\",&x)!=1)return 1;visit(x,&context);}\n    printf(\"%d\\n\",context.count);\n    return 0;\n}\n",
-    "solutionExplanation": "Алгоритм задаёт маршрут, callback — действие на каждой остановке, context — переносимый блокнот.\n\nСохранение адреса локального контекста для будущего вызова создаёт dangling pointer.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '4 5 4 5 6 9' → '2\\n'; '0 0' → '0\\n'; '3 -2 -3 -2 -1' → '1\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\ntypedef int Predicate(int value, void *ctx);\n\nstruct Range {\n    int low, high;\n};\n\nstatic size_t filter(const int *in, size_t n, int *out, Predicate *keep, void *ctx) {\n    size_t kept = 0;\n    for (size_t i = 0; i < n; i++) {\n        if (keep(in[i], ctx)) {\n            out[kept++] = in[i];\n        }\n    }\n    return kept;\n}\n\nstatic int greater(int value, void *ctx) { return value > *(const int *)ctx; }\nstatic int less(int value, void *ctx) { return value < *(const int *)ctx; }\nstatic int divisible(int value, void *ctx) { return value % *(const int *)ctx == 0; }\n\nstatic int in_range(int value, void *ctx) {\n    const struct Range *r = ctx;\n    return value >= r->low && value <= r->high;\n}\n\nstatic int odd(int value, void *ctx) {\n    (void)ctx;\n    return value % 2 != 0;\n}\n\nint main(void) {\n    int n, data[100], result[100];\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 100) {\n        return 0;\n    }\n    for (int i = 0; i < n; i++) {\n        if (scanf(\"%d\", &data[i]) != 1) {\n            return 0;\n        }\n    }\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        int x;\n        struct Range range;\n        size_t kept;\n        if (strcmp(command, \"gt\") == 0 && scanf(\"%d\", &x) == 1) {\n            kept = filter(data, (size_t)n, result, greater, &x);\n        } else if (strcmp(command, \"lt\") == 0 && scanf(\"%d\", &x) == 1) {\n            kept = filter(data, (size_t)n, result, less, &x);\n        } else if (strcmp(command, \"div\") == 0 && scanf(\"%d\", &x) == 1) {\n            kept = filter(data, (size_t)n, result, divisible, &x);\n        } else if (strcmp(command, \"range\") == 0 && scanf(\"%d %d\", &range.low, &range.high) == 2) {\n            kept = filter(data, (size_t)n, result, in_range, &range);\n        } else if (strcmp(command, \"odd\") == 0) {\n            kept = filter(data, (size_t)n, result, odd, NULL);\n        } else {\n            break;\n        }\n        if (kept == 0) {\n            printf(\"нет\\n\");\n            continue;\n        }\n        for (size_t i = 0; i < kept; i++) {\n            printf(i + 1 < kept ? \"%d \" : \"%d\\n\", result[i]);\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Функция `filter` одна для всех запросов: она обходит массив и спрашивает у предиката, оставить ли элемент. Что именно проверяется — решает предикат, а данные для проверки приходят через `ctx`. Для порога это `int *`, для диапазона — указатель на структуру из двух чисел, а предикату `odd` данные не нужны, и он получает `NULL` (строка `(void)ctx;` убирает предупреждение о неиспользуемом параметре).\n\nБез контекста пришлось бы держать порог и границы в глобальных переменных. Тогда `filter` нельзя было бы вызвать вложенно — например, отфильтровать результат другого фильтра внутри предиката, — а в многопоточной программе два потока портили бы друг другу параметры.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
@@ -86,91 +130,336 @@
   },
   "additionalExercises": [
     {
-      "id": "advanced-project-vector",
-      "title": "Динамический массив на C",
-      "description": "Реализуйте vector-подобный контейнер int: структуру Vector с data, size, capacity и функции reserve, push, pop, at, clear, destroy. Инвариант: size <= capacity; только элементы [0,size) инициализированы. reserve сохраняет данные и состояние при отказе; push при заполнении удваивает вместимость, начиная с 1. clear сохраняет выделенную память. destroy освобождает её и обнуляет структуру.\n\nПротокол: первая строка q (0…200), далее q команд: + x добавляет int −1000…1000 без вывода; - удаляет и печатает последний элемент либо ПУСТО; ? i печатает элемент индекса i (0…1000) либо ОШИБКА; r n резервирует не менее n (0…1000) без вывода; c очищает без освобождения; s печатает size и capacity. reserve увеличивает capacity ровно до запрошенной величины, если она больше текущей. Некорректные команды не подаются. После последней команды уничтожьте контейнер. Ошибка выделения завершает программу с ненулевым кодом.\n\nТесты проверяют наблюдаемое поведение и диагностику памяти. На разборе отдельно проверьте инварианты и гарантию сохранения состояния при отказе allocator.",
-      "difficulty": "advanced",
-      "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+      "id": "advanced-callbacks-task-2",
+      "title": "Свёртка",
+      "description": "Прочитайте `n` и `n` целых чисел, затем до конца ввода — команды. Каждая команда вычисляет одну величину по всему массиву:\n- `sum` — сумма;\n- `minmax` — минимум и максимум через пробел;\n- `mean` — среднее арифметическое с двумя знаками после точки;\n- `prod M` — произведение по модулю `M` (результат от 0 до M − 1);\n- `streak` — длина самой длинной серии подряд идущих строго возрастающих чисел.\n\nНапишите функцию свёртки\n\n```c\nvoid fold(const int *values, size_t n, Step *step, void *acc);\n```\n\nгде `typedef void Step(int value, void *acc);`. Она вызывает `step` для каждого элемента по порядку, а `step` обновляет **аккумулятор** — структуру, на которую указывает `acc`. Для каждой команды заведите свою структуру и свою функцию шага.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
-      "compiler": "clang",
+      "standard": "c23",
+      "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
         {
-          "input": "8\n+ 10\n+ 20\ns\n? 0\n-\n-\n-\ns\n",
-          "output": "2 2\n10\n20\n10\nПУСТО\n0 2\n",
-          "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+          "input": "5\n3 1 4 1 5\nsum\nminmax\nmean\n",
+          "output": "14\n1 5\n2.80\n"
         },
         {
-          "input": "4\nr 5\n+ -3\ns\n? 1\n",
-          "output": "1 5\nОШИБКА\n",
-          "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+          "input": "6\n1 2 3 1 2 0\nstreak\nprod 7\n",
+          "output": "3\n0\n"
         }
       ],
       "constraints": [
-        "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-        "В stdout только требуемый результат.",
-        "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+        "1 ≤ n ≤ 1000; числа по модулю не больше 10⁶; 2 ≤ M ≤ 10⁹.",
+        "Команд не больше 20."
       ],
       "hints": [
         {
           "id": "hint-1",
-          "order": 1,
-          "text": "Начните с инварианта size <= capacity и пустого состояния {0}."
+          "text": "Аккумулятор для minmax — { int min, max; int started; }, для mean — { long long sum; int count; }, для prod — { long long result; long long mod; }.",
+          "order": 1
         },
         {
           "id": "hint-2",
-          "order": 2,
-          "text": "Разделите запрос памяти и изменение владельца: временный указатель нужен даже при небольших тестах."
+          "text": "В prod приводите каждое число к остатку от 0 до M − 1: ((value % mod) + mod) % mod — у отрицательных чисел остаток в C отрицательный.",
+          "order": 2
         },
         {
           "id": "hint-3",
-          "order": 3,
-          "text": "Проверяйте индекс против size, а не capacity; clear меняет только size."
+          "text": "Для streak храните предыдущее значение, длину текущей серии и лучшую длину; на первом элементе текущая серия равна 1.",
+          "order": 3
         }
       ],
       "publicTests": [
         {
-          "id": "test-1",
-          "name": "Основной сценарий",
-          "stdin": "8\n+ 10\n+ 20\ns\n? 0\n-\n-\n-\ns\n",
-          "expected": "2 2\n10\n20\n10\nПУСТО\n0 2\n"
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5\n3 1 4 1 5\nsum\nminmax\nmean\n",
+          "expected": "14\n1 5\n2.80\n"
         },
         {
-          "id": "test-2",
-          "name": "Граничный сценарий 1",
-          "stdin": "4\nr 5\n+ -3\ns\n? 1\n",
-          "expected": "1 5\nОШИБКА\n"
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "6\n1 2 3 1 2 0\nstreak\nprod 7\n",
+          "expected": "3\n0\n"
         }
       ],
       "hiddenTests": [
         {
-          "id": "test-3",
-          "name": "Граничный сценарий 2",
-          "stdin": "0\n",
-          "expected": ""
+          "id": "hidden-1",
+          "name": "Одно число",
+          "stdin": "1\n-5\nsum\nminmax\nmean\nstreak\nprod 3\n",
+          "expected": "-5\n-5 -5\n-5.00\n1\n1\n"
         },
         {
-          "id": "test-4",
-          "name": "Граничный сценарий 3",
-          "stdin": "7\n+ 1\n+ 2\n+ 3\ns\nc\ns\n? 0\n",
-          "expected": "3 4\n0 4\nОШИБКА\n"
+          "id": "hidden-2",
+          "name": "Отрицательные в произведении",
+          "stdin": "4\n-7 2 -3 5\nprod 5\n",
+          "expected": "0\n"
         },
         {
-          "id": "test-5",
-          "name": "Граничный сценарий 4",
-          "stdin": "6\nr 3\nr 1\n+ 9\nc\n+ 4\ns\n",
-          "expected": "1 3\n"
+          "id": "hidden-3",
+          "name": "Убывание",
+          "stdin": "5\n5 4 3 2 1\nstreak\n",
+          "expected": "1\n"
         },
         {
-          "id": "test-6",
-          "name": "Граничный сценарий 5",
-          "stdin": "6\nr 1\n+ -1\n+ 2\n? 0\n? 1\ns\n",
-          "expected": "-1\n2\n2 2\n"
+          "id": "hidden-4",
+          "name": "Нестрогий рост",
+          "stdin": "6\n1 1 2 2 3 3\nstreak\n",
+          "expected": "2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Среднее с дробью",
+          "stdin": "3\n1 2 2\nmean\n",
+          "expected": "1.67\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Большие числа",
+          "stdin": "4\n1000000 1000000 1000000 1000000\nsum\nprod 1000000000\n",
+          "expected": "4000000\n0\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Смешанные",
+          "stdin": "7\n-1 0 1 -1 0 1 2\nstreak\nminmax\nsum\n",
+          "expected": "4\n-1 2\n2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Разные модули",
+          "stdin": "3\n2 3 4\nprod 2\nprod 1000000000\n",
+          "expected": "0\n24\n"
         }
       ],
-      "referenceSolution": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\ntypedef struct { int *data; size_t size, capacity; } Vector;\nstatic int reserve(Vector *v, size_t requested) {\n    if (requested <= v->capacity) return 1;\n    if (requested > SIZE_MAX / sizeof *v->data) return 0;\n    int *next = realloc(v->data, requested * sizeof *next);\n    if (!next) return 0;\n    v->data = next;\n    v->capacity = requested;\n    return 1;\n}\nstatic int push(Vector *v, int value) {\n    if (v->size == v->capacity) {\n        if (v->capacity > SIZE_MAX / 2) return 0;\n        size_t next = v->capacity ? v->capacity * 2 : 1;\n        if (!reserve(v, next)) return 0;\n    }\n    v->data[v->size++] = value;\n    return 1;\n}\nstatic int pop(Vector *v, int *out) {\n    if (!v->size) return 0;\n    *out = v->data[--v->size];\n    return 1;\n}\nstatic int at(const Vector *v, size_t index, int *out) {\n    if (index >= v->size) return 0;\n    *out = v->data[index];\n    return 1;\n}\nstatic void clear(Vector *v) { v->size = 0; }\nstatic void destroy(Vector *v) { free(v->data); *v = (Vector){0}; }\nint main(void) {\n    Vector values = {0}; int q, failed=0;\n    if (scanf(\"%d\", &q)!=1 || q<0 || q>200) return 1;\n    for (int i=0;i<q;++i) {\n        char command; int value; size_t index;\n        if (scanf(\" %c\", &command)!=1) { failed=1; break; }\n        if (command=='+') {\n            if (scanf(\"%d\",&value)!=1 || !push(&values,value)) { failed=1; break; }\n        } else if (command=='-') {\n            if (pop(&values,&value)) printf(\"%d\\n\",value); else puts(\"ПУСТО\");\n        } else if (command=='?') {\n            if (scanf(\"%zu\",&index)!=1) { failed=1; break; }\n            if (at(&values,index,&value)) printf(\"%d\\n\",value); else puts(\"ОШИБКА\");\n        } else if (command=='r') {\n            if (scanf(\"%zu\",&index)!=1 || !reserve(&values,index)) { failed=1; break; }\n        } else if (command=='c') clear(&values);\n        else if (command=='s') printf(\"%zu %zu\\n\",values.size,values.capacity);\n        else { failed=1; break; }\n    }\n    destroy(&values);\n    return failed;\n}\n",
-      "solutionExplanation": "reserve проверяет умножение до выделения и сохраняет прежний указатель, пока realloc не подтвердит успех. capacity меняется только после этого. push сначала обеспечивает место, затем инициализирует data[size] и увеличивает size. pop уменьшает логическую длину без уменьшения блока. at не возвращает данные за size, даже если там есть выделенная память. clear не читает старые элементы. destroy допустим для пустого состояния и после себя оставляет пустое состояние.\n\nПри удвоении суммарное число копирований на последовательности добавлений линейно, поэтому амортизированная стоимость push — O(1); отдельное расширение остаётся O(n). reserve и доступы могут инвалидировать прежние указатели после realloc: клиент не должен сохранять адрес элемента через потенциальный рост. Проверьте это как часть контракта, а не по совпадению численных адресов.",
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\ntypedef void Step(int value, void *acc);\n\nstatic void fold(const int *values, size_t n, Step *step, void *acc) {\n    for (size_t i = 0; i < n; i++) {\n        step(values[i], acc);\n    }\n}\n\nstatic void step_sum(int value, void *acc) {\n    *(long long *)acc += value;\n}\n\nstruct MinMax {\n    int min, max;\n    int started;\n};\n\nstatic void step_minmax(int value, void *acc) {\n    struct MinMax *m = acc;\n    if (!m->started || value < m->min) {\n        m->min = value;\n    }\n    if (!m->started || value > m->max) {\n        m->max = value;\n    }\n    m->started = 1;\n}\n\nstruct Mean {\n    long long sum;\n    int count;\n};\n\nstatic void step_mean(int value, void *acc) {\n    struct Mean *m = acc;\n    m->sum += value;\n    m->count++;\n}\n\nstruct Product {\n    long long result;\n    long long mod;\n};\n\nstatic void step_prod(int value, void *acc) {\n    struct Product *p = acc;\n    long long v = ((value % p->mod) + p->mod) % p->mod;\n    p->result = p->result * v % p->mod;\n}\n\nstruct Streak {\n    int prev;\n    int current;\n    int best;\n};\n\nstatic void step_streak(int value, void *acc) {\n    struct Streak *s = acc;\n    s->current = (s->current > 0 && value > s->prev) ? s->current + 1 : 1;\n    if (s->current > s->best) {\n        s->best = s->current;\n    }\n    s->prev = value;\n}\n\nint main(void) {\n    int n;\n    static int data[1000];\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 1000) {\n        return 0;\n    }\n    for (int i = 0; i < n; i++) {\n        if (scanf(\"%d\", &data[i]) != 1) {\n            return 0;\n        }\n    }\n    char command[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"sum\") == 0) {\n            long long sum = 0;\n            fold(data, (size_t)n, step_sum, &sum);\n            printf(\"%lld\\n\", sum);\n        } else if (strcmp(command, \"minmax\") == 0) {\n            struct MinMax m = {0, 0, 0};\n            fold(data, (size_t)n, step_minmax, &m);\n            printf(\"%d %d\\n\", m.min, m.max);\n        } else if (strcmp(command, \"mean\") == 0) {\n            struct Mean m = {0, 0};\n            fold(data, (size_t)n, step_mean, &m);\n            printf(\"%.2f\\n\", (double)m.sum / m.count);\n        } else if (strcmp(command, \"prod\") == 0) {\n            struct Product p = {1, 2};\n            if (scanf(\"%lld\", &p.mod) != 1) {\n                break;\n            }\n            p.result = 1 % p.mod;\n            fold(data, (size_t)n, step_prod, &p);\n            printf(\"%lld\\n\", p.result);\n        } else if (strcmp(command, \"streak\") == 0) {\n            struct Streak s = {0, 0, 0};\n            fold(data, (size_t)n, step_streak, &s);\n            printf(\"%d\\n\", s.best);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Свёртка — общая схема «пройти по данным и накопить результат». Функция `fold` не знает, что именно копится: это решают функция шага и структура-аккумулятор, переданная через `void *acc`. Каждой задаче — свой аккумулятор: для суммы хватает одного `long long`, для среднего нужны сумма и количество, для серии — предыдущее значение и две длины.\n\nИзменяемый контекст делает функцию шага похожей на замыкание: она «помнит» состояние между вызовами, но это состояние лежит не в глобальной переменной, а в структуре вызывающего кода. Поэтому две свёртки можно выполнять одновременно с разными аккумуляторами.\n\nВ `prod` остаток приводится к неотрицательному: в C `-7 % 5` равно `-2`. Произведение двух чисел меньше 10⁹ помещается в `long long`, поэтому `result * v % mod` не переполняется.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-callbacks-task-3",
+      "title": "Сортировка с контекстом",
+      "description": "Прочитайте `n` записей `имя возраст очки`. Затем до конца ввода — команды `sort ключ направление`, где ключ — `name`, `age` или `score`, направление — `asc` (по возрастанию) или `desc` (по убыванию). Каждая команда сортирует **текущий** порядок записей, после чего печатаются имена через пробел.\n\nСортировка должна быть **устойчивой**: записи с равными ключами сохраняют порядок, полученный после предыдущих команд. Поэтому, например, `sort age asc`, а затем `sort score desc` упорядочивают по очкам, а при равных очках — по возрасту.\n\nСтандартная `qsort` не подходит: она не устойчива, а её функция сравнения не получает контекста. Напишите сортировку вставками\n\n```c\nvoid sort_records(Record *a, size_t n, Compare *cmp, void *ctx);\n```\n\nгде `typedef int Compare(const Record *x, const Record *y, void *ctx);`, и одну функцию сравнения, которая берёт ключ и направление из контекста.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "4\nann 30 90\nbob 25 80\ncid 30 80\ndan 25 90\nsort age asc\nsort score desc\n",
+          "output": "bob dan ann cid\ndan ann bob cid\n"
+        },
+        {
+          "input": "3\nzoe 1 1\namy 2 2\nmax 3 3\nsort name asc\n",
+          "output": "amy max zoe\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 100; имена — до 15 латинских букв; возраст и очки — целые от 0 до 10⁶.",
+        "Команд не больше 10; имена сравниваются через strcmp."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Контекст — структура { int key; int descending; }. Функция сравнения вычисляет результат по ключу, а при descending меняет знак.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Сортировка вставками устойчива, если сдвигать элемент влево, только пока cmp(&a[j], &key, ctx) > 0 — строго больше, а не больше или равно.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Сравнение чисел без переполнения: (x > y) - (x < y).",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "4\nann 30 90\nbob 25 80\ncid 30 80\ndan 25 90\nsort age asc\nsort score desc\n",
+          "expected": "bob dan ann cid\ndan ann bob cid\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3\nzoe 1 1\namy 2 2\nmax 3 3\nsort name asc\n",
+          "expected": "amy max zoe\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Все ключи равны",
+          "stdin": "3\nc 1 5\nb 1 5\na 1 5\nsort age desc\nsort score asc\n",
+          "expected": "c b a\nc b a\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Одна запись",
+          "stdin": "1\nsolo 10 10\nsort name desc\n",
+          "expected": "solo\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Разворот",
+          "stdin": "4\nd 4 1\nc 3 2\nb 2 3\na 1 4\nsort score asc\nsort score desc\n",
+          "expected": "d c b a\na b c d\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Имя, затем возраст",
+          "stdin": "5\nann 20 100\nbob 20 90\ncid 21 100\ndan 19 90\neve 21 80\nsort name desc\nsort age asc\n",
+          "expected": "eve dan cid bob ann\ndan bob ann eve cid\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Регистр в strcmp",
+          "stdin": "3\nAnn 1 1\nann 1 1\nBob 1 1\nsort name asc\n",
+          "expected": "Ann Bob ann\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Крайние значения",
+          "stdin": "4\nw 0 1000000\nx 1000000 0\ny 500000 500000\nz 0 0\nsort age desc\nsort score asc\n",
+          "expected": "x y w z\nx z y w\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Три сортировки",
+          "stdin": "6\na 3 1\nb 1 2\nc 2 1\nd 1 1\ne 3 2\nf 2 2\nsort age asc\nsort score asc\nsort name desc\n",
+          "expected": "b d c f a e\nd c a b f e\nf e d c b a\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Равные записи",
+          "stdin": "2\nx 5 5\ny 5 5\nsort score desc\n",
+          "expected": "x y\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    char name[16];\n    int age;\n    int score;\n} Record;\n\ntypedef int Compare(const Record *x, const Record *y, void *ctx);\n\nenum Key { BY_NAME, BY_AGE, BY_SCORE };\n\nstruct Order {\n    enum Key key;\n    int descending;\n};\n\nstatic void sort_records(Record *a, size_t n, Compare *cmp, void *ctx) {\n    for (size_t i = 1; i < n; i++) {\n        Record current = a[i];\n        size_t j = i;\n        while (j > 0 && cmp(&a[j - 1], &current, ctx) > 0) {\n            a[j] = a[j - 1];\n            j--;\n        }\n        a[j] = current;\n    }\n}\n\nstatic int compare_by_order(const Record *x, const Record *y, void *ctx) {\n    const struct Order *order = ctx;\n    int result;\n    if (order->key == BY_NAME) {\n        result = strcmp(x->name, y->name);\n    } else if (order->key == BY_AGE) {\n        result = (x->age > y->age) - (x->age < y->age);\n    } else {\n        result = (x->score > y->score) - (x->score < y->score);\n    }\n    return order->descending ? -result : result;\n}\n\nint main(void) {\n    int n;\n    Record records[100];\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > 100) {\n        return 0;\n    }\n    for (int i = 0; i < n; i++) {\n        if (scanf(\"%15s %d %d\", records[i].name, &records[i].age, &records[i].score) != 3) {\n            return 0;\n        }\n    }\n    char word[16], key[16], direction[16];\n    while (scanf(\"%15s %15s %15s\", word, key, direction) == 3) {\n        struct Order order;\n        order.key = strcmp(key, \"name\") == 0 ? BY_NAME : strcmp(key, \"age\") == 0 ? BY_AGE : BY_SCORE;\n        order.descending = strcmp(direction, \"desc\") == 0;\n        sort_records(records, (size_t)n, compare_by_order, &order);\n        for (int i = 0; i < n; i++) {\n            printf(i + 1 < n ? \"%s \" : \"%s\\n\", records[i].name);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Контекст превращает одну функцию сравнения в целое семейство: ключ и направление приходят через `ctx` и выбираются во время работы. С `qsort` пришлось бы писать шесть функций сравнения или хранить выбор в глобальной переменной.\n\nУстойчивость обеспечивает строгое сравнение в цикле вставки: элемент сдвигается влево только мимо **больших** элементов, а равные остаются перед ним в прежнем порядке. Именно поэтому последовательные сортировки складываются: сортировка по возрасту, а затем по очкам даёт порядок «по очкам, при равенстве — по возрасту». Так сортируют таблицы в интерфейсах при щелчках по заголовкам столбцов.\n\nНаправление `desc` реализовано сменой знака результата. Для устойчивости это корректно: равные элементы дают 0 и при смене знака, так что их порядок не меняется.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-callbacks-task-4",
+      "title": "Шина событий",
+      "description": "Реализуйте шину событий с подписками. Команды до конца ввода:\n- `sub ИМЯ СОБЫТИЕ РЕЖИМ` — подписчик `ИМЯ` подписывается на `СОБЫТИЕ`; режим `log` или `quiet`. Повторная подписка того же подписчика на то же событие ничего не меняет;\n- `unsub ИМЯ СОБЫТИЕ` — отменить эту подписку (если её нет — ничего не делать);\n- `emit СОБЫТИЕ ЧИСЛО` — разослать событие с числом всем подписанным на него, в порядке подписки. Если подписчиков нет, напечатайте `СОБЫТИЕ: нет подписчиков`;\n- `stats ИМЯ` — напечатать `ИМЯ: событий K, сумма S` — сколько событий получил подписчик и сумму их чисел за всё время (по всем его подпискам).\n\nОбработчик режима `log` печатает `ИМЯ получил СОБЫТИЕ ЧИСЛО` и обновляет статистику, обработчик `quiet` только обновляет статистику.\n\nКаждая подписка хранит указатель на функцию-обработчик и **контекст** — указатель на статистику своего подписчика. Рассылка вызывает обработчик подписки с событием, числом и этим контекстом.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "sub ann click log\nsub bob click quiet\nemit click 5\nemit key 1\nstats ann\nstats bob\n",
+          "output": "ann получил click 5\nkey: нет подписчиков\nann: событий 1, сумма 5\nbob: событий 1, сумма 5\n"
+        },
+        {
+          "input": "sub ann click log\nsub ann key log\nemit key 2\nunsub ann key\nemit key 3\nstats ann\n",
+          "output": "ann получил key 2\nkey: нет подписчиков\nann: событий 1, сумма 2\n"
+        }
+      ],
+      "constraints": [
+        "Имена и события — до 15 символов; подписчиков не больше 20, подписок одновременно не больше 50.",
+        "Команд не больше 200; числа по модулю не больше 10⁶."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Типы: struct Stats { char name[16]; int events; long long sum; }; typedef void Handler(const char *event, int value, void *ctx); и подписка { char event[16]; Handler *handler; struct Stats *ctx; int active; }.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Статистика подписчика ищется по имени (или создаётся). Подписка хранит указатель на неё — поэтому массив статистик не должен перемещаться в памяти: обычный массив фиксированного размера подходит.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Отписку удобно делать сдвигом оставшихся подписок, чтобы порядок рассылки сохранялся.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "sub ann click log\nsub bob click quiet\nemit click 5\nemit key 1\nstats ann\nstats bob\n",
+          "expected": "ann получил click 5\nkey: нет подписчиков\nann: событий 1, сумма 5\nbob: событий 1, сумма 5\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "sub ann click log\nsub ann key log\nemit key 2\nunsub ann key\nemit key 3\nstats ann\n",
+          "expected": "ann получил key 2\nkey: нет подписчиков\nann: событий 1, сумма 2\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Нет подписчиков и статистики",
+          "stdin": "stats ghost\nemit any 1\n",
+          "expected": "ghost: событий 0, сумма 0\nany: нет подписчиков\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Повторная подписка",
+          "stdin": "sub a e log\nsub a e log\nemit e 1\n",
+          "expected": "a получил e 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Порядок после отписки",
+          "stdin": "sub a e log\nsub b e log\nsub c e log\nunsub b e\nemit e 7\n",
+          "expected": "a получил e 7\nc получил e 7\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Отписка до подписки",
+          "stdin": "unsub a e\nsub a e quiet\nemit e -4\nemit e 10\nstats a\n",
+          "expected": "a: событий 2, сумма 6\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Статистика по нескольким подпискам",
+          "stdin": "sub a x quiet\nsub a y quiet\nemit x 1\nemit y 2\nemit z 3\nstats a\n",
+          "expected": "z: нет подписчиков\na: событий 2, сумма 3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Переподписка",
+          "stdin": "sub a e log\nunsub a e\nsub a e log\nemit e 9\nstats a\n",
+          "expected": "a получил e 9\na: событий 1, сумма 9\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Несколько событий",
+          "stdin": "sub p1 tick quiet\nsub p2 tick log\nsub p3 tock log\nemit tick 1000000\nemit tock -1000000\nstats p1\nstats p2\nstats p3\n",
+          "expected": "p2 получил tick 1000000\np3 получил tock -1000000\np1: событий 1, сумма 1000000\np2: событий 1, сумма 1000000\np3: событий 1, сумма -1000000\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Тихий режим",
+          "stdin": "sub a e quiet\nemit e 1\nemit e 1\nemit e 1\nstats a\nstats b\n",
+          "expected": "a: событий 3, сумма 3\nb: событий 0, сумма 0\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\nstruct Stats {\n    char name[16];\n    int events;\n    long long sum;\n};\n\ntypedef void Handler(const char *event, int value, void *ctx);\n\nstruct Subscription {\n    char event[16];\n    Handler *handler;\n    struct Stats *ctx;\n};\n\nstatic struct Stats stats[20];\nstatic int stats_count;\nstatic struct Subscription subs[50];\nstatic int sub_count;\n\nstatic struct Stats *find_stats(const char *name, int create) {\n    for (int i = 0; i < stats_count; i++) {\n        if (strcmp(stats[i].name, name) == 0) {\n            return &stats[i];\n        }\n    }\n    if (!create || stats_count == 20) {\n        return NULL;\n    }\n    struct Stats *s = &stats[stats_count++];\n    strcpy(s->name, name);\n    s->events = 0;\n    s->sum = 0;\n    return s;\n}\n\nstatic void handle_quiet(const char *event, int value, void *ctx) {\n    (void)event;\n    struct Stats *s = ctx;\n    s->events++;\n    s->sum += value;\n}\n\nstatic void handle_log(const char *event, int value, void *ctx) {\n    struct Stats *s = ctx;\n    printf(\"%s получил %s %d\\n\", s->name, event, value);\n    handle_quiet(event, value, ctx);\n}\n\nstatic int find_sub(const struct Stats *s, const char *event) {\n    for (int i = 0; i < sub_count; i++) {\n        if (subs[i].ctx == s && strcmp(subs[i].event, event) == 0) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nint main(void) {\n    char command[16], name[16], event[16], mode[16];\n    while (scanf(\"%15s\", command) == 1) {\n        if (strcmp(command, \"sub\") == 0 && scanf(\"%15s %15s %15s\", name, event, mode) == 3) {\n            struct Stats *s = find_stats(name, 1);\n            if (s == NULL || find_sub(s, event) >= 0 || sub_count == 50) {\n                continue;\n            }\n            strcpy(subs[sub_count].event, event);\n            subs[sub_count].handler = strcmp(mode, \"log\") == 0 ? handle_log : handle_quiet;\n            subs[sub_count].ctx = s;\n            sub_count++;\n        } else if (strcmp(command, \"unsub\") == 0 && scanf(\"%15s %15s\", name, event) == 2) {\n            struct Stats *s = find_stats(name, 0);\n            int index = s != NULL ? find_sub(s, event) : -1;\n            if (index >= 0) {\n                for (int i = index; i + 1 < sub_count; i++) {\n                    subs[i] = subs[i + 1];\n                }\n                sub_count--;\n            }\n        } else if (strcmp(command, \"emit\") == 0) {\n            int value;\n            if (scanf(\"%15s %d\", event, &value) != 2) {\n                break;\n            }\n            int delivered = 0;\n            for (int i = 0; i < sub_count; i++) {\n                if (strcmp(subs[i].event, event) == 0) {\n                    subs[i].handler(event, value, subs[i].ctx);\n                    delivered++;\n                }\n            }\n            if (delivered == 0) {\n                printf(\"%s: нет подписчиков\\n\", event);\n            }\n        } else if (strcmp(command, \"stats\") == 0 && scanf(\"%15s\", name) == 1) {\n            const struct Stats *s = find_stats(name, 0);\n            printf(\"%s: событий %d, сумма %lld\\n\", name, s ? s->events : 0, s ? s->sum : 0LL);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Шина хранит пары «обработчик + контекст» и вызывает их, когда приходит событие. Функция рассылки не знает, что делают обработчики и что лежит в контексте: она передаёт в каждый вызов указатель, сохранённый при подписке. Поэтому один и тот же обработчик `handle_quiet` обслуживает всех подписчиков — каждый со своей статистикой.\n\nКонтекст здесь живёт дольше, чем вызов, в котором создан: подписка сохраняет указатель на статистику и пользуется им при каждой рассылке. Поэтому статистики лежат в массиве фиксированного размера на всё время работы программы. Если бы их хранили в массиве, который растёт через `realloc`, сохранённые указатели после роста стали бы висячими — частая ошибка в системах с обратными вызовами.\n\nОтписка сдвигает оставшиеся подписки, а не переставляет последнюю на место удалённой: порядок вызова обработчиков — часть договора шины, и он не должен меняться от отписок.",
       "checking": {
         "type": "stdout",
         "comparison": "exact"
@@ -182,31 +471,91 @@
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Кто отвечает за время жизни context?",
+        "id": "q1",
+        "question": "Что такое функция обратного вызова?",
+        "explanation": "Callback — это «что сделать», а функция высшего порядка — «как и когда». qsort вызывает функцию сравнения, atexit — функции завершения.",
         "options": [
-          "Контракт и владелец переданного объекта",
-          "Сам тип void * автоматически продлевает жизнь"
+          "Функция, которую передают другой функции, чтобы та вызвала её в нужный момент",
+          "Функция, которая вызывает сама себя",
+          "Функция, которая возвращает управление в main",
+          "Функция, объявленная после места вызова"
         ],
-        "correct": 0,
-        "explanation": "Callback передаёт выбор действия вызывающему коду, а алгоритм сохраняет контроль над обходом. Контекст void * позволяет передать состояние без глобальных переменных. Контракт должен описывать, сколько раз вызывается обработчик, может ли он остановить обход и сохраняет ли алгоритм указатель на контекст после возврата."
+        "correct": 0
       },
       {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q2",
+        "question": "Зачем функции высшего порядка параметр void *ctx, который она сама не использует?",
+        "explanation": "Функция высшего порядка не знает, что нужно callback'у, поэтому передаёт непрозрачный указатель. Тип данных по этому адресу — договор между вызывающим и callback'ом.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "Сохранение адреса локального контекста для будущего вызова создаёт dangling pointer."
+          "Чтобы передать в каждый вызов callback'а данные вызывающего кода без глобальных переменных",
+          "Чтобы вернуть результат через указатель",
+          "Чтобы ускорить вызов callback'а",
+          "Это требование стандарта для всех функций с указателями на функции"
         ],
-        "correct": 1,
-        "explanation": "Алгоритм задаёт маршрут, callback — действие на каждой остановке, context — переносимый блокнот."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["10", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: int sum=0;visit(4,&sum);visit(6,&sum);printf(\"%d\\n\",sum); Ожидаемый результат: 10"
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\ntypedef int Predicate(int value, void *ctx);\n\nstatic int count_if(const int *a, int n, Predicate *p, void *ctx) {\n    int found = 0;\n    for (int i = 0; i < n; i++) {\n        found += p(a[i], ctx) != 0;\n    }\n    return found;\n}\n\nstatic int divisible(int value, void *ctx) {\n    return value % *(int *)ctx == 0;\n}\n\nint main(void) {\n    int data[] = {6, 9, 10, 12, 15, 20};\n    int k = 3;\n    int by3 = count_if(data, 6, divisible, &k);\n    k = 5;\n    printf(\"%d %d\\n\", by3, count_if(data, 6, divisible, &k));\n    return 0;\n}",
+        "explanation": "На 3 делятся 6, 9, 12, 15 — четыре числа; на 5 — 10, 15, 20 — три. Контекст меняется между вызовами, а функции остаются теми же.",
+        "type": "text",
+        "answers": ["4 3"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n#include <stdlib.h>\n\nstatic void a(void) { puts(\"A\"); }\nstatic void b(void) { puts(\"B\"); }\nstatic void c(void) { puts(\"C\"); }\n\nint main(void) {\n    atexit(a);\n    atexit(b);\n    puts(\"main\");\n    atexit(c);\n    return 0;\n}",
+        "explanation": "Обработчики atexit вызываются после выхода из main в порядке, обратном регистрации: c, затем b, затем a.",
+        "type": "text",
+        "answers": ["main\nC\nB\nA", "main C B A"],
+        "placeholder": "Строки через пробел"
+      },
+      {
+        "id": "q5",
+        "question": "Какие ошибки опасны при работе с контекстом callback'а? Выберите все.",
+        "explanation": "Висячий контекст и неверный тип — неопределённое поведение без предупреждений, а глобальные данные лишают функцию реентерабельности. NULL для ненужного контекста — нормальная практика.",
+        "type": "multiple",
+        "options": [
+          "Зарегистрировать адрес локальной переменной, а вызвать обработчик после возврата из функции",
+          "Передать long *, а в callback'е привести ctx к int *",
+          "Хранить данные callback'а в глобальной переменной — функцию нельзя будет вызвать вложенно или из двух потоков",
+          "Передать NULL, если callback'у контекст не нужен"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q6",
+        "question": "Как отсортировать массив по ключу, выбранному во время работы, если нужен переносимый и реентерабельный код?",
+        "explanation": "У qsort нет контекста. Глобальная переменная работает, но нереентерабельна; qsort_r в glibc и BSD имеет разный порядок параметров.",
+        "options": [
+          "Написать свою сортировку, функция сравнения которой получает void *ctx",
+          "Передать ключ в qsort дополнительным аргументом",
+          "Сохранить ключ в глобальной переменной и вызвать qsort",
+          "Использовать qsort_r — она одинакова во всех системах"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Функция walk вызывает visit для элементов {4, 7, 2, 9} по порядку и останавливается, как только visit вернёт не ноль. visit возвращает 1 для чисел больше 5 и печатает каждое полученное число. Что будет напечатано?",
+        "explanation": "visit(4) печатает 4 и возвращает 0 — обход продолжается. visit(7) печатает 7 и возвращает 1 — обход прекращается, до 2 и 9 дело не доходит.",
+        "type": "text",
+        "answers": ["4 7", "4\n7"],
+        "placeholder": "Числа через пробел"
+      },
+      {
+        "id": "q8",
+        "question": "Когда обработчики, зарегистрированные через atexit, НЕ вызываются?",
+        "explanation": "atexit работает только при нормальном завершении: return из main или exit с любым кодом. abort, необработанный сигнал и _Exit обработчики не вызывают.",
+        "options": [
+          "При аварийном завершении через abort()",
+          "При возврате из main",
+          "При вызове exit(1)",
+          "При вызове exit(0) из другой функции"
+        ],
+        "correct": 0
       }
     ]
   }

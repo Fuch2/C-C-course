@@ -13,9 +13,9 @@
     "Читать отчёты heap-buffer-overflow, global-buffer-overflow и index out of bounds",
     "Отличать выход за границу объекта от выхода за логическую длину контейнера"
   ],
-  "tags": ["C17", "Память", "Выход за границы", "Массивы", "Найди ошибку"],
+  "tags": ["C23", "Память", "Выход за границы", "Массивы", "Найди ошибку"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-out-of-bounds-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint *read_array(int n) {\n    int *a = malloc((size_t)n * sizeof *a);\n    if (a == NULL) {\n        return NULL;\n    }\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    return a;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int *t = read_array(n);\n    if (t == NULL) {\n        return 1;\n    }\n    int rises = 0, best = 0;\n    for (int i = 0; i < n; i++) {\n        int delta = t[i + 1] - t[i];\n        if (delta > 0) {\n            rises++;\n            if (delta > best) {\n                best = delta;\n            }\n        }\n    }\n    printf(\"rises=%d max=%d\\n\", rises, best);\n    free(t);\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -129,7 +129,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint *read_array(int n) {\n    int *a = malloc((size_t)n * sizeof *a);\n    if (a == NULL) {\n        return NULL;\n    }\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    return a;\n}\n\nint main(void) {\n    int n, q;\n    scanf(\"%d\", &n);\n    int *a = read_array(n);\n    if (a == NULL) {\n        return 1;\n    }\n    scanf(\"%d\", &q);\n    for (int k = 0; k < q; k++) {\n        int index;\n        scanf(\"%d\", &index);\n        if (index < n) {\n            printf(\"%d\\n\", a[index]);\n        } else {\n            printf(\"out of range\\n\");\n        }\n    }\n    free(a);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -233,7 +233,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint *read_array(int n) {\n    int *a = malloc((size_t)n * sizeof *a);\n    if (a == NULL) {\n        return NULL;\n    }\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    return a;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int *a = read_array(n);\n    long long *prefix = malloc((size_t)n * sizeof *prefix);\n    if (a == NULL || prefix == NULL) {\n        free(a);\n        free(prefix);\n        return 1;\n    }\n    for (int i = 0; i < n; i++) {\n        prefix[i] = prefix[i - 1] + a[i];\n    }\n    int q;\n    scanf(\"%d\", &q);\n    for (int k = 0; k < q; k++) {\n        int l, r;\n        scanf(\"%d %d\", &l, &r);\n        printf(\"%lld\\n\", prefix[r] - prefix[l - 1]);\n    }\n    free(a);\n    free(prefix);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -337,7 +337,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

@@ -73,7 +73,7 @@ int main(void) {
 int main(void) {
     int done = 3, total = 4;
     printf("Выполнено %d из %d задач, это %d%%\n", done, total, done * 100 / total);
-    printf("Курс: %s, уровень %c\n", "C17", 'A');
+    printf("Курс: %s, уровень %c\n", "C23", 'A');
     return 0;
 }
 ```
@@ -82,7 +82,7 @@ int main(void) {
 
 ```text
 Выполнено 3 из 4 задач, это 75%
-Курс: C17, уровень A
+Курс: C23, уровень A
 ```
 
 ## Ширина поля: выравнивание столбиком
@@ -180,14 +180,14 @@ int main(void) {
 Если тип значения не совпадает со спецификатором, компилятор выдаст предупреждение. Например, `printf("%d\n", "текст")` — строка вместо числа:
 
 ```text
-warning: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘char *’
+warning: format '%d' expects argument of type 'int', but argument 2 has type 'char *'
 ```
 
 Сообщение дословно: «формат `%d` ожидает аргумент типа `int`, а аргумент 2 имеет тип `char *`». Такие предупреждения нельзя игнорировать: программа напечатает мусор.
 
 <CommonMistake title="Забыли значение для спецификатора">
 
-`printf("%d + %d\n", a);` — второму `%d` нечего подставить. Компилятор предупредит: `format ‘%d’ expects a matching ‘int’ argument`. Программа при этом напечатает непредсказуемое число.
+`printf("%d + %d\n", a);` — второму `%d` нечего подставить. Компилятор предупредит: `format '%d' expects a matching 'int' argument`. Программа при этом напечатает непредсказуемое число.
 
 </CommonMistake>
 

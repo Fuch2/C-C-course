@@ -1,204 +1,437 @@
 {
   "id": "lifetime-unique-ptr",
-  "title": "std::unique_ptr — исключительный владелец",
-  "description": "unique_ptr<T> хранит исключительное владение объектом и вызывает deleter при разрушении или reset.",
+  "title": "std::unique_ptr: единственный владелец",
+  "description": "std::unique_ptr как RAII-владелец объекта в куче: создание через make_unique, доступ, get, reset, release; передача владения перемещением; владение в сигнатурах функций — забрать, отдать, заимствовать; контейнеры полиморфных объектов; деревья с владеющими детьми и невладеющими ссылками на родителя; ошибка двух владельцев; итеративное удаление длинных цепочек.",
   "moduleId": "cpp-lifetime",
   "order": 18,
-  "difficulty": "advanced",
-  "estimatedMinutes": 75,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 55,
   "prerequisites": ["lifetime-rule-of-zero"],
   "objectives": [
-    "Различать get, reset и release по последствию для владения.",
-    "Проследить на MemoryDiagram момент, когда сохранённый адрес становится висячим.",
-    "Диагностировать use-after-free после reset и исправить порядок операций."
+    "Владеть объектами в куче через std::unique_ptr",
+    "Передавать владение перемещением и выражать его в сигнатурах",
+    "Сочетать владеющие unique_ptr и заимствующие сырые указатели",
+    "Избегать двойного владения и висячих результатов get()"
   ],
-  "tags": [
-    "C++20",
-    "время жизни",
-    "управление ресурсами",
-    "std::unique_ptr — исключительный владелец",
-    "диагностика",
-    "исправление ошибок",
-    "Использование после освобождения (use-after-free)"
-  ],
+  "tags": ["C++23", "Время жизни", "unique_ptr", "Умные указатели", "Владение"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "lifetime-unique-ptr-diagnose",
-    "title": "1. Диагностика: Использование после освобождения (use-after-free)",
-    "description": "Сначала диагностируйте четыре независимых фрагмента по номерам 0–3; не исполняйте их. solve(a,b) принимает номер фрагмента a; b не используется. Верните код первичного дефекта: 0 — безопасно в показанных границах; 1 — double delete; 2 — use-after-free; 3 — dangling reference при возврате; 4 — нарушение заявленного договора заимствования; 5 — цикл сильного владения; 6 — move constructor оставил двух владельцев. Для 4 и 6 выбирайте причину, а не последующий double delete. В комментарии к решению укажите строку, событие окончания жизни и владельца. После проверки диагноза перейдите к заданию 2 и исправьте исходник.\n\nФрагмент 0:\nauto p = std::make_unique<int>(5); int* raw = p.get(); p.reset(); int v = *raw;\n\nФрагмент 1:\nauto p = std::make_unique<int>(5); int v = *p; p.reset();\n\nФрагмент 2:\nauto p = std::make_unique<int>(5); auto q = std::move(p); int v = *q;\n\nФрагмент 3:\nauto p = std::make_unique<int>(5); std::unique_ptr<int> q(p.get());",
-    "difficulty": "advanced",
+    "id": "lifetime-unique-ptr-exercise",
+    "title": "Владелец документа",
+    "description": "Структура `Doc` хранит название; конструктор печатает `открыт название`, деструктор — `закрыт название`. Документы живут в `std::map<std::string, std::unique_ptr<Doc>>` (`operator[]` создаёт пустой указатель). Команды:\n\n- `open X название` — `docs[X] = std::make_unique<Doc>(название)` (старый документ X закрывается);\n- `give Y X` — `docs[Y] = std::move(docs[X])`;\n- `close X` — `docs[X].reset()`;\n- `show X` — `X: название` или `X: пусто`.\n\nВ конце программы оставшиеся документы закройте сами, перебирая имена от последнего к первому и вызывая `reset`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(0, 0)",
-        "output": "2\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "open a отчёт\ngive a b\nshow a\nshow b\nopen b письмо\nclose b\n",
+        "output": "открыт отчёт\na: пусто\nb: отчёт\nоткрыт письмо\nзакрыт отчёт\nзакрыт письмо\n"
       },
       {
-        "input": "solve(1, 0)",
-        "output": "0\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "open x один\nopen y два\n",
+        "output": "открыт один\nоткрыт два\nзакрыт два\nзакрыт один\n"
       }
     ],
-    "constraints": [
-      "Аргумент a — номер фрагмента 0…3; b=0. Возвращайте код 0…6 согласно условию.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Команд не больше 300."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Не исполняйте фрагменты. Для каждого найдите объект, чьё время жизни заканчивается раньше использования, и сопоставьте событие с кодами 0–6. Если дефектов два, выбирайте первопричину: нарушение договора или неверный move, а не их следствие в виде double delete."
+        "id": "hint-1",
+        "text": "Присваивание unique_ptr сначала забирает новый объект, затем удаляет старый — поэтому при open «открыт» нового печатается раньше «закрыт» старого.",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "В варианте 0 get выдал заимствованный адрес; после reset объект удалён, и чтение через raw — use-after-free. В варианте 1 значение скопировано до освобождения: копия int независима от владельца. В варианте 2 владение корректно перемещено, q жив при чтении. В варианте 3 из get() создан второй независимый unique_ptr: два блока управления удалят один объект дважды — double delete. Исправление сохраняет значение до reset и не использует сырой адрес после прекращения владения."
+        "id": "hint-2",
+        "text": "Перебор с конца: for (auto it = docs.rbegin(); it != docs.rend(); ++it) it->second.reset();",
+        "order": 2
       }
     ],
     "publicTests": [
       {
-        "id": "fragment-0",
-        "name": "Фрагмент 0",
-        "arguments": [0, 0],
-        "expected": "2\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "open a отчёт\ngive a b\nshow a\nshow b\nopen b письмо\nclose b\n",
+        "expected": "открыт отчёт\na: пусто\nb: отчёт\nоткрыт письмо\nзакрыт отчёт\nзакрыт письмо\n"
       },
       {
-        "id": "fragment-1",
-        "name": "Фрагмент 1",
-        "arguments": [1, 0],
-        "expected": "0\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "open x один\nopen y два\n",
+        "expected": "открыт один\nоткрыт два\nзакрыт два\nзакрыт один\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "fragment-2",
-        "name": "Фрагмент 2",
-        "arguments": [2, 0],
-        "expected": "0\n"
+        "id": "hidden-1",
+        "name": "Пустой",
+        "stdin": "show z\n",
+        "expected": "z: пусто\n"
       },
       {
-        "id": "fragment-3",
-        "name": "Фрагмент 3",
-        "arguments": [3, 0],
-        "expected": "1\n"
+        "id": "hidden-2",
+        "name": "Двойное закрытие",
+        "stdin": "open a d\nclose a\nclose a\n",
+        "expected": "открыт d\nзакрыт d\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Передача себе",
+        "stdin": "open a d\ngive a a\nshow a\n",
+        "expected": "открыт d\na: d\nзакрыт d\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Передача поверх",
+        "stdin": "open a 1\nopen b 2\ngive a b\nshow a\nshow b\n",
+        "expected": "открыт 1\nоткрыт 2\nзакрыт 2\na: пусто\nb: 1\nзакрыт 1\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Передача пустого",
+        "stdin": "give a b\nshow b\n",
+        "expected": "b: пусто\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Цепочка передач",
+        "stdin": "open a 1\ngive a b\ngive b c\ngive c d\nshow d\n",
+        "expected": "открыт 1\nd: 1\nзакрыт 1\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Закрытие в конце",
+        "stdin": "open z 1\nopen a 2\nopen m 3\n",
+        "expected": "открыт 1\nоткрыт 2\nоткрыт 3\nзакрыт 1\nзакрыт 3\nзакрыт 2\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Замена",
+        "stdin": "open a x\nopen a y\nopen a z\nshow a\n",
+        "expected": "открыт x\nоткрыт y\nзакрыт x\nоткрыт z\nзакрыт y\na: z\nзакрыт z\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint solve(int a,int b){(void)b; const int diagnosis[4]={2,0,0,1}; return diagnosis[a];}",
-    "solutionExplanation": "В варианте 0 get выдал заимствованный адрес; после reset объект удалён, и чтение через raw — use-after-free. В варианте 1 значение скопировано до освобождения: копия int независима от владельца. В варианте 2 владение корректно перемещено, q жив при чтении. В варианте 3 из get() создан второй независимый unique_ptr: два блока управления удалят один объект дважды — double delete. Исправление сохраняет значение до reset и не использует сырой адрес после прекращения владения.",
+    "referenceSolution": "#include <iostream>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Doc {\n    std::string name;\n    explicit Doc(std::string n) : name(std::move(n)) {\n        std::println(\"открыт {}\", name);\n    }\n    ~Doc() {\n        std::println(\"закрыт {}\", name);\n    }\n};\n\nint main() {\n    std::map<std::string, std::unique_ptr<Doc>> docs;\n    std::string command, x;\n    while (std::cin >> command >> x) {\n        if (command == \"open\") {\n            std::string name;\n            std::cin >> name;\n            docs[x] = std::make_unique<Doc>(name);\n        } else if (command == \"give\") {\n            std::string to;\n            std::cin >> to;\n            docs[to] = std::move(docs[x]);\n        } else if (command == \"close\") {\n            docs[x].reset();\n        } else if (const auto &doc = docs[x]) {\n            std::println(\"{}: {}\", x, doc->name);\n        } else {\n            std::println(\"{}: пусто\", x);\n        }\n    }\n    for (auto it = docs.rbegin(); it != docs.rend(); ++it) {\n        it->second.reset();\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Каждый документ в любой момент принадлежит ровно одному указателю. `give` перемещает владение — источник становится пустым, — а присваивание поверх непустого указателя закрывает его старый документ. Ни одного `delete`: документы закрываются при замене, при `reset` и при уничтожении указателей.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
   "additionalExercises": [
     {
-      "id": "lifetime-unique-ptr-exercise",
-      "title": "2. Исправление: Использование после освобождения (use-after-free)",
-      "description": "Исправьте use-after-free: solve создаёт owner(a), сохраняет значение до reset, вызывает reset и возвращает сохранённое + b. Не разыменовывайте сырой адрес после reset и не удаляйте его вручную.",
-      "difficulty": "advanced",
+      "id": "lifetime-unique-ptr-task-2",
+      "title": "Дерево каталогов",
+      "description": "Узел `Node` хранит имя, указатель на родителя `Node *parent` (не владеет) и детей `std::vector<std::unique_ptr<Node>>` (владеет). Деструктор узла увеличивает глобальный счётчик удалённых узлов и убирает имя из индекса `std::map<std::string, Node *> by_name` (тоже не владеет). Корень называется `/` и создаётся в начале.\n\nКоманды:\n\n- `add родитель имя` — новый ребёнок в конце списка детей (имена уникальны);\n- `rm имя` — удалить узел со всем поддеревом (из списка детей родителя) и напечатать `удалено N`; корень не удаляется;\n- `path имя` — путь от корня: `/a/b/c` (для корня — `/`);\n- `tree` — дерево: имя каждого узла на своей строке с отступом в 2 пробела на уровень, обход в глубину, дети в порядке добавления.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "cpp",
-      "standard": "c++20",
-      "compiler": "clang",
+      "standard": "c++23",
+      "compiler": "gcc",
       "diagnostics": "sanitizers",
-      "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint solve(int a,int b){auto owner=std::make_unique<int>(a);int* observer=owner.get();owner.reset();return *observer+b;}",
       "examples": [
         {
-          "input": "solve(3, 7)",
-          "output": "10\n",
-          "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+          "input": "add / home\nadd home ada\nadd ada docs\nadd / etc\npath docs\ntree\nrm home\ntree\n",
+          "output": "/home/ada/docs\n/\n  home\n    ada\n      docs\n  etc\nудалено 3\n/\n  etc\n"
         },
         {
-          "input": "solve(0, 0)",
-          "output": "0\n",
-          "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+          "input": "path /\ntree\n",
+          "output": "/\n/\n"
         }
       ],
-      "constraints": [
-        "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-        "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-        "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-      ],
+      "constraints": ["Команд не больше 300; add, rm и path ссылаются на существующие узлы."],
       "hints": [
         {
-          "id": "owners",
-          "order": 1,
-          "text": "Для каждой операции unique_ptr ответьте: объект удалён? владение прекращено? адрес выдан наружу? Комбинация ответов и отличает get от reset и release."
+          "id": "hint-1",
+          "text": "Удаление: найти узел через индекс, в parent->children найти unique_ptr с этим адресом (std::ranges::find_if по get()) и erase — деструкторы удалят всё поддерево.",
+          "order": 1
         },
         {
-          "id": "boundary",
-          "order": 2,
-          "text": "release отдаёт адрес и прекращает владение без удаления: если никто не примет ответственность, будет утечка. reset удаляет прежний объект и принимает новый адрес; никогда не вызывайте reset(p.get()) на самом владельце — сначала удалится тот самый объект. Для массивов существует unique_ptr<T[]> с парным delete[]; обычный unique_ptr<T> несовместим с new T[n]. Удаление наследника через unique_ptr<Base> требует виртуального деструктора в Base: стандартный deleter вызывает delete через статический тип указателя.\n\nget не создаёт второго владельца и не продлевает жизнь объекта. Сохранённый ранее сырой адрес переживает reset владельца и становится висячим.\n\nВ варианте 0 get выдал заимствованный адрес; после reset объект удалён, и чтение через raw — use-after-free. В варианте 1 значение скопировано до освобождения: копия int независима от владельца. В варианте 2 владение корректно перемещено, q жив при чтении. В варианте 3 из get() создан второй независимый unique_ptr: два блока управления удалят один объект дважды — double delete. Исправление сохраняет значение до reset и не использует сырой адрес после прекращения владения."
+          "id": "hint-2",
+          "text": "Путь строится подъёмом по parent до корня и разворотом списка имён.",
+          "order": 2
         }
       ],
       "publicTests": [
         {
           "id": "case-1",
           "name": "Пример 1",
-          "arguments": [3, 7],
-          "expected": "10\n"
+          "stdin": "add / home\nadd home ada\nadd ada docs\nadd / etc\npath docs\ntree\nrm home\ntree\n",
+          "expected": "/home/ada/docs\n/\n  home\n    ada\n      docs\n  etc\nудалено 3\n/\n  etc\n"
         },
         {
           "id": "case-2",
           "name": "Пример 2",
-          "arguments": [0, 0],
-          "expected": "0\n"
+          "stdin": "path /\ntree\n",
+          "expected": "/\n/\n"
         }
       ],
       "hiddenTests": [
         {
-          "id": "case-3",
-          "name": "Граничный случай 1",
-          "arguments": [-8, 3],
-          "expected": "-5\n"
+          "id": "hidden-1",
+          "name": "Удаление листа",
+          "stdin": "add / a\nrm a\ntree\n",
+          "expected": "удалено 1\n/\n"
         },
         {
-          "id": "case-4",
-          "name": "Граничный случай 2",
-          "arguments": [5, -9],
-          "expected": "-4\n"
+          "id": "hidden-2",
+          "name": "Глубокое поддерево",
+          "stdin": "add / a\nadd a b\nadd b c\nadd c d\npath d\nrm b\npath a\n",
+          "expected": "/a/b/c/d\nудалено 3\n/a\n"
         },
         {
-          "id": "case-5",
-          "name": "Граничный случай 3",
-          "arguments": [-1000, 1000],
-          "expected": "0\n"
+          "id": "hidden-3",
+          "name": "Удаление из середины",
+          "stdin": "add / a\nadd / b\nadd / c\nrm b\ntree\n",
+          "expected": "удалено 1\n/\n  a\n  c\n"
         },
         {
-          "id": "case-6",
-          "name": "Граничный случай 4",
-          "arguments": [1000, -1000],
-          "expected": "0\n"
+          "id": "hidden-4",
+          "name": "Повторное создание",
+          "stdin": "add / a\nrm a\nadd / a\nadd a x\npath x\n",
+          "expected": "удалено 1\n/a/x\n"
         },
         {
-          "id": "case-7",
-          "name": "Граничный случай 5",
-          "arguments": [4, 4],
-          "expected": "8\n"
+          "id": "hidden-5",
+          "name": "Порядок детей",
+          "stdin": "add / x\nadd x y\nadd x z\nadd y w\ntree\n",
+          "expected": "/\n  x\n    y\n      w\n    z\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Подсчёт удалённых",
+          "stdin": "add / a\nadd a a1\nadd a a2\nadd a a3\nrm a\n",
+          "expected": "удалено 4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Кириллица",
+          "stdin": "add / дом\nadd дом кухня\npath кухня\n",
+          "expected": "/дом/кухня\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Удаление по очереди",
+          "stdin": "add / p\nadd p q\nrm q\nrm p\ntree\n",
+          "expected": "удалено 1\nудалено 1\n/\n"
         }
       ],
-      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint solve(int a, int b) { auto owner = std::make_unique<int>(a); int saved = *owner; owner.reset(); return saved + b; }",
-      "solutionExplanation": "release отдаёт адрес и прекращает владение без удаления: если никто не примет ответственность, будет утечка. reset удаляет прежний объект и принимает новый адрес; никогда не вызывайте reset(p.get()) на самом владельце — сначала удалится тот самый объект. Для массивов существует unique_ptr<T[]> с парным delete[]; обычный unique_ptr<T> несовместим с new T[n]. Удаление наследника через unique_ptr<Base> требует виртуального деструктора в Base: стандартный deleter вызывает delete через статический тип указателя.\n\nget не создаёт второго владельца и не продлевает жизнь объекта. Сохранённый ранее сырой адрес переживает reset владельца и становится висячим.\n\nВ варианте 0 get выдал заимствованный адрес; после reset объект удалён, и чтение через raw — use-after-free. В варианте 1 значение скопировано до освобождения: копия int независима от владельца. В варианте 2 владение корректно перемещено, q жив при чтении. В варианте 3 из get() создан второй независимый unique_ptr: два блока управления удалят один объект дважды — double delete. Исправление сохраняет значение до reset и не использует сырой адрес после прекращения владения.",
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <map>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nstruct Node;\nstd::map<std::string, Node *> by_name;\nint removed = 0;\n\nstruct Node {\n    std::string name;\n    Node *parent;\n    std::vector<std::unique_ptr<Node>> children;\n\n    Node(std::string n, Node *p) : name(std::move(n)), parent(p) {\n        by_name[name] = this;\n    }\n    ~Node() {\n        ++removed;\n        by_name.erase(name);\n    }\n};\n\nvoid print_tree(const Node &node, int depth) {\n    std::println(\"{}{}\", std::string(depth * 2, ' '), node.name);\n    for (const auto &child : node.children) {\n        print_tree(*child, depth + 1);\n    }\n}\n\nint main() {\n    Node root(\"/\", nullptr);\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"tree\") {\n            print_tree(root, 0);\n            continue;\n        }\n        std::string a;\n        std::cin >> a;\n        if (command == \"add\") {\n            std::string name;\n            std::cin >> name;\n            Node *parent = by_name.at(a);\n            parent->children.push_back(std::make_unique<Node>(name, parent));\n        } else if (command == \"rm\") {\n            Node *node = by_name.at(a);\n            auto &siblings = node->parent->children;\n            const int before = removed;\n            siblings.erase(std::ranges::find_if(siblings, [&](const auto &p) { return p.get() == node; }));\n            std::println(\"удалено {}\", removed - before);\n        } else {\n            std::vector<std::string> parts;\n            for (const Node *n = by_name.at(a); n->parent; n = n->parent) {\n                parts.push_back(n->name);\n            }\n            std::string path;\n            for (auto it = parts.rbegin(); it != parts.rend(); ++it) {\n                path += \"/\" + *it;\n            }\n            std::println(\"{}\", path.empty() ? \"/\" : path);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Владение в дереве направлено сверху вниз: родитель владеет детьми через `unique_ptr`, поэтому удаление узла автоматически удаляет всё поддерево — деструктор вектора детей вызывает деструкторы их `unique_ptr`, и так рекурсивно. Ссылки вверх (`parent`) и индекс — сырые указатели-заёмщики: они ничем не владеют, и их корректность обеспечена тем, что узел сам убирает себя из индекса при уничтожении, а родитель всегда переживает детей.\n\nЕсли бы `parent` тоже был владеющим указателем, получился бы цикл владения, и дерево никогда бы не удалилось.",
       "checking": {
-        "type": "function",
-        "functionName": "solve",
-        "returnType": "int",
-        "parameters": [
-          { "name": "a", "type": "int" },
-          { "name": "b", "type": "int" }
-        ]
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-unique-ptr-task-3",
+      "title": "Найди ошибку: два владельца",
+      "description": "Для каждого слова программа создаёт `Item`, печатает `создан слово` и передаёт его в реестр, который хранит владеющие `unique_ptr`. В конце печатается содержимое реестра. С первым же словом AddressSanitizer сообщает об ошибке. Найдите и исправьте её.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nstruct Item {\n    std::string name;\n    explicit Item(std::string n) : name(std::move(n)) {}\n};\n\nclass Registry {\npublic:\n    void adopt(std::unique_ptr<Item> item) {\n        items_.push_back(std::move(item));\n    }\n\n    void print() const {\n        for (const auto &item : items_) {\n            std::println(\"в реестре: {}\", item->name);\n        }\n    }\n\nprivate:\n    std::vector<std::unique_ptr<Item>> items_;\n};\n\nint main() {\n    Registry registry;\n    std::string name;\n    while (std::cin >> name) {\n        auto current = std::make_unique<Item>(name);\n        std::println(\"создан {}\", current->name);\n        registry.adopt(std::unique_ptr<Item>(current.get()));\n    }\n    registry.print();\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "a b\n",
+          "output": "создан a\nсоздан b\nв реестре: a\nв реестре: b\n"
+        },
+        {
+          "input": "один\n",
+          "output": "создан один\nв реестре: один\n"
+        }
+      ],
+      "constraints": ["Слов не больше 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Сколько unique_ptr владеют объектом после вызова adopt? Что происходит с current в конце итерации?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Владение передают перемещением: registry.adopt(std::move(current));",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "a b\n",
+          "expected": "создан a\nсоздан b\nв реестре: a\nв реестре: b\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "один\n",
+          "expected": "создан один\nв реестре: один\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "x\n",
+          "expected": "создан x\nв реестре: x\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "p q r s\n",
+          "expected": "создан p\nсоздан q\nсоздан r\nсоздан s\nв реестре: p\nв реестре: q\nв реестре: r\nв реестре: s\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "длинное-имя-элемента-реестра\n",
+          "expected": "создан длинное-имя-элемента-реестра\nв реестре: длинное-имя-элемента-реестра\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "a\nb\nc\n",
+          "expected": "создан a\nсоздан b\nсоздан c\nв реестре: a\nв реестре: b\nв реестре: c\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "кот пёс\n",
+          "expected": "создан кот\nсоздан пёс\nв реестре: кот\nв реестре: пёс\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "z z\n",
+          "expected": "создан z\nсоздан z\nв реестре: z\nв реестре: z\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "1 2 3 4 5 6 7 8\n",
+          "expected": "создан 1\nсоздан 2\nсоздан 3\nсоздан 4\nсоздан 5\nсоздан 6\nсоздан 7\nсоздан 8\nв реестре: 1\nв реестре: 2\nв реестре: 3\nв реестре: 4\nв реестре: 5\nв реестре: 6\nв реестре: 7\nв реестре: 8\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "item\n",
+          "expected": "создан item\nв реестре: item\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nstruct Item {\n    std::string name;\n    explicit Item(std::string n) : name(std::move(n)) {}\n};\n\nclass Registry {\npublic:\n    void adopt(std::unique_ptr<Item> item) {\n        items_.push_back(std::move(item));\n    }\n\n    void print() const {\n        for (const auto &item : items_) {\n            std::println(\"в реестре: {}\", item->name);\n        }\n    }\n\nprivate:\n    std::vector<std::unique_ptr<Item>> items_;\n};\n\nint main() {\n    Registry registry;\n    std::string name;\n    while (std::cin >> name) {\n        auto current = std::make_unique<Item>(name);\n        std::println(\"создан {}\", current->name);\n        registry.adopt(std::move(current));\n    }\n    registry.print();\n    return 0;\n}\n",
+      "solutionExplanation": "`std::unique_ptr<Item>(current.get())` создаёт **второй** «единственный» владелец того же объекта. В конце итерации `current` удаляет объект, и реестр хранит висячий указатель: печать читает освобождённую память, а в конце программы объект удаляется повторно.\n\n`unique_ptr` гарантирует единоличное владение, только если владение передают перемещением. Конструктор из сырого указателя — опасная дверь: используйте её только для объектов, которые точно никому не принадлежат, а лучше — не используйте вовсе и создавайте объекты через `std::make_unique`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-unique-ptr-task-4",
+      "title": "Длинный список",
+      "description": "Односвязный список на умных указателях: `struct Node { int value; std::unique_ptr<Node> next; };`, класс `List` хранит `std::unique_ptr<Node> head_` и размер. Реализуйте:\n\n- `push_front(x)`, `pop_front()` (возвращает `std::optional<int>`);\n- `reverse()` — разворот на месте перестановкой указателей, без новых узлов;\n- деструктор, удаляющий узлы **циклом**: неявный деструктор удалял бы цепочку рекурсивно и на длинном списке переполнил бы стек.\n\nКоманды: `push x`, `pop` (значение или `пусто`), `fill n` (push_front чисел 1, 2, …, n по порядку), `reverse`, `print` — `размер N: первые до 10 значений` и `…`, если элементов больше 10.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "fill 3\nprint\nreverse\nprint\npop\nprint\n",
+          "output": "размер 3: 3 2 1\nразмер 3: 1 2 3\n1\nразмер 2: 2 3\n"
+        },
+        {
+          "input": "pop\nprint\n",
+          "output": "пусто\nразмер 0:\n"
+        }
+      ],
+      "constraints": ["Команд не больше 100; суммарно до 300 000 элементов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "reverse: std::unique_ptr<Node> prev; while (head_) { auto next = std::move(head_->next); head_->next = std::move(prev); prev = std::move(head_); head_ = std::move(next); } head_ = std::move(prev);",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Деструктор: while (head_) head_ = std::move(head_->next); — каждое присваивание удаляет один узел, у которого next уже пуст.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "fill 3\nprint\nreverse\nprint\npop\nprint\n",
+          "expected": "размер 3: 3 2 1\nразмер 3: 1 2 3\n1\nразмер 2: 2 3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "pop\nprint\n",
+          "expected": "пусто\nразмер 0:\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Больше десяти",
+          "stdin": "fill 12\nprint\n",
+          "expected": "размер 12: 12 11 10 9 8 7 6 5 4 3 …\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Разворот одного",
+          "stdin": "push 5\nreverse\nprint\n",
+          "expected": "размер 1: 5\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Разворот пустого",
+          "stdin": "reverse\nprint\n",
+          "expected": "размер 0:\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Длинный список",
+          "stdin": "fill 200000\nprint\n",
+          "expected": "размер 200000: 200000 199999 199998 199997 199996 199995 199994 199993 199992 199991 …\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Разворот длинного",
+          "stdin": "fill 300000\nreverse\nprint\npop\npop\n",
+          "expected": "размер 300000: 1 2 3 4 5 6 7 8 9 10 …\n1\n2\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Опустошение",
+          "stdin": "push 1\npush 2\npop\npop\npop\n",
+          "expected": "2\n1\nпусто\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Двойной разворот",
+          "stdin": "fill 10\nprint\nreverse\nreverse\nprint\n",
+          "expected": "размер 10: 10 9 8 7 6 5 4 3 2 1\nразмер 10: 10 9 8 7 6 5 4 3 2 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Смешанные команды",
+          "stdin": "fill 5\npush -1\nreverse\nprint\n",
+          "expected": "размер 6: 1 2 3 4 5 -1\n"
+        }
+      ],
+      "referenceSolution": "#include <cstddef>\n#include <iostream>\n#include <memory>\n#include <optional>\n#include <print>\n#include <string>\n#include <utility>\n\nstruct Node {\n    int value;\n    std::unique_ptr<Node> next;\n};\n\nclass List {\npublic:\n    List() = default;\n    List(const List &) = delete;\n    List &operator=(const List &) = delete;\n    ~List() {\n        while (head_) {\n            head_ = std::move(head_->next);\n        }\n    }\n\n    void push_front(int x) {\n        head_ = std::make_unique<Node>(Node{x, std::move(head_)});\n        ++size_;\n    }\n\n    std::optional<int> pop_front() {\n        if (!head_) {\n            return std::nullopt;\n        }\n        const int v = head_->value;\n        head_ = std::move(head_->next);\n        --size_;\n        return v;\n    }\n\n    void reverse() {\n        std::unique_ptr<Node> prev;\n        while (head_) {\n            auto next = std::move(head_->next);\n            head_->next = std::move(prev);\n            prev = std::move(head_);\n            head_ = std::move(next);\n        }\n        head_ = std::move(prev);\n    }\n\n    void print() const {\n        std::string s;\n        int shown = 0;\n        for (const Node *n = head_.get(); n && shown < 10; n = n->next.get(), ++shown) {\n            s += \" \" + std::to_string(n->value);\n        }\n        if (size_ > 10) {\n            s += \" …\";\n        }\n        std::println(\"размер {}:{}\", size_, s);\n    }\n\nprivate:\n    std::unique_ptr<Node> head_;\n    std::size_t size_ = 0;\n};\n\nint main() {\n    List list;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"push\") {\n            int x;\n            std::cin >> x;\n            list.push_front(x);\n        } else if (command == \"pop\") {\n            if (auto v = list.pop_front()) {\n                std::println(\"{}\", *v);\n            } else {\n                std::println(\"пусто\");\n            }\n        } else if (command == \"fill\") {\n            int n;\n            std::cin >> n;\n            for (int i = 1; i <= n; ++i) {\n                list.push_front(i);\n            }\n        } else if (command == \"reverse\") {\n            list.reverse();\n        } else {\n            list.print();\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Цепочка `unique_ptr` удаляет себя рекурсивно: деструктор узла вызывает деструктор `next`, тот — деструктор следующего узла, и так глубина стека растёт с длиной списка. На сотнях тысяч узлов стек переполняется. Цикл в деструкторе `List` отсоединяет узлы по одному: `head_ = std::move(head_->next)` удаляет голову, у которой `next` уже пуст, — глубина рекурсии всегда единица.\n\nРазворот — только перестановка владения: ни одного выделения памяти, ни одной копии значений, ни одного сырого `delete`. Каждый узел в любой момент принадлежит ровно одному `unique_ptr`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
       }
     }
   ],
@@ -207,31 +440,89 @@
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Передаёт ли get() право удаления объекта?",
+        "id": "q1",
+        "question": "Что делает std::unique_ptr в деструкторе?",
+        "explanation": "Копий у unique_ptr не бывает — владелец один.",
         "options": [
-          "Да: после get владелец становится пустым",
-          "Нет: он возвращает заимствованный адрес, владение остаётся у unique_ptr"
+          "Удаляет объект, которым владеет (если владеет)",
+          "Ничего",
+          "Уменьшает счётчик ссылок",
+          "Обнуляет все копии"
         ],
-        "correct": 1,
-        "explanation": "release отдаёт адрес и прекращает владение без удаления: если никто не примет ответственность, будет утечка. reset удаляет прежний объект и принимает новый адрес; никогда не вызывайте reset(p.get()) на самом владельце — сначала удалится тот самый объект. Для массивов существует unique_ptr<T[]> с парным delete[]; обычный unique_ptr<T> несовместим с new T[n]. Удаление наследника через unique_ptr<Base> требует виртуального деструктора в Base: стандартный deleter вызывает delete через статический тип указателя."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["9 0", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "owner → A(9); observer = owner.get() - - заимствует -> A\nsaved = *owner: копия значения 9 независима\nowner.reset(): A удалён, owner пуст\nobserver хранит прежний адрес; разыменование observer — use-after-free"
+        "id": "q2",
+        "question": "Как передать владение из unique_ptr a в функцию void take(std::unique_ptr<T>)?",
+        "explanation": "Копирование запрещено; после вызова a пуст.",
+        "options": ["take(std::move(a));", "take(a);", "take(a.get());", "take(*a);"],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q3",
+        "question": "Чем отличаются reset() и release()?",
+        "explanation": "После release удалять объект должен тот, кто взял указатель.",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "get не создаёт второго владельца и не продлевает жизнь объекта. Сохранённый ранее сырой адрес переживает reset владельца и становится висячим."
+          "reset удаляет объект, release отдаёт сырой указатель и перестаёт владеть, не удаляя",
+          "Ничем",
+          "release удаляет, reset — нет",
+          "reset копирует объект"
         ],
-        "correct": 1,
-        "explanation": "Сравните reset и release по двум вопросам: кто удалил объект и кто обязан удалить его теперь. В практике значение нужно получить до reset и хранить независимо от адреса."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Функции нужен только объект Widget для чтения. Какой параметр лучше?",
+        "explanation": "Ссылка на объект работает для любого владельца, в том числе стека и вектора.",
+        "options": [
+          "const Widget &",
+          "const std::unique_ptr<Widget> &",
+          "std::unique_ptr<Widget>",
+          "std::unique_ptr<Widget> &"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Что выведет программа?",
+        "code": "#include <memory>\n#include <print>\n\nstruct T {\n    int v;\n    explicit T(int v) : v(v) {}\n    ~T() { std::print(\"~{} \", v); }\n};\n\nint main() {\n    auto a = std::make_unique<T>(1);\n    auto b = std::make_unique<T>(2);\n    a = std::move(b);\n    std::print(\"| \");\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Присваивание удаляет старый объект a (1) и забирает объект b; в конце удаляется 2, а b пуст.",
+        "type": "text",
+        "answers": ["~1 | ~2"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q6",
+        "question": "Что будет при std::unique_ptr<int> a(raw); std::unique_ptr<int> b(raw);?",
+        "explanation": "Каждый уверен, что владеет объектом единолично.",
+        "options": [
+          "Двойное удаление в конце области",
+          "Ошибка компиляции",
+          "Утечка",
+          "Всё корректно"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Сколько памяти занимает std::unique_ptr<T> с функцией удаления по умолчанию?",
+        "explanation": "Удаление по умолчанию не хранит состояния.",
+        "options": [
+          "Столько же, сколько сырой указатель",
+          "Вдвое больше",
+          "Указатель плюс счётчик",
+          "Зависит от T"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Какой метод unique_ptr возвращает сырой указатель для заимствования, сохраняя владение?",
+        "explanation": "Указатель из get() не должен пережить владельца.",
+        "type": "text",
+        "answers": ["get", "get()", "p.get()"],
+        "placeholder": "Метод"
       }
     ]
   }

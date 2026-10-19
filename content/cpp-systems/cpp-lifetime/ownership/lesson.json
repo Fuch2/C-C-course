@@ -1,204 +1,441 @@
 {
   "id": "lifetime-ownership",
-  "title": "Владение и заимствование — Ownership",
-  "description": "Владелец отвечает за прекращение использования и освобождение ресурса; заёмщик получает временный доступ и не освобождает ничего.",
+  "title": "Владение и заимствование",
+  "description": "Владелец ресурса и заёмщики; как типы выражают роли — значения, контейнеры и умные указатели владеют, ссылки, сырые указатели, string_view и span заимствуют; правило «сырой указатель не владеет»; что сообщают параметры и возвращаемые типы функций; заёмщик, переживший владельца, и висячие представления.",
   "moduleId": "cpp-lifetime",
   "order": 5,
-  "difficulty": "advanced",
-  "estimatedMinutes": 75,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
   "prerequisites": ["lifetime-raii"],
   "objectives": [
-    "Называть владельца и заёмщика для каждого адреса в программе.",
-    "Проследить на MemoryDiagram, что заимствование не меняет владельца.",
-    "Диагностировать нарушение договора заимствования и исправить интерфейс на const T&."
+    "Различать владельцев и заёмщиков ресурса",
+    "Выражать владение и заимствование типами параметров и полей",
+    "Пользоваться string_view и span как невладеющими представлениями",
+    "Находить заёмщиков, переживших владельца"
   ],
-  "tags": [
-    "C++20",
-    "время жизни",
-    "управление ресурсами",
-    "Владение и заимствование — Ownership",
-    "диагностика",
-    "исправление ошибок",
-    "Неоднозначное владение (ownership ambiguity)"
-  ],
+  "tags": ["C++23", "Время жизни", "Владение", "string_view", "span"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "lifetime-ownership-diagnose",
-    "title": "1. Диагностика: Неоднозначное владение (ownership ambiguity)",
-    "description": "Сначала диагностируйте четыре независимых фрагмента по номерам 0–3; не исполняйте их. solve(a,b) принимает номер фрагмента a; b не используется. Верните код первичного дефекта: 0 — безопасно в показанных границах; 1 — double delete; 2 — use-after-free; 3 — dangling reference при возврате; 4 — нарушение заявленного договора заимствования; 5 — цикл сильного владения; 6 — move constructor оставил двух владельцев. Для 4 и 6 выбирайте причину, а не последующий double delete. В комментарии к решению укажите строку, событие окончания жизни и владельца. После проверки диагноза перейдите к заданию 2 и исправьте исходник.\n\nФрагмент 0:\n// Контракт: log только читает значение.\nvoid log(int* p) { std::cout << *p << \"\\n\"; delete p; }\n\nФрагмент 1:\nint consume(std::unique_ptr<int> p) { return *p; }\n\nФрагмент 2:\n// Контракт: вызывающий остаётся владельцем.\nint* borrow(std::unique_ptr<int>& p) { return p.release(); }\n\nФрагмент 3:\nauto owner = std::make_shared<int>(7); auto copy = owner; int result = *copy;",
-    "difficulty": "advanced",
+    "id": "lifetime-ownership-exercise",
+    "title": "Библиотека",
+    "description": "Полка `std::vector<Book>` (`title`, `year`) — единственный владелец книг. Остальной код только заимствует:\n\n- `const Book *oldest(std::span<const Book>)` — самая старая книга (первая при равенстве) или `nullptr`;\n- `int count_since(std::span<const Book>, int year)` — сколько книг изданы в этом году или позже;\n- `bool mentions(const Book &, std::string_view word)`.\n\nКоманды: `add название год` (название — одно слово), `oldest` — `старейшая: название (год)` или `полка пуста`, `since год` — `с года: N`, `find слово` — названия книг, содержащих слово, по одному в строке в порядке добавления, или `не найдено`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(0, 0)",
-        "output": "4\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "add Дюна 1965\nadd Солярис 1961\noldest\nsince 1962\nfind ля\n",
+        "output": "старейшая: Солярис (1961)\nс года: 1\nСолярис\n"
       },
       {
-        "input": "solve(1, 0)",
-        "output": "0\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "oldest\nfind x\n",
+        "output": "полка пуста\nне найдено\n"
       }
     ],
-    "constraints": [
-      "Аргумент a — номер фрагмента 0…3; b=0. Возвращайте код 0…6 согласно условию.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Команд не больше 200; годы от 0 до 2100."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Не исполняйте фрагменты. Для каждого найдите объект, чьё время жизни заканчивается раньше использования, и сопоставьте событие с кодами 0–6. Если дефектов два, выбирайте первопричину: нарушение договора или неверный move, а не их следствие в виде double delete."
+        "id": "hint-1",
+        "text": "Указатель, который вернула oldest, используйте сразу: следующий add может перевыделить память вектора.",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "В варианте 0 log обещает чтение, но удаляет объект вызывающего: нарушение договора заимствования — первичный дефект, даже если crash проявится позже как double delete. В варианте 1 unique_ptr по значению явно объявляет передачу владения: вызывающий обязан написать std::move, двусмысленности нет. В варианте 2 borrow заявлен как заимствование, но release прекращает владение вызывающего и передаёт ответственность наружу — снова нарушен контракт. В варианте 3 копия shared_ptr законно разделяет владение. Исправленный inspect принимает const int&: чтение без передачи владения выражено типом."
+        "id": "hint-2",
+        "text": "std::string::contains(std::string_view) появился в C++23.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
-        "id": "fragment-0",
-        "name": "Фрагмент 0",
-        "arguments": [0, 0],
-        "expected": "4\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "add Дюна 1965\nadd Солярис 1961\noldest\nsince 1962\nfind ля\n",
+        "expected": "старейшая: Солярис (1961)\nс года: 1\nСолярис\n"
       },
       {
-        "id": "fragment-1",
-        "name": "Фрагмент 1",
-        "arguments": [1, 0],
-        "expected": "0\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "oldest\nfind x\n",
+        "expected": "полка пуста\nне найдено\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "fragment-2",
-        "name": "Фрагмент 2",
-        "arguments": [2, 0],
-        "expected": "4\n"
+        "id": "hidden-1",
+        "name": "Пусто",
+        "stdin": "",
+        "expected": ""
       },
       {
-        "id": "fragment-3",
-        "name": "Фрагмент 3",
-        "arguments": [3, 0],
-        "expected": "0\n"
+        "id": "hidden-2",
+        "name": "Равные годы",
+        "stdin": "add A 2000\nadd B 2000\noldest\n",
+        "expected": "старейшая: A (2000)\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Граничные годы",
+        "stdin": "add Kniga 1\nsince 0\nsince 2\n",
+        "expected": "с года: 1\nс года: 0\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Несколько совпадений",
+        "stdin": "add ab 1\nadd abc 2\nadd bc 3\nfind bc\n",
+        "expected": "abc\nbc\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Старейшая меняется",
+        "stdin": "add Мир 2001\noldest\nadd Война 1869\noldest\n",
+        "expected": "старейшая: Мир (2001)\nстарейшая: Война (1869)\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Регистр важен",
+        "stdin": "add x 2100\nsince 2100\nfind X\n",
+        "expected": "с года: 1\nне найдено\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Пять книг",
+        "stdin": "add a 5\nadd b 4\nadd c 3\nadd d 2\nadd e 1\noldest\nsince 3\n",
+        "expected": "старейшая: e (1)\nс года: 3\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Поиск до и после добавления",
+        "stdin": "find a\nadd a 1\nfind a\n",
+        "expected": "не найдено\na\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint solve(int a,int b){(void)b; const int diagnosis[4]={4,0,4,0}; return diagnosis[a];}",
-    "solutionExplanation": "В варианте 0 log обещает чтение, но удаляет объект вызывающего: нарушение договора заимствования — первичный дефект, даже если crash проявится позже как double delete. В варианте 1 unique_ptr по значению явно объявляет передачу владения: вызывающий обязан написать std::move, двусмысленности нет. В варианте 2 borrow заявлен как заимствование, но release прекращает владение вызывающего и передаёт ответственность наружу — снова нарушен контракт. В варианте 3 копия shared_ptr законно разделяет владение. Исправленный inspect принимает const int&: чтение без передачи владения выражено типом.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n#include <span>\n#include <string>\n#include <string_view>\n#include <vector>\n\nstruct Book {\n    std::string title;\n    int year;\n};\n\nconst Book *oldest(std::span<const Book> books) {\n    const Book *best = nullptr;\n    for (const Book &b : books) {\n        if (best == nullptr || b.year < best->year) {\n            best = &b;\n        }\n    }\n    return best;\n}\n\nint count_since(std::span<const Book> books, int year) {\n    int count = 0;\n    for (const Book &b : books) {\n        if (b.year >= year) {\n            count++;\n        }\n    }\n    return count;\n}\n\nbool mentions(const Book &book, std::string_view word) {\n    return book.title.contains(word);\n}\n\nint main() {\n    std::vector<Book> shelf;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"add\") {\n            Book b;\n            std::cin >> b.title >> b.year;\n            shelf.push_back(b);\n        } else if (command == \"oldest\") {\n            if (const Book *b = oldest(shelf)) {\n                std::println(\"старейшая: {} ({})\", b->title, b->year);\n            } else {\n                std::println(\"полка пуста\");\n            }\n        } else if (command == \"since\") {\n            int year;\n            std::cin >> year;\n            std::println(\"с года: {}\", count_since(shelf, year));\n        } else {\n            std::string word;\n            std::cin >> word;\n            bool found = false;\n            for (const Book &b : shelf) {\n                if (mentions(b, word)) {\n                    std::println(\"{}\", b.title);\n                    found = true;\n                }\n            }\n            if (!found) {\n                std::println(\"не найдено\");\n            }\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Книгами владеет только `shelf`. Функции принимают `std::span<const Book>` и ссылки: им не нужно знать, где хранятся книги, и они не могут ни изменить их, ни освободить. `nullptr` из `oldest` выражает «книги нет» без особых значений и исключений.\n\nУказатель-результат — тоже заёмщик, и он живёт ровно одну команду: следующий `add` может перевыделить память вектора.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
   "additionalExercises": [
     {
-      "id": "lifetime-ownership-exercise",
-      "title": "2. Исправление: Неоднозначное владение (ownership ambiguity)",
-      "description": "Исправьте inspect: он должен заимствовать int через const int&, возвращать значение, не удалять объект и не сохранять адрес. solve создаёт unique_ptr со значением a, вызывает inspect и возвращает inspect(*owner) + b; владельцем до конца остаётся owner.",
-      "difficulty": "advanced",
+      "id": "lifetime-ownership-task-2",
+      "title": "Разбор без копий",
+      "description": "Функция `std::vector<std::string_view> split(std::string_view line)` возвращает слова строки (разделитель — пробелы) как представления **внутрь** исходной строки, без копирования символов.\n\nДля каждой строки ввода напечатайте `слов N, самое длинное W` (при равенстве длин — первое) или `пусто`, если слов нет. Строку-владельца храните в `std::string`, пока пользуетесь представлениями.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "cpp",
-      "standard": "c++20",
-      "compiler": "clang",
+      "standard": "c++23",
+      "compiler": "gcc",
       "diagnostics": "sanitizers",
-      "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint inspect(int* p){int x=*p;delete p;return x;}\nint solve(int a,int b){auto owner=std::make_unique<int>(a);return inspect(owner.get())+b;}",
       "examples": [
         {
-          "input": "solve(3, 7)",
-          "output": "10\n",
-          "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+          "input": "to be or not\n  \nhello   world\n",
+          "output": "слов 4, самое длинное not\nпусто\nслов 2, самое длинное hello\n"
         },
         {
-          "input": "solve(0, 0)",
-          "output": "0\n",
-          "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+          "input": "a\n",
+          "output": "слов 1, самое длинное a\n"
         }
       ],
       "constraints": [
-        "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-        "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-        "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
+        "Строк не больше 100, длина до 10 000 символов; слова из латинских букв и цифр."
       ],
       "hints": [
         {
-          "id": "owners",
-          "order": 1,
-          "text": "Для каждой функции ответьте на четыре вопроса: изменяет ли объект, сохраняет ли доступ, освобождает ли, допускает ли null. Сырой указатель не отвечает ни на один из них типом."
+          "id": "hint-1",
+          "text": "Ищите начало слова через line.find_first_not_of(' ', pos), конец — через line.find(' ', start); line.substr(start, len) у string_view возвращает string_view.",
+          "order": 1
         },
         {
-          "id": "boundary",
-          "order": 2,
-          "text": "Сырой T* не сообщает, кто вызывает delete: для чужого API это нужно выяснять по контракту — получен указатель из new, malloc, библиотечной create-функции или это адрес поля. Функция inspect не должна удалять переданный объект только потому, что получила указатель; функция, сохраняющая адрес «на потом», обязана согласовать срок заимствования с временем жизни владельца. Не принимайте shared_ptr только для синхронного чтения: это навязывает клиенту способ хранения и атомарную работу со счётчиком там, где достаточно const T&.\n\nДоговор «удалит кто-нибудь из вызывающих» допускает и утечку, и повторное удаление. Передача сырого адреса сама по себе владение не передаёт.\n\nВ варианте 0 log обещает чтение, но удаляет объект вызывающего: нарушение договора заимствования — первичный дефект, даже если crash проявится позже как double delete. В варианте 1 unique_ptr по значению явно объявляет передачу владения: вызывающий обязан написать std::move, двусмысленности нет. В варианте 2 borrow заявлен как заимствование, но release прекращает владение вызывающего и передаёт ответственность наружу — снова нарушен контракт. В варианте 3 копия shared_ptr законно разделяет владение. Исправленный inspect принимает const int&: чтение без передачи владения выражено типом."
+          "id": "hint-2",
+          "text": "Пока жив std::string line в теле цикла, представления действительны. Не сохраняйте их между итерациями.",
+          "order": 2
         }
       ],
       "publicTests": [
         {
           "id": "case-1",
           "name": "Пример 1",
-          "arguments": [3, 7],
-          "expected": "10\n"
+          "stdin": "to be or not\n  \nhello   world\n",
+          "expected": "слов 4, самое длинное not\nпусто\nслов 2, самое длинное hello\n"
         },
         {
           "id": "case-2",
           "name": "Пример 2",
-          "arguments": [0, 0],
-          "expected": "0\n"
+          "stdin": "a\n",
+          "expected": "слов 1, самое длинное a\n"
         }
       ],
       "hiddenTests": [
         {
-          "id": "case-3",
-          "name": "Граничный случай 1",
-          "arguments": [-8, 3],
-          "expected": "-5\n"
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": ""
         },
         {
-          "id": "case-4",
-          "name": "Граничный случай 2",
-          "arguments": [5, -9],
-          "expected": "-4\n"
+          "id": "hidden-2",
+          "name": "Пустая строка",
+          "stdin": "\n",
+          "expected": "пусто\n"
         },
         {
-          "id": "case-5",
-          "name": "Граничный случай 3",
-          "arguments": [-1000, 1000],
-          "expected": "0\n"
+          "id": "hidden-3",
+          "name": "Пробелы по краям",
+          "stdin": "   lead and trail   \n",
+          "expected": "слов 3, самое длинное trail\n"
         },
         {
-          "id": "case-6",
-          "name": "Граничный случай 4",
-          "arguments": [1000, -1000],
-          "expected": "0\n"
+          "id": "hidden-4",
+          "name": "Равная длина",
+          "stdin": "abc de fgh\n",
+          "expected": "слов 3, самое длинное abc\n"
         },
         {
-          "id": "case-7",
-          "name": "Граничный случай 5",
-          "arguments": [4, 4],
-          "expected": "8\n"
+          "id": "hidden-5",
+          "name": "Две строки",
+          "stdin": "x y z\nlongestwordhere a\n",
+          "expected": "слов 3, самое длинное x\nслов 2, самое длинное longestwordhere\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Три строки",
+          "stdin": "one\ntwo three\nfour five six\n",
+          "expected": "слов 1, самое длинное one\nслов 2, самое длинное three\nслов 3, самое длинное four\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Цифры",
+          "stdin": "1234567890 12345678901 1\n",
+          "expected": "слов 3, самое длинное 12345678901\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Одно слово",
+          "stdin": "single\n",
+          "expected": "слов 1, самое длинное single\n"
         }
       ],
-      "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nint inspect(const int& x) { return x; }\nint solve(int a, int b) { auto owner = std::make_unique<int>(a); return inspect(*owner) + b; }",
-      "solutionExplanation": "Сырой T* не сообщает, кто вызывает delete: для чужого API это нужно выяснять по контракту — получен указатель из new, malloc, библиотечной create-функции или это адрес поля. Функция inspect не должна удалять переданный объект только потому, что получила указатель; функция, сохраняющая адрес «на потом», обязана согласовать срок заимствования с временем жизни владельца. Не принимайте shared_ptr только для синхронного чтения: это навязывает клиенту способ хранения и атомарную работу со счётчиком там, где достаточно const T&.\n\nДоговор «удалит кто-нибудь из вызывающих» допускает и утечку, и повторное удаление. Передача сырого адреса сама по себе владение не передаёт.\n\nВ варианте 0 log обещает чтение, но удаляет объект вызывающего: нарушение договора заимствования — первичный дефект, даже если crash проявится позже как double delete. В варианте 1 unique_ptr по значению явно объявляет передачу владения: вызывающий обязан написать std::move, двусмысленности нет. В варианте 2 borrow заявлен как заимствование, но release прекращает владение вызывающего и передаёт ответственность наружу — снова нарушен контракт. В варианте 3 копия shared_ptr законно разделяет владение. Исправленный inspect принимает const int&: чтение без передачи владения выражено типом.",
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <string_view>\n#include <vector>\n\nstd::vector<std::string_view> split(std::string_view line) {\n    std::vector<std::string_view> words;\n    std::size_t pos = 0;\n    while (true) {\n        const std::size_t start = line.find_first_not_of(' ', pos);\n        if (start == std::string_view::npos) {\n            break;\n        }\n        std::size_t end = line.find(' ', start);\n        if (end == std::string_view::npos) {\n            end = line.size();\n        }\n        words.push_back(line.substr(start, end - start));\n        pos = end;\n    }\n    return words;\n}\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        const std::vector<std::string_view> words = split(line);\n        if (words.empty()) {\n            std::println(\"пусто\");\n            continue;\n        }\n        std::string_view longest = words.front();\n        for (std::string_view w : words) {\n            if (w.size() > longest.size()) {\n                longest = w;\n            }\n        }\n        std::println(\"слов {}, самое длинное {}\", words.size(), longest);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Каждое `string_view` — пара «указатель внутрь `line` и длина». Слова не копируются, но и не живут сами по себе: они действительны, пока жива строка-владелец и пока она не меняется. Поэтому вектор представлений создаётся и используется внутри одной итерации, а `getline`, перезаписывающий `line`, вызывается уже после.",
       "checking": {
-        "type": "function",
-        "functionName": "solve",
-        "returnType": "int",
-        "parameters": [
-          { "name": "a", "type": "int" },
-          { "name": "b", "type": "int" }
-        ]
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-ownership-task-3",
+      "title": "Найди ошибку: реестр имён",
+      "description": "Программа читает пары `имя фамилия`, сохраняет их в реестре как `фамилия, имя` и в конце печатает нумерованный список. Под AddressSanitizer она падает при печати. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n#include <string_view>\n#include <vector>\n\nclass Registry {\npublic:\n    void add(const std::string &first, const std::string &last) {\n        names_.push_back(last + \", \" + first);\n    }\n\n    void print() const {\n        for (std::size_t i = 0; i < names_.size(); ++i) {\n            std::println(\"{}. {}\", i + 1, names_[i]);\n        }\n    }\n\nprivate:\n    std::vector<std::string_view> names_;\n};\n\nint main() {\n    Registry registry;\n    std::string first, last;\n    while (std::cin >> first >> last) {\n        registry.add(first, last);\n    }\n    registry.print();\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "Ада Лавлейс\nАлан Тьюринг\n",
+          "output": "1. Лавлейс, Ада\n2. Тьюринг, Алан\n"
+        },
+        {
+          "input": "Грейс Хоппер\n",
+          "output": "1. Хоппер, Грейс\n"
+        }
+      ],
+      "constraints": ["Пар не больше 100."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Кто владеет строкой last + \", \" + first после выхода из add?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Реестр должен владеть своими строками: храните std::vector<std::string>.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "Ада Лавлейс\nАлан Тьюринг\n",
+          "expected": "1. Лавлейс, Ада\n2. Тьюринг, Алан\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "Грейс Хоппер\n",
+          "expected": "1. Хоппер, Грейс\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "Бьёрн Страуструп\n",
+          "expected": "1. Страуструп, Бьёрн\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "Деннис Ритчи\nКен Томпсон\nБрайан Керниган\n",
+          "expected": "1. Ритчи, Деннис\n2. Томпсон, Кен\n3. Керниган, Брайан\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "Длинноеимяпользователя Длиннаяфамилияпользователя\n",
+          "expected": "1. Длиннаяфамилияпользователя, Длинноеимяпользователя\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "Q W\n",
+          "expected": "1. W, Q\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "Маргарет Гамильтон\nДжон Бэкус\nНиклаус Вирт\nЭдсгер Дейкстра\n",
+          "expected": "1. Гамильтон, Маргарет\n2. Бэкус, Джон\n3. Вирт, Никлаус\n4. Дейкстра, Эдсгер\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "Линус Торвальдс\n",
+          "expected": "1. Торвальдс, Линус\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "Барбара Лисков\nТони Хоар\n",
+          "expected": "1. Лисков, Барбара\n2. Хоар, Тони\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "Джеймс Гослинг\nГвидо Россум\n",
+          "expected": "1. Гослинг, Джеймс\n2. Россум, Гвидо\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Registry {\npublic:\n    void add(const std::string &first, const std::string &last) {\n        names_.push_back(last + \", \" + first);\n    }\n\n    void print() const {\n        for (std::size_t i = 0; i < names_.size(); ++i) {\n            std::println(\"{}. {}\", i + 1, names_[i]);\n        }\n    }\n\nprivate:\n    std::vector<std::string> names_;\n};\n\nint main() {\n    Registry registry;\n    std::string first, last;\n    while (std::cin >> first >> last) {\n        registry.add(first, last);\n    }\n    registry.print();\n    return 0;\n}\n",
+      "solutionExplanation": "`last + \", \" + first` создаёт временную строку — единственного владельца символов. В вектор попадает `string_view` на неё, а сама строка умирает в конце выражения. При печати представления указывают в освобождённую память.\n\nПоле класса, которое должно хранить данные дольше одного вызова, должно ими **владеть**: `std::vector<std::string>`. `string_view` хорош для параметров и коротких вычислений, но опасен в полях и контейнерах.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-ownership-task-4",
+      "title": "Дерево владения",
+      "description": "Смоделируйте владение объектами. Команды:\n\n- `new X` — создать объект X, которым владеет программа; напечатать `+X`;\n- `own A X` — создать объект X, которым владеет живой объект A; напечатать `+X`;\n- `use A B` — A обращается к B: напечатать `A → B`, если B жив, иначе `A → B: висячая ссылка`;\n- `drop X` — уничтожить живой объект X: напечатать `-X`, затем уничтожить всё, чем X владеет, в порядке, обратном созданию (рекурсивно, по тем же правилам).\n\nВ конце уничтожьте все ещё живые объекты программы в порядке, обратном созданию. Уничтоженный объект перестаёт числиться у своего владельца.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "new app\nown app db\nown app cache\nown db pool\nnew logger\nuse logger db\ndrop app\nuse logger pool\n",
+          "output": "+app\n+db\n+cache\n+pool\n+logger\nlogger → db\n-app\n-cache\n-db\n-pool\nlogger → pool: висячая ссылка\n-logger\n"
+        },
+        {
+          "input": "new a\nnew b\n",
+          "output": "+a\n+b\n-b\n-a\n"
+        }
+      ],
+      "constraints": [
+        "Команд не больше 300; имена уникальны; own, use и drop ссылаются только на уже созданные имена; own и drop — только на живые объекты."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Узел: struct Node { std::string owner; std::vector<std::string> owned; bool alive = true; }; все узлы — в std::map<std::string, Node>, у программы — свой список top.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "destroy(name): пометить мёртвым, напечатать, затем пройти owned с конца и вызвать destroy для живых. При drop удалите имя из списка владельца (или пропускайте мёртвые при обходе).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "new app\nown app db\nown app cache\nown db pool\nnew logger\nuse logger db\ndrop app\nuse logger pool\n",
+          "expected": "+app\n+db\n+cache\n+pool\n+logger\nlogger → db\n-app\n-cache\n-db\n-pool\nlogger → pool: висячая ссылка\n-logger\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "new a\nnew b\n",
+          "expected": "+a\n+b\n-b\n-a\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-2",
+          "name": "Удаление дочернего",
+          "stdin": "new a\nown a b\ndrop b\nuse a b\n",
+          "expected": "+a\n+b\n-b\na → b: висячая ссылка\n-a\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Порядок детей",
+          "stdin": "new r\nown r c1\nown r c2\nown r c3\n",
+          "expected": "+r\n+c1\n+c2\n+c3\n-r\n-c3\n-c2\n-c1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Глубокое поддерево",
+          "stdin": "new a\nown a b\nown b c\nown c d\ndrop b\nuse a d\n",
+          "expected": "+a\n+b\n+c\n+d\n-b\n-c\n-d\na → d: висячая ссылка\n-a\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Ссылка на себя",
+          "stdin": "new x\nuse x x\ndrop x\nuse x x\n",
+          "expected": "+x\nx → x\n-x\nx → x: висячая ссылка\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Новый объект после удаления",
+          "stdin": "new a\nnew b\nown a c\ndrop a\nuse b c\nnew d\n",
+          "expected": "+a\n+b\n+c\n-a\n-c\nb → c: висячая ссылка\n+d\n-d\n-b\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Разрушение в конце",
+          "stdin": "new p\nown p q\nown q r\nown p s\n",
+          "expected": "+p\n+q\n+r\n+s\n-p\n-s\n-q\n-r\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Удалён последний ребёнок",
+          "stdin": "new a\nown a b\nown a c\ndrop c\nuse b c\n",
+          "expected": "+a\n+b\n+c\n-c\nb → c: висячая ссылка\n-a\n-b\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <vector>\n\nstruct Node {\n    std::vector<std::string> owned;\n    bool alive = true;\n};\n\nstd::map<std::string, Node> nodes;\n\nvoid destroy(const std::string &name) {\n    Node &node = nodes.at(name);\n    node.alive = false;\n    std::println(\"-{}\", name);\n    for (auto it = node.owned.rbegin(); it != node.owned.rend(); ++it) {\n        if (nodes.at(*it).alive) {\n            destroy(*it);\n        }\n    }\n}\n\nint main() {\n    std::vector<std::string> top;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"new\") {\n            std::string x;\n            std::cin >> x;\n            nodes[x] = Node{};\n            top.push_back(x);\n            std::println(\"+{}\", x);\n        } else if (command == \"own\") {\n            std::string a, x;\n            std::cin >> a >> x;\n            nodes[x] = Node{};\n            nodes.at(a).owned.push_back(x);\n            std::println(\"+{}\", x);\n        } else if (command == \"use\") {\n            std::string a, b;\n            std::cin >> a >> b;\n            if (nodes.at(b).alive) {\n                std::println(\"{} → {}\", a, b);\n            } else {\n                std::println(\"{} → {}: висячая ссылка\", a, b);\n            }\n        } else {\n            std::string x;\n            std::cin >> x;\n            destroy(x);\n        }\n    }\n    for (auto it = top.rbegin(); it != top.rend(); ++it) {\n        if (nodes.at(*it).alive) {\n            destroy(*it);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Владение образует дерево: у каждого объекта ровно один владелец, и уничтожение владельца уничтожает всё поддерево. Так устроены объекты C++ с полями-значениями, контейнерами и `unique_ptr`: деструктор родителя разрушает детей в обратном порядке.\n\nЗаимствование в дерево не входит. `use` ничего не продлевает: если B уничтожен вместе со своим владельцем, ссылка на него повисает, — и обнаружить это можно только потому, что модель помнит мёртвые объекты. В настоящей программе такой памяти нет, поэтому заёмщиков проектируют так, чтобы они гарантированно жили меньше владельцев.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
       }
     }
   ],
@@ -207,31 +444,85 @@
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Как типом параметра выразить передачу исключительного владения?",
+        "id": "q1",
+        "question": "Кто должен освобождать ресурс?",
+        "explanation": "Два владельца — двойное освобождение, ни одного — утечка.",
         "options": [
-          "const T& — ссылка ничего не передаёт",
-          "std::unique_ptr<T> по значению — клиент обязан написать std::move"
+          "Его единственный владелец",
+          "Последний, кто им пользовался",
+          "Любой, у кого есть указатель",
+          "Операционная система"
         ],
-        "correct": 1,
-        "explanation": "Сырой T* не сообщает, кто вызывает delete: для чужого API это нужно выяснять по контракту — получен указатель из new, malloc, библиотечной create-функции или это адрес поля. Функция inspect не должна удалять переданный объект только потому, что получила указатель; функция, сохраняющая адрес «на потом», обязана согласовать срок заимствования с временем жизни владельца. Не принимайте shared_ptr только для синхронного чтения: это навязывает клиенту способ хранения и атомарную работу со счётчиком там, где достаточно const T&."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["6 sensor", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "Владелец owner ──владеет──> int(7)\nЗаёмщик inspect(const int&) - - читает -> тот же int\nПосле вызова владельцем остаётся owner\nКонец owner: объект удалён; сохранённые сырые адреса больше нельзя разыменовывать"
+        "id": "q2",
+        "question": "Какие типы владеют тем, на что указывают или что содержат? Выберите все.",
+        "explanation": "string_view и сырой указатель только заимствуют.",
+        "type": "multiple",
+        "options": ["std::vector<int>", "std::unique_ptr<int>", "std::string_view", "const int *"],
+        "correct": [0, 1]
       },
       {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q3",
+        "question": "Функция получила параметр Widget *w. Может ли она вызвать delete w?",
+        "explanation": "Передача владения выражается std::unique_ptr по значению.",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Договор «удалит кто-нибудь из вызывающих» допускает и утечку, и повторное удаление. Передача сырого адреса сама по себе владение не передаёт."
+          "Нет: сырой указатель — заёмщик, объект может принадлежать кому-то другому или лежать на стеке",
+          "Да, всегда",
+          "Да, если w не равен nullptr",
+          "Только в деструкторе"
         ],
-        "correct": 1,
-        "explanation": "Сравните inspect(const int&) и consume(std::unique_ptr<int>): в первом случае объект остаётся у владельца, во втором исходный unique_ptr после вызова пуст. Вызов consume(std::move(owner)) делает передачу видимой в коде клиента."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что не так с std::string_view v = std::to_string(12345678901234567LL);?",
+        "explanation": "string_view не продлевает жизнь временной строки.",
+        "options": [
+          "Строка-владелец временная и умирает на точке с запятой, v висит",
+          "string_view нельзя создать из std::string",
+          "Ничего",
+          "to_string возвращает string_view"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Чем ссылка как параметр-заёмщик отличается от указателя?",
+        "explanation": "Указатель выбирают, когда объекта может не быть.",
+        "options": [
+          "Ссылка не бывает пустой, указатель может быть nullptr",
+          "Ссылка владеет объектом",
+          "Указатель быстрее",
+          "Ничем"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <string>\n#include <string_view>\n\nstd::string_view tail(std::string_view s) {\n    return s.substr(s.find(' ') + 1);\n}\n\nint main() {\n    const std::string line = \"привет мир\";\n    std::println(\"{}\", tail(line));\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Представление указывает внутрь строки-владельца line, которая жива до конца main.",
+        "type": "text",
+        "answers": ["мир"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q7",
+        "question": "Какой параметр выбрать функции, которая только читает последовательность чисел из вектора или массива?",
+        "explanation": "span заимствует любую непрерывную последовательность без копирования и запрещает изменение.",
+        "options": ["std::span<const int>", "std::vector<int>", "int *", "std::vector<int> &"],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Как называется объект, который пользуется ресурсом, но не отвечает за его освобождение?",
+        "explanation": "Заёмщик не должен пережить владельца.",
+        "type": "text",
+        "answers": ["заёмщик", "заемщик"],
+        "placeholder": "Одно слово"
       }
     ]
   }

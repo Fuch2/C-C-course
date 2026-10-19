@@ -14,9 +14,9 @@
     "Выбирать допустимые и понятные имена",
     "Предсказывать результат, исходя из порядка выполнения инструкций"
   ],
-  "tags": ["C17", "Синтаксис", "Комментарии", "Стиль кода"],
+  "tags": ["C23", "Синтаксис", "Комментарии", "Стиль кода"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "c17-structure-task-1",
@@ -25,7 +25,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // printf(\"Понедельник\\n\");\n    printf(\"Вторник\\n\");\n    /* printf(\"Среда\\n\"); */\n    // printf(\"Четверг\\n\");\n    printf(\"Пятница\\n\");\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "examples": [
       {
@@ -77,7 +77,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int balance = 10;\n    balance = balance - 3;\n    printf(\"Старт: %d\\n\", balance);\n    printf(\"После поездки: %d\\n\", balance);\n    balance = balance + 5;\n    printf(\"После пополнения: %d\\n\", balance);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -128,7 +128,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {
@@ -182,7 +182,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\n/* Программа печатает итог дня.\n   /* Автор: студент */\n   Версия 1 */\n\nint main(void) {\n    printf(\"Итог дня: 3 задачи\\n\");\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "examples": [
         {

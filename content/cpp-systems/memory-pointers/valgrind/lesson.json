@@ -13,9 +13,9 @@
     "Различать категории утечек definitely, indirectly, possibly lost и still reachable",
     "Выбирать между AddressSanitizer и Valgrind для конкретной задачи"
   ],
-  "tags": ["C17", "Память", "Valgrind", "Memcheck", "Отладка"],
+  "tags": ["C23", "Память", "Valgrind", "Memcheck", "Отладка"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-valgrind-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    int m, n;\n    scanf(\"%d %d\", &m, &n);\n    int *counts = malloc((size_t)m * sizeof *counts);\n    if (counts == NULL) {\n        return 1;\n    }\n    for (int i = 0; i < n; i++) {\n        int x;\n        scanf(\"%d\", &x);\n        counts[x]++;\n    }\n    for (int v = 0; v < m; v++) {\n        if (counts[v] > 0) {\n            printf(\"%d: %d\\n\", v, counts[v]);\n        }\n    }\n    free(counts);\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "valgrind",
     "examples": [
@@ -129,7 +129,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nchar *copy_word(const char *word) {\n    size_t len = strlen(word);\n    char *copy = malloc(len + 1);\n    if (copy == NULL) {\n        return NULL;\n    }\n    memcpy(copy, word, len);\n    return copy;\n}\n\nint main(void) {\n    char buffer[64];\n    while (scanf(\"%63s\", buffer) == 1) {\n        char *copy = copy_word(buffer);\n        if (copy == NULL) {\n            return 1;\n        }\n        printf(\"%s %zu\\n\", copy, strlen(copy));\n        free(copy);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "valgrind",
       "examples": [
@@ -233,7 +233,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nstruct Node {\n    int value;\n    struct Node *next;\n};\n\nint main(void) {\n    struct Node *head = NULL;\n    int x;\n    while (scanf(\"%d\", &x) == 1) {\n        struct Node *node = malloc(sizeof *node);\n        if (node == NULL) {\n            break;\n        }\n        node->value = x;\n        node->next = head;\n        head = node;\n    }\n    long long sum = 0;\n    int count = 0;\n    for (struct Node *n = head; n != NULL; n = n->next) {\n        sum += n->value;\n        count++;\n    }\n    printf(\"count=%d sum=%lld\\n\", count, sum);\n    free(head);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "valgrind",
       "examples": [
@@ -337,7 +337,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nchar *reversed(const char *s) {\n    size_t len = strlen(s);\n    char *out = malloc(len);\n    if (out == NULL) {\n        return NULL;\n    }\n    for (size_t i = 0; i < len; i++) {\n        out[i] = s[len - 1 - i];\n    }\n    out[len] = '\\0';\n    return out;\n}\n\nint main(void) {\n    char buffer[64];\n    while (scanf(\"%63s\", buffer) == 1) {\n        char *r = reversed(buffer);\n        if (r == NULL) {\n            return 1;\n        }\n        printf(\"%s\\n\", r);\n        free(r);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "valgrind",
       "examples": [

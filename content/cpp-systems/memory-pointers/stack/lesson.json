@@ -13,9 +13,9 @@
     "Трассировать рекурсивные вызовы и оценивать глубину рекурсии",
     "Распознавать переполнение стека и заменять линейную рекурсию циклом"
   ],
-  "tags": ["C17", "Память", "Стек", "Рекурсия", "Кадр функции"],
+  "tags": ["C23", "Память", "Стек", "Рекурсия", "Кадр функции"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-stack-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "beginner",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -134,7 +134,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -243,7 +243,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -347,7 +347,7 @@
       "difficulty": "advanced",
       "starterCode": "#include <stdio.h>\n\nlong long sum_to(long long n) {\n    if (n == 0) {\n        return 0;\n    }\n    return n + sum_to(n - 1);\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        long long n;\n        scanf(\"%lld\", &n);\n        printf(\"%lld\\n\", sum_to(n));\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

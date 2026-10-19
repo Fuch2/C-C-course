@@ -1,0 +1,546 @@
+{
+  "id": "oop-printing",
+  "title": "Печать своих типов: std::formatter и operator<<",
+  "description": "Почему std::print не умеет печатать свой тип; специализация std::formatter с методами parse и format; std::format_to; наследование от std::formatter<std::string> ради ширины и выравнивания; собственная спецификация формата и ошибка при компиляции; operator<< для потоков и возврат потока.",
+  "moduleId": "cpp-oop",
+  "order": 10,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
+  "prerequisites": ["oop-operators"],
+  "objectives": [
+    "Делать свой тип печатаемым через std::format и std::print",
+    "Получать ширину и выравнивание от форматтера строк",
+    "Разбирать собственную спецификацию формата",
+    "Определять operator<< для потоков"
+  ],
+  "tags": ["C++20", "C++23", "ООП", "format", "formatter"],
+  "published": true,
+  "standard": "c++23",
+  "completion": "practice",
+  "exercise": {
+    "id": "oop-printing-exercise",
+    "title": "Точки и отрезки",
+    "description": "Опишите структуры `Point` (целые `x`, `y`) и `Segment` (две точки `a`, `b`) и специализации `std::formatter` для них: точка печатается как `(x, y)`, отрезок — как `[(x1, y1) - (x2, y2)]`. Форматтер отрезка должен использовать форматтер точки (просто вставьте точки через `{}`).\n\nКаждая строка ввода — четыре числа `x1 y1 x2 y2`. Напечатайте `отрезок, длина L` с двумя знаками после точки.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+    "language": "cpp",
+    "standard": "c++23",
+    "compiler": "gcc",
+    "diagnostics": "sanitizers",
+    "examples": [
+      {
+        "input": "0 0 3 4\n",
+        "output": "[(0, 0) - (3, 4)], длина 5.00\n"
+      },
+      {
+        "input": "-1 2 -1 2\n",
+        "output": "[(-1, 2) - (-1, 2)], длина 0.00\n"
+      }
+    ],
+    "constraints": ["Координаты по модулю до 10⁴; строк не больше 20."],
+    "hints": [
+      {
+        "id": "hint-1",
+        "text": "Специализация: template <> struct std::formatter<Point> { parse возвращает ctx.begin(); format пишет std::format_to(ctx.out(), \"({}, {})\", p.x, p.y); };",
+        "order": 1
+      },
+      {
+        "id": "hint-2",
+        "text": "В форматтере отрезка: std::format_to(ctx.out(), \"[{} - {}]\", s.a, s.b) — Point уже печатается. Длина — std::hypot.",
+        "order": 2
+      }
+    ],
+    "publicTests": [
+      {
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "0 0 3 4\n",
+        "expected": "[(0, 0) - (3, 4)], длина 5.00\n"
+      },
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "-1 2 -1 2\n",
+        "expected": "[(-1, 2) - (-1, 2)], длина 0.00\n"
+      }
+    ],
+    "hiddenTests": [
+      {
+        "id": "hidden-1",
+        "name": "Диагональ",
+        "stdin": "1 1 2 2\n",
+        "expected": "[(1, 1) - (2, 2)], длина 1.41\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Большой отрезок",
+        "stdin": "10000 10000 -10000 -10000\n",
+        "expected": "[(10000, 10000) - (-10000, -10000)], длина 28284.27\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Вертикальный",
+        "stdin": "0 0 0 7\n",
+        "expected": "[(0, 0) - (0, 7)], длина 7.00\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Горизонтальный",
+        "stdin": "5 0 -5 0\n",
+        "expected": "[(5, 0) - (-5, 0)], длина 10.00\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Два отрезка",
+        "stdin": "1 2 4 6\n3 3 0 0\n",
+        "expected": "[(1, 2) - (4, 6)], длина 5.00\n[(3, 3) - (0, 0)], длина 4.24\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Пусто",
+        "stdin": "",
+        "expected": ""
+      },
+      {
+        "id": "hidden-7",
+        "name": "К началу координат",
+        "stdin": "-3 -4 0 0\n",
+        "expected": "[(-3, -4) - (0, 0)], длина 5.00\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Произвольный",
+        "stdin": "7 1 2 9\n",
+        "expected": "[(7, 1) - (2, 9)], длина 9.43\n"
+      }
+    ],
+    "referenceSolution": "#include <cmath>\n#include <format>\n#include <iostream>\n#include <print>\n\nstruct Point {\n    int x;\n    int y;\n};\n\nstruct Segment {\n    Point a;\n    Point b;\n\n    double length() const {\n        return std::hypot(a.x - b.x, a.y - b.y);\n    }\n};\n\ntemplate <>\nstruct std::formatter<Point> {\n    constexpr auto parse(std::format_parse_context &ctx) {\n        return ctx.begin();\n    }\n\n    auto format(const Point &p, std::format_context &ctx) const {\n        return std::format_to(ctx.out(), \"({}, {})\", p.x, p.y);\n    }\n};\n\ntemplate <>\nstruct std::formatter<Segment> {\n    constexpr auto parse(std::format_parse_context &ctx) {\n        return ctx.begin();\n    }\n\n    auto format(const Segment &s, std::format_context &ctx) const {\n        return std::format_to(ctx.out(), \"[{} - {}]\", s.a, s.b);\n    }\n};\n\nint main() {\n    Segment s;\n    while (std::cin >> s.a.x >> s.a.y >> s.b.x >> s.b.y) {\n        std::println(\"{}, длина {:.2f}\", s, s.length());\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Форматтеры складываются, как кубики: форматтер отрезка не знает, как печатается точка, — он просто вставляет точки через `{}`, и `std::format_to` находит форматтер `Point`. Поменяйте формат точки — изменится и вывод отрезков.\n\nОбе специализации не поддерживают настроек, поэтому их `parse` сразу возвращают `ctx.begin()`.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
+  },
+  "additionalExercises": [
+    {
+      "id": "oop-printing-task-2",
+      "title": "Чек в рублях",
+      "description": "Опишите класс `Money` (сумма в копейках) и специализацию `std::formatter<Money>`, унаследованную от `std::formatter<std::string>`: сумма печатается как `1234.56 руб.`, а ширина и выравнивание работают как у строк.\n\nКаждая строка ввода — название товара и цена в копейках. Напечатайте чек: для каждого товара строку `{:<12}{:>16}` (название и цена), затем `{:-<28}` — разделитель из 28 дефисов (пустая строка, дополненная дефисами), затем `{:<12}{:>16}` со словом `Итого` и суммой.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "хлеб 5450\nсыр 65000\n",
+          "output": "хлеб              54.50 руб.\nсыр              650.00 руб.\n----------------------------\nИтого            704.50 руб.\n"
+        },
+        {
+          "input": "",
+          "output": "----------------------------\nИтого              0.00 руб.\n"
+        }
+      ],
+      "constraints": [
+        "Товаров не больше 20; цены от 0 до 10⁹ копеек; названия — одно слово до 11 символов."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Внутри format: std::string text = std::format(\"{}.{:02} руб.\", m.kopecks() / 100, m.kopecks() % 100); return std::formatter<std::string>::format(text, ctx);",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Шаблон строки чека: std::println(\"{:<12}{:>16}\", name, Money(price)) — спецификация {:>16} применится к тексту суммы.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "хлеб 5450\nсыр 65000\n",
+          "expected": "хлеб              54.50 руб.\nсыр              650.00 руб.\n----------------------------\nИтого            704.50 руб.\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "----------------------------\nИтого              0.00 руб.\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Копейка",
+          "stdin": "спичка 1\n",
+          "expected": "спичка             0.01 руб.\n----------------------------\nИтого              0.01 руб.\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Миллиард копеек",
+          "stdin": "яхта 1000000000\n",
+          "expected": "яхта        10000000.00 руб.\n----------------------------\nИтого       10000000.00 руб.\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Ровно рубль",
+          "stdin": "a 99\nb 1\n",
+          "expected": "a                  0.99 руб.\nb                  0.01 руб.\n----------------------------\nИтого              1.00 руб.\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Три товара",
+          "stdin": "чай 19999\nкофе 49900\nсахар 8900\n",
+          "expected": "чай              199.99 руб.\nкофе             499.00 руб.\nсахар             89.00 руб.\n----------------------------\nИтого            787.99 руб.\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Бесплатно",
+          "stdin": "x 0\n",
+          "expected": "x                  0.00 руб.\n----------------------------\nИтого              0.00 руб.\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Длинное название",
+          "stdin": "длинноеимя 12345\n",
+          "expected": "длинноеимя       123.45 руб.\n----------------------------\nИтого            123.45 руб.\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Мелочь",
+          "stdin": "a 5\nb 5\nc 5\nd 5\n",
+          "expected": "a                  0.05 руб.\nb                  0.05 руб.\nc                  0.05 руб.\nd                  0.05 руб.\n----------------------------\nИтого              0.20 руб.\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Латиница",
+          "stdin": "milk 8990\nbread 4550\n",
+          "expected": "milk              89.90 руб.\nbread             45.50 руб.\n----------------------------\nИтого            135.40 руб.\n"
+        }
+      ],
+      "referenceSolution": "#include <format>\n#include <iostream>\n#include <print>\n#include <string>\n\nclass Money {\npublic:\n    explicit Money(long long kopecks) : kopecks_(kopecks) {}\n\n    long long kopecks() const {\n        return kopecks_;\n    }\n\n    Money &operator+=(Money other) {\n        kopecks_ += other.kopecks_;\n        return *this;\n    }\n\nprivate:\n    long long kopecks_;\n};\n\ntemplate <>\nstruct std::formatter<Money> : std::formatter<std::string> {\n    auto format(const Money &m, std::format_context &ctx) const {\n        std::string text = std::format(\"{}.{:02} руб.\", m.kopecks() / 100, m.kopecks() % 100);\n        return std::formatter<std::string>::format(text, ctx);\n    }\n};\n\nint main() {\n    std::string name;\n    long long price;\n    Money total(0);\n    while (std::cin >> name >> price) {\n        std::println(\"{:<12}{:>16}\", name, Money(price));\n        total += Money(price);\n    }\n    std::println(\"{:-<28}\", \"\");\n    std::println(\"{:<12}{:>16}\", \"Итого\", total);\n    return 0;\n}\n",
+      "solutionExplanation": "Форматтер `Money` занят только одним — превратить копейки в текст. Всё остальное — ширину 16, выравнивание вправо — делает унаследованный форматтер строк, разбирая ту же спецификацию, что и для обычной строки. Поэтому `Money` встаёт в столбец чека так же, как число.\n\nШирина считается в символах, так что «руб.» и русские названия не сдвигают столбцы.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-printing-task-3",
+      "title": "Найди ошибку: потерянная цепочка",
+      "description": "Каждая строка ввода — название и количество. Класс `Item` печатается в поток оператором `<<` как `название xколичество`, а программа выводит все товары в одну строку через запятую:\n\n```text\nяблоко x3, груша x5\n```\n\nПрограмма не компилируется: компилятор жалуется на строку с цепочкой `<<`. Найдите и исправьте ошибку в операторе.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <string>\n#include <utility>\n\nclass Item {\npublic:\n    Item(std::string name, int count) : name_(std::move(name)), count_(count) {}\n\n    friend void operator<<(std::ostream &out, const Item &item) {\n        out << item.name_ << \" x\" << item.count_;\n    }\n\nprivate:\n    std::string name_;\n    int count_;\n};\n\nint main() {\n    std::string name;\n    int count;\n    bool first = true;\n    while (std::cin >> name >> count) {\n        if (!first) {\n            std::cout << \", \";\n        }\n        std::cout << Item(name, count) << \"\";\n        first = false;\n    }\n    std::cout << '\\n';\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "яблоко 3\nгруша 5\n",
+          "output": "яблоко x3, груша x5\n"
+        },
+        {
+          "input": "",
+          "output": "\n"
+        }
+      ],
+      "constraints": ["Строк не больше 20."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Выражение std::cout << Item(…) << \"\" — к результату первого << применяется второй. Что возвращает ваш оператор?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Оператор должен возвращать поток: std::ostream &operator<<(std::ostream &out, const Item &item) { return out << …; }.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "яблоко 3\nгруша 5\n",
+          "expected": "яблоко x3, груша x5\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "",
+          "expected": "\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "a 1\n",
+          "expected": "a x1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "чай 0\n",
+          "expected": "чай x0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "x 1\ny 2\nz 3\n",
+          "expected": "x x1, y x2, z x3\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "молоко 100\n",
+          "expected": "молоко x100\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "p -1\n",
+          "expected": "p x-1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "кот 9\nпёс 8\n",
+          "expected": "кот x9, пёс x8\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "item 2147483647\n",
+          "expected": "item x2147483647\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "one 1\ntwo 2\n",
+          "expected": "one x1, two x2\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <string>\n#include <utility>\n\nclass Item {\npublic:\n    Item(std::string name, int count) : name_(std::move(name)), count_(count) {}\n\n    friend std::ostream & operator<<(std::ostream &out, const Item &item) {\n        return out << item.name_ << \" x\" << item.count_;\n    }\n\nprivate:\n    std::string name_;\n    int count_;\n};\n\nint main() {\n    std::string name;\n    int count;\n    bool first = true;\n    while (std::cin >> name >> count) {\n        if (!first) {\n            std::cout << \", \";\n        }\n        std::cout << Item(name, count) << \"\";\n        first = false;\n    }\n    std::cout << '\\n';\n    return 0;\n}\n",
+      "solutionExplanation": "`std::cout << Item(name, count) << \"\"` вычисляется слева направо: сначала `std::cout << Item(…)`, затем к **результату** применяется `<< \"\"`. Оператор возвращал `void` — и выражение `void << \"\"` не имеет смысла, отсюда ошибка компиляции `invalid operands to binary expression`.\n\nОператор вывода всегда возвращает поток, который получил: `return out << …;`. Так он ведёт себя как встроенные операторы `<<`, и объекты можно смешивать с числами и строками в одной цепочке.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-printing-task-4",
+      "title": "Время со спецификацией",
+      "description": "Опишите структуру `Clock` (часы и минуты) и специализацию `std::formatter<Clock>` со своей спецификацией:\n\n- `{}` или `{:H}` — 24-часовой формат `ЧЧ:ММ`: `09:05`, `14:30`;\n- `{:h}` — 12-часовой формат без ведущего нуля в часах: `9:05 AM`, `2:30 PM`; полночь — `12:00 AM`, полдень — `12:00 PM`.\n\nЛюбая другая спецификация — ошибка формата (`std::format_error` в `parse`). Каждая строка ввода — время `ЧЧ:ММ`; напечатайте `{} = {:h}`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "09:05\n14:30\n",
+          "output": "09:05 = 9:05 AM\n14:30 = 2:30 PM\n"
+        },
+        {
+          "input": "00:00\n12:00\n",
+          "output": "00:00 = 12:00 AM\n12:00 = 12:00 PM\n"
+        }
+      ],
+      "constraints": ["Время корректно; строк не больше 30."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Поле char style = 'H'; в parse: если текущий символ H или h — запомнить и сдвинуть итератор; если после этого не }, — throw std::format_error.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "12-часовой формат: часы h % 12, а если получился 0 — 12; суффикс AM для часов до 12, иначе PM.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "09:05\n14:30\n",
+          "expected": "09:05 = 9:05 AM\n14:30 = 2:30 PM\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "00:00\n12:00\n",
+          "expected": "00:00 = 12:00 AM\n12:00 = 12:00 PM\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Конец дня",
+          "stdin": "23:59\n",
+          "expected": "23:59 = 11:59 PM\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "После полуночи",
+          "stdin": "00:01\n",
+          "expected": "00:01 = 12:01 AM\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Около полудня",
+          "stdin": "11:59\n12:01\n",
+          "expected": "11:59 = 11:59 AM\n12:01 = 12:01 PM\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Час ночи и дня",
+          "stdin": "01:00\n13:00\n",
+          "expected": "01:00 = 1:00 AM\n13:00 = 1:00 PM\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Утро",
+          "stdin": "10:10\n",
+          "expected": "10:10 = 10:10 AM\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Вечер и утро",
+          "stdin": "18:45\n06:45\n",
+          "expected": "18:45 = 6:45 PM\n06:45 = 6:45 AM\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-8",
+          "name": "Ведущий ноль в минутах",
+          "stdin": "20:05\n",
+          "expected": "20:05 = 8:05 PM\n"
+        }
+      ],
+      "referenceSolution": "#include <format>\n#include <iostream>\n#include <print>\n\nstruct Clock {\n    int hours;\n    int minutes;\n};\n\ntemplate <>\nstruct std::formatter<Clock> {\n    char style = 'H';\n\n    constexpr auto parse(std::format_parse_context &ctx) {\n        auto it = ctx.begin();\n        if (it != ctx.end() && (*it == 'H' || *it == 'h')) {\n            style = *it++;\n        }\n        if (it != ctx.end() && *it != '}') {\n            throw std::format_error(\"ожидается H или h\");\n        }\n        return it;\n    }\n\n    auto format(const Clock &c, std::format_context &ctx) const {\n        if (style == 'H') {\n            return std::format_to(ctx.out(), \"{:02}:{:02}\", c.hours, c.minutes);\n        }\n        int h = c.hours % 12 == 0 ? 12 : c.hours % 12;\n        return std::format_to(ctx.out(), \"{}:{:02} {}\", h, c.minutes, c.hours < 12 ? \"AM\" : \"PM\");\n    }\n};\n\nint main() {\n    Clock c;\n    char colon;\n    while (std::cin >> c.hours >> colon >> c.minutes) {\n        std::println(\"{} = {:h}\", c, c);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`parse` читает спецификацию и сохраняет выбор в поле форматтера; `format` затем печатает в выбранном стиле. Разделение работает, потому что для каждого места `{…}` в шаблоне создаётся свой форматтер: в `\"{} = {:h}\"` их два, с разными `style`.\n\nНеизвестная буква — исключение `std::format_error` в `parse`. Поскольку строка формата проверяется при компиляции, `std::println(\"{:x}\", c)` даже не соберётся — ошибку увидит программист, а не пользователь. Особые случаи 12-часового формата — полночь и полдень — решаются одной формулой: `h % 12`, заменённое на 12 при нуле.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
+  "quiz": {
+    "id": "oop-printing-quiz",
+    "title": "Проверка понимания",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <format>\n#include <print>\n\nstruct Size {\n    int w, h;\n};\n\ntemplate <>\nstruct std::formatter<Size> {\n    constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }\n    auto format(const Size &s, std::format_context &ctx) const {\n        return std::format_to(ctx.out(), \"{}x{}\", s.w, s.h);\n    }\n};\n\nint main() {\n    std::println(\"[{}] [{}]\", Size{1920, 1080}, Size{3, 4});\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "После специализации std::formatter тип Size печатается, как встроенный.",
+        "type": "text",
+        "answers": ["[1920x1080] [3x4]"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q2",
+        "question": "Что должен вернуть метод parse форматтера, который не поддерживает настроек?",
+        "explanation": "parse возвращает позицию, где закончил разбор; «ничего не прочитал» — это ctx.begin().",
+        "type": "text",
+        "answers": ["ctx.begin()", "ctx.begin();", "return ctx.begin();"],
+        "placeholder": "Выражение"
+      },
+      {
+        "id": "q3",
+        "question": "Что делает std::format_to(ctx.out(), \"…\", …)?",
+        "explanation": "Эту позицию и возвращает метод format.",
+        "options": [
+          "Форматирует, как std::format, но дописывает результат в вывод и возвращает позицию его конца",
+          "Создаёт новую строку",
+          "Печатает сразу в stdout",
+          "Проверяет спецификацию"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что даёт наследование специализации от std::formatter<std::string>?",
+        "explanation": "format готовит строку и передаёт её базовому format, который применяет спецификацию.",
+        "options": [
+          "Готовый parse со шириной, выравниванием и заполнителем — достаточно подготовить текст",
+          "Возможность печатать через std::cout",
+          "Автоматическую печать всех полей",
+          "Ускорение вывода"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Когда выполняется метод parse при вызове std::println(\"{:F}\", t)?",
+        "explanation": "Строка формата проверяется при компиляции, и parse — часть этой проверки, поэтому он constexpr.",
+        "options": [
+          "При компиляции: ошибка в спецификации становится ошибкой компиляции",
+          "При каждом вызове println во время работы",
+          "Один раз при запуске программы",
+          "Никогда — его вызывает только std::format"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Почему operator<< для потока возвращает std::ostream &?",
+        "explanation": "std::cout << a возвращает поток, и к нему применяется следующий <<.",
+        "options": [
+          "Чтобы можно было соединять вызовы в цепочку: std::cout << a << b",
+          "Так поток быстрее печатает",
+          "Чтобы вернуть количество байтов",
+          "Это необязательно и ни на что не влияет"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Что выведет программа?",
+        "code": "#include <format>\n#include <print>\n#include <string>\n\nstruct Tag {\n    std::string name;\n};\n\ntemplate <>\nstruct std::formatter<Tag> : std::formatter<std::string> {\n    auto format(const Tag &t, std::format_context &ctx) const {\n        return std::formatter<std::string>::format(\"#\" + t.name, ctx);\n    }\n};\n\nint main() {\n    std::println(\"[{:>6}][{:-<6}]\", Tag{\"cpp\"}, Tag{\"go\"});\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Текст #cpp и #go выравнивается унаследованным форматтером строк.",
+        "type": "text",
+        "answers": ["[  #cpp][#go---]"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q8",
+        "question": "Почему метод format в специализации должен быть const?",
+        "explanation": "Без const специализация не удовлетворяет требованиям, и компилятор откажется её использовать.",
+        "options": [
+          "Библиотека вызывает его у константного объекта форматтера",
+          "Чтобы он не менял форматируемый объект",
+          "const-методы работают быстрее",
+          "Это необязательно"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q9",
+        "question": "Чем форматтер лучше метода void print() const?",
+        "explanation": "print печатает только целую строку в stdout.",
+        "options": [
+          "Объект можно вставить в любой текст, записать в строку, файл или stderr, задать ширину",
+          "Форматтер не нужно объявлять",
+          "print нельзя вызвать у константы",
+          "Ничем"
+        ],
+        "correct": 0
+      }
+    ]
+  }
+}

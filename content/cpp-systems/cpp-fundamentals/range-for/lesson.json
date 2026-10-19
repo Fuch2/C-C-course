@@ -1,121 +1,527 @@
 {
   "id": "cpp20-range-for",
-  "title": "range-based for",
-  "description": "Цикл по диапазону выражает обход контейнера и уменьшает ошибки индексов. Нужна ссылка для изменения и const-ссылка для чтения без копирования.",
+  "title": "Цикл по диапазону и итераторы",
+  "description": "Цикл for по диапазону для контейнеров, строк и массивов; копия, ссылка и константная ссылка в переменной цикла; итераторы begin и end, разыменование и арифметика; алгоритмы accumulate, max_element, find, reverse, sort на диапазонах; std::erase_if; почему нельзя менять размер контейнера при обходе.",
   "moduleId": "cpp-fundamentals",
-  "order": 9,
+  "order": 11,
   "difficulty": "intermediate",
   "estimatedMinutes": 50,
   "prerequisites": ["cpp20-auto"],
   "objectives": [
-    "Объяснить, зачем появился range-based for и какую проблему он решает.",
-    "Сравнить стоимость и ограничения с аналогом в C.",
-    "Применить инструмент в задаче обработки данных."
+    "Обходить контейнеры циклом по диапазону с копией, ссылкой и константной ссылкой",
+    "Работать с итераторами begin, end, rbegin, rend",
+    "Применять алгоритмы стандартной библиотеки к диапазонам",
+    "Не изменять размер контейнера во время обхода"
   ],
-  "tags": ["C++20", "основы C++", "range-based for"],
+  "tags": ["C++", "range-for", "Итераторы", "algorithm"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
-    "id": "cpp20-range-for-exercise",
-    "title": "Преобразование ASCII-команды",
-    "description": "Прочитайте ASCII-строку длиной до 200. В range-based for через char& замените a…z на соответствующие заглавные. Остальные ASCII-символы сохраните. Выведите результат. Не используйте индексы и locale-зависимое преобразование.",
-    "difficulty": "intermediate",
+    "id": "cpp20-range-for-task-1",
+    "title": "Итоги массива",
+    "description": "Первая строка — `n`, вторая — `n` целых чисел. Напечатайте через пробел сумму, минимум, максимум и номер (с 1) первого максимального элемента.\n\nИспользуйте `std::accumulate`, `std::min_element` и `std::max_element`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n\nint main() {\n    // Реализуйте решение на современном C++.\n}\n",
     "examples": [
       {
-        "input": "start x1",
-        "output": "START X1\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "5\n3 9 -2 9 4\n",
+        "output": "23 -2 9 2\n"
       },
       {
-        "input": "",
-        "output": "\n",
-        "explanation": "Публичный пример фиксирует контракт; дополнительные границы проверяются отдельно."
+        "input": "1\n-7\n",
+        "output": "-7 -7 -7 1\n"
       }
     ],
-    "constraints": [
-      "Используйте C++20 и стандартную библиотеку.",
-      "Проверяйте состояние ввода и не смешивайте владение вручную без необходимости.",
-      "Выводите только требуемый результат."
-    ],
+    "constraints": ["1 ≤ n ≤ 1000; |числа| ≤ 10⁹."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Сначала сформулируйте инвариант состояния и выберите контейнер по операциям."
+        "text": "Сумма до 10¹² — начальное значение accumulate должно быть 0LL, иначе сумма будет считаться в int.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проверьте пустой ввод, границу диапазона и повторяющиеся значения."
+        "text": "min_element и max_element возвращают итераторы: значение — *it, номер — it − v.begin() + 1.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "stdin": "start x1",
-        "expected": "START X1\n"
+        "stdin": "5\n3 9 -2 9 4\n",
+        "expected": "23 -2 9 2\n"
       },
-      { "id": "case-2", "name": "Пример 2", "stdin": "", "expected": "\n" }
+      {
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "1\n-7\n",
+        "expected": "-7 -7 -7 1\n"
+      }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "stdin": "aZ09_!",
-        "expected": "AZ09_!\n"
+        "id": "hidden-1",
+        "name": "Скрытый тест 1",
+        "stdin": "3\n1000000000 1000000000 1000000000\n",
+        "expected": "3000000000 1000000000 1000000000 1\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "stdin": "  ab  ",
-        "expected": "  AB  \n"
+        "id": "hidden-2",
+        "name": "Скрытый тест 2",
+        "stdin": "4\n-1 -2 -3 -4\n",
+        "expected": "-10 -4 -1 1\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Скрытый тест 3",
+        "stdin": "4\n1 2 3 4\n",
+        "expected": "10 1 4 4\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Скрытый тест 4",
+        "stdin": "5\n5 5 5 5 5\n",
+        "expected": "25 5 5 1\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Скрытый тест 5",
+        "stdin": "2\n-1000000000 1000000000\n",
+        "expected": "0 -1000000000 1000000000 2\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Скрытый тест 6",
+        "stdin": "6\n0 7 0 7 0 7\n",
+        "expected": "21 0 7 2\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Скрытый тест 7",
+        "stdin": "3\n2 1 2\n",
+        "expected": "5 1 2 1\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Скрытый тест 8",
+        "stdin": "7\n9 1 8 2 7 3 6\n",
+        "expected": "36 1 9 1\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <string>\n\nvoid uppercase_ascii(std::string& text) {\n    for (char& ch : text) {\n        if (ch >= 'a' && ch <= 'z') ch = static_cast<char>(ch - 'a' + 'A');\n    }\n}\nint main() {\n    std::string text;\n    std::getline(std::cin, text);\n    uppercase_ascii(text);\n    std::cout << text << '\\n';\n}\n",
-    "solutionExplanation": "char& привязывается к элементу; char ch изменял бы копию. Длина строки не меняется, итераторы остаются действительными. Алгоритм рассчитан на ASCII, а не Unicode. Один проход — O(n) времени и O(1) рабочей памяти.",
-    "checking": { "type": "stdout", "comparison": "exact" }
+    "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <numeric>\n#include <vector>\n\nint main() {\n    int n;\n    if (!(std::cin >> n) || n < 1) {\n        return 0;\n    }\n    std::vector<long long> v(static_cast<std::size_t>(n));\n    for (auto &x : v) {\n        std::cin >> x;\n    }\n    long long sum = std::accumulate(v.begin(), v.end(), 0LL);\n    auto lo = std::min_element(v.begin(), v.end());\n    auto hi = std::max_element(v.begin(), v.end());\n    std::cout << sum << ' ' << *lo << ' ' << *hi << ' ' << hi - v.begin() + 1 << '\\n';\n    return 0;\n}\n",
+    "solutionExplanation": "Три алгоритма заменяют три цикла. `std::accumulate` складывает диапазон, начиная со значения `init`, и тип `init` определяет тип суммы: с `0` сумма считалась бы в `int` и переполнилась бы. `std::min_element` и `std::max_element` возвращают итераторы на первый наименьший и наибольший элемент — из итератора получаются и значение, и номер.\n\nРазыменовывать результат можно, потому что вектор не пуст (`n ≥ 1`). Для пустого диапазона алгоритмы вернули бы `end()`.",
+    "checking": {
+      "type": "stdout",
+      "comparison": "exact"
+    }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "cpp20-range-for-task-2",
+      "title": "Зеркальные слова",
+      "description": "Каждая строка ввода — слова из латинских букв через пробел. Для каждой строки напечатайте две строки: слова в обратном порядке, а затем исходный порядок слов, но каждое слово задом наперёд. Слова разделяйте одним пробелом.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "one two three\n",
+          "output": "three two one\neno owt eerht\n"
+        },
+        {
+          "input": "abc\n",
+          "output": "abc\ncba\n"
+        }
+      ],
+      "constraints": ["Строк не больше 20; слов в строке от 1 до 50."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Разберите строку в std::vector<std::string> через std::istringstream.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "std::reverse(words.begin(), words.end()) переворачивает порядок слов, std::reverse(w.begin(), w.end()) — буквы слова. Удобно сделать копию вектора для второй строки.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "one two three\n",
+          "expected": "three two one\neno owt eerht\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "abc\n",
+          "expected": "abc\ncba\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Две буквы",
+          "stdin": "a b\n",
+          "expected": "b a\na b\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Палиндромы",
+          "stdin": "level noon\n",
+          "expected": "noon level\nlevel noon\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Лишние пробелы",
+          "stdin": "  spaced   out  \n",
+          "expected": "out spaced\ndecaps tuo\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Две строки",
+          "stdin": "Hello World\nC plus plus\n",
+          "expected": "World Hello\nolleH dlroW\nplus plus C\nC sulp sulp\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Одна буква",
+          "stdin": "x\n",
+          "expected": "x\nx\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Пять слов",
+          "stdin": "the quick brown fox jumps\n",
+          "expected": "jumps fox brown quick the\neht kciuq nworb xof spmuj\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Повторы",
+          "stdin": "ab ba ab\n",
+          "expected": "ab ba ab\nba ab ba\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Регистр",
+          "stdin": "Zz Yy Xx\n",
+          "expected": "Xx Yy Zz\nzZ yY xX\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <sstream>\n#include <string>\n#include <vector>\n\nvoid print(const std::vector<std::string> &words) {\n    for (std::size_t i = 0; i < words.size(); i++) {\n        std::cout << words[i] << (i + 1 < words.size() ? ' ' : '\\n');\n    }\n}\n\nint main() {\n    std::string line;\n    while (std::getline(std::cin, line)) {\n        std::istringstream in(line);\n        std::vector<std::string> words;\n        std::string w;\n        while (in >> w) {\n            words.push_back(w);\n        }\n        if (words.empty()) {\n            continue;\n        }\n        std::vector<std::string> mirrored = words;\n        for (auto &word : mirrored) {\n            std::reverse(word.begin(), word.end());\n        }\n        std::reverse(words.begin(), words.end());\n        print(words);\n        print(mirrored);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`std::reverse` работает с любым диапазоном итераторов, поэтому один и тот же алгоритм переворачивает и вектор слов, и буквы одного слова — у строки тоже есть `begin()` и `end()`. Копия `mirrored = words` независима от оригинала: копирование вектора копирует и все строки в нём.\n\nПереворот букв делается циклом по ссылкам `for (auto &word : mirrored)` — без `&` переворачивались бы копии слов.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-range-for-task-3",
+      "title": "Найди ошибку: добавление при обходе",
+      "description": "Программа читает целые числа до конца ввода и для каждого **исходного** чётного числа дописывает в конец вектора его половину (добавленные числа повторно не обрабатываются). Затем печатает вектор.\n\nНа многих входах AddressSanitizer сообщает об ошибке. Найдите и исправьте её.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> v;\n    int x;\n    while (std::cin >> x) {\n        v.push_back(x);\n    }\n    for (int value : v) {\n        if (value % 2 == 0) {\n            v.push_back(value / 2);\n        }\n    }\n    for (std::size_t i = 0; i < v.size(); i++) {\n        std::cout << v[i] << (i + 1 < v.size() ? ' ' : '\\n');\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\n",
+          "output": "3\n"
+        },
+        {
+          "input": "4 7 10\n",
+          "output": "4 7 10 2 5\n"
+        }
+      ],
+      "constraints": ["От 1 до 1000 чисел; |числа| ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Что происходит с итераторами цикла по диапазону, когда push_back увеличивает вектор?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Обходите вектор по индексу до исходного размера: запомните std::size_t original = v.size(); и идите for (i = 0; i < original; i++), обращаясь к v[i].",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\n",
+          "expected": "3\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "4 7 10\n",
+          "expected": "4 7 10 2 5\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "2\n",
+          "expected": "2 1\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "1 3 5\n",
+          "expected": "1 3 5\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "8 8\n",
+          "expected": "8 8 4 4\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "-4 6\n",
+          "expected": "-4 6 -2 3\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "0\n",
+          "expected": "0 0\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "2 4 6 8\n",
+          "expected": "2 4 6 8 1 2 3 4\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "1000000000 1\n",
+          "expected": "1000000000 1 500000000\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "12 5 7 14\n",
+          "expected": "12 5 7 14 6 7\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> v;\n    int x;\n    while (std::cin >> x) {\n        v.push_back(x);\n    }\n    std::size_t original = v.size();\n    for (std::size_t i = 0; i < original; i++) {\n        if (v[i] % 2 == 0) {\n            v.push_back(v[i] / 2);\n        }\n    }\n    for (std::size_t i = 0; i < v.size(); i++) {\n        std::cout << v[i] << (i + 1 < v.size() ? ' ' : '\\n');\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Цикл по диапазону — это цикл по итераторам `begin()` и `end()`, вычисленным один раз в начале. `push_back` может перенести элементы в новый блок памяти, и итератор цикла начинает указывать в освобождённый старый блок: AddressSanitizer сообщает `heap-use-after-free`. Даже без переезда цикл работал бы неверно: `end()` запомнен до добавлений.\n\nОбход по индексу до исходного размера решает обе проблемы: индекс остаётся действительным после роста, а граница `original` гарантирует, что добавленные числа не обрабатываются. Правило: менять элементы во время обхода можно, менять размер контейнера — нельзя.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "cpp20-range-for-task-4",
+      "title": "Чистка данных",
+      "description": "До конца ввода идут целые числа. Очистите их в три шага и напечатайте отчёт:\n\n1. удалите отрицательные числа (`std::erase_if`);\n2. отсортируйте оставшиеся;\n3. удалите повторы, оставив по одному значению (`std::unique`).\n\nОтчёт — три строки: `отрицательных: A`, `повторов: B`, `осталось: x y z…` (или `осталось: пусто`).",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "5 -1 3 5 0 -7 3 3\n",
+          "output": "отрицательных: 2\nповторов: 3\nосталось: 0 3 5\n"
+        },
+        {
+          "input": "-1 -2\n",
+          "output": "отрицательных: 2\nповторов: 0\nосталось: пусто\n"
+        }
+      ],
+      "constraints": ["Чисел не больше 1000; |числа| ≤ 10⁹."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "std::erase_if(v, условие) возвращает число удалённых элементов.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "std::unique не удаляет, а сдвигает уникальные значения к началу отсортированного диапазона и возвращает итератор на новый конец. Удалите хвост: v.erase(new_end, v.end()). Повторов — разность размеров до и после.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "5 -1 3 5 0 -7 3 3\n",
+          "expected": "отрицательных: 2\nповторов: 3\nосталось: 0 3 5\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "-1 -2\n",
+          "expected": "отрицательных: 2\nповторов: 0\nосталось: пусто\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": "отрицательных: 0\nповторов: 0\nосталось: пусто\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Без изменений",
+          "stdin": "1 2 3\n",
+          "expected": "отрицательных: 0\nповторов: 0\nосталось: 1 2 3\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Все равны",
+          "stdin": "7 7 7 7\n",
+          "expected": "отрицательных: 0\nповторов: 3\nосталось: 7\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Нули",
+          "stdin": "0 -0 0\n",
+          "expected": "отрицательных: 0\nповторов: 2\nосталось: 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Крайние значения",
+          "stdin": "1000000000 -1000000000 1000000000\n",
+          "expected": "отрицательных: 1\nповторов: 1\nосталось: 1000000000\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Убывание",
+          "stdin": "9 8 7 6 5 4 3 2 1\n",
+          "expected": "отрицательных: 0\nповторов: 0\nосталось: 1 2 3 4 5 6 7 8 9\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Пары знаков",
+          "stdin": "-5 5 -5 5\n",
+          "expected": "отрицательных: 2\nповторов: 1\nосталось: 5\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Перемешанные повторы",
+          "stdin": "3 1 3 1 3 1 2\n",
+          "expected": "отрицательных: 0\nповторов: 4\nосталось: 1 2 3\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<long long> v;\n    long long x;\n    while (std::cin >> x) {\n        v.push_back(x);\n    }\n    auto negatives = std::erase_if(v, [](long long value) { return value < 0; });\n    std::sort(v.begin(), v.end());\n    std::size_t before = v.size();\n    v.erase(std::unique(v.begin(), v.end()), v.end());\n    std::cout << \"отрицательных: \" << negatives << '\\n';\n    std::cout << \"повторов: \" << before - v.size() << '\\n';\n    std::cout << \"осталось:\";\n    if (v.empty()) {\n        std::cout << \" пусто\";\n    }\n    for (long long value : v) {\n        std::cout << ' ' << value;\n    }\n    std::cout << '\\n';\n    return 0;\n}\n",
+      "solutionExplanation": "`std::erase_if` удаляет элементы по условию за один проход и сообщает, сколько удалено. `std::unique` устроен иначе: он работает с диапазоном итераторов и не может изменить размер контейнера — только сдвинуть первые представители каждой группы равных соседей к началу и вернуть итератор на конец «полезной» части. Хвост удаляется отдельным `erase`. Эта пара — классическая идиома «erase-unique».\n\n`unique` убирает только **соседние** повторы, поэтому сортировка идёт до него. Итог — множество различных неотрицательных чисел по возрастанию за `O(n log n)`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "cpp20-range-for-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "purpose",
-        "question": "Что важно помнить в теме «range-based for»?",
-        "options": [
-          "Выбирать инструмент по контракту, времени, памяти и владению",
-          "Всегда переписывать решение через указатели C"
-        ],
-        "correct": 0,
-        "explanation": "Цикл по диапазону выражает обход контейнера и уменьшает ошибки индексов. Нужна ссылка для изменения и const-ссылка для чтения без копирования."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> v = {1, 2, 3};\n    for (auto x : v) {\n        x *= 10;\n    }\n    for (auto &x : v) {\n        x *= 2;\n    }\n    std::cout << v[0] << v[1] << v[2] << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Первый цикл меняет копии. Второй удваивает сами элементы: 2, 4, 6 — они печатаются подряд.",
+        "type": "text",
+        "answers": ["246"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "cost",
-        "question": "Что нужно учитывать при выборе инструмента?",
+        "id": "q2",
+        "question": "На что указывает v.end()?",
+        "explanation": "Диапазон [begin, end) — полуинтервал. Пустой контейнер — это begin() == end().",
         "options": [
-          "Только длину исходного кода",
-          "Стоимость определяется размером данных и выбранной операцией; фиксированные операции O(1), обходы O(n), дерево map/set O(log n) в среднем по высоте."
+          "На позицию за последним элементом — её нельзя разыменовывать",
+          "На последний элемент",
+          "На нулевой элемент",
+          "На nullptr"
         ],
-        "correct": 1,
-        "explanation": "Безопасность и выразительность типов уменьшают ручную работу, но добавляют правила времени жизни и иногда стоимость аллокаций."
+        "correct": 0
       },
       {
-        "id": "mistake",
-        "question": "Как избежать типичной ошибки?",
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <algorithm>\n#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> v = {5, 3, 9, 1, 9};\n    auto it = std::max_element(v.begin(), v.end());\n    std::cout << *it << ' ' << it - v.begin() << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "max_element возвращает итератор на первый наибольший элемент — индекс 2.",
+        "type": "text",
+        "answers": ["9 2"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <numeric>\n#include <vector>\n\nint main() {\n    std::vector<double> v = {0.5, 1.5, 2.5};\n    std::cout << std::accumulate(v.begin(), v.end(), 0) << ' '\n              << std::accumulate(v.begin(), v.end(), 0.0) << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Тип суммы — тип начального значения. С 0 (int) каждое прибавление отбрасывает дробную часть: 0 + 0.5 → 0, 0 + 1.5 → 1, 1 + 2.5 → 3. С 0.0 получается 4.5.",
+        "type": "text",
+        "answers": ["3 4.5"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Почему нельзя вызывать v.push_back внутри цикла for (int x : v)?",
+        "explanation": "Цикл по диапазону хранит итераторы begin и end, и рост вектора делает их недействительными.",
         "options": [
-          "Не переносите привычный C-подход автоматически: сначала определите владение, инвариант и стоимость операции.",
-          "Считать C-подход рекомендуемым стилем в любой задаче"
+          "При росте вектора итератор цикла указывает в освобождённую память",
+          "push_back нельзя вызывать внутри любых циклов",
+          "Цикл станет бесконечным, но память не пострадает",
+          "Можно, это безопасно"
         ],
-        "correct": 0,
-        "explanation": "Используйте range-based for как стандартный компонент, когда его контракт совпадает с задачей. Проверяйте invalidation, порядок и исключения."
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Какие объявления переменной цикла не копируют строки из std::vector<std::string> words?",
+        "explanation": "Ссылки не копируют. auto без & и явный тип std::string создают копию каждой строки.",
+        "type": "multiple",
+        "options": [
+          "for (const auto &w : words)",
+          "for (auto &w : words)",
+          "for (auto w : words)",
+          "for (std::string w : words)"
+        ],
+        "correct": [0, 1]
+      },
+      {
+        "id": "q7",
+        "question": "Что возвращает std::find(v.begin(), v.end(), x), если x нет в векторе?",
+        "explanation": "Алгоритмы сообщают «не найдено» итератором end() — его обязательно проверяют перед разыменованием.",
+        "options": ["v.end()", "Итератор на последний элемент", "−1", "nullptr"],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Что выведет программа?",
+        "code": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> v = {4, -1, 7, -3, 0};\n    auto removed = std::erase_if(v, [](int x) { return x <= 0; });\n    std::cout << removed << ' ' << v.size() << '\\n';\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Условие x <= 0 выполняется для −1, −3 и 0 — удалено три, осталось 4 и 7.",
+        "type": "text",
+        "answers": ["3 2"],
+        "placeholder": "Вывод программы"
       }
     ]
   }

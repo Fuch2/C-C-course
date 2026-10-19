@@ -1,117 +1,450 @@
 {
   "id": "advanced-header-guards",
-  "title": "Header guards",
-  "description": "Повторное текстовое включение заголовка может повторно определить struct или enum.",
+  "title": "Защита от повторного включения",
+  "description": "Почему заголовок попадает в файл дважды; какие объявления можно повторять; защита #ifndef/#define/#endif и выбор имени макроса; зарезервированные идентификаторы; #pragma once; границы защиты; циклические включения и предварительное объявление структуры.",
   "moduleId": "advanced-c",
   "order": 3,
-  "difficulty": "advanced",
-  "estimatedMinutes": 40,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
   "prerequisites": ["advanced-headers"],
   "objectives": [
-    "Объяснить: Header guards",
-    "Различать корректный контракт и ошибку: Скопированный guard с тем же именем может молча скрыть другой заголовок.",
-    "Реализовать и проверить практику на обычном и граничном вводе"
+    "Объяснять, как заголовок попадает в единицу трансляции дважды и почему это ломает сборку",
+    "Писать защиту от повторного включения с уникальным именем макроса",
+    "Отличать то, что защита решает, от ошибок линковки, которые она не решает",
+    "Разрывать циклические включения предварительным объявлением структуры"
   ],
-  "tags": ["C17", "углублённый C", "Header guards"],
+  "tags": ["Include guard", "#ifndef", "#pragma once", "Предварительное объявление", "Заголовок"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
-    "id": "advanced-header-guards-exercise",
-    "title": "Практика: Header guards",
-    "description": "Защитите определение enum Channel guard-макросом SENSOR_CHANNEL_H. Прочитайте канал 0…2 и выведите размер пакета: 2, 4 или 8 байт.",
-    "difficulty": "advanced",
-    "starterCode": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    /* Реализуйте контракт задачи и проверку ошибок. */\n    return 0;\n}\n",
+    "id": "advanced-header-guards-task-1",
+    "title": "Имя защитного макроса",
+    "description": "Постройте имена защитных макросов по правилам проекта. В первой строке — название проекта, в остальных строках до конца ввода — пути к заголовкам относительно корня проекта.\n\nДля каждого пути:\n1. если путь начинается с `include/` или `src/`, отбросьте эту часть (только одну и только в начале);\n2. если путь после этого не начинается с `название_проекта/`, допишите название проекта и `/` в начало;\n3. замените латинские буквы заглавными, цифры оставьте, а все остальные символы (`/`, `.`, `-` и любые другие) — на `_`.\n\nНапечатайте получившиеся имена по одному в строке.",
+    "difficulty": "beginner",
+    "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
-    "compiler": "clang",
+    "standard": "c23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
       {
-        "input": "0",
-        "output": "2\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "geo\ninclude/geo/point.h\nsrc/util/str-buf.h\nconfig.h\n",
+        "output": "GEO_POINT_H\nGEO_UTIL_STR_BUF_H\nGEO_CONFIG_H\n"
       },
       {
-        "input": "1",
-        "output": "4\n",
-        "explanation": "Пример фиксирует формат результата; остальные граничные случаи проверяются отдельно."
+        "input": "my-lib\ninclude/my-lib/a.h\n",
+        "output": "MY_LIB_A_H\n"
       }
     ],
     "constraints": [
-      "Стандарт C17. Соблюдайте диапазоны и протокол условия.",
-      "В stdout только требуемый результат.",
-      "Все открытые потоки и динамические блоки освобождаются, включая ветви ошибки."
+      "Название проекта и пути состоят из латинских букв, цифр и символов . - _ /; длина не больше 100.",
+      "Путей не больше 20."
     ],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "На каждой сборочной площадке стоит свой штамп «уже прочитано»; штамп не является общим для всего проекта."
+        "text": "Читайте название через scanf(\"%99s\"), а пути — тоже по одному слову: в путях нет пробелов.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Скопированный guard с тем же именем может молча скрыть другой заголовок."
+        "text": "Отбрасывание префикса удобно сделать сдвигом указателя: if (strncmp(path, \"src/\", 4) == 0) path += 4;",
+        "order": 2
+      },
+      {
+        "id": "hint-3",
+        "text": "Проверка шага 2: strncmp(path, project, len) == 0 && path[len] == '/'. Без проверки символа после названия путь geometry/x.h ошибочно совпадёт с проектом geo.",
+        "order": 3
       }
     ],
     "publicTests": [
       {
-        "id": "test-1",
-        "name": "Основной сценарий",
-        "stdin": "0",
-        "expected": "2\n"
+        "id": "case-1",
+        "name": "Пример 1",
+        "stdin": "geo\ninclude/geo/point.h\nsrc/util/str-buf.h\nconfig.h\n",
+        "expected": "GEO_POINT_H\nGEO_UTIL_STR_BUF_H\nGEO_CONFIG_H\n"
       },
       {
-        "id": "test-2",
-        "name": "Граничный сценарий 1",
-        "stdin": "1",
-        "expected": "4\n"
+        "id": "case-2",
+        "name": "Пример 2",
+        "stdin": "my-lib\ninclude/my-lib/a.h\n",
+        "expected": "MY_LIB_A_H\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "test-3",
-        "name": "Граничный сценарий 2",
-        "stdin": "2",
-        "expected": "8\n"
+        "id": "hidden-1",
+        "name": "Похожий каталог",
+        "stdin": "geo\ninclude/geometry/x.h\n",
+        "expected": "GEO_GEOMETRY_X_H\n"
+      },
+      {
+        "id": "hidden-2",
+        "name": "Проект после src",
+        "stdin": "geo\nsrc/geo/io.h\n",
+        "expected": "GEO_IO_H\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Цифры",
+        "stdin": "geo\ninclude/geo/v2/vec3.h\n",
+        "expected": "GEO_V2_VEC3_H\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Другой каталог",
+        "stdin": "app\ntests/test-main.h\n",
+        "expected": "APP_TESTS_TEST_MAIN_H\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Только один префикс",
+        "stdin": "app\nsrc/include/a.h\n",
+        "expected": "APP_INCLUDE_A_H\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Не префиксы",
+        "stdin": "app\nsource/a.h\nsrcfile.h\n",
+        "expected": "APP_SOURCE_A_H\nAPP_SRCFILE_H\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Регистр",
+        "stdin": "Net2\nnet2/Socket.H\ninclude/Net2/x.h\n",
+        "expected": "NET2_NET2_SOCKET_H\nNET2_X_H\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Несколько путей",
+        "stdin": "kv\napp\nkv.h\nkv/kv.h\nsrc/kv/store/disk.v1.h\n",
+        "expected": "KV_APP\nKV_KV_H\nKV_KV_H\nKV_STORE_DISK_V1_H\n"
       }
     ],
-    "referenceSolution": "#include <stdio.h>\n#ifndef SENSOR_CHANNEL_H\n#define SENSOR_CHANNEL_H\nenum Channel { TEMPERATURE, PRESSURE, POSITION };\n#endif\nint main(void) {\n    int channel;\n    if (scanf(\"%d\", &channel) != 1 || channel < 0 || channel > 2) return 1;\n    const int sizes[] = {2,4,8};\n    printf(\"%d\\n\", sizes[channel]);\n    return 0;\n}\n",
-    "solutionExplanation": "На каждой сборочной площадке стоит свой штамп «уже прочитано»; штамп не является общим для всего проекта.\n\nСкопированный guard с тем же именем может молча скрыть другой заголовок.\n\nРазбор: сначала проверяется чтение и оговорённые границы, затем выполняется операция по контракту. Сравните основной и граничные сценарии: '0' → '2\\n'; '1' → '4\\n'; '2' → '8\\n'. Код возвращает результат отдельно от ошибки ввода. Указанные диапазоны ограничивают арифметику; за их пределами нужен дополнительный контракт.",
+    "referenceSolution": "#include <ctype.h>\n#include <stdio.h>\n#include <string.h>\n\nvoid print_macro_part(const char *text) {\n    for (const char *p = text; *p != '\\0'; p++) {\n        unsigned char c = (unsigned char)*p;\n        putchar(isalnum(c) ? toupper(c) : '_');\n    }\n}\n\nint main(void) {\n    char project[128];\n    char buffer[128];\n    if (scanf(\"%99s\", project) != 1) {\n        return 0;\n    }\n    size_t len = strlen(project);\n    while (scanf(\"%99s\", buffer) == 1) {\n        const char *path = buffer;\n        if (strncmp(path, \"include/\", 8) == 0) {\n            path += 8;\n        } else if (strncmp(path, \"src/\", 4) == 0) {\n            path += 4;\n        }\n        if (!(strncmp(path, project, len) == 0 && path[len] == '/')) {\n            print_macro_part(project);\n            putchar('_');\n        }\n        print_macro_part(path);\n        putchar('\\n');\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Имя строится в два шага: сначала путь приводится к виду `проект/подкаталог/файл.h`, затем каждый символ превращается в допустимый символ идентификатора. Вместо того чтобы собирать новую строку, программа печатает название проекта с подчёркиванием, а затем преобразованный путь — результат тот же.\n\nПроверка `path[len] == '/'` важна: префикс `geo` совпадает и с началом `geometry/`, но это другой каталог. Отбрасывается только один префикс `include/` или `src/` — путь `src/include/a.h` превращается в `include/a.h`, а не в `a.h`.\n\nПолучившиеся имена не начинаются с подчёркивания и не содержат двойного подчёркивания в начале, поэтому не попадают в зарезервированные идентификаторы.",
     "checking": {
       "type": "stdout",
       "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "advanced-header-guards-task-2",
+      "title": "Найди ошибку: двойное включение",
+      "description": "Программа читает до 20 цветов в формате `#RRGGBB` (шестнадцатеричные компоненты) и печатает их среднее (каждая компонента — целая часть среднего) и самый яркий цвет — с наибольшей величиной `299·R + 587·G + 114·B`, первый из равных.\n\nФайл собран из нескольких «файлов» проекта: заголовок `color.h` попал в него дважды — напрямую и через `palette.h`. Сборка падает с ошибкой `redefinition` — повторно определена функция `color_sum` (а для Clang и компиляторов до C23 — ещё и `struct Color`). Исправьте программу так, как исправляют настоящий проект: **защитите заголовки**, не удаляя повторное включение.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <stdio.h>\n\n// ---- color.h ----\nstruct Color {\n    unsigned r, g, b;\n};\n\nstatic inline unsigned color_sum(struct Color c) {\n    return c.r + c.g + c.b;\n}\n\n// ---- palette.h подключает color.h: текст вставлен ещё раз ----\nstruct Color {\n    unsigned r, g, b;\n};\n\nstatic inline unsigned color_sum(struct Color c) {\n    return c.r + c.g + c.b;\n}\n\n// ---- palette.h ----\nstruct Color palette_average(const struct Color *colors, int n);\nunsigned long palette_brightness(struct Color c);\n\n// ---- main.c ----\nint main(void) {\n    struct Color colors[20];\n    int n = 0;\n    while (n < 20 && scanf(\" #%2x%2x%2x\", &colors[n].r, &colors[n].g, &colors[n].b) == 3) {\n        n++;\n    }\n    if (n == 0 || color_sum(colors[0]) > 3 * 255) {\n        return 0;\n    }\n    struct Color avg = palette_average(colors, n);\n    int best = 0;\n    for (int i = 1; i < n; i++) {\n        if (palette_brightness(colors[i]) > palette_brightness(colors[best])) {\n            best = i;\n        }\n    }\n    printf(\"среднее #%02X%02X%02X\\n\", avg.r, avg.g, avg.b);\n    printf(\"ярче всех #%02X%02X%02X\\n\", colors[best].r, colors[best].g, colors[best].b);\n    return 0;\n}\n\n// ---- palette.c ----\nstruct Color palette_average(const struct Color *colors, int n) {\n    struct Color sum = {0, 0, 0};\n    for (int i = 0; i < n; i++) {\n        sum.r += colors[i].r;\n        sum.g += colors[i].g;\n        sum.b += colors[i].b;\n    }\n    struct Color avg = {sum.r / n, sum.g / n, sum.b / n};\n    return avg;\n}\n\nunsigned long palette_brightness(struct Color c) {\n    return 299UL * c.r + 587UL * c.g + 114UL * c.b;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "#FF0000 #00FF00 #0000FF\n",
+          "output": "среднее #555555\nярче всех #00FF00\n"
+        },
+        {
+          "input": "#ffffff\n",
+          "output": "среднее #FFFFFF\nярче всех #FFFFFF\n"
+        }
+      ],
+      "constraints": [
+        "От 1 до 20 цветов, буквы в шестнадцатеричной записи могут быть любого регистра."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Оба блока с текстом color.h — это один и тот же файл, поэтому защита должна быть одинаковой в обоих.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Оберните каждый блок color.h в #ifndef COLOR_H / #define COLOR_H / #endif. Заголовок palette.h тоже стоит защитить своим макросом.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "#FF0000 #00FF00 #0000FF\n",
+          "expected": "среднее #555555\nярче всех #00FF00\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "#ffffff\n",
+          "expected": "среднее #FFFFFF\nярче всех #FFFFFF\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "#000000 #FFFFFF\n",
+          "expected": "среднее #7F7F7F\nярче всех #FFFFFF\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "#102030 #405060\n",
+          "expected": "среднее #283848\nярче всех #405060\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "#808080 #808080\n",
+          "expected": "среднее #808080\nярче всех #808080\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "#FF0000\n#0000FF\n",
+          "expected": "среднее #7F007F\nярче всех #FF0000\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "#123456 #abcdef #7f7f7f #010203\n",
+          "expected": "среднее #4F6071\nярче всех #ABCDEF\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "#ff00ff #00ffff #ffff00\n",
+          "expected": "среднее #AAAAAA\nярче всех #FFFF00\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "#0a0b0c #0c0b0a\n",
+          "expected": "среднее #0B0B0B\nярче всех #0C0B0A\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "#FFFFFF #FFFFFE #FEFFFF #FFFEFF\n",
+          "expected": "среднее #FEFEFE\nярче всех #FFFFFF\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n\n// ---- color.h ----\n#ifndef COLOR_H\n#define COLOR_H\nstruct Color {\n    unsigned r, g, b;\n};\n\nstatic inline unsigned color_sum(struct Color c) {\n    return c.r + c.g + c.b;\n}\n#endif\n\n// ---- palette.h подключает color.h: текст вставлен ещё раз ----\n#ifndef COLOR_H\n#define COLOR_H\nstruct Color {\n    unsigned r, g, b;\n};\n\nstatic inline unsigned color_sum(struct Color c) {\n    return c.r + c.g + c.b;\n}\n#endif\n\n// ---- palette.h ----\n#ifndef PALETTE_H\n#define PALETTE_H\nstruct Color palette_average(const struct Color *colors, int n);\nunsigned long palette_brightness(struct Color c);\n#endif\n\n// ---- main.c ----\nint main(void) {\n    struct Color colors[20];\n    int n = 0;\n    while (n < 20 && scanf(\" #%2x%2x%2x\", &colors[n].r, &colors[n].g, &colors[n].b) == 3) {\n        n++;\n    }\n    if (n == 0 || color_sum(colors[0]) > 3 * 255) {\n        return 0;\n    }\n    struct Color avg = palette_average(colors, n);\n    int best = 0;\n    for (int i = 1; i < n; i++) {\n        if (palette_brightness(colors[i]) > palette_brightness(colors[best])) {\n            best = i;\n        }\n    }\n    printf(\"среднее #%02X%02X%02X\\n\", avg.r, avg.g, avg.b);\n    printf(\"ярче всех #%02X%02X%02X\\n\", colors[best].r, colors[best].g, colors[best].b);\n    return 0;\n}\n\n// ---- palette.c ----\nstruct Color palette_average(const struct Color *colors, int n) {\n    struct Color sum = {0, 0, 0};\n    for (int i = 0; i < n; i++) {\n        sum.r += colors[i].r;\n        sum.g += colors[i].g;\n        sum.b += colors[i].b;\n    }\n    struct Color avg = {sum.r / n, sum.g / n, sum.b / n};\n    return avg;\n}\n\nunsigned long palette_brightness(struct Color c) {\n    return 299UL * c.r + 587UL * c.g + 114UL * c.b;\n}\n",
+      "solutionExplanation": "Второй блок с `struct Color` и `color_sum` — точная копия первого, потому что это один и тот же заголовок, вставленный препроцессором ещё раз через `palette.h`. Удалить копию в настоящем проекте нельзя: `palette.h` нужен `struct Color`, и он обязан подключать `color.h` сам, чтобы быть самодостаточным.\n\nЗащита решает проблему без изменения порядка включений: при первом проходе определяется `COLOR_H`, и второй блок препроцессор выбрасывает целиком. Защищать стоит все заголовки, даже те, которые пока подключаются один раз.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "advanced-header-guards-task-3",
+      "title": "Проверка включений",
+      "description": "Смоделируйте, как препроцессор обрабатывает включения, и найдите ошибки, которые увидит компилятор.\n\nВ первой строке — число файлов `n`. Далее `n` описаний: строка `имя защита k` и `k` строк содержимого. `защита` — `guard` (файл защищён от повторного включения) или `noguard`. Строка содержимого — одна из:\n- `include F` — подключить файл `F`;\n- `define S` — определение структуры `S`;\n- `use S` — место, где нужен полный тип `S` (поле по значению, `sizeof`).\n\nПервый файл — компилируемый `.c`. Обработайте его содержимое по порядку; при `include` обработайте подключённый файл полностью и вернитесь. Защищённый файл при первом включении запоминается **сразу**, до обработки содержимого, а при повторных пропускается.\n\nПечатайте ошибки по мере обнаружения:\n- `повторное определение S в F (первое в G)` — структура `S` уже определена (в файле `G`);\n- `S не определена в F` — `use S` до определения `S`;\n- `бесконечное включение F` — включение файла `F` превысило бы глубину вложенности 20 (у `.c` файла глубина 0, у подключённого им — 1). После этой ошибки обработка прекращается.\n\nЕсли ошибок нет, напечатайте `ошибок нет`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <stdio.h>\n\nint main(void) {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "c",
+      "standard": "c23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "3\nmain.c guard 2\ninclude point.h\ninclude shapes.h\npoint.h noguard 1\ndefine Point\nshapes.h guard 3\ninclude point.h\nuse Point\ndefine Circle\n",
+          "output": "повторное определение Point в point.h (первое в point.h)\n"
+        },
+        {
+          "input": "3\nmain.c guard 2\ninclude point.h\ninclude shapes.h\npoint.h guard 1\ndefine Point\nshapes.h guard 3\ninclude point.h\nuse Point\ndefine Circle\n",
+          "output": "ошибок нет\n",
+          "explanation": "С защитой второе включение point.h пропущено."
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 20; 0 ≤ k ≤ 20; имена не длиннее 31 символа.",
+        "Все подключаемые файлы описаны во вводе."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Храните файлы в массиве структур { имя; guarded; число строк; строки (вид и имя) } и напишите рекурсивную функцию process(file, depth).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Для определений заведите таблицу «структура → файл, где она определена». Флаг processed для защищённых файлов ставьте в начале process, до цикла по строкам.",
+          "order": 2
+        },
+        {
+          "id": "hint-3",
+          "text": "Остановку после бесконечного включения удобно сделать глобальным флагом fatal: process сразу возвращается, если он установлен.",
+          "order": 3
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "3\nmain.c guard 2\ninclude point.h\ninclude shapes.h\npoint.h noguard 1\ndefine Point\nshapes.h guard 3\ninclude point.h\nuse Point\ndefine Circle\n",
+          "expected": "повторное определение Point в point.h (первое в point.h)\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "3\nmain.c guard 2\ninclude point.h\ninclude shapes.h\npoint.h guard 1\ndefine Point\nshapes.h guard 3\ninclude point.h\nuse Point\ndefine Circle\n",
+          "expected": "ошибок нет\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Цикл с защитой",
+          "stdin": "3\nmain.c guard 1\ninclude a.h\na.h guard 2\ninclude b.h\ndefine A\nb.h guard 2\ninclude a.h\nuse A\n",
+          "expected": "A не определена в b.h\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Цикл без защиты",
+          "stdin": "3\nmain.c guard 1\ninclude a.h\na.h noguard 1\ninclude b.h\nb.h noguard 1\ninclude a.h\n",
+          "expected": "бесконечное включение a.h\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Использование до определения",
+          "stdin": "1\nmain.c guard 2\nuse Point\ndefine Point\n",
+          "expected": "Point не определена в main.c\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Пустой файл",
+          "stdin": "1\nmain.c guard 0\n",
+          "expected": "ошибок нет\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Три включения без защиты",
+          "stdin": "2\nmain.c guard 3\ninclude t.h\ninclude t.h\ninclude t.h\nt.h noguard 1\ndefine T\n",
+          "expected": "повторное определение T в t.h (первое в t.h)\nповторное определение T в t.h (первое в t.h)\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Неподключённый файл",
+          "stdin": "4\nmain.c guard 3\ninclude list.h\ninclude node.h\nuse List\nlist.h guard 2\ninclude node.h\ndefine List\nnode.h guard 1\ndefine Node\nunused.h noguard 1\ndefine Node\n",
+          "expected": "ошибок нет\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Файл подключает сам себя",
+          "stdin": "2\nmain.c guard 2\ninclude self.h\nuse S\nself.h guard 2\ninclude self.h\ndefine S\n",
+          "expected": "ошибок нет\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Две ошибки",
+          "stdin": "2\nmain.c guard 2\ndefine Local\ninclude h.h\nh.h guard 2\ndefine Local\nuse Missing\n",
+          "expected": "повторное определение Local в h.h (первое в main.c)\nMissing не определена в h.h\n"
+        },
+        {
+          "id": "hidden-9",
+          "name": "Порядок включений",
+          "stdin": "3\nmain.c noguard 2\ninclude a.h\ninclude b.h\na.h guard 2\ndefine A\ninclude b.h\nb.h guard 2\nuse A\ndefine B\n",
+          "expected": "ошибок нет\n"
+        }
+      ],
+      "referenceSolution": "#include <stdio.h>\n#include <string.h>\n\n#define MAX_FILES 20\n#define MAX_ITEMS 20\n#define NAME 32\n\ntypedef struct {\n    char name[NAME];\n    int guarded;\n    int processed;\n    int count;\n    char kind[MAX_ITEMS][8];\n    char arg[MAX_ITEMS][NAME];\n} File;\n\nFile files[MAX_FILES];\nint file_count;\nchar struct_names[MAX_FILES * MAX_ITEMS][NAME];\nint struct_owner[MAX_FILES * MAX_ITEMS];\nint struct_count;\nint errors;\nint fatal;\n\nint find_file(const char *name) {\n    for (int i = 0; i < file_count; i++) {\n        if (strcmp(files[i].name, name) == 0) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nint find_struct(const char *name) {\n    for (int i = 0; i < struct_count; i++) {\n        if (strcmp(struct_names[i], name) == 0) {\n            return i;\n        }\n    }\n    return -1;\n}\n\nvoid process(int f, int depth) {\n    File *file = &files[f];\n    if (file->guarded) {\n        if (file->processed) {\n            return;\n        }\n        file->processed = 1;\n    }\n    for (int i = 0; i < file->count && !fatal; i++) {\n        const char *arg = file->arg[i];\n        if (strcmp(file->kind[i], \"include\") == 0) {\n            int target = find_file(arg);\n            if (depth + 1 > 20) {\n                printf(\"бесконечное включение %s\\n\", arg);\n                errors++;\n                fatal = 1;\n            } else if (target >= 0) {\n                process(target, depth + 1);\n            }\n        } else if (strcmp(file->kind[i], \"define\") == 0) {\n            int s = find_struct(arg);\n            if (s >= 0) {\n                printf(\"повторное определение %s в %s (первое в %s)\\n\", arg, file->name,\n                       files[struct_owner[s]].name);\n                errors++;\n            } else {\n                strcpy(struct_names[struct_count], arg);\n                struct_owner[struct_count++] = f;\n            }\n        } else if (find_struct(arg) < 0) {\n            printf(\"%s не определена в %s\\n\", arg, file->name);\n            errors++;\n        }\n    }\n}\n\nint main(void) {\n    if (scanf(\"%d\", &file_count) != 1) {\n        return 0;\n    }\n    for (int f = 0; f < file_count; f++) {\n        char guard[16];\n        File *file = &files[f];\n        if (scanf(\"%31s %15s %d\", file->name, guard, &file->count) != 3) {\n            return 0;\n        }\n        file->guarded = strcmp(guard, \"guard\") == 0;\n        for (int i = 0; i < file->count; i++) {\n            if (scanf(\"%7s %31s\", file->kind[i], file->arg[i]) != 2) {\n                return 0;\n            }\n        }\n    }\n    process(0, 0);\n    if (errors == 0) {\n        printf(\"ошибок нет\\n\");\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Модель повторяет поведение настоящего препроцессора. Ключевая деталь — **когда** защищённый файл считается подключённым: `#define ИМЯ` стоит в начале заголовка, поэтому макрос определяется до того, как обрабатываются вложенные `#include`. Отсюда и классическая проблема циклов: если `a.h` подключает `b.h`, а `b.h` — `a.h`, то внутри `b.h` повторное включение `a.h` пропускается, и всё, что `a.h` определяет после строки `include b.h`, для `b.h` ещё не существует.\n\nБез защиты тот же цикл не останавливается вовсе: файлы подключают друг друга, пока не кончится допустимая глубина. GCC прерывает сборку на глубине 200; здесь предел 20, а после этой ошибки обработка прекращается, как и в компиляторе.\n\nПовторное определение запоминает файл первого определения — сообщения компилятора тоже указывают на место `previous definition`.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "advanced-header-guards-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Где действует состояние guard?",
-        "options": ["В одной единице трансляции", "Сразу во всех объектных файлах"],
-        "correct": 0,
-        "explanation": "Повторное текстовое включение заголовка может повторно определить struct или enum. Guard использует уникальный макрос: при первом включении #ifndef пропускает тело и #define отмечает его; следующие включения в той же единице трансляции пропускают тело. Между разными компиляциями состояние макроса не сохраняется."
-      },
-      {
-        "id": "mistake",
-        "question": "Какое утверждение корректно?",
+        "id": "q1",
+        "question": "main.c подключает point.h и shapes.h, а shapes.h сам подключает point.h. В point.h определены struct Point и static inline функция manhattan, защиты нет. Что произойдёт?",
+        "explanation": "Текст point.h попадает в единицу трансляции main.c дважды, и компилятор видит два определения одной функции. Повтор одинаковой структуры C23 разрешил, но функции и переменные повторять нельзя.",
         "options": [
-          "Успешный вывод одного примера доказывает корректность на всех входах.",
-          "Скопированный guard с тем же именем может молча скрыть другой заголовок."
+          "Ошибка компиляции main.c: redefinition of manhattan",
+          "Ошибка линковки multiple definition",
+          "Всё соберётся: препроцессор сам пропустит второе включение",
+          "Предупреждение, программа соберётся"
         ],
-        "correct": 1,
-        "explanation": "На каждой сборочной площадке стоит свой штамп «уже прочитано»; штамп не является общим для всего проекта."
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой stdout выдаст запускаемый пример урока?",
-        "options": ["7", "Ошибка компиляции при корректном C17", "Никакого вывода"],
-        "correct": 0,
-        "explanation": "Проследите значения последовательно: Reading r={7};printf(\"%d\\n\",r.raw); Ожидаемый результат: 7"
+        "id": "q2",
+        "question": "Что можно повторить в одной единице трансляции без ошибки? Выберите все.",
+        "explanation": "Объявления повторять можно, в том числе одинаковые typedef (с C11) и одинаковые макросы. Определения переменных и функций в одной единице трансляции — только по одному разу.",
+        "type": "multiple",
+        "options": [
+          "Прототип int area(int w, int h);",
+          "Одинаковый typedef unsigned int uint;",
+          "Определение переменной int counter = 0;",
+          "Одинаковое определение #define LIMIT 100",
+          "Определение функции int twice(int x) { return 2 * x; }"
+        ],
+        "correct": [0, 1, 3]
+      },
+      {
+        "id": "q3",
+        "question": "Что выведет программа?",
+        "code": "#include <stdio.h>\n\n#ifndef LIMIT_H\n#define LIMIT_H\nint limit = 10;\n#endif\n\n#ifndef LIMIT_H\n#define LIMIT_H\nint limit = 20;\n#endif\n\nint main(void) {\n    printf(\"%d\\n\", limit);\n    return 0;\n}",
+        "explanation": "Первый блок определяет LIMIT_H и переменную со значением 10. Второй блок целиком выброшен препроцессором, потому что LIMIT_H уже определён.",
+        "type": "text",
+        "answers": ["10"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q4",
+        "question": "Какое имя защитного макроса допустимо и удачно для файла include/geo/point.h проекта geo?",
+        "explanation": "Имена, начинающиеся с подчёркивания и заглавной буквы или с двух подчёркиваний, зарезервированы для реализации. Слишком короткое имя легко совпадёт с чужим макросом.",
+        "options": ["GEO_POINT_H", "_POINT_H", "__POINT_H__", "H"],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "В проекте два разных файла net/util.h и storage/util.h, и оба защищены макросом UTIL_H. Файл подключает оба. Что произойдёт?",
+        "explanation": "Препроцессор знает только имя макроса. Раз UTIL_H уже определён первым файлом, текст второго выбрасывается, а ошибка проявится позже как unknown type name или implicit declaration.",
+        "options": [
+          "Второй заголовок будет молча пропущен целиком, и его объявления окажутся неизвестны",
+          "Препроцессор сообщит о конфликте имён",
+          "Оба заголовка подключатся, защита сработает для каждого отдельно",
+          "Ошибка линковки multiple definition"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "В заголовке log.h с защитой #ifndef LOG_H определена функция void log_line(const char *s) { ... }. Его подключают main.c и net.c. Что будет при сборке?",
+        "explanation": "Защита действует внутри одной единицы трансляции. main.c и net.c обрабатываются отдельно, и каждый получает своё определение функции.",
+        "options": [
+          "multiple definition of log_line при линковке",
+          "Всё соберётся: защита не даст определить функцию дважды",
+          "Ошибка компиляции net.c",
+          "undefined reference to log_line"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Заголовку list.h нужна только строка struct Node *head; внутри своей структуры. Что лучше написать в list.h вместо #include \"node.h\"?",
+        "explanation": "Предварительное объявление сообщает, что структура существует. Для указателя этого достаточно, а лишнего включения и возможного цикла не возникает.",
+        "type": "text",
+        "answers": ["struct Node;"],
+        "placeholder": "Объявление"
+      },
+      {
+        "id": "q8",
+        "question": "Что делает директива #pragma once?",
+        "explanation": "#pragma once поддерживают GCC, Clang и MSVC. Она заменяет тройку #ifndef/#define/#endif, но формально это расширение компиляторов.",
+        "options": [
+          "Просит препроцессор подключать файл не больше одного раза за единицу трансляции; не входит в стандарт C",
+          "Запрещает включать заголовок в несколько .c файлов",
+          "Делает функции заголовка видимыми только один раз",
+          "Это стандартная замена директивы #include"
+        ],
+        "correct": 0
       }
     ]
   }

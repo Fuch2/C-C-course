@@ -1,154 +1,525 @@
 {
   "id": "lifetime-copy-assignment",
-  "title": "Копирующее присваивание — Copy assignment",
-  "description": "Присваивание заменяет состояние уже существующего объекта.",
+  "title": "Копирующее присваивание",
+  "description": "Инициализация и присваивание — разные операции; оператор копирующего присваивания T &operator=(const T &) и возврат *this; неявное почленное присваивание; самоприсваивание и исключения как главные ловушки; идиома copy-and-swap для класса, владеющего памятью; строгая гарантия безопасности исключений.",
   "moduleId": "cpp-lifetime",
   "order": 7,
-  "difficulty": "advanced",
-  "estimatedMinutes": 55,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 50,
   "prerequisites": ["lifetime-copy-constructor"],
   "objectives": [
-    "Перечислить три дополнительные проблемы присваивания по сравнению с конструктором копии.",
-    "Проследить на MemoryDiagram подготовку замены до фиксации нового состояния.",
-    "Реализовать operator=, переживающий самоприсваивание и исключение при выделении."
+    "Отличать инициализацию от присваивания",
+    "Писать оператор копирующего присваивания по правилам",
+    "Применять copy-and-swap для самоприсваивания и исключений",
+    "Давать строгую гарантию: при ошибке объект не меняется"
   ],
-  "tags": [
-    "C++20",
-    "время жизни",
-    "управление ресурсами",
-    "Копирующее присваивание — Copy assignment"
-  ],
+  "tags": ["C++23", "Время жизни", "Присваивание", "copy-and-swap", "Исключения"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "lifetime-copy-assignment-exercise",
-    "title": "Практика: Копирующее присваивание — Copy assignment",
-    "description": "Реализуйте Box::operator= с подготовкой нового unique_ptr до замены старого. solve создаёт x(a) и y(b), выполняет x = y, затем самоприсваивание через ссылку alias на x, меняет значение y на a и возвращает *x.p + *y.p.",
-    "difficulty": "advanced",
+    "title": "Места в зале",
+    "description": "Класс `Ticket` хранит неизменный номер (1, 2, 3, … в порядке создания), событие и место. Копирующее присваивание переносит **событие и место**, но номер у билета остаётся свой: это «переоформление» билета.\n\nКоманды:\n\n- `new событие место` — создать билет;\n- `assign i j` — `tickets[i] = tickets[j]` (нумерация с 1);\n- `show i` — напечатать `№N событие, место M`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\n// Реализуйте типы и операции из условия.\nint solve(int a,int b){\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(3, 7)",
-        "output": "10\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "new Концерт 5\nnew Театр 12\nassign 2 1\nshow 1\nshow 2\n",
+        "output": "№1 Концерт, место 5\n№2 Концерт, место 5\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Проследите операции и сопоставьте результат с контрактом задания."
+        "input": "new Матч 1\nassign 1 1\nshow 1\n",
+        "output": "№1 Матч, место 1\n"
       }
     ],
-    "constraints": [
-      "C++20. Аргументы a,b — целые от −1000 до 1000; исключения для диагностических заданий указаны в условии.",
-      "Не добавляйте main: его предоставляет система. Возвращайте int из solve.",
-      "Соблюдайте описанный контракт типов, владения и операций. Проверка значений дополняется ASan/UBSan."
-    ],
+    "constraints": ["Команд не больше 200; индексы существуют; i может совпадать с j."],
     "hints": [
       {
-        "id": "owners",
-        "order": 1,
-        "text": "Проверьте присваивание на трёх входах: другой объект, тот же объект через алиас, бросок при выделении. Порядок «сначала подготовить, затем заменить» проходит все три."
+        "id": "hint-1",
+        "text": "Ticket &operator=(const Ticket &other) { event_ = other.event_; seat_ = other.seat_; return *this; } — id_ не трогаем.",
+        "order": 1
       },
       {
-        "id": "boundary",
-        "order": 2,
-        "text": "Безопасная последовательность: сначала подготовить полную замену во временного владельца, затем заменить старый ресурс. Если выделение не удалось, назначение не изменено — это сильная гарантия исключений. Copy-and-swap обобщает идею: временная копия строится до любых изменений, обмен состояниями не бросает, прежнее состояние назначения уничтожает временный объект. Цена — возможно лишнее выделение: для больших буферов иногда нужна версия с переиспользованием ёмкости, но её доказательство заметно сложнее.\n\nПорядок «delete p; p = new int(*other.p)» опасен дважды: при самоприсваивании other.p указывает на уже удалённый int, а при исключении target остаётся повреждённым.\n\nПроверьте три сценария: присваивание разных объектов, самоприсваивание через alias и независимость после изменения источника. На бумаге вставьте bad_alloc между подготовкой и commit: старое состояние должно остаться целым."
+        "id": "hint-2",
+        "text": "Храните билеты в std::deque: при росте std::vector билеты копировались бы конструктором копирования, и номера пришлось бы продумывать и для него.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [3, 7],
-        "expected": "10\n"
+        "stdin": "new Концерт 5\nnew Театр 12\nassign 2 1\nshow 1\nshow 2\n",
+        "expected": "№1 Концерт, место 5\n№2 Концерт, место 5\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "new Матч 1\nassign 1 1\nshow 1\n",
+        "expected": "№1 Матч, место 1\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный случай 1",
-        "arguments": [-8, 3],
-        "expected": "-5\n"
+        "id": "hidden-1",
+        "name": "Пусто",
+        "stdin": "",
+        "expected": ""
       },
       {
-        "id": "case-4",
-        "name": "Граничный случай 2",
-        "arguments": [5, -9],
-        "expected": "-4\n"
+        "id": "hidden-2",
+        "name": "Цепочка присваиваний",
+        "stdin": "new a 1\nnew b 2\nnew c 3\nassign 1 3\nassign 3 2\nshow 1\nshow 2\nshow 3\n",
+        "expected": "№1 c, место 3\n№2 b, место 2\n№3 b, место 2\n"
       },
       {
-        "id": "case-5",
-        "name": "Граничный случай 3",
-        "arguments": [-1000, 1000],
-        "expected": "0\n"
+        "id": "hidden-3",
+        "name": "Без присваиваний",
+        "stdin": "new x 10\nshow 1\n",
+        "expected": "№1 x, место 10\n"
       },
       {
-        "id": "case-6",
-        "name": "Граничный случай 4",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-4",
+        "name": "Присваивание туда и обратно",
+        "stdin": "new a 1\nnew b 2\nassign 1 2\nassign 2 1\nshow 1\nshow 2\n",
+        "expected": "№1 b, место 2\n№2 b, место 2\n"
       },
       {
-        "id": "case-7",
-        "name": "Граничный случай 5",
-        "arguments": [4, 4],
-        "expected": "8\n"
+        "id": "hidden-5",
+        "name": "Самоприсваивание",
+        "stdin": "new Опера 100\nnew Балет 200\nassign 2 2\nshow 2\n",
+        "expected": "№2 Балет, место 200\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Новый после присваивания",
+        "stdin": "new a 1\nnew b 2\nassign 2 1\nnew c 3\nshow 3\nshow 2\n",
+        "expected": "№3 c, место 3\n№2 a, место 1\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Круг",
+        "stdin": "new p 7\nnew q 8\nnew r 9\nassign 1 2\nassign 2 3\nassign 3 1\nshow 1\nshow 2\nshow 3\n",
+        "expected": "№1 q, место 8\n№2 r, место 9\n№3 q, место 8\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Крайние места",
+        "stdin": "new e 0\nnew f 999\nassign 1 2\nshow 1\n",
+        "expected": "№1 f, место 999\n"
       }
     ],
-    "referenceSolution": "#include <iostream>\n#include <memory>\n#include <vector>\n#include <utility>\n#include <string>\n\nstruct Box { std::unique_ptr<int> p; explicit Box(int x): p(std::make_unique<int>(x)) {} Box(const Box&) = delete; Box& operator=(const Box& x) { auto next = std::make_unique<int>(*x.p); p = std::move(next); return *this; } };\nint solve(int a, int b) { Box x{a}, y{b}; x = y; Box& alias = x; x = alias; *y.p = a; return *x.p + *y.p; }",
-    "solutionExplanation": "Безопасная последовательность: сначала подготовить полную замену во временного владельца, затем заменить старый ресурс. Если выделение не удалось, назначение не изменено — это сильная гарантия исключений. Copy-and-swap обобщает идею: временная копия строится до любых изменений, обмен состояниями не бросает, прежнее состояние назначения уничтожает временный объект. Цена — возможно лишнее выделение: для больших буферов иногда нужна версия с переиспользованием ёмкости, но её доказательство заметно сложнее.\n\nПорядок «delete p; p = new int(*other.p)» опасен дважды: при самоприсваивании other.p указывает на уже удалённый int, а при исключении target остаётся повреждённым.\n\nПроверьте три сценария: присваивание разных объектов, самоприсваивание через alias и независимость после изменения источника. На бумаге вставьте bad_alloc между подготовкой и commit: старое состояние должно остаться целым.",
+    "referenceSolution": "#include <deque>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Ticket {\npublic:\n    Ticket(std::string event, int seat) : id_(next_id_++), event_(std::move(event)), seat_(seat) {}\n    Ticket(const Ticket &) = delete;\n\n    Ticket &operator=(const Ticket &other) {\n        event_ = other.event_;\n        seat_ = other.seat_;\n        return *this;\n    }\n\n    void show() const {\n        std::println(\"№{} {}, место {}\", id_, event_, seat_);\n    }\n\nprivate:\n    static inline int next_id_ = 1;\n    int id_;\n    std::string event_;\n    int seat_;\n};\n\nint main() {\n    std::deque<Ticket> tickets;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"new\") {\n            std::string event;\n            int seat;\n            std::cin >> event >> seat;\n            tickets.emplace_back(event, seat);\n        } else if (command == \"assign\") {\n            std::size_t i, j;\n            std::cin >> i >> j;\n            tickets[i - 1] = tickets[j - 1];\n        } else {\n            std::size_t i;\n            std::cin >> i;\n            tickets[i - 1].show();\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Присваивание меняет **существующий** объект, поэтому у него есть выбор, что сохранить. Номер — идентичность билета, а событие и место — его содержимое; присваивание переносит только содержимое. Самоприсваивание здесь безопасно: присвоить строку и число самим себе можно.\n\nКонструктор копирования запрещён: что должна означать копия билета с тем же номером, решать не пришлось — и `std::deque` с `emplace_back` прекрасно обходится без него.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "lifetime-copy-assignment-task-2",
+      "title": "Буфер",
+      "description": "Класс `Buffer` сам владеет массивом `int`, выделенным `new[]`: конструктор `Buffer(n, value)`, конструктор копирования (глубокая копия), деструктор и копирующее присваивание по идиоме copy-and-swap. Есть три буфера `A`, `B`, `C`, вначале пустые (`Buffer(0, 0)`).\n\nКоманды:\n\n- `fill X n v` — `X = Buffer(n, v)`;\n- `copy X Y` — `X = Y` (X и Y могут совпадать);\n- `set X i v` — записать v в элемент i (с нуля, индекс существует);\n- `print X` — `X: элементы через пробел` или `X: пусто`.\n\nПрограмма проверяется с AddressSanitizer и LeakSanitizer: никаких утечек и обращений к освобождённой памяти.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "fill A 3 7\ncopy B A\nset A 0 9\nprint A\nprint B\nprint C\n",
+          "output": "A: 9 7 7\nB: 7 7 7\nC: пусто\n"
+        },
+        {
+          "input": "fill A 2 5\ncopy A A\nprint A\n",
+          "output": "A: 5 5\n"
+        }
+      ],
+      "constraints": ["Команд не больше 200; 0 ≤ n ≤ 1000."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "operator=: Buffer copy(other); std::swap(size_, copy.size_); std::swap(data_, copy.data_); return *this;",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Буферы удобно держать в std::map<char, Buffer> с try_emplace для начального создания или в трёх переменных и функции, выбирающей ссылку по букве.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "fill A 3 7\ncopy B A\nset A 0 9\nprint A\nprint B\nprint C\n",
+          "expected": "A: 9 7 7\nB: 7 7 7\nC: пусто\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "fill A 2 5\ncopy A A\nprint A\n",
+          "expected": "A: 5 5\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Пустой буфер",
+          "stdin": "print A\n",
+          "expected": "A: пусто\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Перезапись меньшим",
+          "stdin": "fill A 3 1\nfill A 1 2\nprint A\n",
+          "expected": "A: 2\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Перезапись большим",
+          "stdin": "fill A 1 1\nfill A 5 2\nprint A\n",
+          "expected": "A: 2 2 2 2 2\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Независимость копий",
+          "stdin": "fill A 2 1\ncopy B A\ncopy C B\nset B 1 8\nprint A\nprint B\nprint C\n",
+          "expected": "A: 1 1\nB: 1 8\nC: 1 1\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Многократное самоприсваивание",
+          "stdin": "fill B 3 3\ncopy B B\ncopy B B\nprint B\n",
+          "expected": "B: 3 3 3\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Присваивание пустого",
+          "stdin": "fill A 4 0\ncopy A C\nprint A\n",
+          "expected": "A: пусто\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Большой буфер",
+          "stdin": "fill A 1000 1\nfill A 0 0\nprint A\n",
+          "expected": "A: пусто\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Цепочка",
+          "stdin": "fill C 2 -5\nset C 1 5\ncopy A C\ncopy C B\nprint A\nprint C\n",
+          "expected": "A: -5 5\nC: пусто\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <cstddef>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n\nclass Buffer {\npublic:\n    Buffer(std::size_t size, int fill) : size_(size), data_(new int[size]) {\n        std::fill_n(data_, size_, fill);\n    }\n    Buffer(const Buffer &other) : size_(other.size_), data_(new int[other.size_]) {\n        std::copy_n(other.data_, size_, data_);\n    }\n    Buffer &operator=(const Buffer &other) {\n        Buffer copy(other);\n        std::swap(size_, copy.size_);\n        std::swap(data_, copy.data_);\n        return *this;\n    }\n    ~Buffer() {\n        delete[] data_;\n    }\n\n    void set(std::size_t i, int value) {\n        data_[i] = value;\n    }\n\n    std::string text() const {\n        if (size_ == 0) {\n            return \"пусто\";\n        }\n        std::string s;\n        for (std::size_t i = 0; i < size_; ++i) {\n            s += (i ? \" \" : \"\") + std::to_string(data_[i]);\n        }\n        return s;\n    }\n\nprivate:\n    std::size_t size_;\n    int *data_;\n};\n\nint main() {\n    Buffer a(0, 0), b(0, 0), c(0, 0);\n    auto pick = [&](char name) -> Buffer & { return name == 'A' ? a : name == 'B' ? b : c; };\n    std::string command;\n    char x;\n    while (std::cin >> command >> x) {\n        if (command == \"fill\") {\n            std::size_t n;\n            int v;\n            std::cin >> n >> v;\n            pick(x) = Buffer(n, v);\n        } else if (command == \"copy\") {\n            char y;\n            std::cin >> y;\n            pick(x) = pick(y);\n        } else if (command == \"set\") {\n            std::size_t i;\n            int v;\n            std::cin >> i >> v;\n            pick(x).set(i, v);\n        } else {\n            std::println(\"{}: {}\", x, pick(x).text());\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Оператор присваивания не содержит ни `delete[]`, ни проверки на самоприсваивание. Копия создаётся до изменения `*this`, поэтому `copy A A` копирует из живого буфера. Обмен двух указателей и двух чисел не может бросить исключение. Старый буфер после обмена принадлежит `copy` и освобождается её деструктором при выходе из оператора.\n\n`fill X n v` присваивает временный буфер: без перемещающих операций это тоже копирующее присваивание — лишняя копия, которую уберёт семантика перемещения из следующих уроков.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-copy-assignment-task-3",
+      "title": "Найди ошибку: строка присвоила сама себя",
+      "description": "Редактор хранит строки в классе `Text`, который сам владеет буфером символов. Команды: `add слово` — добавить строку, `copy i j` — заменить строку i копией строки j, `print` — напечатать все строки с номерами.\n\nНа командах вида `copy 2 2` строка превращается в мусор. Найдите и исправьте ошибку.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <algorithm>\n#include <cstddef>\n#include <iostream>\n#include <print>\n#include <string>\n#include <string_view>\n#include <utility>\n#include <vector>\n\nclass Text {\npublic:\n    explicit Text(std::string_view s) : size_(s.size()), data_(new char[s.size()]) {\n        std::copy_n(s.data(), size_, data_);\n    }\n    Text(const Text &other) : size_(other.size_), data_(new char[other.size_]) {\n        std::copy_n(other.data_, size_, data_);\n    }\n    Text &operator=(const Text &other) {\n        delete[] data_;\n        size_ = other.size_;\n        data_ = new char[size_];\n        std::copy_n(other.data_, size_, data_);\n        return *this;\n    }\n    ~Text() {\n        delete[] data_;\n    }\n\n    std::string_view view() const {\n        return {data_, size_};\n    }\n\nprivate:\n    std::size_t size_;\n    char *data_;\n};\n\nint main() {\n    std::vector<Text> lines;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"add\") {\n            std::string word;\n            std::cin >> word;\n            lines.emplace_back(word);\n        } else if (command == \"copy\") {\n            std::size_t to, from;\n            std::cin >> to >> from;\n            lines[to - 1] = lines[from - 1];\n        } else {\n            for (std::size_t i = 0; i < lines.size(); ++i) {\n                std::println(\"{}: {}\", i + 1, lines[i].view());\n            }\n        }\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "add один\nadd два\ncopy 2 2\nprint\n",
+          "output": "1: один\n2: два\n"
+        },
+        {
+          "input": "add a\nadd b\ncopy 1 2\nprint\n",
+          "output": "1: b\n2: b\n"
+        }
+      ],
+      "constraints": ["Команд не больше 100; индексы существуют."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Куда указывает other.data_ после строки data_ = new char[size_], если other — это *this?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Перепишите operator= по идиоме copy-and-swap: копия создаётся до того, как старый буфер освобождён.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "add один\nadd два\ncopy 2 2\nprint\n",
+          "expected": "1: один\n2: два\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "add a\nadd b\ncopy 1 2\nprint\n",
+          "expected": "1: b\n2: b\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "add x\ncopy 1 1\nprint\n",
+          "expected": "1: x\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "add длинная-строка-больше-шестнадцати-байт\ncopy 1 1\nprint\n",
+          "expected": "1: длинная-строка-больше-шестнадцати-байт\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "add a\nadd b\nadd c\ncopy 3 1\ncopy 2 2\nprint\n",
+          "expected": "1: a\n2: b\n3: a\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "add p\nadd q\ncopy 1 2\ncopy 2 1\nprint\n",
+          "expected": "1: q\n2: q\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "add один\ncopy 1 1\ncopy 1 1\nprint\n",
+          "expected": "1: один\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "add a\nadd bb\nadd ccc\ncopy 1 3\ncopy 3 3\nprint\n",
+          "expected": "1: ccc\n2: bb\n3: ccc\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "add only\nprint\n",
+          "expected": "1: only\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "add m\nadd n\ncopy 2 2\ncopy 1 1\nprint\n",
+          "expected": "1: m\n2: n\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <cstddef>\n#include <iostream>\n#include <print>\n#include <string>\n#include <string_view>\n#include <utility>\n#include <vector>\n\nclass Text {\npublic:\n    explicit Text(std::string_view s) : size_(s.size()), data_(new char[s.size()]) {\n        std::copy_n(s.data(), size_, data_);\n    }\n    Text(const Text &other) : size_(other.size_), data_(new char[other.size_]) {\n        std::copy_n(other.data_, size_, data_);\n    }\n    Text &operator=(const Text &other) {\n        Text copy(other);\n        std::swap(size_, copy.size_);\n        std::swap(data_, copy.data_);\n        return *this;\n    }\n    ~Text() {\n        delete[] data_;\n    }\n\n    std::string_view view() const {\n        return {data_, size_};\n    }\n\nprivate:\n    std::size_t size_;\n    char *data_;\n};\n\nint main() {\n    std::vector<Text> lines;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"add\") {\n            std::string word;\n            std::cin >> word;\n            lines.emplace_back(word);\n        } else if (command == \"copy\") {\n            std::size_t to, from;\n            std::cin >> to >> from;\n            lines[to - 1] = lines[from - 1];\n        } else {\n            for (std::size_t i = 0; i < lines.size(); ++i) {\n                std::println(\"{}: {}\", i + 1, lines[i].view());\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Наивный оператор сначала удаляет свой буфер, затем выделяет новый и копирует в него из `other.data_`. При самоприсваивании `other` и `*this` — один объект: к моменту копирования `other.data_` уже указывает на новый, ничем не заполненный буфер, и строка копирует мусор сама в себя. Старые символы удалены безвозвратно. Та же реализация оставляет объект с висячим указателем, если `new` бросит исключение.\n\nCopy-and-swap устраняет обе проблемы: копия создаётся из живого объекта, а старый буфер освобождает деструктор копии после обмена. Отдельная проверка `if (this == &other)` спасла бы от самоприсваивания, но не от исключений.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "lifetime-copy-assignment-task-4",
+      "title": "Склад со строгой гарантией",
+      "description": "Структура `Item` хранит название. Её копирование (и конструктор, и присваивание) бросает `std::runtime_error(\"испорчен товар название\")`, если название начинается с `!` — так моделируется сбой, например нехватка памяти, посреди копирования.\n\nКласс `Inventory` хранит метку `std::string label_` и товары `std::vector<Item> items_` (именно в таком порядке объявления). Напишите `operator=` со **строгой гарантией**: если копирование бросило исключение, склад остаётся ровно таким, каким был.\n\nСклады хранятся в `std::map<std::string, Inventory>`. Команды:\n\n- `make X метка n товар₁ … товарₙ` — создать (пересоздать) склад X: `erase`, затем `try_emplace`;\n- `assign X Y` — `X = Y`; при исключении напечатать `ошибка: текст`;\n- `show X` — `X: метка [товары через пробел]`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "make A север 2 болты гайки\nmake B юг 2 шайбы !винты\nassign A B\nshow A\nassign B A\nshow B\n",
+          "output": "ошибка: испорчен товар !винты\nA: север [болты гайки]\nB: север [болты гайки]\n"
+        },
+        {
+          "input": "make A a 0\nshow A\n",
+          "output": "A: a []\n"
+        }
+      ],
+      "constraints": [
+        "Команд не больше 100; склады в assign и show существуют; в make до 20 товаров."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Неявный оператор присвоит сначала label_, затем items_ — и если items_ бросит, метка уже будет новой. Сделайте сначала полную копию: Inventory copy(other); затем swap полей.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Создавайте склады на месте: try_emplace(name, label, names). В конструкторе Inventory сделайте items_.reserve(names.size()) и emplace_back — так товары не копируются при росте вектора.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "make A север 2 болты гайки\nmake B юг 2 шайбы !винты\nassign A B\nshow A\nassign B A\nshow B\n",
+          "expected": "ошибка: испорчен товар !винты\nA: север [болты гайки]\nB: север [болты гайки]\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "make A a 0\nshow A\n",
+          "expected": "A: a []\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Успешное присваивание",
+          "stdin": "make A x 1 p\nmake B y 1 q\nassign A B\nshow A\nshow B\n",
+          "expected": "A: y [q]\nB: y [q]\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Создание не копирует",
+          "stdin": "make A x 1 !p\nshow A\n",
+          "expected": "A: x [!p]\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Самоприсваивание",
+          "stdin": "make A x 2 a b\nassign A A\nshow A\n",
+          "expected": "A: x [a b]\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Самоприсваивание с ошибкой",
+          "stdin": "make A x 1 !a\nassign A A\nshow A\n",
+          "expected": "ошибка: испорчен товар !a\nA: x [!a]\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Сбой в середине",
+          "stdin": "make A x 3 a b c\nmake B y 3 d !e f\nassign A B\nshow A\n",
+          "expected": "ошибка: испорчен товар !e\nA: x [a b c]\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Пересоздание",
+          "stdin": "make A x 1 a\nmake A z 2 b c\nshow A\n",
+          "expected": "A: z [b c]\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Присваивание пустого",
+          "stdin": "make A x 2 a b\nmake B y 0\nassign A B\nshow A\n",
+          "expected": "A: y []\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Несколько попыток",
+          "stdin": "make A l1 1 a\nmake B l2 1 !b\nmake C l3 1 c\nassign A B\nassign A C\nshow A\nassign C B\nshow C\n",
+          "expected": "ошибка: испорчен товар !b\nA: l3 [c]\nошибка: испорчен товар !b\nC: l3 [c]\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <map>\n#include <print>\n#include <stdexcept>\n#include <string>\n#include <utility>\n#include <vector>\n\nstruct Item {\n    std::string name;\n\n    explicit Item(std::string n) : name(std::move(n)) {}\n    Item(const Item &other) : name(checked(other)) {}\n    Item &operator=(const Item &other) {\n        name = checked(other);\n        return *this;\n    }\n\nprivate:\n    static std::string checked(const Item &other) {\n        if (other.name.starts_with('!')) {\n            throw std::runtime_error(\"испорчен товар \" + other.name);\n        }\n        return other.name;\n    }\n};\n\nclass Inventory {\npublic:\n    Inventory(std::string label, const std::vector<std::string> &names) : label_(std::move(label)) {\n        items_.reserve(names.size());\n        for (const std::string &n : names) {\n            items_.emplace_back(n);\n        }\n    }\n\n    Inventory(const Inventory &) = default;\n\n    Inventory &operator=(const Inventory &other) {\n        Inventory copy(other);\n        std::swap(label_, copy.label_);\n        std::swap(items_, copy.items_);\n        return *this;\n    }\n\n    void show(const std::string &name) const {\n        std::string list;\n        for (const Item &item : items_) {\n            list += (list.empty() ? \"\" : \" \") + item.name;\n        }\n        std::println(\"{}: {} [{}]\", name, label_, list);\n    }\n\nprivate:\n    std::string label_;\n    std::vector<Item> items_;\n};\n\nint main() {\n    std::map<std::string, Inventory> stores;\n    std::string command, x;\n    while (std::cin >> command >> x) {\n        if (command == \"make\") {\n            std::string label;\n            std::size_t n;\n            std::cin >> label >> n;\n            std::vector<std::string> names(n);\n            for (std::string &name : names) {\n                std::cin >> name;\n            }\n            stores.erase(x);\n            stores.try_emplace(x, label, names);\n        } else if (command == \"assign\") {\n            std::string y;\n            std::cin >> y;\n            try {\n                stores.at(x) = stores.at(y);\n            } catch (const std::exception &e) {\n                std::println(\"ошибка: {}\", e.what());\n            }\n        } else {\n            stores.at(x).show(x);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Неявное присваивание идёт по полям: сначала `label_`, потом `items_`. Если копирование товаров бросит, метка уже заменена, и склад оказывается «наполовину присвоенным» — с чужой меткой и своими товарами. Это лишь базовая гарантия: объект корректен, но изменён.\n\nCopy-and-swap даёт строгую гарантию. Всё, что может бросить, — копирование в `copy` — происходит до изменения `*this`. `std::swap` для строк и векторов обменивает внутренние указатели и не бросает. Если исключение вылетело, `*this` не тронут, а частично построенная копия разрушилась сама.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "lifetime-copy-assignment-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "concept",
-        "question": "Когда освобождать прежний ресурс ради сильной гарантии исключений?",
-        "options": [
-          "До попытки копирования нового ресурса",
-          "После успешного создания нового ресурса"
-        ],
-        "correct": 1,
-        "explanation": "Безопасная последовательность: сначала подготовить полную замену во временного владельца, затем заменить старый ресурс. Если выделение не удалось, назначение не изменено — это сильная гарантия исключений. Copy-and-swap обобщает идею: временная копия строится до любых изменений, обмен состояниями не бросает, прежнее состояние назначения уничтожает временный объект. Цена — возможно лишнее выделение: для больших буферов иногда нужна версия с переиспользованием ёмкости, но её доказательство заметно сложнее."
+        "id": "q1",
+        "question": "Какая строка вызывает оператор копирующего присваивания (a и b — уже существующие объекты типа T)?",
+        "explanation": "Остальные строки создают новый объект — работает конструктор копирования.",
+        "options": ["b = a;", "T c = a;", "T c(a);", "T c{a};"],
+        "correct": 0
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даст запускаемый пример? Сначала проследите владельцев и выход из блоков.",
-        "options": ["7 9", "Ошибка компиляции", "Неопределённое поведение"],
-        "correct": 0,
-        "explanation": "До: target → A(3); source → B(7)\nПодготовка: temporary → C(7); A и B ещё живы\nCommit: target → C; temporary → A\nОчистка: A освобождён; source по-прежнему → B"
+        "id": "q2",
+        "question": "Что должен возвращать оператор копирующего присваивания?",
+        "explanation": "Так работают цепочки a = b = c, как у встроенных типов.",
+        "options": ["*this по ссылке: T &", "void", "Копию объекта: T", "bool — успех операции"],
+        "correct": 0
       },
       {
-        "id": "review",
-        "question": "Какое утверждение соответствует контракту урока?",
+        "id": "q3",
+        "question": "Чем опасна наивная реализация «delete[] data_; затем копирование из other.data_»?",
+        "explanation": "Порядок «сначала копия, потом замена» решает обе проблемы.",
         "options": [
-          "Если stdout совпал, любые операции со сроком жизни корректны.",
-          "Порядок «delete p; p = new int(*other.p)» опасен дважды: при самоприсваивании other.p указывает на уже удалённый int, а при исключении target остаётся повреждённым."
+          "При самоприсваивании теряет данные: копирует в себя новый, незаполненный буфер; при исключении в new объект испорчен",
+          "Она медленнее copy-and-swap",
+          "Она не компилируется",
+          "Ничем"
         ],
-        "correct": 1,
-        "explanation": "Проверьте три сценария: присваивание разных объектов, самоприсваивание через alias и независимость после изменения источника. На бумаге вставьте bad_alloc между подготовкой и commit: старое состояние должно остаться целым."
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n#include <string>\n\nstruct S {\n    std::string v;\n    S &operator=(const S &o) {\n        v += o.v;\n        return *this;\n    }\n};\n\nint main() {\n    S a{\"x\"}, b{\"y\"}, c{\"z\"};\n    a = b = c;\n    std::println(\"{} {} {}\", a.v, b.v, c.v);\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Присваивание правоассоциативно: сначала b = c (b.v = \"yz\"), затем a = b (a.v = \"xyz\"). Такой оператор нарушает смысл присваивания — пример лишь показывает порядок.",
+        "type": "text",
+        "answers": ["xyz yz z"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "В copy-and-swap кто освобождает старый буфер объекта?",
+        "explanation": "После обмена старый буфер принадлежит копии и уходит вместе с ней.",
+        "options": [
+          "Деструктор временной копии",
+          "Сам оператор через delete[]",
+          "Никто — это утечка",
+          "Деструктор аргумента other"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Какую гарантию даёт copy-and-swap?",
+        "explanation": "Всё, что может бросить, происходит до изменения *this; обмен указателей и чисел не бросает.",
+        "options": [
+          "Строгую: если копирование бросит исключение, объект останется прежним",
+          "Никакую",
+          "Только базовую: объект корректен, но может измениться",
+          "Гарантию, что исключений не будет вообще"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Когда неявного оператора присваивания достаточно?",
+        "explanation": "Сырой указатель-владелец неявный оператор скопирует как адрес — это урок о поверхностном копировании.",
+        "options": [
+          "Когда все поля сами правильно присваиваются — строки, контейнеры, числа, умные указатели",
+          "Никогда",
+          "Только для классов без полей",
+          "Когда в классе есть сырой указатель-владелец"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Как называется присваивание объекта самому себе, например items[i] = items[j] при i == j?",
+        "explanation": "Свой оператор присваивания обязан работать и в этом случае.",
+        "type": "text",
+        "answers": ["самоприсваивание", "self-assignment"],
+        "placeholder": "Одно слово"
       }
     ]
   }

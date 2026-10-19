@@ -1,128 +1,539 @@
 {
   "id": "oop-aggregation",
   "title": "Агрегация: используем чужой объект",
-  "description": "При агрегации объект использует независимо живущую часть и не уничтожает её. В C++ это договорённость о владении, а не отдельное ключевое слово. Ссылка подходит для обязательной зависимости; указатель — если отсутствие допустимо и явно обработано. Тип ссылки не продлевает произвольно время жизни внешнего объекта.",
+  "description": "Чем агрегация отличается от композиции: ссылка или указатель на объект, которым класс не владеет; общий журнал и внедрение зависимости через конструктор; выбор между полем-ссылкой и полем-указателем; главный риск — время жизни и висячие ссылки; правила, которые от них спасают.",
   "moduleId": "cpp-oop",
-  "order": 11,
-  "difficulty": "advanced",
+  "order": 12,
+  "difficulty": "intermediate",
   "estimatedMinutes": 45,
   "prerequisites": ["oop-composition"],
   "objectives": [
-    "Применить Агрегация: используем чужой объект в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Различать композицию и агрегацию",
+    "Хранить невладеющие связи ссылкой или указателем",
+    "Передавать зависимости через конструктор",
+    "Проверять, что используемый объект живёт дольше использующего"
   ],
-  "tags": ["C++20", "ООП", "Агрегация: используем чужой объект"],
+  "tags": ["C++23", "ООП", "Агрегация", "Время жизни", "Внедрение зависимостей"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-aggregation-exercise",
-    "title": "Практика: Агрегация: используем чужой объект",
-    "description": "Создайте Source с public int value и View с private const Source&. View(const Source&) сохраняет ссылку, read() const возвращает актуальное value. solve(a,b) создаёт Source{a}, затем View, меняет источник на b и возвращает view.read(). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Журнал операций",
+    "description": "Опишите класс `Logger` (список строк, методы `write` и `dump`) и класс `Account`, который получает в конструкторе имя владельца и **ссылку** на общий журнал. Методы счёта:\n\n- `deposit(n)` — пишет в журнал `имя: +n`;\n- `withdraw(n)` — при достаточном остатке пишет `имя: -n`, иначе `имя: отказ n`.\n\nКоманды ввода: `dep имя n` и `wd имя n`. Счёт создаётся при первом упоминании имени. В конце напечатайте журнал с номерами строк: `1. Ада: +100`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(2, 9)",
-        "output": "9\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "dep Ада 100\ndep Алан 50\nwd Ада 30\nwd Алан 80\n",
+        "output": "1. Ада: +100\n2. Алан: +50\n3. Ада: -30\n4. Алан: отказ 80\n"
       },
       {
-        "input": "solve(1, -1)",
-        "output": "-1\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "",
+        "output": ""
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Команд не больше 50; n от 1 до 10⁶."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "Счета удобно хранить в std::map<std::string, Account>. Account не имеет конструктора по умолчанию, поэтому создавайте его через accounts.try_emplace(name, name, log) — она вернёт итератор на существующий или новый счёт.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Поле Logger &log_ инициализируется в списке инициализации конструктора; журнал создайте в main раньше счетов.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [2, 9],
-        "expected": "9\n"
+        "stdin": "dep Ада 100\ndep Алан 50\nwd Ада 30\nwd Алан 80\n",
+        "expected": "1. Ада: +100\n2. Алан: +50\n3. Ада: -30\n4. Алан: отказ 80\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [1, -1],
-        "expected": "-1\n"
+        "stdin": "",
+        "expected": ""
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "id": "hidden-1",
+        "name": "Снятие с пустого",
+        "stdin": "wd x 1\n",
+        "expected": "1. x: отказ 1\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [1000, -1000],
-        "expected": "-1000\n"
+        "id": "hidden-2",
+        "name": "До нуля",
+        "stdin": "dep a 5\nwd a 5\nwd a 1\n",
+        "expected": "1. a: +5\n2. a: -5\n3. a: отказ 1\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Большие суммы",
+        "stdin": "dep a 1000000\ndep a 1000000\nwd a 2000000\n",
+        "expected": "1. a: +1000000\n2. a: +1000000\n3. a: -2000000\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Три счёта",
+        "stdin": "dep a 1\ndep b 2\ndep c 3\n",
+        "expected": "1. a: +1\n2. b: +2\n3. c: +3\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Разные люди",
+        "stdin": "dep Иван 10\nwd Пётр 10\n",
+        "expected": "1. Иван: +10\n2. Пётр: отказ 10\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Много снятий",
+        "stdin": "dep a 3\nwd a 1\nwd a 1\nwd a 1\nwd a 1\n",
+        "expected": "1. a: +3\n2. a: -1\n3. a: -1\n4. a: -1\n5. a: отказ 1\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Одна операция",
+        "stdin": "dep x 7\n",
+        "expected": "1. x: +7\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Отказ, потом успех",
+        "stdin": "wd a 5\ndep a 5\nwd a 5\n",
+        "expected": "1. a: отказ 5\n2. a: +5\n3. a: -5\n"
       }
     ],
-    "referenceSolution": "struct Source { int value; };\nclass View { const Source& source_; public: explicit View(const Source& source) : source_(source) {} int read() const { return source_.value; } };\nint solve(int a,int b) { Source source{a}; View view{source}; source.value=b; return view.read(); }",
-    "solutionExplanation": "Создайте Source с public int value и View с private const Source&. View(const Source&) сохраняет ссылку, read() const возвращает актуальное value. solve(a,b) создаёт Source{a}, затем View, меняет источник на b и возвращает view.read(). Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Не возвращайте наблюдатель, ссылающийся на локальный источник функции. Не освобождайте заимствованный указатель: право доступа не означает владение. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <map>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Logger {\npublic:\n    void write(const std::string &line) {\n        lines_.push_back(line);\n    }\n\n    void dump() const {\n        for (std::size_t i = 0; i < lines_.size(); i++) {\n            std::println(\"{}. {}\", i + 1, lines_[i]);\n        }\n    }\n\nprivate:\n    std::vector<std::string> lines_;\n};\n\nclass Account {\npublic:\n    Account(std::string owner, Logger &log) : owner_(std::move(owner)), log_(log) {}\n\n    void deposit(long long n) {\n        balance_ += n;\n        log_.write(owner_ + \": +\" + std::to_string(n));\n    }\n\n    void withdraw(long long n) {\n        if (n > balance_) {\n            log_.write(owner_ + \": отказ \" + std::to_string(n));\n            return;\n        }\n        balance_ -= n;\n        log_.write(owner_ + \": -\" + std::to_string(n));\n    }\n\nprivate:\n    std::string owner_;\n    Logger &log_;\n    long long balance_ = 0;\n};\n\nint main() {\n    Logger log;\n    std::map<std::string, Account> accounts;\n    std::string command, name;\n    long long n;\n    while (std::cin >> command >> name >> n) {\n        Account &account = accounts.try_emplace(name, name, log).first->second;\n        if (command == \"dep\") {\n            account.deposit(n);\n        } else {\n            account.withdraw(n);\n        }\n    }\n    log.dump();\n    return 0;\n}\n",
+    "solutionExplanation": "Журнал один на всю программу и живёт в `main` дольше всех счетов — поэтому счета хранят на него ссылку. Если бы каждый счёт хранил журнал полем, получилось бы по журналу на счёт, и общей истории операций не было бы.\n\n`try_emplace(name, name, log)` создаёт счёт прямо в словаре, передавая аргументы конструктору `Account`, — и ничего не делает, если счёт с таким ключом уже есть. Он возвращает пару «итератор, был ли вставлен», и `.first->second` — ссылка на счёт.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-aggregation-task-2",
+      "title": "Табло",
+      "description": "Первое число — количество термометров `n` (у всех начальная температура 20). Опишите класс `Thermometer` и класс `Display`, который хранит **указатель на константный термометр** — источник данных — и может быть ни к чему не подключён. Команды:\n\n- `set i t` — термометр `i` (с нуля) показывает `t`;\n- `connect i` — подключить табло к термометру `i`;\n- `disconnect` — отключить;\n- `show` — напечатать показание с одним знаком после точки и `°C` или `нет датчика`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\nshow\nconnect 1\nshow\nset 1 -7.5\nshow\n",
+          "output": "нет датчика\n20.0 °C\n-7.5 °C\n"
+        },
+        {
+          "input": "1\nconnect 0\ndisconnect\nshow\n",
+          "output": "нет датчика\n"
+        }
+      ],
+      "constraints": [
+        "1 ≤ n ≤ 10; номера корректны; команд не больше 50; температуры от −100 до 100."
+      ],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Термометры создайте сразу: std::vector<Thermometer> sensors(n); — и не меняйте размер вектора, пока раздаёте указатели.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Display: const Thermometer *source_ = nullptr; connect принимает указатель (&sensors[i]), disconnect присваивает nullptr.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\nshow\nconnect 1\nshow\nset 1 -7.5\nshow\n",
+          "expected": "нет датчика\n20.0 °C\n-7.5 °C\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\nconnect 0\ndisconnect\nshow\n",
+          "expected": "нет датчика\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Переключение",
+          "stdin": "3\nset 2 30\nconnect 2\nshow\nconnect 0\nshow\n",
+          "expected": "30.0 °C\n20.0 °C\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Изменение источника",
+          "stdin": "1\nconnect 0\nset 0 100\nshow\nset 0 -100\nshow\n",
+          "expected": "100.0 °C\n-100.0 °C\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Без подключения",
+          "stdin": "2\nset 0 5\nshow\n",
+          "expected": "нет датчика\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Меняется другой",
+          "stdin": "2\nconnect 0\nset 1 9\nshow\n",
+          "expected": "20.0 °C\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Только показ",
+          "stdin": "1\nshow\n",
+          "expected": "нет датчика\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Округление",
+          "stdin": "3\nconnect 1\nset 1 0.05\nshow\n",
+          "expected": "0.1 °C\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Повторное подключение",
+          "stdin": "2\nconnect 0\ndisconnect\nconnect 1\nshow\n",
+          "expected": "20.0 °C\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Дважды",
+          "stdin": "1\nset 0 36.6\nconnect 0\nshow\nshow\n",
+          "expected": "36.6 °C\n36.6 °C\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Thermometer {\npublic:\n    void set(double t) {\n        value_ = t;\n    }\n\n    double value() const {\n        return value_;\n    }\n\nprivate:\n    double value_ = 20;\n};\n\nclass Display {\npublic:\n    void connect(const Thermometer *source) {\n        source_ = source;\n    }\n\n    void disconnect() {\n        source_ = nullptr;\n    }\n\n    void show() const {\n        if (source_ == nullptr) {\n            std::println(\"нет датчика\");\n        } else {\n            std::println(\"{:.1f} °C\", source_->value());\n        }\n    }\n\nprivate:\n    const Thermometer *source_ = nullptr;\n};\n\nint main() {\n    std::size_t n;\n    std::cin >> n;\n    std::vector<Thermometer> sensors(n);\n    Display display;\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"set\") {\n            std::size_t i;\n            double t;\n            std::cin >> i >> t;\n            sensors[i].set(t);\n        } else if (command == \"connect\") {\n            std::size_t i;\n            std::cin >> i;\n            display.connect(&sensors[i]);\n        } else if (command == \"disconnect\") {\n            display.disconnect();\n        } else {\n            display.show();\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Табло не владеет термометрами — оно лишь смотрит на один из них, может переключиться на другой или остаться без источника. Поэтому указатель, а не ссылка и не поле-значение. Указатель на константу закрепляет в типе, что табло только читает показания.\n\nУказатели на элементы вектора безопасны здесь потому, что вектор создан сразу нужного размера и больше не растёт. Если бы термометры добавлялись по ходу работы, перевыделение памяти оставило бы табло с висячим указателем.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-aggregation-task-3",
+      "title": "Найди ошибку: висячая надпись",
+      "description": "Каждая строка ввода — категория и название товара. Функция `make_label` собирает надпись `категория: название` и возвращает объект `Label`, который печатает её в квадратных скобках:\n\n```text\n[электроника: наушники]\n```\n\nПод AddressSanitizer программа аварийно завершается. Найдите и исправьте ошибку в классе `Label`.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n\nclass Label {\npublic:\n    explicit Label(const std::string &text) : text_(text) {}\n\n    void print() const {\n        std::println(\"[{}]\", text_);\n    }\n\nprivate:\n    const std::string &text_;\n};\n\nLabel make_label(const std::string &category, const std::string &name) {\n    std::string text = category + \": \" + name;\n    return Label(text);\n}\n\nint main() {\n    std::string category, name;\n    while (std::cin >> category >> name) {\n        Label label = make_label(category, name);\n        label.print();\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "электроника наушники\n",
+          "output": "[электроника: наушники]\n"
+        },
+        {
+          "input": "книги роман\nигрушки мяч\n",
+          "output": "[книги: роман]\n[игрушки: мяч]\n"
+        }
+      ],
+      "constraints": ["Строк не больше 20; слова до 40 символов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "На что ссылается поле text_ после выхода из make_label?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Надпись — часть этикетки, а не чужой объект: храните её значением, std::string text_.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "электроника наушники\n",
+          "expected": "[электроника: наушники]\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "книги роман\nигрушки мяч\n",
+          "expected": "[книги: роман]\n[игрушки: мяч]\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "продукты молоко\n",
+          "expected": "[продукты: молоко]\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "одежда куртка\nобувь кроссовки\n",
+          "expected": "[одежда: куртка]\n[обувь: кроссовки]\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "канцелярия карандаш\n",
+          "expected": "[канцелярия: карандаш]\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "спорт велосипед\n",
+          "expected": "[спорт: велосипед]\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "сад лопата\nдом кресло\nкухня сковорода\n",
+          "expected": "[сад: лопата]\n[дом: кресло]\n[кухня: сковорода]\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "электроника телевизор\n",
+          "expected": "[электроника: телевизор]\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "музыка гитара\n",
+          "expected": "[музыка: гитара]\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "зоотовары корм\n",
+          "expected": "[зоотовары: корм]\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nclass Label {\npublic:\n    explicit Label(const std::string &text) : text_(text) {}\n\n    void print() const {\n        std::println(\"[{}]\", text_);\n    }\n\nprivate:\n    std::string text_;\n};\n\nLabel make_label(const std::string &category, const std::string &name) {\n    std::string text = category + \": \" + name;\n    return Label(text);\n}\n\nint main() {\n    std::string category, name;\n    while (std::cin >> category >> name) {\n        Label label = make_label(category, name);\n        label.print();\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`Label` хранил ссылку на строку, а строка `text` — локальная переменная `make_label` и уничтожается при выходе из функции. Этикетка возвращалась с висячей ссылкой, и `print` читал освобождённую память — AddressSanitizer сообщает `heap-use-after-free` (длинные строки хранят символы в куче).\n\nАгрегация была ошибкой проектирования: этикетка не пользуется чужой надписью, а владеет своей. Поле-значение — композиция — копирует строку при создании, и объект становится самостоятельным. Правило: ссылку храните, только если точно знаете, что объект переживёт ссылающегося.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-aggregation-task-4",
+      "title": "Наблюдатели",
+      "description": "Датчик публикует значения, а **наблюдатели** считают, сколько опубликованных значений были не меньше их порога. Датчик хранит невладеющие указатели на подписанных наблюдателей и при каждом значении сообщает его всем подписанным.\n\nПервая строка — число наблюдателей `k`, затем `k` строк `имя порог`. Все наблюдатели сразу подписаны. Команды:\n\n- `value v` — датчик публикует значение;\n- `unsub имя`, `sub имя` — отписать или снова подписать наблюдателя (повторная подписка не дублирует);\n- `report` — для каждого наблюдателя в исходном порядке: `имя: n`.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "2\nтепло 20\nжара 30\nvalue 25\nvalue 35\nunsub тепло\nvalue 40\nreport\n",
+          "output": "тепло: 2\nжара: 2\n"
+        },
+        {
+          "input": "1\na 0\nsub a\nvalue 0\nreport\n",
+          "output": "a: 1\n"
+        }
+      ],
+      "constraints": ["1 ≤ k ≤ 10; команд не больше 100; значения и пороги по модулю до 10⁶."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Наблюдателей храните в векторе, заполненном до подписки: std::vector<Watcher> watchers; — и не меняйте его размер. Датчик: std::vector<Watcher *> subscribers_.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "unsub — std::erase(subscribers_, ptr) (C++20); sub — добавить, если std::ranges::find не нашёл. Наблюдателя по имени ищите в main.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "2\nтепло 20\nжара 30\nvalue 25\nvalue 35\nunsub тепло\nvalue 40\nreport\n",
+          "expected": "тепло: 2\nжара: 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "1\na 0\nsub a\nvalue 0\nreport\n",
+          "expected": "a: 1\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Ниже порога",
+          "stdin": "1\na 10\nvalue 5\nreport\n",
+          "expected": "a: 0\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Все отписаны",
+          "stdin": "2\na 0\nb 0\nunsub a\nunsub b\nvalue 1\nreport\n",
+          "expected": "a: 0\nb: 0\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Переподписка",
+          "stdin": "1\na 5\nunsub a\nvalue 9\nsub a\nvalue 9\nreport\n",
+          "expected": "a: 1\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Границы",
+          "stdin": "1\na -1000000\nvalue -1000000\nvalue 1000000\nreport\n",
+          "expected": "a: 2\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Два отчёта",
+          "stdin": "3\nx 1\ny 2\nz 3\nvalue 2\nreport\nvalue 3\nreport\n",
+          "expected": "x: 1\ny: 1\nz: 0\nx: 2\ny: 2\nz: 1\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Неизвестное имя",
+          "stdin": "1\na 1\nunsub b\nvalue 1\nreport\n",
+          "expected": "a: 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Без дублей",
+          "stdin": "2\na 5\nb 5\nsub a\nsub a\nvalue 5\nreport\n",
+          "expected": "a: 1\nb: 1\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Без значений",
+          "stdin": "1\na 0\nreport\n",
+          "expected": "a: 0\n"
+        }
+      ],
+      "referenceSolution": "#include <algorithm>\n#include <iostream>\n#include <print>\n#include <string>\n#include <utility>\n#include <vector>\n\nclass Watcher {\npublic:\n    Watcher(std::string name, long long threshold) : name_(std::move(name)), threshold_(threshold) {}\n\n    void on_value(long long v) {\n        if (v >= threshold_) {\n            count_++;\n        }\n    }\n\n    const std::string &name() const {\n        return name_;\n    }\n\n    int count() const {\n        return count_;\n    }\n\nprivate:\n    std::string name_;\n    long long threshold_;\n    int count_ = 0;\n};\n\nclass Sensor {\npublic:\n    void subscribe(Watcher *w) {\n        if (std::ranges::find(subscribers_, w) == subscribers_.end()) {\n            subscribers_.push_back(w);\n        }\n    }\n\n    void unsubscribe(Watcher *w) {\n        std::erase(subscribers_, w);\n    }\n\n    void publish(long long v) {\n        for (Watcher *w : subscribers_) {\n            w->on_value(v);\n        }\n    }\n\nprivate:\n    std::vector<Watcher *> subscribers_;\n};\n\nint main() {\n    int k;\n    std::cin >> k;\n    std::vector<Watcher> watchers;\n    for (int i = 0; i < k; i++) {\n        std::string name;\n        long long threshold;\n        std::cin >> name >> threshold;\n        watchers.emplace_back(name, threshold);\n    }\n    Sensor sensor;\n    for (Watcher &w : watchers) {\n        sensor.subscribe(&w);\n    }\n    auto find = [&watchers](const std::string &name) -> Watcher * {\n        for (Watcher &w : watchers) {\n            if (w.name() == name) {\n                return &w;\n            }\n        }\n        return nullptr;\n    };\n    std::string command;\n    while (std::cin >> command) {\n        if (command == \"value\") {\n            long long v;\n            std::cin >> v;\n            sensor.publish(v);\n        } else if (command == \"report\") {\n            for (const Watcher &w : watchers) {\n                std::println(\"{}: {}\", w.name(), w.count());\n            }\n        } else {\n            std::string name;\n            std::cin >> name;\n            if (Watcher *w = find(name)) {\n                if (command == \"sub\") {\n                    sensor.subscribe(w);\n                } else {\n                    sensor.unsubscribe(w);\n                }\n            }\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Это шаблон «Наблюдатель»: источник событий хранит список получателей и оповещает их, ничего о них не зная, кроме метода `on_value`. Датчик не владеет наблюдателями — они живут в `main` дольше датчика, — поэтому хранятся указатели. Отписка удаляет указатель из списка, а сам наблюдатель продолжает существовать и хранит свой счёт.\n\nУказатели безопасны потому, что вектор наблюдателей заполнен **до** подписки и больше не растёт. В уроках о полиморфизме наблюдатели станут объектами разных классов с общим интерфейсом — тогда датчик сможет оповещать и табло, и сигнализацию, и журнал одним списком.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-aggregation-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Что обязан обеспечить владелец заимствованного Source?",
-        "options": ["Источник живёт дольше обращений View", "View всегда сам удаляет Source"],
-        "correct": 0,
-        "explanation": "В примере View заимствует источник и видит последующие изменения. Это принципиально отличается от копии состояния. Владелец должен существовать дольше всех обращений View. Поэтому источник объявлен первым, наблюдатель вторым, а разрушение происходит наоборот. Копирование объекта со ссылочным полем сохраняет ссылку на тот же источник. Не выбирайте shared_ptr автоматически: совместное владение — иной контракт, который нужен далеко не каждой зависимости."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nclass Counter {\npublic:\n    void hit() { n_++; }\n    int n() const { return n_; }\n\nprivate:\n    int n_ = 0;\n};\n\nclass Button {\npublic:\n    explicit Button(Counter &c) : c_(c) {}\n    void click() { c_.hit(); }\n\nprivate:\n    Counter &c_;\n};\n\nint main() {\n    Counter total;\n    Button a(total), b(total);\n    a.click();\n    b.click();\n    a.click();\n    std::println(\"{}\", total.n());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Обе кнопки хранят ссылку на один и тот же счётчик.",
+        "type": "text",
+        "answers": ["3"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "9", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 9. При агрегации объект использует независимо живущую часть и не уничтожает её. В C++ это договорённость о владении, а не отдельное ключевое слово. Ссылка подходит для обязательной зависимости; указатель — если отсутствие допустимо и явно обработано. Тип ссылки не продлевает произвольно время жизни внешнего объекта."
-      },
-      {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q2",
+        "question": "Что изменится, если в Button поле Counter &c_ заменить на Counter c_ (и параметр конструктора принимать по значению)?",
+        "explanation": "Поле-значение — композиция: копия принадлежит кнопке.",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Не возвращайте наблюдатель, ссылающийся на локальный источник функции. Не освобождайте заимствованный указатель: право доступа не означает владение."
+          "У каждой кнопки будет свой счётчик-копия, и total останется 0",
+          "Ничего",
+          "Программа не скомпилируется",
+          "total станет 6"
         ],
-        "correct": 1,
-        "explanation": "Предскажите результат, если в View вместо const Source& хранить Source. Внешнее изменение перестанет быть видно. Затем рассмотрите перемещение владельца Source в контейнере: ссылка может стать висячей при перераспределении памяти. Стабильность адреса входит в обязательства владельца."
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Чем агрегация отличается от композиции?",
+        "explanation": "Композиция — поле-объект, агрегация — ссылка или указатель на чужой объект.",
+        "options": [
+          "При агрегации объект пользуется чужим объектом и не уничтожает его; при композиции владеет частью",
+          "Агрегация возможна только через наследование",
+          "При агрегации объект копирует часть",
+          "Это синонимы"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q4",
+        "question": "Когда поле-указатель лучше поля-ссылки?",
+        "explanation": "Ссылку нельзя перенаправить и она не бывает пустой.",
+        "options": [
+          "Когда связь может отсутствовать (nullptr) или меняться со временем",
+          "Всегда: указатели быстрее",
+          "Когда объект нужно уничтожить в деструкторе",
+          "Никогда"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q5",
+        "question": "Почему объект с полем-ссылкой нельзя присвоить (a = b)?",
+        "explanation": "Если присваивание нужно — храните указатель.",
+        "options": [
+          "Ссылку нельзя перенаправить на другой объект, поэтому присваивание по умолчанию удалено",
+          "Ссылки нельзя копировать никогда",
+          "Это ошибка во время выполнения",
+          "Можно, ссылка начнёт указывать на поле b"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "Что такое внедрение зависимости?",
+        "explanation": "Зависимость видна в сигнатуре, и её можно подменить — например, в тестах.",
+        "options": [
+          "Объект получает используемый объект снаружи, например в конструкторе, а не создаёт его и не берёт из глобальной переменной",
+          "Наследование от класса зависимости",
+          "Подключение заголовка",
+          "Автоматическое создание всех полей"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Какое обещание лежит в основе агрегации?",
+        "explanation": "Компилятор это обещание не проверяет: нарушение даёт висячие ссылки.",
+        "options": [
+          "Используемый объект живёт дольше использующего",
+          "Используемый объект нельзя изменить",
+          "Использующий объект удалит используемый",
+          "Объекты созданы в куче"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q8",
+        "question": "Класс Reader хранит указатель на books[0], а затем в вектор books добавляют ещё книги. Что может случиться?",
+        "explanation": "Сначала заполняют контейнер, потом раздают указатели — или хранят индексы.",
+        "options": [
+          "Вектор перевыделит память, и указатель будет указывать на освобождённый блок",
+          "Указатель автоматически обновится",
+          "push_back не скомпилируется",
+          "Ничего: элементы вектора не перемещаются"
+        ],
+        "correct": 0
       }
     ]
   }

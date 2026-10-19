@@ -13,9 +13,9 @@
     "Возвращать данные из функции значением, через буфер вызывающего, static-буфер или кучу",
     "Объяснять ограничения функций, возвращающих общий статический буфер"
   ],
-  "tags": ["C17", "Память", "Время жизни", "Висячий указатель", "Область видимости"],
+  "tags": ["C23", "Память", "Время жизни", "Висячий указатель", "Область видимости"],
   "published": true,
-  "standard": "c17",
+  "standard": "c23",
   "completion": "practice",
   "exercise": {
     "id": "memory-lifetime-task-1",
@@ -24,7 +24,7 @@
     "difficulty": "intermediate",
     "starterCode": "#include <stdio.h>\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int *best = NULL;\n    for (int i = 0; i < n; i++) {\n        int value;\n        scanf(\"%d\", &value);\n        if (best == NULL || value > *best) {\n            best = &value;\n        }\n    }\n    printf(\"%d\\n\", *best);\n    return 0;\n}\n",
     "language": "c",
-    "standard": "c17",
+    "standard": "c23",
     "compiler": "gcc",
     "diagnostics": "sanitizers",
     "examples": [
@@ -129,7 +129,7 @@
       "difficulty": "beginner",
       "starterCode": "#include <stdio.h>\n\nvoid format_duration(int seconds, char out[16]) {\n    // Запишите строку в out.\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        int seconds;\n        scanf(\"%d\", &seconds);\n        char text[16];\n        format_duration(seconds, text);\n        printf(\"%s\\n\", text);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -233,7 +233,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n\nstruct Stats {\n    int min;\n    int max;\n    double mean;\n};\n\nstruct Stats analyze(const int *values, int n) {\n    struct Stats s = {0, 0, 0.0};\n    // Заполните s.\n    return s;\n}\n\nint main(void) {\n    int n;\n    scanf(\"%d\", &n);\n    int values[1000];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    struct Stats s = analyze(values, n);\n    printf(\"%d %d %.2f\\n\", s.min, s.max, s.mean);\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [
@@ -342,7 +342,7 @@
       "difficulty": "intermediate",
       "starterCode": "#include <stdio.h>\n#include <string.h>\n\nconst char *to_binary(unsigned x) {\n    static char buffer[33];\n    int pos = 32;\n    buffer[pos] = '\\0';\n    do {\n        buffer[--pos] = (char)('0' + x % 2);\n        x /= 2;\n    } while (x > 0);\n    return buffer + pos;\n}\n\nint main(void) {\n    int q;\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        unsigned a, b;\n        scanf(\"%u %u\", &a, &b);\n        const char *left = to_binary(a);\n        const char *right = to_binary(b);\n        printf(\"%s %s\\n\", left, right);\n    }\n    return 0;\n}\n",
       "language": "c",
-      "standard": "c17",
+      "standard": "c23",
       "compiler": "gcc",
       "diagnostics": "sanitizers",
       "examples": [

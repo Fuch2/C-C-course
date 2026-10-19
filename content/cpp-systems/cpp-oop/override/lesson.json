@@ -1,128 +1,544 @@
 {
   "id": "oop-override",
   "title": "override: компилятор проверяет намерение",
-  "description": "override сообщает компилятору, что метод обязан переопределять виртуальную функцию базы. Несовпадающий параметр или потерянный const превращается в ошибку компиляции вместо незаметного нового метода. Ключевое слово не вводит отдельный механизм вызова: корректное переопределение и без него остаётся виртуальным. Его ценность — проверяемое намерение автора.",
+  "description": "Почему метод с другой сигнатурой не переопределяет базовый, а компилятор лишь предупреждает; override превращает это в ошибку компиляции; virtual в базе и override в наследниках; ловушка аргументов по умолчанию у виртуальных функций; сокрытие перегрузок и using Base::имя; невиртуальный интерфейс (NVI) с закрытыми виртуальными шагами.",
   "moduleId": "cpp-oop",
-  "order": 15,
-  "difficulty": "advanced",
-  "estimatedMinutes": 60,
+  "order": 17,
+  "difficulty": "intermediate",
+  "estimatedMinutes": 45,
   "prerequisites": ["oop-virtual"],
   "objectives": [
-    "Применить override: компилятор проверяет намерение в работающем C++20 коде.",
-    "Проследить состояние и время жизни объектов в примере.",
-    "Реализовать контракт практики и проверить граничные случаи."
+    "Помечать переопределения override и читать ошибки несовпадения",
+    "Избегать аргументов по умолчанию у виртуальных функций",
+    "Возвращать скрытые перегрузки через using",
+    "Проектировать иерархии по схеме невиртуального интерфейса"
   ],
-  "tags": ["C++20", "ООП", "override: компилятор проверяет намерение"],
+  "tags": ["C++23", "ООП", "override", "virtual", "NVI"],
   "published": true,
-  "standard": "c++20",
+  "standard": "c++23",
   "completion": "practice",
   "exercise": {
     "id": "oop-override-exercise",
-    "title": "Практика: override: компилятор проверяет намерение",
-    "description": "Base объявляет virtual int transform(int x) const = 0 и виртуальный деструктор. Offset хранит смещение из explicit Offset(int). Реализуйте int transform(int x) const override = x+offset. solve(a,b) создаёт const Offset{b}, вызывает transform(a) через const Base&. Не удаляйте override. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система.",
-    "difficulty": "advanced",
+    "title": "Конвертеры",
+    "description": "Опишите базовый класс `Converter` с виртуальными методами `double convert(double) const` и `std::string name() const`, и наследников, переопределяющих оба метода с `override`:\n\n| Код     | Имя                | Формула          |\n| ------- | ------------------ | ---------------- |\n| `c2f`   | `°C -> °F`         | `x · 9 / 5 + 32` |\n| `f2c`   | `°F -> °C`         | `(x − 32) · 5 / 9` |\n| `km2mi` | `км -> мили`       | `x · 0.621371`   |\n| `mi2km` | `мили -> км`       | `x / 0.621371`   |\n\nКаждая строка ввода — код и число. Напечатайте `имя: x = y` с двумя знаками после точки у обоих чисел, вызывая методы через `const Converter &`.",
+    "difficulty": "beginner",
+    "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
     "language": "cpp",
-    "standard": "c++20",
-    "compiler": "clang",
+    "standard": "c++23",
+    "compiler": "gcc",
     "diagnostics": "sanitizers",
-    "starterCode": "#include <memory>\n#include <vector>\n\n// Реализуйте описанные в условии типы и их методы.\nint solve(int a, int b) {\n    (void)a; (void)b;\n    return 0;\n}\n",
     "examples": [
       {
-        "input": "solve(4, 2)",
-        "output": "6\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "c2f 100\nf2c 212\n",
+        "output": "°C -> °F: 100.00 = 212.00\n°F -> °C: 212.00 = 100.00\n"
       },
       {
-        "input": "solve(0, 0)",
-        "output": "0\n",
-        "explanation": "Результат следует из контракта задания; проверьте порядок действий и состояние объектов."
+        "input": "km2mi 42.2\nmi2km 1\n",
+        "output": "км -> мили: 42.20 = 26.22\nмили -> км: 1.00 = 1.61\n"
       }
     ],
-    "constraints": [
-      "Аргументы a, b — целые от −1000 до 1000 включительно.",
-      "Соблюдайте имена, сигнатуры, владение и доступ из условия.",
-      "Функцию main добавляет система. Возвращайте результат из solve, не печатайте его."
-    ],
+    "constraints": ["Строк не больше 30; числа по модулю до 10⁶."],
     "hints": [
       {
         "id": "hint-1",
-        "order": 1,
-        "text": "Разделите поля состояния и публичные операции из условия. Сначала реализуйте один объект, затем вызов через требуемый интерфейс."
+        "text": "Все четыре конвертера создайте в main заранее и выбирайте нужный по коду, получая const Converter &.",
+        "order": 1
       },
       {
         "id": "hint-2",
-        "order": 2,
-        "text": "Проследите все вызовы solve по порядку. Проверьте отрицательные аргументы, ноль и границы; соблюдайте const, чтобы наблюдение не меняло состояние."
+        "text": "Функция void show(const Converter &c, double x) печатает строку — через ссылку на базу вызываются переопределения.",
+        "order": 2
       }
     ],
     "publicTests": [
       {
         "id": "case-1",
         "name": "Пример 1",
-        "arguments": [4, 2],
-        "expected": "6\n"
+        "stdin": "c2f 100\nf2c 212\n",
+        "expected": "°C -> °F: 100.00 = 212.00\n°F -> °C: 212.00 = 100.00\n"
       },
       {
         "id": "case-2",
         "name": "Пример 2",
-        "arguments": [0, 0],
-        "expected": "0\n"
+        "stdin": "km2mi 42.2\nmi2km 1\n",
+        "expected": "км -> мили: 42.20 = 26.22\nмили -> км: 1.00 = 1.61\n"
       }
     ],
     "hiddenTests": [
       {
-        "id": "case-3",
-        "name": "Граничный сценарий 1",
-        "arguments": [-5, 1],
-        "expected": "-4\n"
+        "id": "hidden-1",
+        "name": "Минус сорок",
+        "stdin": "c2f -40\nf2c -40\n",
+        "expected": "°C -> °F: -40.00 = -40.00\n°F -> °C: -40.00 = -40.00\n"
       },
       {
-        "id": "case-4",
-        "name": "Граничный сценарий 2",
-        "arguments": [1000, -1000],
-        "expected": "0\n"
+        "id": "hidden-2",
+        "name": "Ноль",
+        "stdin": "c2f 0\n",
+        "expected": "°C -> °F: 0.00 = 32.00\n"
+      },
+      {
+        "id": "hidden-3",
+        "name": "Температура тела",
+        "stdin": "f2c 98.6\n",
+        "expected": "°F -> °C: 98.60 = 37.00\n"
+      },
+      {
+        "id": "hidden-4",
+        "name": "Нулевые расстояния",
+        "stdin": "km2mi 0\nmi2km 0\n",
+        "expected": "км -> мили: 0.00 = 0.00\nмили -> км: 0.00 = 0.00\n"
+      },
+      {
+        "id": "hidden-5",
+        "name": "Миллион километров",
+        "stdin": "km2mi 1000000\n",
+        "expected": "км -> мили: 1000000.00 = 621371.00\n"
+      },
+      {
+        "id": "hidden-6",
+        "name": "Марафон в милях",
+        "stdin": "mi2km 26.2\n",
+        "expected": "мили -> км: 26.20 = 42.16\n"
+      },
+      {
+        "id": "hidden-7",
+        "name": "Смесь",
+        "stdin": "c2f 36.6\nkm2mi 5\n",
+        "expected": "°C -> °F: 36.60 = 97.88\nкм -> мили: 5.00 = 3.11\n"
+      },
+      {
+        "id": "hidden-8",
+        "name": "Ноль Фаренгейта",
+        "stdin": "f2c 0\n",
+        "expected": "°F -> °C: 0.00 = -17.78\n"
       }
     ],
-    "referenceSolution": "struct Base { virtual int transform(int x) const = 0; virtual ~Base() = default; };\nclass Offset : public Base { int offset_; public: explicit Offset(int x) : offset_(x) {} int transform(int x) const override { return x+offset_; } };\nint solve(int a,int b) { const Offset f{b}; const Base& base=f; return base.transform(a); }",
-    "solutionExplanation": "Base объявляет virtual int transform(int x) const = 0 и виртуальный деструктор. Offset хранит смещение из explicit Offset(int). Реализуйте int transform(int x) const override = x+offset. solve(a,b) создаёт const Offset{b}, вызывает transform(a) через const Base&. Не удаляйте override. Аргументы a,b — целые −1000…1000. Не добавляйте main: его создаёт система. В эталоне каждый шаг выражен методом соответствующего типа; solve только соединяет операции. Если компилятор пишет «does not override», удаление override скрывает проблему. Исправьте сигнатуру по объявлению базы. Время и дополнительная память этого упражнения O(1): число объектов и вызовов фиксировано.",
+    "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nclass Converter {\npublic:\n    virtual double convert(double x) const {\n        return x;\n    }\n\n    virtual std::string name() const {\n        return \"без преобразования\";\n    }\n\n    virtual ~Converter() = default;\n};\n\nclass CToF : public Converter {\npublic:\n    double convert(double x) const override {\n        return x * 9 / 5 + 32;\n    }\n\n    std::string name() const override {\n        return \"°C -> °F\";\n    }\n};\n\nclass FToC : public Converter {\npublic:\n    double convert(double x) const override {\n        return (x - 32) * 5 / 9;\n    }\n\n    std::string name() const override {\n        return \"°F -> °C\";\n    }\n};\n\nclass KmToMiles : public Converter {\npublic:\n    double convert(double x) const override {\n        return x * 0.621371;\n    }\n\n    std::string name() const override {\n        return \"км -> мили\";\n    }\n};\n\nclass MilesToKm : public Converter {\npublic:\n    double convert(double x) const override {\n        return x / 0.621371;\n    }\n\n    std::string name() const override {\n        return \"мили -> км\";\n    }\n};\n\nvoid show(const Converter &c, double x) {\n    std::println(\"{}: {:.2f} = {:.2f}\", c.name(), x, c.convert(x));\n}\n\nint main() {\n    CToF c2f;\n    FToC f2c;\n    KmToMiles km2mi;\n    MilesToKm mi2km;\n    std::string code;\n    double x;\n    while (std::cin >> code >> x) {\n        if (code == \"c2f\") {\n            show(c2f, x);\n        } else if (code == \"f2c\") {\n            show(f2c, x);\n        } else if (code == \"km2mi\") {\n            show(km2mi, x);\n        } else {\n            show(mi2km, x);\n        }\n    }\n    return 0;\n}\n",
+    "solutionExplanation": "Каждый наследник переопределяет оба метода, и `override` гарантирует, что это действительно переопределения: опечатка вроде `double convert(double x)` без `const` не скомпилировалась бы. `show` работает через ссылку на базу и ничего не знает о конкретных формулах.\n\nВиртуальный деструктор `virtual ~Converter() = default;` здесь не обязателен — объекты не удаляются через указатель на базу, — но его принято объявлять в любом полиморфном базовом классе; подробнее — в уроке о виртуальном деструкторе.",
     "checking": {
-      "type": "function",
-      "functionName": "solve",
-      "returnType": "int",
-      "parameters": [
-        { "name": "a", "type": "int" },
-        { "name": "b", "type": "int" }
-      ]
+      "type": "stdout",
+      "comparison": "exact"
     }
   },
-  "additionalExercises": [],
+  "additionalExercises": [
+    {
+      "id": "oop-override-task-2",
+      "title": "Принтер с перегрузками",
+      "description": "Базовый класс `Printer` имеет две виртуальные перегрузки: `print(long long)` печатает `число X`, `print(const std::string &)` печатает `строка S`. Наследник `Boxed` переопределяет **только** строковую: печатает `[S]`. Числа он должен печатать по-прежнему, базовой версией.\n\nСтроки ввода: `int число` или `str слово`. Обработайте каждую вызовом метода у объекта `Boxed` (не через ссылку на базу). Подсказка: без одной строки в `Boxed` числовая перегрузка окажется скрытой.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "int 42\nstr текст\n",
+          "output": "число 42\n[текст]\n"
+        },
+        {
+          "input": "str a\nstr b\n",
+          "output": "[a]\n[b]\n"
+        }
+      ],
+      "constraints": ["Строк не больше 30."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Если в Boxed объявлен только print(const std::string &), то вызов boxed.print(5LL) не найдёт числовую перегрузку базы.",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Добавьте в Boxed строку using Printer::print; — она вернёт все перегрузки базы, а строковая будет заменена переопределением.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "int 42\nstr текст\n",
+          "expected": "число 42\n[текст]\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "str a\nstr b\n",
+          "expected": "[a]\n[b]\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Отрицательное",
+          "stdin": "int -7\n",
+          "expected": "число -7\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Максимум",
+          "stdin": "int 9223372036854775807\n",
+          "expected": "число 9223372036854775807\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Пусто",
+          "stdin": "",
+          "expected": ""
+        },
+        {
+          "id": "hidden-4",
+          "name": "Цифры как строка",
+          "stdin": "str 123\n",
+          "expected": "[123]\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Ноль дважды",
+          "stdin": "int 0\nstr 0\n",
+          "expected": "число 0\n[0]\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Чередование",
+          "stdin": "str привет\nint 1\nstr мир\n",
+          "expected": "[привет]\nчисло 1\n[мир]\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Только числа",
+          "stdin": "int 5\nint 6\n",
+          "expected": "число 5\nчисло 6\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скобки",
+          "stdin": "str [x]\n",
+          "expected": "[[x]]\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nclass Printer {\npublic:\n    virtual void print(long long x) const {\n        std::println(\"число {}\", x);\n    }\n\n    virtual void print(const std::string &s) const {\n        std::println(\"строка {}\", s);\n    }\n\n    virtual ~Printer() = default;\n};\n\nclass Boxed : public Printer {\npublic:\n    using Printer::print;\n\n    void print(const std::string &s) const override {\n        std::println(\"[{}]\", s);\n    }\n};\n\nint main() {\n    Boxed boxed;\n    std::string kind;\n    while (std::cin >> kind) {\n        if (kind == \"int\") {\n            long long x;\n            std::cin >> x;\n            boxed.print(x);\n        } else {\n            std::string s;\n            std::cin >> s;\n            boxed.print(s);\n        }\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Объявление `print` в наследнике скрывает **все** одноимённые функции базы — и переопределённую, и остальные перегрузки. Без `using Printer::print;` вызов `boxed.print(x)` с числом не нашёл бы подходящей функции: компилятор видит в `Boxed` только строковую версию.\n\n`using` вносит перегрузки базы в область видимости наследника, а переопределённая строковая заменяет свою. Через ссылку на базу проблемы бы не было — там видны все функции `Printer`, — но клиенты часто работают и с самим наследником.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-override-task-3",
+      "title": "Найди ошибку: чужое приветствие",
+      "description": "Обычный `Greeter` здоровается «Привет, имя!», а `Friendly` — «Здравствуй, имя!». Если имя не указано (во вводе `-`), обычный приветствует «мир», дружелюбный — «друга». Функция `welcome(const Greeter &, имя)` работает с любым приветствующим. Строки ввода: `plain имя` или `friendly имя`.\n\n`friendly -` печатает «Здравствуй, мир!» вместо «Здравствуй, друг!». Найдите причину и исправьте устройство классов так, чтобы значение «по умолчанию» выбиралось по настоящему объекту.",
+      "difficulty": "intermediate",
+      "starterCode": "#include <iostream>\n#include <print>\n#include <string>\n\nclass Greeter {\npublic:\n    virtual void greet(const std::string &who = \"мир\") const {\n        std::println(\"Привет, {}!\", who);\n    }\n\n    virtual ~Greeter() = default;\n};\n\nclass Friendly : public Greeter {\npublic:\n    void greet(const std::string &who = \"друг\") const override {\n        std::println(\"Здравствуй, {}!\", who);\n    }\n};\n\nvoid welcome(const Greeter &g, const std::string &name) {\n    if (name == \"-\") {\n        g.greet();\n    } else {\n        g.greet(name);\n    }\n}\n\nint main() {\n    Greeter plain;\n    Friendly friendly;\n    std::string kind, name;\n    while (std::cin >> kind >> name) {\n        welcome(kind == \"friendly\" ? static_cast<const Greeter &>(friendly) : plain, name);\n    }\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "friendly -\nplain -\n",
+          "output": "Здравствуй, друг!\nПривет, мир!\n"
+        },
+        {
+          "input": "friendly Ада\n",
+          "output": "Здравствуй, Ада!\n"
+        }
+      ],
+      "constraints": ["Строк не больше 20."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "Значение по умолчанию подставляется при компиляции — по какому типу, если вызов идёт через const Greeter &?",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Уберите аргументы по умолчанию у виртуальной функции. Например: открытая невиртуальная greet() вызывает закрытую виртуальную default_name(), которую переопределяет Friendly.",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "friendly -\nplain -\n",
+          "expected": "Здравствуй, друг!\nПривет, мир!\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "friendly Ада\n",
+          "expected": "Здравствуй, Ада!\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Скрытый тест 1",
+          "stdin": "friendly -\n",
+          "expected": "Здравствуй, друг!\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "Скрытый тест 2",
+          "stdin": "plain Алан\n",
+          "expected": "Привет, Алан!\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Скрытый тест 3",
+          "stdin": "friendly Грейс\nfriendly -\n",
+          "expected": "Здравствуй, Грейс!\nЗдравствуй, друг!\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Скрытый тест 4",
+          "stdin": "plain -\nfriendly -\nplain -\n",
+          "expected": "Привет, мир!\nЗдравствуй, друг!\nПривет, мир!\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Скрытый тест 5",
+          "stdin": "friendly x\n",
+          "expected": "Здравствуй, x!\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Скрытый тест 6",
+          "stdin": "plain y\nfriendly -\n",
+          "expected": "Привет, y!\nЗдравствуй, друг!\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Скрытый тест 7",
+          "stdin": "friendly -\nfriendly -\n",
+          "expected": "Здравствуй, друг!\nЗдравствуй, друг!\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Скрытый тест 8",
+          "stdin": "plain -\n",
+          "expected": "Привет, мир!\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n\nclass Greeter {\npublic:\n    void greet() const {\n        greet_as(default_name());\n    }\n\n    void greet(const std::string &who) const {\n        greet_as(who);\n    }\n\n    virtual ~Greeter() = default;\n\nprivate:\n    virtual std::string default_name() const {\n        return \"мир\";\n    }\n\n    virtual void greet_as(const std::string &who) const {\n        std::println(\"Привет, {}!\", who);\n    }\n};\n\nclass Friendly : public Greeter {\nprivate:\n    std::string default_name() const override {\n        return \"друг\";\n    }\n\n    void greet_as(const std::string &who) const override {\n        std::println(\"Здравствуй, {}!\", who);\n    }\n};\n\nvoid welcome(const Greeter &g, const std::string &name) {\n    if (name == \"-\") {\n        g.greet();\n    } else {\n        g.greet(name);\n    }\n}\n\nint main() {\n    Greeter plain;\n    Friendly friendly;\n    std::string kind, name;\n    while (std::cin >> kind >> name) {\n        welcome(kind == \"friendly\" ? static_cast<const Greeter &>(friendly) : plain, name);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "`g.greet()` внутри `welcome` вызывается через `const Greeter &`. Тело выбирается по объекту — `Friendly::greet`, — а аргумент по умолчанию компилятор подставил по типу в коде: `\"мир\"` из `Greeter`. Получилась смесь двух классов.\n\nИсправление убирает аргументы по умолчанию из виртуальных функций. Невиртуальная `greet()` без параметров спрашивает имя по умолчанию у виртуальной `default_name()`, и теперь и тело, и значение выбираются по настоящему объекту. Это схема NVI: открытые невиртуальные методы, закрытые виртуальные шаги.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    },
+    {
+      "id": "oop-override-task-4",
+      "title": "Экспорт таблиц",
+      "description": "Опишите базовый класс `Exporter` по схеме NVI: открытый **невиртуальный** `void run(const std::vector<std::string> &rows) const` печатает заголовок, затем каждую строку, затем `--- строк: N`; шаги `header()` и `line(row)` — **закрытые** чисто виртуальные функции. Наследники:\n\n- `csv`: заголовок `name`, строка — как есть;\n- `md`: заголовок из двух строк `| name |` и `|---|`, строка — `| row |`;\n- `list`: заголовок `Список:`, строка — `- row`.\n\nПервое слово ввода — формат, затем слова-строки до конца ввода.",
+      "difficulty": "advanced",
+      "starterCode": "#include <iostream>\n\nint main() {\n    // Напишите решение здесь.\n    return 0;\n}\n",
+      "language": "cpp",
+      "standard": "c++23",
+      "compiler": "gcc",
+      "diagnostics": "sanitizers",
+      "examples": [
+        {
+          "input": "md Ада Алан\n",
+          "output": "| name |\n|---|\n| Ада |\n| Алан |\n--- строк: 2\n"
+        },
+        {
+          "input": "csv\n",
+          "output": "name\n--- строк: 0\n"
+        }
+      ],
+      "constraints": ["Строк не больше 50; слова без пробелов."],
+      "hints": [
+        {
+          "id": "hint-1",
+          "text": "В базе: private: virtual void header() const = 0; virtual void line(const std::string &) const = 0;. Наследники переопределяют их с override (тоже в private).",
+          "order": 1
+        },
+        {
+          "id": "hint-2",
+          "text": "Выбор формата в main: создайте нужный объект и вызовите run через const Exporter & — например, отдельной функцией export_all(const Exporter &e, rows).",
+          "order": 2
+        }
+      ],
+      "publicTests": [
+        {
+          "id": "case-1",
+          "name": "Пример 1",
+          "stdin": "md Ада Алан\n",
+          "expected": "| name |\n|---|\n| Ада |\n| Алан |\n--- строк: 2\n"
+        },
+        {
+          "id": "case-2",
+          "name": "Пример 2",
+          "stdin": "csv\n",
+          "expected": "name\n--- строк: 0\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "hidden-1",
+          "name": "Список",
+          "stdin": "list a b c\n",
+          "expected": "Список:\n- a\n- b\n- c\n--- строк: 3\n"
+        },
+        {
+          "id": "hidden-2",
+          "name": "CSV",
+          "stdin": "csv x\n",
+          "expected": "name\nx\n--- строк: 1\n"
+        },
+        {
+          "id": "hidden-3",
+          "name": "Пустой Markdown",
+          "stdin": "md\n",
+          "expected": "| name |\n|---|\n--- строк: 0\n"
+        },
+        {
+          "id": "hidden-4",
+          "name": "Пустой список",
+          "stdin": "list\n",
+          "expected": "Список:\n--- строк: 0\n"
+        },
+        {
+          "id": "hidden-5",
+          "name": "Четыре строки",
+          "stdin": "csv Ada Alan Grace Linus\n",
+          "expected": "name\nAda\nAlan\nGrace\nLinus\n--- строк: 4\n"
+        },
+        {
+          "id": "hidden-6",
+          "name": "Одна строка",
+          "stdin": "md один\n",
+          "expected": "| name |\n|---|\n| один |\n--- строк: 1\n"
+        },
+        {
+          "id": "hidden-7",
+          "name": "Покупки",
+          "stdin": "list молоко хлеб\n",
+          "expected": "Список:\n- молоко\n- хлеб\n--- строк: 2\n"
+        },
+        {
+          "id": "hidden-8",
+          "name": "Числа",
+          "stdin": "csv 1 2 3\n",
+          "expected": "name\n1\n2\n3\n--- строк: 3\n"
+        }
+      ],
+      "referenceSolution": "#include <iostream>\n#include <print>\n#include <string>\n#include <vector>\n\nclass Exporter {\npublic:\n    void run(const std::vector<std::string> &rows) const {\n        header();\n        for (const std::string &row : rows) {\n            line(row);\n        }\n        std::println(\"--- строк: {}\", rows.size());\n    }\n\n    virtual ~Exporter() = default;\n\nprivate:\n    virtual void header() const = 0;\n    virtual void line(const std::string &row) const = 0;\n};\n\nclass Csv : public Exporter {\n    void header() const override {\n        std::println(\"name\");\n    }\n\n    void line(const std::string &row) const override {\n        std::println(\"{}\", row);\n    }\n};\n\nclass Markdown : public Exporter {\n    void header() const override {\n        std::println(\"| name |\");\n        std::println(\"|---|\");\n    }\n\n    void line(const std::string &row) const override {\n        std::println(\"| {} |\", row);\n    }\n};\n\nclass List : public Exporter {\n    void header() const override {\n        std::println(\"Список:\");\n    }\n\n    void line(const std::string &row) const override {\n        std::println(\"- {}\", row);\n    }\n};\n\nvoid export_all(const Exporter &e, const std::vector<std::string> &rows) {\n    e.run(rows);\n}\n\nint main() {\n    std::string format;\n    std::cin >> format;\n    std::vector<std::string> rows;\n    std::string word;\n    while (std::cin >> word) {\n        rows.push_back(word);\n    }\n    if (format == \"csv\") {\n        export_all(Csv(), rows);\n    } else if (format == \"md\") {\n        export_all(Markdown(), rows);\n    } else {\n        export_all(List(), rows);\n    }\n    return 0;\n}\n",
+      "solutionExplanation": "Алгоритм экспорта — заголовок, строки, итог — записан один раз в `Exporter::run`, и наследник не может его нарушить: `run` невиртуальная. Наследники отвечают только за то, что действительно различается, — оформление заголовка и строки. Подсчёт строк в конце появится в любом новом формате автоматически.\n\nЗакрытые виртуальные функции нельзя вызвать снаружи, но можно переопределить. Запись `= 0` делает их обязательными: класс-наследник, забывший `line`, нельзя будет создать. `Exporter` — абстрактный класс, и создать его объект напрямую тоже нельзя — об этом следующие уроки.",
+      "checking": {
+        "type": "stdout",
+        "comparison": "exact"
+      }
+    }
+  ],
   "quiz": {
     "id": "oop-override-quiz",
     "title": "Проверка понимания",
     "questions": [
       {
-        "id": "contract",
-        "question": "Что делать, если transform(int) override не совпал с const методом базы?",
-        "options": ["Добавить нужный const к сигнатуре", "Удалить override и оставить сигнатуру"],
-        "correct": 0,
-        "explanation": "Сравнивайте имя, параметры, const и ссылочные квалификаторы. Возвращаемый тип обычно должен совпадать; специальное исключение существует для ковариантных указателей и ссылок на классы. Здесь используем одинаковый int, чтобы сосредоточиться на контракте. Отсутствующий const особенно опасен: метод read() и метод read() const различны. Не исправляйте ошибку простым удалением override: проверьте расхождение интерфейсов."
+        "id": "q1",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct Base {\n    virtual int value() const { return 1; }\n};\n\nstruct Derived : Base {\n    int value() { return 2; }\n};\n\nint main() {\n    Derived d;\n    const Base &b = d;\n    std::println(\"{} {}\", b.value(), d.value());\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "value() без const — другая функция: через базу вызывается базовая версия, через неконстантный d — новая.",
+        "type": "text",
+        "answers": ["1 2"],
+        "placeholder": "Вывод программы"
       },
       {
-        "id": "trace",
-        "question": "Какой вывод даёт запускаемый пример этого урока?",
-        "options": ["Ошибка компиляции", "7", "Программа ничего не выводит"],
-        "correct": 1,
-        "explanation": "Проследите конструирование, вызовы и выход из областей. Ожидаемый вывод: 7. override сообщает компилятору, что метод обязан переопределять виртуальную функцию базы. Несовпадающий параметр или потерянный const превращается в ошибку компиляции вместо незаметного нового метода. Ключевое слово не вводит отдельный механизм вызова: корректное переопределение и без него остаётся виртуальным. Его ценность — проверяемое намерение автора."
-      },
-      {
-        "id": "review",
-        "question": "Какое замечание нужно учесть при ревью решения?",
+        "id": "q2",
+        "question": "Что делает override после списка параметров метода?",
+        "explanation": "Это проверка намерения: несовпадение сигнатуры перестаёт быть тихой ошибкой.",
         "options": [
-          "Успешный вывод одного примера доказывает правильность владения и всех сигнатур.",
-          "Если компилятор пишет «does not override», удаление override скрывает проблему. Исправьте сигнатуру по объявлению базы."
+          "Требует, чтобы метод переопределял виртуальную функцию базы, иначе — ошибка компиляции",
+          "Делает метод виртуальным в базе",
+          "Запрещает наследникам переопределять метод",
+          "Ускоряет вызов"
         ],
-        "correct": 1,
-        "explanation": "Измените один параметр int на long и заранее определите, какой метод перестал переопределять базу. Проверьте также потерю const. Это compile-time ошибки намерения, поэтому успешные тесты значений не заменяют override. Не пытайтесь запускать исходник, который не скомпилировался."
+        "correct": 0
+      },
+      {
+        "id": "q3",
+        "question": "Какие ошибки override превращает в ошибки компиляции? Выберите все.",
+        "explanation": "override проверяет связь с базой, а не логику тела.",
+        "type": "multiple",
+        "options": [
+          "Забытый const в наследнике",
+          "В базе функция не объявлена virtual",
+          "Опечатка в имени метода",
+          "Неправильная формула внутри метода"
+        ],
+        "correct": [0, 1, 2]
+      },
+      {
+        "id": "q4",
+        "question": "Что выведет программа?",
+        "code": "#include <print>\n\nstruct A {\n    virtual void show(int x = 1) const { std::print(\"A{} \", x); }\n};\n\nstruct B : A {\n    void show(int x = 2) const override { std::print(\"B{} \", x); }\n};\n\nint main() {\n    B b;\n    const A &a = b;\n    a.show();\n    b.show();\n    std::println();\n    return 0;\n}",
+        "codeLanguage": "cpp",
+        "explanation": "Тело выбирается по объекту (B), а значение по умолчанию — по типу в коде: через A это 1.",
+        "type": "text",
+        "answers": ["B1 B2"],
+        "placeholder": "Вывод программы"
+      },
+      {
+        "id": "q5",
+        "question": "Где писать слово virtual, а где override?",
+        "explanation": "В наследнике virtual ничего не добавляет, а override добавляет проверку.",
+        "options": [
+          "virtual — в базе, где функция объявлена впервые; override — во всех переопределениях",
+          "virtual — везде, override — нигде",
+          "override — в базе, virtual — в наследниках",
+          "Оба слова — в каждом классе"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q6",
+        "question": "В базе две перегрузки virtual void f(int) и virtual void f(double). Наследник переопределил только f(int). Что произойдёт при вызове d.f(2.5) через объект наследника?",
+        "explanation": "Имя в наследнике скрывает все одноимённые функции базы. Вернуть их — using Base::f;",
+        "options": [
+          "Вызовется f(int) наследника: f(double) базы скрыта, и 2.5 преобразуется в int",
+          "Вызовется f(double) базы",
+          "Ошибка компиляции всегда",
+          "Неопределённое поведение"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q7",
+        "question": "Как вернуть в наследник все перегрузки print базового класса Printer?",
+        "explanation": "using-объявление вносит одноимённые функции базы в область видимости наследника.",
+        "type": "text",
+        "answers": ["using Printer::print;", "using Printer::print"],
+        "placeholder": "Объявление"
+      },
+      {
+        "id": "q8",
+        "question": "Что означает схема NVI?",
+        "explanation": "База контролирует алгоритм, наследники — только свои шаги.",
+        "options": [
+          "Открытый невиртуальный метод базы задаёт порядок действий, а изменяемые шаги — закрытые виртуальные функции",
+          "Все методы виртуальные и открытые",
+          "Наследникам запрещено переопределять методы",
+          "Виртуальные функции вызываются только из конструктора"
+        ],
+        "correct": 0
+      },
+      {
+        "id": "q9",
+        "question": "Может ли наследник переопределить закрытую (private) виртуальную функцию базы?",
+        "explanation": "Доступ ограничивает вызов, а не переопределение. На этом построен NVI.",
+        "options": [
+          "Да: переопределить можно, нельзя только вызвать её снаружи",
+          "Нет: закрытые функции не наследуются",
+          "Только если наследник — друг базы",
+          "Только при protected-наследовании"
+        ],
+        "correct": 0
       }
     ]
   }

@@ -24,7 +24,9 @@ if (!checks.length) throw new Error('Не выбраны уроки для пр�
 // Полный offline-прогон не является HTTP-очередью пользователей: ему нужен запас
 // времени на последовательную компиляцию всех задач в Docker и ёмкость, покрывающая
 // весь набор проверок, иначе очередь отклонит задачи сверх фиксированного лимита.
-const queue = new JobQueue(2, checks.length, 1_800_000);
+// Курс содержит сотни задач: прогон длится часы, поэтому ожидание в очереди не ограничено
+// получасом (лимиты самого sandbox не меняются).
+const queue = new JobQueue(2, checks.length, 86_400_000);
 const report = await Promise.all(
   checks.map(({ lesson, exercise, compiler }) =>
     queue.run(async () => {
